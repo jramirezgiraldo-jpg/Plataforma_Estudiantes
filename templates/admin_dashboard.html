@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-header admin-header">
+    <h1>👨‍🏫 Tablero de Control del Docente</h1>
+    <p>Bienvenido <strong>{{ name }}</strong>. Aquí puedes monitorear el progreso de tus estudiantes en tiempo real.</p>
+</div>
+
+<div class="admin-controls">
+    <form method="GET" action="{{ url_for('admin_dashboard') }}" class="filter-form">
+        <label for="grade">Mostrar Grado:</label>
+        <select name="grade" id="grade" onchange="this.form.submit()">
+            <option value="">Todos los Grados</option>
+            <option value="6" {% if selected_grade == 6 %}selected{% endif %}>Grado 6°</option>
+            <option value="7" {% if selected_grade == 7 %}selected{% endif %}>Grado 7°</option>
+            <option value="8" {% if selected_grade == 8 %}selected{% endif %}>Grado 8°</option>
+            <option value="9" {% if selected_grade == 9 %}selected{% endif %}>Grado 9°</option>
+            <option value="10" {% if selected_grade == 10 %}selected{% endif %}>Grado 10°</option>
+            <option value="11" {% if selected_grade == 11 %}selected{% endif %}>Grado 11°</option>
+        </select>
+    </form>
+</div>
+
+<div class="scoreboard-container">
+    <h2>🏆 Progreso y Carrera de Estudiantes</h2>
+    <div class="scoreboard">
+        {% if students %}
+            {% for student in students %}
+            <div class="student-bar-wrapper" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+                <div class="student-info">
+                    <span class="student-name">{{ student.name }} <span class="badge">Grado {{ student.grade }}°</span></span>
+                    <span class="student-stats">Puntaje: {{ student.score|round(1) }}/5.0 | Actividades: {{ student.completed }}</span>
+                </div>
+                <div class="progress-track teacher-track">
+                    <div class="progress-fill animal-bg-{{ student.animal }}" style="width: {{ (student.score / 5.0) * 100 }}%;">
+                        <div class="animal-avatar bounce-anim">
+                            {% if student.animal == 'tortoise' %}🐢
+                            {% elif student.animal == 'owl' %}🦉
+                            {% elif student.animal == 'fox' %}🦊
+                            {% elif student.animal == 'tiger' %}🐯
+                            {% elif student.animal == 'eagle' %}🦅
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <p>No hay estudiantes registrados en este grado aún.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

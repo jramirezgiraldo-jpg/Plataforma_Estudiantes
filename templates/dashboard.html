@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>📚 Tus Materiales - Grado {{ grade }}°</h1>
+    <p>Bienvenido <strong>{{ name }}</strong>. ¡Aquí encontrarás todas tus aventuras de aprendizaje!</p>
+</div>
+
+<!-- Progreso y Recompensas -->
+<div class="student-progress-section">
+    <div class="progress-card glass">
+        <div class="reward-badge badge-{{ animal }}">
+            <div class="animal-icon pop-anim">
+                {% if animal == 'tortoise' %}🐢
+                {% elif animal == 'owl' %}🦉
+                {% elif animal == 'fox' %}🦊
+                {% elif animal == 'tiger' %}🐯
+                {% elif animal == 'eagle' %}🦅
+                {% endif %}
+            </div>
+            <span class="animal-name tooltip">Nivel: {{ animal|capitalize }}</span>
+        </div>
+        <div class="progress-details">
+            <h3>Tu Progreso Actual</h3>
+            <p>Puntaje: <strong>{{ score|round(1) }} / 5.0</strong> &nbsp;|&nbsp; Actividades Completadas: <strong>{{ completed }}</strong></p>
+            <div class="progress-track student-track">
+                <div class="progress-fill animal-bg-{{ animal }}" style="width: {{ (score / 5.0) * 100 }}%;"></div>
+            </div>
+            <p class="motivational-text">¡Completa actividades para evolucionar tu animal de recompensa!</p>
+        </div>
+    </div>
+</div>
+
+<div class="materials-grid">
+    {% if files %}
+        {% for file in files %}
+        <div class="material-card">
+            <div class="material-icon">
+                {% if 'ScapeRoom' in file['display_name'] %}
+                    🔐
+                {% elif 'gamif' in file['display_name'] or 'jue' in file['display_name'] %}
+                    🎮
+                {% elif 'ppt' in file['display_name'] or 'SL' in file['display_name'] %}
+                    📊
+                {% elif 'concentrece' in file['display_name'] or 'cru' in file['display_name'] %}
+                    🧩
+                {% else %}
+                    📄
+                {% endif %}
+            </div>
+            <div class="material-info">
+                <h3>{{ file['display_name'] }}</h3>
+                <a href="{{ url_for('serve_material', filename=file['filename']) }}" target="_blank" class="btn-secondary" onclick="simulateCompletion()">Abrir Actividad</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <p>No se encontraron materiales para tu grado en este momento.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+// Simulate progress update when opening an activity
+function simulateCompletion() {
+    fetch("{{ url_for('complete_activity') }}", {
+        method: "POST"
+    }).then(res => res.json()).then(data => {
+        if(data.status === 'success') {
+            console.log("Score updated!");
+            setTimeout(() => {
+                location.reload();
+            }, 3000); // Reload the dashboard after 3 seconds to show new score
+        }
+    });
+}
+</script>
+{% endblock %}
