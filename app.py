@@ -12,7 +12,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 GUIAS_PATH = os.path.join(BASE_DIR, "Guias_1p")
 
 def get_db_connection():
-    conn = sqlite3.connect('users.db')
+    db_path = os.path.join(BASE_DIR, 'users.db')
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 
