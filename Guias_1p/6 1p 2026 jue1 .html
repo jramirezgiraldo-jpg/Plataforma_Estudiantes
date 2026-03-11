@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>El Guardián de la Fuente - Juego ABJ</title>
+    <style>
+        :root { --primary: #2e7d32; --secondary: #1565c0; --accent: #f9a825; --bg: #f1f8e9; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; }
+        #game-board { background: white; width: 900px; min-height: 600px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 20px; padding: 20px; display: flex; flex-direction: column; }
+        .header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .game-cols { display: flex; flex: 1; gap: 20px; margin-top: 20px; }
+        .lab-area { flex: 2; background: #e3f2fd; border-radius: 15px; padding: 20px; position: relative; }
+        .sidebar { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        
+        .beaker { width: 150px; height: 200px; border: 4px solid #555; border-top: none; margin: 0 auto; border-radius: 0 0 20px 20px; position: relative; background: rgba(255,255,255,0.5); overflow: hidden; }
+        .liquid { position: absolute; bottom: 0; width: 100%; height: 0%; transition: all 1s; background: var(--secondary); opacity: 0.7; }
+        
+        .inventory { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .item { padding: 10px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; text-align: center; transition: 0.3s; }
+        .item:hover { transform: translateY(-3px); border-color: var(--primary); }
+        
+        .eco-monitor { background: #fff3e0; padding: 15px; border-radius: 10px; border-left: 5px solid var(--accent); }
+        .progress-bar { width: 100%; height: 20px; background: #ddd; border-radius: 10px; overflow: hidden; margin-top: 5px; }
+        .progress-fill { height: 100%; width: 100%; background: #4caf50; transition: 0.5s; }
+        
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; max-width: 500px; text-align: center; }
+        button { padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div id="game-board">
+    <div class="header">
+        <h1>🌿 El Guardián de la Fuente</h1>
+        <p>Prepara las bebidas de la comunidad y protege nuestra quebrada en Pueblo Rico.</p>
+    </div>
+
+    <div class="game-cols">
+        <div class="lab-area">
+            <h3 id="recipe-title">Misión 1: El Secreto del Agua de Panela</h3>
+            <p id="recipe-desc">Añade el <b>Solvente Universal</b> y luego el soluto sólido.</p>
+            <div class="beaker">
+                <div id="liquid" class="liquid"></div>
+            </div>
+            <div id="labels" style="margin-top:20px; font-weight:bold;">Estado: Recipiente Vacío</div>
+        </div>
+
+        <div class="sidebar">
+            <div class="eco-monitor">
+                <strong>Salud de la Quebrada:</strong>
+                <div class="progress-bar"><div id="health-fill" class="progress-fill"></div></div>
+                <small id="health-txt">Agua Cristalina (100%)</small>
+            </div>
+
+            <h3>Inventario</h3>
+            <div class="inventory">
+                <div class="item" onclick="addIngredient('agua', 'solvente')">💧 Agua</div>
+                <div class="item" onclick="addIngredient('panela', 'soluto')">🟫 Panela</div>
+                <div class="item" onclick="addIngredient('limon', 'soluto')">🍋 Limón</div>
+                <div class="item" onclick="addIngredient('arena', 'mezcla')">⏳ Arena</div>
+                <div class="item" onclick="addIngredient('jabon', 'toxico')">🧼 Jabón</div>
+                <div class="item" onclick="addIngredient('abono', 'toxico')">🧪 Abono</div>
+            </div>
+            <button onclick="checkSolution()" style="margin-top:10px;">🧪 Finalizar Mezcla</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content" id="modal-content"></div>
+</div>
+
+<script>
+    let state = { stage: 1, solvent: false, solute: false, contaminants: 0, health: 100 };
+
+    function addIngredient(name, type) {
+        const liquid = document.getElementById('liquid');
+        const labels = document.getElementById('labels');
+
+        if (type === 'solvente') {
+            state.solvent = true;
+            liquid.style.height = "70%";
+            labels.innerText = "Estado: Solvente añadido (Agua)";
+        } else if (state.solvent && type === 'soluto') {
+            state.solute = true;
+            liquid.style.background = name === 'panela' ? '#795548' : '#cddc39';
+            labels.innerText = "Estado: Disolviendo soluto... Mezcla Homogénea en proceso.";
+        } else if (type === 'toxico' || type === 'mezcla') {
+            state.contaminants++;
+            updateHealth(-25);
+            labels.innerText = "Estado: ¡Alerta! Sustancia no deseada detectada.";
+            liquid.style.background = "#455a64";
+        } else {
+            alert("Primero necesitas el Solvente Universal para disolver cualquier cosa.");
+        }
+    }
+
+    function updateHealth(val) {
+        state.health = Math.max(0, state.health + val);
+        document.getElementById('health-fill').style.width = state.health + "%";
+        document.getElementById('health-txt').innerText = `Salud: ${state.health}%`;
+        if(state.health < 50) document.getElementById('health-fill').style.background = "#f44336";
+    }
+
+    function checkSolution() {
+        const modal = document.getElementById('modal');
+        const content = document.getElementById('modal-content');
+        modal.style.display = "flex";
+
+        if (state.stage === 1 && state.solvent && state.solute && state.contaminants === 0) {
+            content.innerHTML = `<h2>¡Éxito en la Mesa!</h2><p>Has preparado una mezcla homogénea perfecta. El agua y la panela se han unido para fortalecer a la comunidad.</p><button onclick="nextStage()">Siguiente Misión</button>`;
+        } else {
+            content.innerHTML = `<h2>Dilema Bioético</h2><p>La mezcla no es pura o la quebrada está sufriendo. Recuerda: lo que echas al agua no desaparece, se queda en el ecosistema de Pueblo Rico.</p><button onclick="closeModal()">Reintentar con Ética</button>`;
+        }
+    }
+
+    function nextStage() {
+        state.stage = 2;
+        state.solvent = false; state.solute = false;
+        document.getElementById('liquid').style.height = "0%";
+        document.getElementById('recipe-title').innerText = "Misión 2: Limpieza de Herramientas";
+        document.getElementById('recipe-desc').innerText = "Cuidado: Tras limpiar, ¿dónde pondrás el jabón y los restos de abono?";
+        closeModal();
+    }
+
+    function closeModal() { document.getElementById('modal').style.display = "none"; }
+</script>
+</body>
+</html>

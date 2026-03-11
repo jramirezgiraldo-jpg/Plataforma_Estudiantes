@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misterios de la Materia: Misión Finca</title>
+    <style>
+        :root {
+            --primary: #5D4037; /* Café */
+            --secondary: #388E3C; /* Verde Finca */
+            --accent: #FBC02D; /* Amarillo Maíz */
+            --water: #29B6F6;
+            --danger: #D32F2F;
+            --light: #F1F8E9;
+            --text: #212121;
+        }
+
+        body {
+            font-family: 'Verdana', sans-serif;
+            background-color: #EFEBE9;
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            width: 900px;
+            height: 650px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: 60px 1fr 50px;
+        }
+
+        /* HEADER */
+        header {
+            background: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 4px solid var(--secondary);
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+
+        /* ÁREA DE JUEGO */
+        #main-stage {
+            position: relative;
+            background: var(--light);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* MODALES Y TEORÍA */
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+        
+        .theory-card {
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 700px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            text-align: left;
+        }
+
+        .theory-card h2 { color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 10px;}
+        .theory-card strong { color: var(--secondary); }
+        .highlight { background: #FFF9C4; padding: 2px 5px; border-radius: 4px; }
+
+        .btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        .btn:hover { transform: scale(1.05); background: #2E7D32; }
+        .btn-next { background: var(--accent); color: #333; }
+
+        .hidden { display: none !important; }
+
+        /* MISION 1: Construcción Molecular */
+        .lab-table {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 400px;
+            background: #E0E0E0;
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .atom {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: grab;
+            box-shadow: 0 4px 5px rgba(0,0,0,0.2);
+            position: absolute;
+        }
+
+        .atom-na { background: #90A4AE; top: 50px; left: 50px; } /* Metal */
+        .atom-cl { background: #7CB342; top: 50px; left: 150px; } /* Gas verde */
+        .atom-h { background: #42A5F5; }
+        .atom-o { background: #EF5350; }
+
+        .drop-zone {
+            width: 200px;
+            height: 200px;
+            border: 4px dashed #999;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255,255,255,0.5);
+            transition: 0.3s;
+        }
+        
+        .drop-zone.active { background: #C8E6C9; border-color: var(--secondary); }
+
+        /* MISION 2: Clasificación */
+        .pantry-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .shelf {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 200px;
+        }
+        .pantry-item {
+            background: white;
+            color: #333;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* MISION 4: Mezclas Heterogéneas */
+        .mixture-container {
+            width: 300px;
+            height: 400px;
+            border: 2px solid #333;
+            margin: 0 auto;
+            position: relative;
+            background: white;
+        }
+        .phase {
+            width: 100%;
+            position: absolute;
+            transition: top 1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+        }
+        .phase-oil { background: rgba(255, 235, 59, 0.8); height: 30%; top: 0; cursor: pointer;}
+        .phase-water { background: rgba(33, 150, 243, 0.6); height: 50%; top: 30%; }
+        .phase-sand { background: rgba(121, 85, 72, 0.9); height: 20%; bottom: 0; }
+
+        /* MISION 5: Diálogo */
+        .dialog-box {
+            background: white;
+            border: 2px solid var(--primary);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .dialog-option {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: #eee;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            text-align: left;
+        }
+        .dialog-option:hover { background: #ddd; }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <div>🧪 Laboratorio: <span id="level-title">Inicio</span></div>
+        <div class="badge">Puntos: <span id="score">0</span></div>
+    </header>
+
+    <div id="main-stage">
+        </div>
+
+    <footer>
+        <div style="text-align:center; padding-top:10px; color:#777; font-size:0.8rem;">
+            Sistema Educativo Rural - Ciencias Grado 6°
+        </div>
+    </footer>
+
+    <div id="theory-screen" class="modal hidden">
+        <div class="theory-card">
+            <h2 id="theory-title">Título Teoría</h2>
+            <div id="theory-content">Contenido...</div>
+            <div style="text-align: right;">
+                <button class="btn btn-next" onclick="closeTheory()">¡Entendido, vamos al reto!</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="start-screen" class="modal">
+        <h1>⚗️ Misterios de la Materia</h1>
+        <p>Bienvenido al laboratorio de la Finca "El Ocaso".</p>
+        <p>Hoy aprenderemos qué compone las cosas que usamos a diario.</p>
+        <button class="btn" onclick="startGame()">Comenzar Aventura</button>
+    </div>
+
+    <div id="end-screen" class="modal hidden">
+        <h1>¡Certificado de Químico Junior! 🎓</h1>
+        <p>Has dominado los Compuestos, las Mezclas y el Trabajo en Equipo.</p>
+        <h2 id="final-score"></h2>
+        <button class="btn" onclick="location.reload()">Reiniciar Curso</button>
+    </div>
+</div>
+
+<script>
+    // Datos del Juego
+    let currentLevel = 0;
+    let score = 0;
+    let currentStep = 0; // Para misiones con pasos internos
+
+    // Base de Datos de Misiones y Teoría (Todo incluido)
+    const missions = [
+        {
+            title: "El Constructor Atómico",
+            theoryTitle: "Elementos vs. Compuestos",
+            theoryHTML: `
+                <p>Imagina que los <strong>Elementos</strong> son piezas de LEGO individuales (como el Oxígeno o el Sodio). Son <strong>Sustancias Puras</strong> que no se pueden dividir en algo más simple.</p>
+                <p>Cuando unes varias piezas (elementos) formas un <strong>Compuesto</strong> (como el Agua o la Sal).</p>
+                <ul>
+                    <li><strong>Na (Sodio):</strong> Metal explosivo con agua.</li>
+                    <li><strong>Cl (Cloro):</strong> Gas tóxico verde.</li>
+                    <li><strong>NaCl (Sal):</strong> ¡Esencial para la vida y segura para comer!</li>
+                </ul>
+                <p class="highlight">La magia de la química: ¡Unir dos cosas peligrosas crea algo delicioso!</p>
+            `,
+            type: "builder",
+            target: "NaCl"
+        },
+        {
+            title: "Misterio del Agua",
+            theoryTitle: "¿Qué es H₂O?",
+            theoryHTML: `
+                <p>El agua es el <strong>solvente universal</strong>. Es un compuesto formado por:</p>
+                <ul>
+                    <li>2 átomos de Hidrógeno (H)</li>
+                    <li>1 átomo de Oxígeno (O)</li>
+                </ul>
+                <p>Por eso se escribe <strong>H₂O</strong>. Si le cambias un átomo, deja de ser agua.</p>
+            `,
+            type: "builder",
+            target: "H2O"
+        },
+        {
+            title: "La Alacena Química",
+            theoryTitle: "Identificando en Casa",
+            theoryHTML: `
+                <p>En nuestra casa tenemos muchas sustancias puras:</p>
+                <ul>
+                    <li><strong>Elementos:</strong> Cosas hechas de un solo tipo de átomo. Ejemplo: Aluminio (papel aluminio), Cobre (cables).</li>
+                    <li><strong>Compuestos:</strong> Tienen fórmula química. Ejemplo: Azúcar (C₁₂H₂₂O₁₁), Sal (NaCl), Bicarbonato.</li>
+                </ul>
+                <p>¡Ayúdame a organizar la alacena!</p>
+            `,
+            type: "sorting"
+        },
+        {
+            title: "El Lavadero de Café",
+            theoryTitle: "Mezclas Heterogéneas",
+            theoryHTML: `
+                <p>A diferencia de los compuestos, las <strong>Mezclas</strong> no tienen enlaces químicos fuertes.</p>
+                <p>En una <strong>Mezcla Heterogénea</strong>, puedes ver los componentes a simple vista (Fases).</p>
+                <p><strong>Ejemplo:</strong> Agua y Aceite, o Agua y Tierra. En el lavado del café, separamos los granos que flotan (malos) de los que se hunden, y la suciedad se va al fondo.</p>
+            `,
+            type: "mixture"
+        },
+        {
+            title: "Conflicto en la Vereda",
+            theoryTitle: "Escucha Activa y Trabajo en Equipo",
+            theoryHTML: `
+                <p>Saber química no es suficiente. Debemos saber comunicar lo que sabemos.</p>
+                <p>La <strong>Escucha Activa</strong> significa prestar atención completa a lo que el otro dice, sin interrumpir y tratando de entender su problema.</p>
+                <p>Vamos a resolver un problema con un vecino usando estas habilidades.</p>
+            `,
+            type: "dialogue"
+        }
+    ];
+
+    function startGame() {
+        document.getElementById('start-screen').classList.add('hidden');
+        loadLevel(0);
+    }
+
+    function loadLevel(index) {
+        if (index >= missions.length) {
+            endGame();
+            return;
+        }
+        currentLevel = index;
+        const mission = missions[index];
+        
+        // Configurar Teoría
+        document.getElementById('theory-title').innerText = mission.theoryTitle;
+        document.getElementById('theory-content').innerHTML = mission.theoryHTML;
+        document.getElementById('theory-screen').classList.remove('hidden');
+        document.getElementById('level-title').innerText = mission.title;
+        
+        // Limpiar escenario
+        const stage = document.getElementById('main-stage');
+        stage.innerHTML = '';
+    }
+
+    function closeTheory() {
+        document.getElementById('theory-screen').classList.add('hidden');
+        const stage = document.getElementById('main-stage');
+        const mission = missions[currentLevel];
+        
+        if (mission.type === 'builder') setupBuilder(stage, mission.target);
+        if (mission.type === 'sorting') setupSorting(stage);
+        if (mission.type === 'mixture') setupMixture(stage);
+        if (mission.type === 'dialogue') setupDialogue(stage);
+    }
+
+    // ==========================================
+    // MISION 1 y 2: CONSTRUCTOR DE MOLECULAS
+    // ==========================================
+    function setupBuilder(stage, targetMolecule) {
+        let instruction = targetMolecule === "NaCl" 
+            ? "Arrastra 1 átomo de SODIO y 1 de CLORO al recuadro para crear SAL DE MESA." 
+            : "Arrastra 2 átomos de HIDRÓGENO y 1 de OXÍGENO para crear AGUA.";
+        
+        stage.innerHTML = `
+            <h3>Objetivo: Crear ${targetMolecule}</h3>
+            <p>${instruction}</p>
+            <div class="lab-table" id="lab-table">
+                </div>
+        `;
+        
+        const table = document.getElementById('lab-table');
+        
+        // Zona de caída
+        const dropZone = document.createElement('div');
+        dropZone.className = 'drop-zone';
+        dropZone.id = 'target-zone';
+        dropZone.innerHTML = '<span>Zona de Reacción</span>';
+        dropZone.ondragover = (e) => e.preventDefault();
+        dropZone.ondrop = (e) => handleAtomDrop(e, targetMolecule);
+        table.appendChild(dropZone);
+
+        // Generar átomos dispersos
+        const atomTypes = [
+            {id: 'na', symbol: 'Na', color: 'atom-na', type: 'Sodio'},
+            {id: 'cl', symbol: 'Cl', color: 'atom-cl', type: 'Cloro'},
+            {id: 'h1', symbol: 'H', color: 'atom-h', type: 'Hidrógeno'},
+            {id: 'h2', symbol: 'H', color: 'atom-h', type: 'Hidrógeno'},
+            {id: 'o', symbol: 'O', color: 'atom-o', type: 'Oxígeno'}
+        ];
+
+        atomTypes.forEach(atom => {
+            const el = document.createElement('div');
+            el.className = `atom ${atom.color}`;
+            el.draggable = true;
+            el.id = atom.id;
+            el.innerText = atom.symbol;
+            el.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+            // Posición aleatoria
+            el.style.left = (Math.random() * 200) + 'px';
+            el.style.top = (Math.random() * 300 + 20) + 'px';
+            table.appendChild(el);
+        });
+    }
+
+    let atomsInZone = [];
+
+    function handleAtomDrop(e, target) {
+        e.preventDefault();
+        const atomId = e.dataTransfer.getData("text");
+        const atomEl = document.getElementById(atomId);
+        
+        // Mover visualmente al centro
+        e.target.appendChild(atomEl);
+        atomEl.style.position = 'static';
+        atomEl.style.margin = '5px';
+        
+        if (!atomsInZone.includes(atomId)) atomsInZone.push(atomId);
+
+        // Verificar victoria
+        checkBuilderWin(target);
+    }
+
+    function checkBuilderWin(target) {
+        const zone = document.getElementById('target-zone');
+        
+        if (target === "NaCl") {
+            if (atomsInZone.includes('na') && atomsInZone.includes('cl') && atomsInZone.length === 2) {
+                zone.style.background = "#A5D6A7";
+                zone.innerHTML = "<strong>¡SAL CREADA!</strong><br>Compuesto estable.";
+                addPoints(20);
+                setTimeout(() => { atomsInZone=[]; loadLevel(currentLevel + 1); }, 2000);
+            }
+        } else if (target === "H2O") {
+            const hasH = atomsInZone.filter(id => id.startsWith('h')).length === 2;
+            const hasO = atomsInZone.includes('o');
+            if (hasH && hasO && atomsInZone.length === 3) {
+                zone.style.background = "#81D4FA";
+                zone.innerHTML = "<strong>¡AGUA CREADA!</strong><br>Vital para la vida.";
+                addPoints(20);
+                setTimeout(() => { atomsInZone=[]; loadLevel(currentLevel + 1); }, 2000);
+            }
+        }
+    }
+
+    // ==========================================
+    // MISION 3: CLASIFICACION (ALACENA)
+    // ==========================================
+    function setupSorting(stage) {
+        stage.innerHTML = `
+            <h3>Organiza la Alacena</h3>
+            <p>Haz clic en el objeto y luego en la estantería correcta.</p>
+            <div class="pantry-grid">
+                <div class="shelf" id="shelf-element" onclick="moveToShelf('element')">
+                    <h3>Elementos</h3>
+                    <small>(Un solo tipo de átomo)</small>
+                </div>
+                <div class="shelf" style="background:#FFF; border:2px dashed #333; color:#333;" id="items-shelf">
+                    </div>
+                <div class="shelf" id="shelf-compound" onclick="moveToShelf('compound')">
+                    <h3>Compuestos</h3>
+                    <small>(Fórmula química)</small>
+                </div>
+            </div>
+        `;
+        
+        const items = [
+            {name: "Tubería de Cobre", type: "element", icon: "🟧"},
+            {name: "Sal de Cocina (NaCl)", type: "compound", icon: "🧂"},
+            {name: "Anillo de Oro", type: "element", icon: "💍"},
+            {name: "Azúcar (Sacarosa)", type: "compound", icon: "🍬"},
+            {name: "Papel Aluminio", type: "element", icon: "⬜"},
+            {name: "Bicarbonato", type: "compound", icon: "⚪"}
+        ];
+        
+        const centerShelf = document.getElementById('items-shelf');
+        items.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = 'pantry-item';
+            div.innerHTML = `<span style="font-size:1.5rem">${item.icon}</span> ${item.name}`;
+            div.onclick = (e) => {
+                e.stopPropagation(); // Evitar clic en shelf
+                selectItem(div, item.type);
+            };
+            centerShelf.appendChild(div);
+        });
+    }
+
+    let selectedItem = null;
+    let selectedType = "";
+
+    function selectItem(div, type) {
+        if (selectedItem) selectedItem.style.border = "none";
+        selectedItem = div;
+        selectedType = type;
+        div.style.border = "2px solid var(--accent)";
+    }
+
+    function moveToShelf(targetType) {
+        if (!selectedItem) return;
+        
+        if (selectedType === targetType) {
+            document.getElementById('shelf-' + targetType).appendChild(selectedItem);
+            selectedItem.style.border = "none";
+            selectedItem.onclick = null; // Desactivar
+            selectedItem = null;
+            addPoints(5);
+            
+            // Verificar si terminó (chapuza rápida: contar hijos del centro)
+            if (document.getElementById('items-shelf').children.length === 0) {
+                setTimeout(() => loadLevel(currentLevel + 1), 1500);
+            }
+        } else {
+            alert("¡Ups! Revisa la definición de " + (targetType === 'element' ? 'Elemento' : 'Compuesto'));
+            score -= 2;
+            document.getElementById('score').innerText = score;
+        }
+    }
+
+    // ==========================================
+    // MISION 4: MEZCLAS (EXPERIMENTO VISUAL)
+    // ==========================================
+    function setupMixture(stage) {
+        stage.innerHTML = `
+            <h3>Experimento de Fases</h3>
+            <p>Aquí tenemos una mezcla de Aceite, Agua y Tierra. ¡Es una Mezcla Heterogénea!</p>
+            <p><strong>Misión:</strong> Separa el aceite (fase superior) haciendo clic repetidamente en él para retirarlo con una cuchara.</p>
+            <div class="mixture-container">
+                <div class="phase phase-oil" id="oil" onclick="cleanOil()">ACEITE<br>(Clic para retirar)</div>
+                <div class="phase phase-water">AGUA</div>
+                <div class="phase phase-sand">TIERRA</div>
+            </div>
+        `;
+    }
+
+    let oilClicks = 0;
+    function cleanOil() {
+        oilClicks++;
+        const oil = document.getElementById('oil');
+        oil.style.opacity = 1 - (oilClicks * 0.2);
+        
+        if (oilClicks >= 5) {
+            oil.style.display = 'none';
+            alert("¡Excelente! Has separado una fase de la mezcla heterogénea.");
+            addPoints(20);
+            loadLevel(currentLevel + 1);
+        }
+    }
+
+    // ==========================================
+    // MISION 5: DIALOGO (SOFT SKILLS)
+    // ==========================================
+    function setupDialogue(stage) {
+        stage.innerHTML = `
+            <h3>Situación: El Vecino Furioso</h3>
+            <div class="theory-card" style="width:100%">
+                <p><strong>Vecino Don Jorge:</strong> "¡Oiga! ¡Ustedes están ensuciando el agua de la quebrada con esos químicos del laboratorio! ¡Voy a llamar a la policía!"</p>
+                <p><em>(Don Jorge está muy alterado y no sabe que en realidad están limpiando el agua).</em></p>
+                <p>¿Qué respondes?</p>
+                <div id="dialogue-options"></div>
+            </div>
+        `;
+        
+        const options = [
+            {
+                text: "¡Cálmese señor! Usted no sabe nada de química, déjenos trabajar.",
+                correct: false,
+                feedback: "Error: Invalidar al otro y ser agresivo aumenta el conflicto."
+            },
+            {
+                text: "Don Jorge, entiendo su preocupación por la quebrada. ¿Podría explicarnos qué vio exactamente?",
+                correct: true,
+                feedback: "¡Correcto! Validar su emoción y preguntar demuestra Escucha Activa."
+            },
+            {
+                text: "(Ignorarlo y seguir trabajando)",
+                correct: false,
+                feedback: "Error: Ignorar a alguien enojado suele empeorar las cosas."
+            }
+        ];
+        
+        const container = document.getElementById('dialogue-options');
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'dialog-option';
+            btn.innerText = opt.text;
+            btn.onclick = () => resolveDialogue(opt);
+            container.appendChild(btn);
+        });
+    }
+
+    function resolveDialogue(option) {
+        if (option.correct) {
+            alert(option.feedback);
+            addPoints(30);
+            loadLevel(currentLevel + 1);
+        } else {
+            alert(option.feedback);
+            score -= 5;
+            document.getElementById('score').innerText = score;
+        }
+    }
+
+    // Utilidades
+    function addPoints(pts) {
+        score += pts;
+        document.getElementById('score').innerText = score;
+    }
+
+    function endGame() {
+        document.getElementById('main-stage').innerHTML = '';
+        document.getElementById('end-screen').classList.remove('hidden');
+        document.getElementById('final-score').innerText = "Puntaje Final: " + score;
+    }
+
+</script>
+</body>
+</html>

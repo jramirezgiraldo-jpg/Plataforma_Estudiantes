@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: pH y Salud Humana - Escucha tu Cuerpo</title>
+    <style>
+        :root {
+            --primary: #E74C3C; /* Rojo Coral (Estómago/Alerta) */
+            --secondary: #1ABC9C; /* Menta (Salud/Equilibrio) */
+            --accent: #F1C40F; /* Amarillo (Ácido) */
+            --neutral: #ECF0F1;
+            --text: #2C3E50;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--neutral);
+            color: var(--text);
+            margin: 0;
+            padding-bottom: 80px;
+            line-height: 1.6;
+        }
+
+        /* --- UI: Barra Superior y Login --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
+            color: white;
+            transition: opacity 0.5s;
+        }
+
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            color: var(--text);
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            width: 250px;
+            border: 2px solid var(--secondary);
+            border-radius: 5px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+        button:hover { transform: scale(1.05); background: #16A085; }
+
+        #top-bar {
+            position: sticky;
+            top: 0;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 10px 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* --- Gamificación --- */
+        .gamification-panel {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-grow: 1;
+            max-width: 600px;
+            margin-left: 20px;
+        }
+
+        .progress-track {
+            flex-grow: 1;
+            height: 12px;
+            background: #BDC3C7;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            transition: width 0.5s ease;
+        }
+
+        .element-badge {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--primary);
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+        }
+
+        /* --- Contenido --- */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: none;
+        }
+
+        section {
+            background: var(--card-bg);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-left: 6px solid var(--secondary);
+        }
+
+        h2 { color: var(--primary); border-bottom: 2px solid var(--neutral); padding-bottom: 10px; }
+        h3 { color: var(--secondary); margin-top: 25px; }
+
+        /* --- Actividades --- */
+        .activity-box {
+            background: #FDFEFE;
+            border: 1px dashed var(--primary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            font-weight: 500;
+        }
+        .correct { background: #D5F5E3; color: #145A32; }
+        .incorrect { background: #FADBD8; color: #7B241C; }
+
+        .mcq-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 8px;
+            background: #F8F9F9;
+            color: var(--text);
+            border: 1px solid #BDC3C7;
+        }
+        .mcq-option:hover { background: #D5DBDB; }
+
+        textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: inherit; }
+
+        /* --- Gráficos SVG y Tablas --- */
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: var(--secondary); color: white; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h1>🩺 Salud y pH</h1>
+            <p>Bienvenido al módulo de autocuidado.</p>
+            <input type="text" id="username" placeholder="Ingresa tu Nombre Completo">
+            <br>
+            <button onclick="login()">Comenzar Viaje Digestivo</button>
+        </div>
+    </div>
+
+    <div id="top-bar">
+        <div style="font-weight: bold; color: var(--primary);">
+            👤 <span id="display-name">Estudiante</span>
+        </div>
+        <div class="gamification-panel">
+            <span>Nivel:</span>
+            <div class="element-badge" id="badge">
+                <span style="font-size: 0.8em;" id="badge-num">1</span>
+                <span style="font-size: 1.4em; color: var(--primary);" id="badge-sym">H</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="main-content">
+
+        <section id="inicio">
+            <h2>🎯 Objetivo de Aprendizaje</h2>
+            <p>Comprender cómo el pH influye en la digestión y la salud humana, analizando las causas de la gastritis y la importancia del autocuidado mediante hábitos saludables.</p>
+            
+            <h3>🧠 Pre-saberes: ¿Qué tanto escuchas a tu cuerpo?</h3>
+
+            <div class="activity-box">
+                <p>1. ¿Qué sabor tiene el líquido que sube por la garganta cuando tienes reflujo?</p>
+                <button class="mcq-option" onclick="checkMCQ('pre1', 'b', true)">Ácido y amargo</button>
+                <button class="mcq-option" onclick="checkMCQ('pre1', 'a', false)">Dulce</button>
+                <button class="mcq-option" onclick="checkMCQ('pre1', 'c', false)">Salado</button>
+                <div id="fb-pre1" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>2. ¿Para qué crees que sirve el ácido en el estómago?</p>
+                <button class="mcq-option" onclick="checkMCQ('pre2', 'a', false)">Para enfriar la comida.</button>
+                <button class="mcq-option" onclick="checkMCQ('pre2', 'b', true)">Para deshacer alimentos y matar bacterias.</button>
+                <button class="mcq-option" onclick="checkMCQ('pre2', 'c', false)">No sirve para nada, solo molesta.</button>
+                <div id="fb-pre2" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>3. ¿Qué suele tomar la gente cuando tiene "ardor" de estómago?</p>
+                <button class="mcq-option" onclick="checkMCQ('pre3', 'a', false)">Jugo de limón.</button>
+                <button class="mcq-option" onclick="checkMCQ('pre3', 'b', true)">Leche de magnesia o antiácidos.</button>
+                <button class="mcq-option" onclick="checkMCQ('pre3', 'c', false)">Café caliente.</button>
+                <div id="fb-pre3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>🔥 Parte 1: El Fuego Interno (La Gastritis)</h2>
+            
+            <p>Imagina a "Andrés", un estudiante de noveno grado. Andrés ama las empanadas con mucho ají, toma gaseosa en el desayuno porque "le da energía" y a veces se salta el almuerzo para jugar fútbol. Últimamente, siente un dolor punzante en la boca del estómago, como si tuviera una fogata encendida adentro. Su cuerpo le está gritando, pero él no sabía escuchar.</p>
+            
+            <p>Ese "fuego" es real. Tu estómago produce <strong>Ácido Clorhídrico (HCl)</strong>, una sustancia tan fuerte que podría disolver un clavo de metal. Pero, ¿por qué no se disuelve el estómago a sí mismo?</p>
+
+            <div class="svg-container">
+                <svg width="400" height="250" viewBox="0 0 400 250">
+                    <path d="M 120,50 Q 80,150 150,220 Q 250,250 280,180 Q 300,100 250,80 Q 200,60 180,100" fill="#FADBD8" stroke="#E74C3C" stroke-width="3"/>
+                    <path d="M 130,150 Q 150,200 240,180 L 250,180 Q 220,220 160,210 Z" fill="#F1C40F" opacity="0.8"/>
+                    <path d="M 125,55 Q 85,155 155,215 Q 245,245 275,175" fill="none" stroke="#2ECC71" stroke-width="5" stroke-dasharray="5,2"/>
+                    
+                    <text x="200" y="170" text-anchor="middle" font-weight="bold" fill="#D35400">Jugo Gástrico (pH 1-2)</text>
+                    <text x="310" y="150" font-size="12" fill="#27AE60">Mucosa Protectora</text>
+                    <line x1="280" y1="155" x2="250" y2="180" stroke="#333"/>
+                </svg>
+            </div>
+            
+
+[Image of the human digestive system]
+
+
+            <p>El secreto es el <strong>Equilibrio</strong>. El estómago tiene una capa de moco (Mucosa) que lo protege del ácido. Cuando Andrés come a deshoras o consume irritantes, el ácido aumenta y la mucosa se debilita. El ácido empieza a "quemar" las paredes del estómago. Eso es la <strong>Gastritis</strong>.</p>
+            
+            <p>El pH es la medida de qué tan ácido o alcalino es algo. Va de 0 a 14. Nuestro estómago trabaja bien a un pH muy bajo (1 a 3), ¡es súper ácido! Pero nuestra sangre debe ser casi neutra (7.4). El cuerpo lucha cada segundo por mantener esos números exactos.</p>
+
+            <table>
+                <caption>Tabla de pH en el Cuerpo</caption>
+                <thead>
+                    <tr><th>Fluido</th><th>pH Aproximado</th><th>Función</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Jugo Gástrico</td><td>1.5 - 3.5</td><td>Descomponer proteínas</td></tr>
+                    <tr><td>Saliva</td><td>6.5 - 7.5</td><td>Iniciar digestión</td></tr>
+                    <tr><td>Sangre</td><td>7.35 - 7.45</td><td>Transporte vital</td></tr>
+                    <tr><td>Orina</td><td>4.5 - 8.0</td><td>Eliminar desechos</td></tr>
+                </tbody>
+            </table>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 1: Diario de Andrés</h3>
+                <p>Escribe en tu cuaderno: ¿Qué hábitos de Andrés están dañando su mucosa? Escribe "Listo" aquí.</p>
+                <textarea id="act1" rows="1"></textarea>
+                <button onclick="verifyNotebook('act1')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 2: Dibujo Anatómico</h3>
+                <p>Dibuja un estómago y colorea de amarillo el ácido y de verde la capa protectora. Escribe "Dibujado".</p>
+                <textarea id="act2" rows="1"></textarea>
+                <button onclick="verifyNotebook('act2')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 3: Tabla de Alimentos</h3>
+                <p>Haz una lista de 3 alimentos ácidos (pH bajo) y 3 alimentos alcalinos/neutros que conozcas. Escribe "Tabla hecha".</p>
+                <textarea id="act3" rows="1"></textarea>
+                <button onclick="verifyNotebook('act3')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 4: Mapa Conceptual</h3>
+                <p>Crea un mapa con: "Estómago" -> produce "Ácido" -> controlado por "Mucosa". Si falla -> "Gastritis". Escribe "Mapa listo".</p>
+                <textarea id="act4" rows="1"></textarea>
+                <button onclick="verifyNotebook('act4')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 5: Escucha tu cuerpo</h3>
+                <p>¿Alguna vez has sentido acidez? Describe qué sentiste (sin detalles médicos, solo sensaciones). Responde.</p>
+                <textarea id="act5" rows="2"></textarea>
+                <button onclick="verifyNotebook('act5')">Verificar</button>
+            </div>
+        </section>
+
+        <section id="icfes">
+            <h2>🕵️ Competencia: Indagar</h2>
+            <div style="background: #E8F8F5; padding: 20px; border-radius: 8px;">
+                <h3>El Experimento del Repollo Morado</h3>
+                <p>Un grupo de estudiantes quiere saber qué sustancia es mejor para calmar la acidez estomacal. Usan <strong>indicador de repollo morado</strong> (que se pone rojo con ácidos y azul/verde con bases). Tienen 3 tubos de ensayo simulando jugo gástrico (vinagre, color rojo).</p>
+                
+                <div class="svg-container">
+                    <svg width="400" height="150" viewBox="0 0 400 150">
+                        <rect x="50" y="50" width="30" height="80" rx="15" fill="none" stroke="#333" stroke-width="2"/>
+                        <rect x="50" y="80" width="30" height="50" rx="15" fill="#E74C3C"/> <text x="65" y="145" text-anchor="middle" font-size="10">Tubo 1 + Agua</text>
+                        
+                        <rect x="180" y="50" width="30" height="80" rx="15" fill="none" stroke="#333" stroke-width="2"/>
+                        <rect x="180" y="80" width="30" height="50" rx="15" fill="#E74C3C"/> <text x="195" y="145" text-anchor="middle" font-size="10">Tubo 2 + Limón</text>
+                        
+                        <rect x="310" y="50" width="30" height="80" rx="15" fill="none" stroke="#333" stroke-width="2"/>
+                        <rect x="310" y="80" width="30" height="50" rx="15" fill="#8E44AD"/> <text x="325" y="145" text-anchor="middle" font-size="10">Tubo 3 + Antiácido</text>
+                    </svg>
+                </div>
+
+                <p>Al agregar las sustancias, observan:
+                <br>- Tubo 1 (Agua): Sigue rojo.
+                <br>- Tubo 2 (Limón): Se pone rojo más intenso.
+                <br>- Tubo 3 (Antiácido): Cambia a morado (neutro).</p>
+
+                <p><strong>Pregunta:</strong> Basado en el cambio de color, ¿cuál es la conclusión válida sobre el funcionamiento del antiácido?</p>
+
+                <button class="mcq-option" onclick="checkICFES('a')">A. El antiácido es una sustancia ácida que aumenta el pH del estómago para digerir mejor.</button>
+                <button class="mcq-option" onclick="checkICFES('b')">B. El antiácido es una base que neutraliza el ácido, elevando el pH y cambiando el color del indicador.</button>
+                <button class="mcq-option" onclick="checkICFES('c')">C. El antiácido simplemente diluye el líquido como lo hizo el agua en el Tubo 1.</button>
+                <button class="mcq-option" onclick="checkICFES('d')">D. El cambio de color se debe a que el antiácido tiene colorantes artificiales.</button>
+
+                <div id="fb-icfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>🧪 Parte 2: La Química del Alivio</h2>
+            
+            <p>Hemos visto que la gastritis es un exceso de acidez que daña la mucosa. Cuando tomamos un medicamento como la "Leche de Magnesia" (Hidróxido de Magnesio) o Bicarbonato, ocurre una reacción química fascinante llamada <strong>NEUTRALIZACIÓN</strong>.</p>
+            
+            <p>La ecuación química general es:</p>
+            <div style="text-align: center; background: #FFF; padding: 15px; border: 2px dashed var(--accent); margin: 10px;">
+                <strong>Ácido + Base → Sal + Agua</strong>
+            </div>
+
+            <p>Por ejemplo, en tu estómago:<br>
+            HCl (Ácido) + NaHCO<sub>3</sub> (Bicarbonato) → NaCl (Sal) + H<sub>2</sub>O (Agua) + CO<sub>2</sub> (Gas)</p>
+            
+            <p>¿Ves ese CO<sub>2</sub>? ¡Por eso eructas después de tomar bicarbonato o Alka-Seltzer! Es la prueba de que la reacción ocurrió y el ácido se transformó en agua inofensiva.</p>
+            
+            <h3>Hábitos Saludables (Autocuidado)</h3>
+            <p>No podemos vivir tomando antiácidos. Lo mejor es prevenir. Aquí tienes una infografía interactiva de texto:</p>
+            <ul>
+                <li>✅ <strong>Horarios:</strong> Come a las mismas horas. El estómago se "acostumbra" a liberar ácido esperando comida. Si no llega comida, quema la pared.</li>
+                <li>✅ <strong>Masticación:</strong> Tritura bien. La saliva (pH 7) empieza a neutralizar y ayuda al estómago.</li>
+                <li>✅ <strong>Estrés:</strong> El estrés aumenta la producción de ácido. ¡Relájate!</li>
+                <li>❌ <strong>Ayunos Prolongados:</strong> Dejan el estómago vacío expuesto al ácido.</li>
+            </ul>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 6: Reacción Química</h3>
+                <p>Copia la ecuación de neutralización en tu cuaderno (Ácido + Base...). Escribe "Copiado".</p>
+                <textarea id="act6" rows="1"></textarea>
+                <button onclick="verifyNotebook('act6')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 7: El Eructo Científico</h3>
+                <p>¿Por qué eructamos al tomar sales de frutas o bicarbonato? (Pista: CO2). Explícalo brevemente.</p>
+                <textarea id="act7" rows="2"></textarea>
+                <button onclick="verifyNotebook('act7')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 8: Semáforo de Alimentos</h3>
+                <p>Dibuja un semáforo. Rojo (Evitar en gastritis): Ají, café. Verde (Bueno): Avena, pera. Amarillo: ??. Completa y escribe "Semáforo listo".</p>
+                <textarea id="act8" rows="1"></textarea>
+                <button onclick="verifyNotebook('act8')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 9: Reflexión Personal</h3>
+                <p>¿Cuál es tu peor hábito alimenticio según lo que leíste? (Ej: no desayunar). Sé honesto. Responde.</p>
+                <textarea id="act9" rows="1"></textarea>
+                <button onclick="verifyNotebook('act9')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 10: Compromiso</h3>
+                <p>Escribe un compromiso de autocuidado para esta semana. Ej: "Masticaré 20 veces cada bocado".</p>
+                <textarea id="act10" rows="1"></textarea>
+                <button onclick="verifyNotebook('act10')">Verificar</button>
+            </div>
+        </section>
+
+        <section id="final">
+            <h2>🏆 Taller Final: Doctor de tu Cuerpo</h2>
+            
+            <h3>Parte A: Selección Múltiple</h3>
+            
+            <div class="activity-box">
+                <p>1. El pH del estómago sano debe estar entre:</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'a', false)">7 y 8 (Neutro)</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'b', true)">1 y 3 (Muy Ácido)</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'c', false)">12 y 14 (Muy Alcalino)</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'd', false)">Depende del clima</button>
+            </div>
+
+            <div class="activity-box">
+                <p>2. ¿Qué sustancia protege las paredes del estómago del propio ácido?</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'a', false)">La saliva</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'b', false)">El páncreas</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'c', true)">La mucosa gástrica</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'd', false)">El apéndice</button>
+            </div>
+
+            <div class="activity-box">
+                <p>3. Una reacción de neutralización produce:</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'a', false)">Más ácido y fuego</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'b', true)">Sal y Agua</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'c', false)">Solo gases tóxicos</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'd', false)">Vitaminas</button>
+            </div>
+
+            <div class="activity-box">
+                <p>4. ¿Por qué es malo saltarse las comidas?</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'a', false)">Porque pierdes peso muy rápido.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'b', true)">Porque el ácido se acumula y daña el estómago vacío.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'c', false)">Porque te da sueño.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'd', false)">No es malo, es bueno.</button>
+            </div>
+
+             <div class="activity-box">
+                <p>5. ¿Cuál es el pH aproximado de la sangre?</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'a', false)">2.0</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'b', false)">10.5</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'c', false)">5.5</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'd', true)">7.4</button>
+            </div>
+
+            <h3>Parte B: Preguntas Abiertas (10 a 15 palabras)</h3>
+            <p><em>El sistema verificará la extensión exacta de tu respuesta para validar que sea tuya.</em></p>
+
+            <div class="activity-box">
+                <p>6. Define qué es la gastritis con tus propias palabras.</p>
+                <textarea id="open1"></textarea>
+                <button onclick="validateOpen('open1')">Validar Respuesta</button>
+                <div id="fb-open1" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>7. Explica cómo funciona un antiácido químicamente.</p>
+                <textarea id="open2"></textarea>
+                <button onclick="validateOpen('open2')">Validar Respuesta</button>
+                <div id="fb-open2" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>8. ¿Qué relación hay entre el estrés y el dolor de estómago?</p>
+                <textarea id="open3"></textarea>
+                <button onclick="validateOpen('open3')">Validar Respuesta</button>
+                <div id="fb-open3" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>9. Menciona dos hábitos que mejoran tu salud digestiva hoy.</p>
+                <textarea id="open4"></textarea>
+                <button onclick="validateOpen('open4')">Validar Respuesta</button>
+                <div id="fb-open4" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>10. ¿Por qué es importante el pH bajo en la digestión?</p>
+                <textarea id="open5"></textarea>
+                <button onclick="validateOpen('open5')">Validar Respuesta</button>
+                <div id="fb-open5" class="feedback"></div>
+            </div>
+        </section>
+
+        <section style="text-align: center;">
+            <h2>🎉 ¡Has completado el camino!</h2>
+            <p>Tu cuerpo te agradece por aprender a cuidarlo.</p>
+            <button onclick="downloadResults()" style="background-color: var(--secondary); padding: 15px 30px;">📥 Descargar Mis Resultados</button>
+        </section>
+
+    </div>
+
+    <script>
+        // --- ESTADO Y GAMIFICACIÓN ---
+        const gameState = {
+            user: "",
+            score: 0,
+            answers: {},
+            progress: 0,
+            totalItems: 21 // 3 Pre + 10 Act + 1 Icfes + 5 MCQ + 5 Open
+        };
+
+        const levels = [
+            {min:0, s:"H", n:1}, 
+            {min:20, s:"He", n:2}, 
+            {min:40, s:"Li", n:3}, 
+            {min:60, s:"Be", n:4}, 
+            {min:80, s:"B", n:5}
+        ];
+
+        // Inicialización
+        window.onload = function() {
+            const saved = localStorage.getItem('OVA_pH_Salud');
+            if(saved) {
+                const parsed = JSON.parse(saved);
+                gameState.user = parsed.user;
+                gameState.score = parsed.score;
+                gameState.answers = parsed.answers;
+                gameState.progress = Object.keys(gameState.answers).length;
+                if(gameState.user) showApp();
+            }
+        };
+
+        function login() {
+            const name = document.getElementById('username').value.trim();
+            if(name.length > 2) {
+                gameState.user = name;
+                saveGame();
+                showApp();
+            } else {
+                alert("Por favor ingresa un nombre válido.");
+            }
+        }
+
+        function showApp() {
+            document.getElementById('login-overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-overlay').style.display = 'none';
+            }, 500);
+            document.getElementById('top-bar').style.display = 'flex';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('display-name').textContent = gameState.user;
+            updateUI();
+        }
+
+        function saveGame() {
+            localStorage.setItem('OVA_pH_Salud', JSON.stringify(gameState));
+            updateUI();
+        }
+
+        function updateUI() {
+            // Progreso
+            let pct = (gameState.progress / gameState.totalItems) * 100;
+            if(pct > 100) pct = 100;
+            document.getElementById('progress-bar').style.width = pct + "%";
+
+            // Nivel Tabla Periódica
+            let lvl = levels[0];
+            for(let l of levels) {
+                if(pct >= l.min) lvl = l;
+            }
+            document.getElementById('badge-sym').textContent = lvl.s;
+            document.getElementById('badge-num').textContent = lvl.n;
+        }
+
+        // --- LÓGICA DE PREGUNTAS ---
+
+        // Selección Múltiple (Pre-saberes)
+        window.checkMCQ = function(id, option, isCorrect) {
+            if(gameState.answers[id]) return;
+
+            const fb = document.getElementById('fb-' + id);
+            fb.style.display = 'block';
+            if(isCorrect) {
+                fb.className = 'feedback correct';
+                fb.innerHTML = "<strong>¡Correcto!</strong> Conoces tu cuerpo.";
+                gameState.score += 2;
+            } else {
+                fb.className = 'feedback incorrect';
+                fb.innerHTML = "<strong>Incorrecto.</strong> Sigue leyendo para descubrir por qué.";
+            }
+            gameState.answers[id] = option;
+            gameState.progress++;
+            saveGame();
+        }
+
+        // Actividades Cuaderno
+        window.verifyNotebook = function(id) {
+            const txt = document.getElementById(id).value.trim();
+            if(txt.length < 2) {
+                alert("Escribe algo antes de verificar.");
+                return;
+            }
+            if(!gameState.answers[id]) {
+                gameState.answers[id] = txt;
+                gameState.progress++;
+                gameState.score += 1;
+                alert("Actividad registrada. ¡Bien hecho!");
+                saveGame();
+            } else {
+                alert("Ya registraste esta actividad.");
+            }
+        }
+
+        // ICFES
+        window.checkICFES = function(option) {
+            if(gameState.answers['icfes']) return;
+            const fb = document.getElementById('fb-icfes');
+            fb.style.display = 'block';
+
+            if(option === 'b') {
+                fb.className = 'feedback correct';
+                fb.innerHTML = "<strong>¡Excelente! (Indagar)</strong><br>Interpretaste bien el indicador. El cambio de rojo (ácido) a morado (neutro) indica que la sustancia neutralizó la acidez.";
+                gameState.score += 5;
+            } else {
+                fb.className = 'feedback incorrect';
+                let reason = "";
+                if(option === 'a') reason = "Si fuera ácido, seguiría rojo.";
+                if(option === 'c') reason = "El agua no cambia el pH drásticamente ni cambia el color a morado (indicador).";
+                if(option === 'd') reason = "El cambio de color es una propiedad química del indicador, no un tinte.";
+                fb.innerHTML = "<strong>Incorrecto.</strong> " + reason;
+            }
+            gameState.answers['icfes'] = option;
+            gameState.progress++;
+            saveGame();
+        }
+
+        // Final MCQ
+        window.checkFinalMCQ = function(id, option, isCorrect) {
+            if(gameState.answers[id]) return;
+            const btn = event.target;
+            if(isCorrect) {
+                btn.style.backgroundColor = "#27AE60";
+                btn.style.color = "white";
+                gameState.score += 3;
+            } else {
+                btn.style.backgroundColor = "#C0392B";
+                btn.style.color = "white";
+            }
+            gameState.answers[id] = option;
+            gameState.progress++;
+            saveGame();
+        }
+
+        // Preguntas Abiertas (Validador de Palabras)
+        window.validateOpen = function(id) {
+            const txt = document.getElementById(id).value.trim();
+            const words = txt.split(/\s+/).filter(w => w.length > 0).length;
+            const fb = document.getElementById('fb-' + id);
+            fb.style.display = 'block';
+
+            if(words >= 10 && words <= 15) {
+                fb.className = 'feedback correct';
+                fb.innerHTML = `<strong>Perfecto.</strong> ${words} palabras. Respuesta guardada.`;
+                if(!gameState.answers[id]) {
+                    gameState.answers[id] = txt;
+                    gameState.progress++;
+                    gameState.score += 3;
+                    saveGame();
+                }
+            } else {
+                fb.className = 'feedback incorrect';
+                fb.innerHTML = `Tienes <strong>${words}</strong> palabras. Debes usar entre 10 y 15.`;
+            }
+        }
+
+        // Descargar
+        window.downloadResults = function() {
+            let t = `REPORTE: pH Y SALUD\nEstudiante: ${gameState.user}\nPuntaje: ${gameState.score}\n\nRESPUESTAS:\n`;
+            for(let [k,v] of Object.entries(gameState.answers)) t += `[${k}]: ${v}\n`;
+            
+            const b = new Blob([t],{type:'text/plain'});
+            const u = window.URL.createObjectURL(b);
+            const a = document.createElement('a');
+            a.href = u;
+            a.download = `Salud_${gameState.user.replace(/\s+/g,'_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+</html>

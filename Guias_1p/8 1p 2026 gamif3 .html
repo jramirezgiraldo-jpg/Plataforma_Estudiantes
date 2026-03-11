@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Enlaces Químicos y Electronegatividad</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --gold: #f1c40f;
+            --silver: #bdc3c7;
+            --iron: #a1887f;
+            --bg: #ecf0f1;
+            --white: #ffffff;
+            --success: #27ae60;
+            --error: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        /* Registro Inicial */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+        }
+
+        .login-card {
+            background: var(--white);
+            color: var(--primary);
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        /* Header Persistente */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0; width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            z-index: 900;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Contenedor de Actividades */
+        .container {
+            max-width: 850px;
+            margin: 100px auto 50px;
+            padding: 20px;
+        }
+
+        .activity-block {
+            background: var(--white);
+            margin-bottom: 3rem;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-top: 5px solid var(--accent);
+            transition: 0.3s;
+        }
+
+        .activity-block.completed {
+            border-top-color: var(--success);
+            opacity: 0.9;
+        }
+
+        .scrambled-text {
+            background: #f8f9fa;
+            padding: 15px;
+            border: 2px dashed var(--accent);
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin: 15px 0;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .badge-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .badge {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #000;
+            font-weight: 900;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+
+        .badge-Au { background: var(--gold); }
+        .badge-Ag { background: var(--silver); }
+        .badge-Fe { background: var(--iron); color: white; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:hover { filter: brightness(1.1); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+
+        .feedback { font-weight: bold; margin-top: 10px; }
+        .success-text { color: var(--success); }
+        .error-text { color: var(--error); }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>Laboratorio Químico Virtual</h2>
+            <p>Grado 8°: Enlaces y Estructuras</p>
+            <input type="text" id="nombre" placeholder="Nombre">
+            <input type="text" id="apellido" placeholder="Apellido">
+            <button onclick="login()">Iniciar sesión</button>
+        </div>
+    </div>
+
+    <header>
+        <div id="user-info">Estudiante: </div>
+        <div id="score-info">Puntaje Total: 0</div>
+    </header>
+
+    <div class="container" id="main-content">
+        <h1 style="text-align: center; color: var(--primary);">Desafíos de Enlaces Químicos</h1>
+        <p style="text-align: center; color: #666;">Resuelve los anagramas y ordena las frases para ganar medallas de la tabla periódica.</p>
+        <hr>
+        <div id="activities-list"></div>
+    </div>
+
+    <script>
+        // --- BASE DE DATOS DE ACTIVIDADES ---
+        const actividades = [
+            // 10 Anagramas
+            { id: 1, tipo: 'anagrama', palabra: 'ELECTRONEGATIVIDAD', pista: 'Capacidad de un átomo para atraer electrones en un enlace.' },
+            { id: 2, tipo: 'anagrama', palabra: 'VALENCIA', pista: 'Electrones que se encuentran en el último nivel de energía.' },
+            { id: 3, tipo: 'anagrama', palabra: 'IONICO', pista: 'Enlace donde hay transferencia completa de electrones.' },
+            { id: 4, tipo: 'anagrama', palabra: 'COVALENTE', pista: 'Enlace donde los electrones se comparten entre átomos.' },
+            { id: 5, tipo: 'anagrama', palabra: 'OCTETO', pista: 'Regla que busca tener 8 electrones para ser estable.' },
+            { id: 6, tipo: 'anagrama', palabra: 'POLAR', pista: 'Tipo de enlace covalente con diferencia de electronegatividad.' },
+            { id: 7, tipo: 'anagrama', palabra: 'LEWIS', pista: 'Nombre del científico que creó los modelos de puntos.' },
+            { id: 8, tipo: 'anagrama', palabra: 'SOLUBILIDAD', pista: 'Capacidad de la sal para disolverse en el agua.' },
+            { id: 9, tipo: 'anagrama', palabra: 'AUTONOMIA', pista: 'Valor de resolver problemas por cuenta propia.' },
+            { id: 10, tipo: 'anagrama', palabra: 'BIODEGRADABLE', pista: 'Tipo de jabón que respeta el ambiente de la vereda.' },
+
+            // 10 Ordenar Frases
+            { id: 11, tipo: 'frase', palabra: 'La diferencia de electronegatividad define el enlace', pista: 'Concepto básico de predicción.' },
+            { id: 12, tipo: 'frase', palabra: 'El respeto por las diferencias fortalece el grupo', pista: 'Reflexión sobre convivencia escolar.' },
+            { id: 13, tipo: 'frase', palabra: 'Los atomos comparten electrones en el enlace covalente', pista: 'Mecánica del enlace molecular.' },
+            { id: 14, tipo: 'frase', palabra: 'La grasa es no polar y no se disuelve', pista: 'Sobre la solubilidad y lípidos.' },
+            { id: 15, tipo: 'frase', palabra: 'El fluor es el elemento mas electronegativo', pista: 'Dato técnico de la tabla periódica.' },
+            { id: 16, tipo: 'frase', palabra: 'Las estructuras de Lewis muestran electrones de valencia', pista: 'Representación gráfica.' },
+            { id: 17, tipo: 'frase', palabra: 'Los compuestos ionicos tienen altos puntos de fusion', pista: 'Propiedad física de los enlaces.' },
+            { id: 18, tipo: 'frase', palabra: 'La autonomia permite resolver desafios con exito', pista: 'Sobre el crecimiento personal.' },
+            { id: 19, tipo: 'frase', palabra: 'Debemos proteger el agua de nuestra vereda local', pista: 'Conciencia ambiental sobre vertimientos.' },
+            { id: 20, tipo: 'frase', palabra: 'Un enlace ionico tiene diferencia mayor a uno punto siete', pista: 'Cálculo matemático de electronegatividad.' }
+        ];
+
+        // --- LÓGICA DE ESTADO Y PERSISTENCIA ---
+        let userData = {
+            nombre: '',
+            apellido: '',
+            score: 0,
+            solved: {} // id: {intentos, puntos, badge}
+        };
+
+        // Algoritmo Fisher-Yates
+        function shuffle(input) {
+            let isFrase = input.includes(' ');
+            let arr = isFrase ? input.split(' ') : input.split('');
+            
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            
+            let result = isFrase ? arr.join(' / ') : arr.join('-');
+            // Validación para asegurar que no quede igual a la original
+            return (result.toUpperCase() === input.toUpperCase()) ? shuffle(input) : result;
+        }
+
+        function login() {
+            const nom = document.getElementById('nombre').value;
+            const ape = document.getElementById('apellido').value;
+            if (nom && ape) {
+                userData.nombre = nom;
+                userData.apellido = ape;
+                saveAndRefresh();
+                document.getElementById('login-screen').style.display = 'none';
+            } else {
+                alert("Por favor ingresa tu nombre y apellido");
+            }
+        }
+
+        function saveAndRefresh() {
+            localStorage.setItem('ova_chemistry_v1', JSON.stringify(userData));
+            updateHeader();
+        }
+
+        function updateHeader() {
+            document.getElementById('user-info').innerText = `Estudiante: ${userData.nombre} ${userData.apellido}`;
+            document.getElementById('score-info').innerText = `Puntaje Total: ${userData.score}`;
+        }
+
+        function init() {
+            const saved = localStorage.getItem('ova_chemistry_v1');
+            if (saved) {
+                userData = JSON.parse(saved);
+                document.getElementById('login-screen').style.display = 'none';
+                updateHeader();
+            }
+            renderActivities();
+        }
+
+        function renderActivities() {
+            const list = document.getElementById('activities-list');
+            list.innerHTML = '';
+            
+            actividades.forEach(act => {
+                const state = userData.solved[act.id] || { intentos: 0, completed: false };
+                const block = document.createElement('div');
+                block.className = `activity-block ${state.completed ? 'completed' : ''}`;
+                block.id = `block-${act.id}`;
+
+                let content = `
+                    <h3>Actividad ${act.id}: ${act.tipo === 'anagrama' ? 'Anagrama Científico' : 'Ordena la Frase'}</h3>
+                    <p><strong>Pista:</strong> ${act.pista}</p>
+                    <div class="scrambled-text">${state.completed ? act.palabra.toUpperCase() : shuffle(act.palabra)}</div>
+                    <input type="text" id="input-${act.id}" placeholder="Escribe aquí tu respuesta..." ${state.completed ? 'disabled' : ''}>
+                    <button id="btn-${act.id}" onclick="validar(${act.id})" ${state.completed ? 'disabled' : ''}>Validar</button>
+                    <div id="feedback-${act.id}" class="feedback"></div>
+                `;
+
+                if (state.completed) {
+                    content += `<div class="badge-container">
+                        <div class="badge badge-${state.badge}">${state.badge}</div>
+                        <span>¡Logrado en el intento ${state.intentos}! (+${state.puntos} pts)</span>
+                    </div>`;
+                }
+
+                block.innerHTML = content;
+                list.appendChild(block);
+            });
+        }
+
+        function validar(id) {
+            const act = actividades.find(a => a.id === id);
+            const inputElement = document.getElementById(`input-${id}`);
+            const feedback = document.getElementById(`feedback-${id}`);
+            const respuesta = inputElement.value.trim().toUpperCase();
+            
+            if (!userData.solved[id]) {
+                userData.solved[id] = { intentos: 0, completed: false };
+            }
+
+            let state = userData.solved[id];
+            state.intentos++;
+
+            if (respuesta === act.palabra.toUpperCase()) {
+                state.completed = true;
+                let pts = 0;
+                let b = '';
+
+                if (state.intentos === 1) { pts = 5; b = 'Au'; }
+                else if (state.intentos === 2) { pts = 3; b = 'Ag'; }
+                else { pts = 1.5; b = 'Fe'; }
+
+                state.puntos = pts;
+                state.badge = b;
+                userData.score += pts;
+                
+                feedback.innerHTML = `<span class="success-text">¡Excelente! Respuesta correcta.</span>`;
+                saveAndRefresh();
+                setTimeout(renderActivities, 1000); // Re-renderizar para mostrar medalla
+            } else {
+                if (state.intentos >= 3) {
+                    feedback.innerHTML = `<span class="error-text">Superaste los 3 intentos. La respuesta era: ${act.palabra}</span>`;
+                    inputElement.disabled = true;
+                    document.getElementById(`btn-${id}`).disabled = true;
+                    state.completed = true; // Se marca como terminado sin puntos
+                    state.puntos = 0;
+                    state.badge = '??';
+                    saveAndRefresh();
+                } else {
+                    feedback.innerHTML = `<span class="error-text">Intento ${state.intentos}/3 incorrecto. ¡Prueba de nuevo!</span>`;
+                }
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

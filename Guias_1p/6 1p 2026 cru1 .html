@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Crucigrama: Química en la Finca</title>
+    <style>
+        :root { --verde: #2e7d32; --oro: #f9a825; --blanco: #ffffff; --gris: #f0f0f0; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #e8f5e9; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        h1 { color: var(--verde); text-shadow: 1px 1px 2px #ccc; }
+        .instrucciones { background: var(--blanco); padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; }
+        
+        #crossword-container { position: relative; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .grid { display: grid; grid-template-columns: repeat(15, 30px); grid-template-rows: repeat(15, 30px); gap: 1px; background-color: #ccc; border: 2px solid var(--verde); }
+        .cell { background: #333; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; position: relative; }
+        .cell.active { background: var(--blanco); }
+        .cell input { width: 100%; height: 100%; border: none; text-align: center; font-size: 18px; font-weight: bold; text-transform: uppercase; background: transparent; color: var(--verde); }
+        .cell input:focus { background: #fff9c4; outline: none; }
+        .num { position: absolute; top: 0; left: 1px; font-size: 9px; color: #777; pointer-events: none; }
+
+        .clues { display: flex; gap: 30px; margin-top: 20px; background: white; padding: 20px; border-radius: 10px; width: 800px; }
+        .clue-column { flex: 1; }
+        h3 { border-bottom: 2px solid var(--oro); color: var(--verde); }
+        li { font-size: 14px; margin-bottom: 8px; cursor: pointer; }
+        .success-msg { color: var(--verde); font-weight: bold; display: none; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>Crucigrama: Sustancias y Mezclas en Pueblo Rico</h1>
+    
+    <div class="instrucciones">
+        ¡Hola! Hoy exploraremos cómo se unen los elementos para formar compuestos como la <b>sal</b> y el <b>agua</b>, y cómo se separan las fases en el <b>lavado del café</b>. ¡Completa el reto!
+    </div>
+
+    <div id="crossword-container">
+        <div id="grid" class="grid"></div>
+        <div id="msg" class="success-msg">¡Excelente trabajo en equipo! Has identificado las sustancias de nuestro entorno.</div>
+    </div>
+
+    <div class="clues">
+        <div class="clue-column">
+            <h3>Horizontales</h3>
+            <ul id="hor-clues"></ul>
+        </div>
+        <div class="clue-column">
+            <h3>Verticales</h3>
+            <ul id="ver-clues"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Configuración simplificada: [Fila, Columna, Palabra, Pista, Dirección]
+        const data = [
+            [2, 4, "COMPUESTO", "Unión química de dos o más elementos (ej: agua).", "H"],
+            [5, 1, "SAL", "NaCl: Compuesto esencial para dar sabor y salud.", "H"],
+            [8, 3, "HETEROGENEA", "Mezcla donde se ven las fases, como agua y aceite.", "H"],
+            [11, 2, "ACEITE", "Líquido que no se mezcla con el agua y flota.", "H"],
+            [13, 5, "EQUIPO", "Forma de trabajar para lograr grandes metas.", "H"],
+            [0, 5, "AGUA", "H2O: El compuesto más importante para el café.", "V"],
+            [2, 8, "SODIO", "Elemento metálico que forma parte de la sal.", "V"],
+            [2, 12, "OXIGENO", "Elemento del agua necesario para respirar.", "V"],
+            [7, 1, "FASES", "Las distintas capas que vemos en una mezcla.", "V"],
+            [7, 5, "TIERRA", "Mezcla que ensucia el agua al llover en la finca.", "V"],
+            [4, 10, "LAVADO", "Proceso del café donde se separan mezclas.", "V"],
+            [9, 9, "CLORO", "El otro elemento que compone la sal de cocina.", "V"],
+            [1, 2, "PURA", "Sustancia que no está mezclada con otras.", "V"],
+            [11, 13, "SALUD", "Resultado de una alimentación balanceada.", "V"],
+            [13, 2, "FINCA", "Lugar donde ocurre la magia de la producción.", "V"]
+        ];
+
+        const gridDiv = document.getElementById('grid');
+        const cells = {};
+
+        // Crear cuadrícula vacía
+        for(let r=0; r<15; r++) {
+            for(let c=0; c<15; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.id = `c-${r}-${c}`;
+                gridDiv.appendChild(cell);
+            }
+        }
+
+        // Insertar palabras y pistas
+        data.forEach((item, index) => {
+            let [r, c, word, clue, dir] = item;
+            const list = document.getElementById(dir === 'H' ? 'hor-clues' : 'ver-clues');
+            const li = document.createElement('li');
+            li.innerHTML = `<b>${index + 1}.</b> ${clue}`;
+            list.appendChild(li);
+
+            for(let i=0; i<word.length; i++) {
+                let currR = dir === 'H' ? r : r + i;
+                let currC = dir === 'H' ? c + i : c;
+                let cell = document.getElementById(`c-${currR}-${currC}`);
+                cell.classList.add('active');
+                if(!cell.innerHTML) {
+                    const input = document.createElement('input');
+                    input.maxLength = 1;
+                    input.dataset.answer = word[i];
+                    cell.appendChild(input);
+                    if(i === 0) {
+                        const num = document.createElement('span');
+                        num.className = 'num';
+                        num.innerText = index + 1;
+                        cell.appendChild(num);
+                    }
+                }
+            }
+        });
+
+        // Validación simple
+        gridDiv.addEventListener('input', (e) => {
+            if(e.target.value.toUpperCase() === e.target.dataset.answer) {
+                e.target.style.color = "#2e7d32";
+            } else {
+                e.target.style.color = "red";
+            }
+            checkWin();
+        });
+
+        function checkWin() {
+            const inputs = document.querySelectorAll('input');
+            const allCorrect = Array.from(inputs).every(i => i.value.toUpperCase() === i.dataset.answer);
+            if(allCorrect) document.getElementById('msg').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

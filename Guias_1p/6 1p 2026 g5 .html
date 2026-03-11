@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Mundo de las Mezclas Homogéneas</title>
+    <style>
+        :root {
+            --primary: #2E86C1; /* Azul calmante */
+            --secondary: #1ABC9C; /* Verde concentración */
+            --accent: #F1C40F; /* Amarillo atención */
+            --bg: #ECF0F1;
+            --text: #2C3E50;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 62, 80, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        /* Header & Progress */
+        header {
+            background: var(--primary);
+            color: var(--white);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .progress-container {
+            flex-grow: 1;
+            margin: 0 20px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--secondary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .element-badge {
+            background: var(--white);
+            color: var(--text);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            border: 2px solid var(--accent);
+        }
+
+        /* Main Content */
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            padding-bottom: 4rem;
+        }
+
+        .section-card {
+            background: var(--white);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary);
+        }
+
+        h1, h2, h3 { color: var(--primary); }
+        
+        /* Activity Box */
+        .activity-box {
+            background: #E8F6F3;
+            border: 2px dashed var(--secondary);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 10px;
+        }
+
+        .activity-icon { font-size: 1.5rem; margin-right: 10px; }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th { background-color: var(--primary); color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+
+        /* Inputs & Buttons */
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        button:hover { background: #1F618D; }
+        
+        .btn-check { background: var(--secondary); }
+        .btn-check:hover { background: #148F77; }
+        .btn-disabled { background: #95a5a6; cursor: not-allowed; }
+
+        /* Feedback Styling */
+        .feedback {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct { background-color: #D4EFDF; color: #145A32; border: 1px solid #145A32;}
+        .incorrect { background-color: #FADBD8; color: #78281F; border: 1px solid #78281F;}
+
+        /* Visual Aids */
+        .visual-aid {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .cup-graphic {
+            width: 100px;
+            height: 120px;
+            background: linear-gradient(to top, #F39C12 80%, #fff 80%); /* Juice simulation */
+            border: 2px solid #333;
+            border-radius: 0 0 10px 10px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .sugar-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+            font-size: 20px;
+        }
+
+        /* ICFES Question specific */
+        .icfes-options label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9f9;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .icfes-options label:hover { background: #e8e8e8; }
+        
+        /* Charts Placeholders */
+        .chart-placeholder {
+            width: 100%;
+            height: 200px;
+            background: #fff;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>Bienvenido a tu Clase de Ciencias</h2>
+            <p>Por favor, ingresa tu nombre completo para comenzar.</p>
+            <input type="text" id="student-name-input" placeholder="Nombres y Apellidos">
+            <button onclick="login()">Ingresar</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="status-bar">
+            <div>
+                <span id="display-name">Estudiante</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="element-badge" id="level-badge">H (1)</div>
+        </div>
+    </header>
+
+    <main>
+        <div class="section-card">
+            <h2>Objetivo de Aprendizaje</h2>
+            <p>Diferenciar las soluciones (mezclas homogéneas) de otros tipos de mezclas mediante la observación de situaciones cotidianas como la preparación de jugos y "agua de panela", identificando sus componentes (soluto y solvente) y valorando el momento de compartir en la mesa como un espacio de unión familiar.</p>
+        </div>
+
+        <div class="section-card" id="presaberes">
+            <h3>🧠 Activando Pre-saberes</h3>
+            <p>Responde estas preguntas para calentar motores (no te preocupes si fallas, estamos aprendiendo).</p>
+            
+            <div class="quiz-item">
+                <p>1. Si mezclas agua y aceite en un vaso, ¿qué sucede?</p>
+                <select id="pre1">
+                    <option value="0">Selecciona...</option>
+                    <option value="a">Se mezclan completamente y no se distinguen.</option>
+                    <option value="b">Se separan y se ven dos capas distintas.</option>
+                    <option value="c">El agua desaparece.</option>
+                </select>
+            </div>
+            
+            <div class="quiz-item">
+                <p>2. Cuando preparas "agua de panela", la panela sólida:</p>
+                <select id="pre2">
+                    <option value="0">Selecciona...</option>
+                    <option value="a">Se va al fondo y se queda sólida para siempre.</option>
+                    <option value="b">Se disuelve en el agua caliente y no se ve a simple vista.</option>
+                    <option value="c">Flota encima del agua.</option>
+                </select>
+            </div>
+
+            <div class="quiz-item">
+                <p>3. ¿Cuál de los siguientes NO es un ingrediente común en una mezcla de cocina?</p>
+                <select id="pre3">
+                    <option value="0">Selecciona...</option>
+                    <option value="a">Sal</option>
+                    <option value="b">Azúcar</option>
+                    <option value="c">Una piedra</option>
+                </select>
+            </div>
+            <br>
+            <button onclick="checkPresaberes()">Verificar Pre-saberes</button>
+            <div id="pre-feedback" class="feedback"></div>
+        </div>
+
+        <div class="section-card">
+            <h3>La Magia Invisible en tu Cocina</h3>
+            <p>Imagina una mañana fría en tu casa. Tu abuela o tu mamá ponen una olla con agua al fuego. Toman un trozo duro y café de panela y lo dejan caer en el agua hirviendo. Al principio, puedes ver claramente el bloque de panela en el fondo de la olla. Pero, a medida que el agua se calienta y se agita con una cuchara, algo "mágico" sucede: el bloque desaparece. Sin embargo, el agua ha cambiado de color, ahora es dorada, y si la pruebas, su sabor es dulce. ¿A dónde se fue la panela?</p>
+            
+            <p>Lo que acabas de imaginar es el ejemplo perfecto de una transformación cotidiana. No ha desaparecido la materia, simplemente se ha integrado de una forma tan íntima con el agua que nuestros ojos ya no pueden distinguir una sustancia de la otra. A esto le llamamos <strong>Mezcla Homogénea</strong>.</p>
+
+            <div class="visual-aid">
+                <h4>Gráfico 1: El proceso de Disolución</h4>
+                <div style="display: flex; justify-content: space-around; align-items: center;">
+                    <div>🚰<br>Agua Sola</div>
+                    <div>➡️</div>
+                    <div>🟫<br>Agua + Panela (Sólida)</div>
+                    <div>➡️</div>
+                    <div>🥃<br>Agua de Panela (Uniforme)</div>
+                </div>
+                <p><em>En la fase final, no puedes decir "aquí está el agua y aquí está la panela". Todo se ve como una sola cosa.</em></p>
+            </div>
+
+            <div class="activity-box">
+                <h4>📔 Actividad en el Cuaderno #1</h4>
+                <p><strong>Dibujar:</strong> En tu cuaderno, dibuja el proceso de hacer agua de panela en tres pasos (antes, durante y después), similar al gráfico anterior. Colorea el agua clara al principio y dorada al final.</p>
+                <button class="btn-check" onclick="markActivity(1)">¡Ya lo dibujé en mi cuaderno!</button>
+            </div>
+
+            <p>En química, las mezclas homogéneas también se llaman <strong>Soluciones</strong>. Para que exista una solución, necesitamos dos actores principales, como en una obra de teatro:</p>
+            
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Actor (Concepto)</th>
+                        <th>Función</th>
+                        <th>Ejemplo en el Agua de Panela</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Solvente</strong></td>
+                        <td>Es la sustancia que está en mayor cantidad y "recibe" a la otra. Generalmente es líquida.</td>
+                        <td>El Agua</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Soluto</strong></td>
+                        <td>Es la sustancia que se disuelve. Está en menor cantidad.</td>
+                        <td>La Panela</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="activity-box">
+                <h4>📔 Actividad en el Cuaderno #2</h4>
+                <p><strong>Contestar:</strong> Escribe en tu cuaderno la definición de Soluto y Solvente con tus propias palabras. Luego, piensa en un jugo de sobre (tipo Frutiño). ¿Quién sería el soluto y quién el solvente?</p>
+                <button class="btn-check" onclick="markActivity(2)">¡Listo, escrito!</button>
+            </div>
+
+            <p>Ahora, piensa en el momento de tomar ese jugo o esa agua de panela. Generalmente, no lo hacemos solos. Nos sentamos a la mesa. La mesa no es solo un mueble de madera o plástico; es un <strong>espacio de mezcla social</strong>. Así como el agua y la panela se unen para crear algo nuevo y delicioso, las personas en la mesa comparten historias, risas y alimentos, fortaleciendo sus lazos. El "compartir" es el solvente que une a la familia (los solutos) en una sola unidad fuerte.</p>
+
+            <div class="activity-box">
+                <h4>📔 Actividad en el Cuaderno #3</h4>
+                <p><strong>Mapa Mental:</strong> Crea un mapa mental donde el centro sea "La Mesa Familiar". Saca ramas con las cosas que se comparten allí (ej: alimentos, noticias, risas, decisiones).</p>
+                <button class="btn-check" onclick="markActivity(3)">¡Mapa mental terminado!</button>
+            </div>
+
+            <p>Es importante notar que no todas las mezclas son así. Si haces una ensalada de frutas, puedes ver el banano, la papaya y la manzana por separado. Si puedes distinguir los ingredientes a simple vista, ¡NO es una mezcla homogénea! Es una mezcla <strong>Heterogénea</strong>.</p>
+
+            <div class="activity-box">
+                <h4>📔 Actividad en el Cuaderno #4</h4>
+                <p><strong>Tabla Comparativa:</strong> Realiza una tabla de dos columnas. En la izquierda escribe "Mezclas Homogéneas" y en la derecha "Mezclas Heterogéneas". Escribe 3 ejemplos de cocina para cada una.</p>
+                <button class="btn-check" onclick="markActivity(4)">¡Tabla completada!</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>📔 Actividad en el Cuaderno #5</h4>
+                <p><strong>Reflexión (Contestar):</strong> ¿Por qué crees que es importante que el azúcar se disuelva bien en el jugo? ¿Qué pasaría si no fuera una mezcla homogénea al momento de beberlo?</p>
+                <button class="btn-check" onclick="markActivity(5)">¡Reflexión escrita!</button>
+            </div>
+        </div>
+
+        <div class="section-card" style="border-left-color: var(--accent);">
+            <h3>🔬 Ponte a Prueba: Pregunta Tipo ICFES</h3>
+            <p><strong>Competencia:</strong> Indagar</p>
+            <div style="background: #fff; padding: 20px; border: 1px solid #ccc; margin-bottom: 20px;">
+                <p>Un estudiante de grado sexto quiere investigar qué tan rápido se disuelve la panela en agua. Para ello, prepara tres vasos con la misma cantidad de agua pero a diferentes temperaturas.</p>
+                <div style="display: flex; justify-content: space-around; text-align: center; margin: 20px 0;">
+                    <div>
+                        <div style="font-size: 30px;">🧊</div>
+                        <p>Vaso 1<br>Agua Fría (5°C)</p>
+                    </div>
+                    <div>
+                        <div style="font-size: 30px;">💧</div>
+                        <p>Vaso 2<br>Agua Ambiente (20°C)</p>
+                    </div>
+                    <div>
+                        <div style="font-size: 30px;">🔥</div>
+                        <p>Vaso 3<br>Agua Caliente (80°C)</p>
+                    </div>
+                </div>
+                <p>Agrega un cubo de panela del mismo tamaño a cada vaso al mismo tiempo y observa lo que sucede sin revolver.</p>
+                <p><strong>Pregunta:</strong> Si el estudiante quiere saber cómo influye la temperatura en la formación de la mezcla homogénea, ¿cuál de las siguientes predicciones es la más acertada para guiar su indagación?</p>
+            
+                <div class="icfes-options" id="icfes-container">
+                    <label><input type="radio" name="icfes" value="A"> A. La panela se disolverá más rápido en el Vaso 1 porque el frío rompe los trozos de panela.</label>
+                    <label><input type="radio" name="icfes" value="B"> B. La panela no se disolverá en ninguno de los vasos porque no se está usando una cuchara.</label>
+                    <label><input type="radio" name="icfes" value="C"> C. La panela se disolverá más rápido en el Vaso 3, porque el aumento de temperatura agita las partículas del agua.</label>
+                    <label><input type="radio" name="icfes" value="D"> D. La panela cambiará de color en el Vaso 2 pero seguirá siendo sólida.</label>
+                </div>
+                <button onclick="checkICFES()">Verificar Respuesta</button>
+            </div>
+            
+            <div id="icfes-feedback" class="feedback"></div>
+        </div>
+
+        <div class="section-card">
+            <h3>Profundizando en las Soluciones</h3>
+            <p>A partir de lo que hemos observado y experimentado, podemos deducir reglas generales sobre cómo funciona la materia en nuestro entorno. Hemos establecido que una <strong>solución</strong> es un sistema donde una sustancia se dispersa uniformemente en otra a nivel muy pequeño (molecular), tanto que la gravedad no puede separarlas con el tiempo. Si dejas un vaso de agua de panela quieto por tres días, la panela no se irá al fondo; seguirá dulce en todas sus partes. Esta estabilidad es clave.</p>
+
+            <p>Pero, ¿siempre podemos disolver todo lo que queramos? Piensa en esto: si agregas una cucharada de azúcar a un vaso de agua, se disuelve. Si agregas dos, también. Pero si agregas 20 cucharadas a un vaso pequeño, llegará un punto en que el azúcar se quedará en el fondo, por más que revuelvas. Aquí entramos a deducir el concepto de <strong>Saturación</strong>.</p>
+
+            <div class="visual-aid">
+                <h4>Gráfico 2: Niveles de Concentración</h4>
+                <table style="text-align: center;">
+                    <tr>
+                        <td>💧</td>
+                        <td>💧🍬</td>
+                        <td>💧🍬🍬🍬</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Diluida</strong><br>Poco soluto, mucho solvente.<br>(Sabor suave)</td>
+                        <td><strong>Concentrada</strong><br>Bastante soluto.<br>(Sabor fuerte)</td>
+                        <td><strong>Saturada</strong><br>El solvente ya no aguanta más soluto.<br>(Queda residuo en el fondo)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="activity-box">
+                <h4>📔 Actividad en el Cuaderno #6</h4>
+                <p><strong>Contestar:</strong> ¿Alguna vez has preparado un jugo que te quedó "aguado" o muy "dulce"? Usando las palabras "Diluido" y "Concentrado", escribe una frase describiendo esa experiencia.</p>
+                <button class="btn-check" onclick="markActivity(6)">¡Frase escrita!</button>
+            </div>
+
+            <p>Deducimos también que el <strong>agua</strong> es el solvente por excelencia en la Tierra. Casi todo lo que comemos y bebemos tiene agua como base. En la naturaleza, el agua de los ríos disuelve minerales de las rocas (por eso el agua mineral tiene sabor). En nuestro cuerpo, la sangre es una mezcla homogénea compleja que transporta nutrientes disueltos a cada célula.</p>
+
+            <div class="activity-box">
+                <h4>📔 Actividad en el Cuaderno #7</h4>
+                <p><strong>Mapa Conceptual:</strong> Crea un mapa conceptual que conecte los siguientes términos: Mezcla Homogénea, Solvente, Soluto, Solución, Diluida, Concentrada.</p>
+                <button class="btn-check" onclick="markActivity(7)">¡Mapa conceptual listo!</button>
+            </div>
+
+            <p>Volviendo a nuestra analogía social: una familia "saturada" de problemas y sin diálogo es como el vaso con exceso de azúcar; la unión se vuelve difícil. Necesitamos "diluir" los conflictos con el "solvente" del amor y la comunicación en la mesa. Las ciencias naturales no están alejadas de nuestra realidad humana; todo es cuestión de equilibrio y proporciones.</p>
+
+            <div class="activity-box">
+                <h4>📔 Actividad en el Cuaderno #8</h4>
+                <p><strong>Dibujar:</strong> Dibuja tres vasos. Píntalos para representar una solución diluida (color claro), una concentrada (color oscuro) y una saturada (color oscuro con puntos en el fondo).</p>
+                <button class="btn-check" onclick="markActivity(8)">¡Dibujo terminado!</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>📔 Actividad en el Cuaderno #9</h4>
+                <p><strong>Tabla Comparativa:</strong> Busca en tu cocina 3 líquidos comerciales (ej: leche, vinagre, aceite). Lee la etiqueta. ¿Dicen los ingredientes? Haz una tabla listando el producto y cuál crees que es el solvente principal en cada uno.</p>
+                <button class="btn-check" onclick="markActivity(9)">¡Investigación completada!</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>📔 Actividad en el Cuaderno #10</h4>
+                <p><strong>Contestar y Proponer:</strong> Escribe una norma para tu casa a la hora de comer que ayude a que el momento sea una "Mezcla Homogénea" de alegría (ej: No usar celulares en la mesa).</p>
+                <button class="btn-check" onclick="markActivity(10)">¡Propuesta lista!</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h3>📝 Taller Final de Evaluación</h3>
+            <p>Demuestra lo que has aprendido. Tus respuestas se guardarán.</p>
+
+            <h4>Selección Múltiple</h4>
+            <div id="final-quiz-container">
+                </div>
+
+            <h4>Preguntas Abiertas</h4>
+            <p><em>(Mínimo 10 palabras, máximo 15 palabras. Sé preciso).</em></p>
+            <div id="open-questions-container">
+                </div>
+            
+            <br>
+            <button onclick="downloadAnswers()" style="background-color: var(--secondary); width: 100%; font-size: 1.2rem;">📥 Descargar mis Respuestas (.txt)</button>
+        </div>
+
+    </main>
+
+    <script>
+        // --- DATA & STATE ---
+        const gameState = {
+            studentName: "",
+            progress: 0, // 0 to 100
+            points: 0, // 0 to 5
+            activitiesDone: [], // IDs of activities done
+            answers: {},
+            preScore: 0
+        };
+
+        const elements = [
+            { level: 0, symbol: "n", name: "Neutrón" },
+            { level: 1, symbol: "H", name: "Hidrógeno" },
+            { level: 2, symbol: "He", name: "Helio" },
+            { level: 3, symbol: "Li", name: "Litio" },
+            { level: 4, symbol: "Be", name: "Berilio" },
+            { level: 5, symbol: "B", name: "Boro" }
+        ];
+
+        // --- INIT ---
+        window.onload = function() {
+            loadState();
+            if(gameState.studentName) {
+                document.getElementById('login-overlay').style.display = 'none';
+                updateUI();
+            }
+            renderFinalQuiz();
+        };
+
+        // --- CORE FUNCTIONS ---
+        function login() {
+            const name = document.getElementById('student-name-input').value;
+            if (name.trim().length > 0) {
+                gameState.studentName = name;
+                saveState();
+                document.getElementById('login-overlay').style.display = 'none';
+                updateUI();
+            } else {
+                alert("Por favor escribe tu nombre.");
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('ovaMezclasData_v1', JSON.stringify(gameState));
+        }
+
+        function loadState() {
+            const data = localStorage.getItem('ovaMezclasData_v1');
+            if (data) {
+                const parsed = JSON.parse(data);
+                Object.assign(gameState, parsed);
+                // Restore UI for activities
+                gameState.activitiesDone.forEach(id => {
+                    const btn = document.querySelector(`button[onclick="markActivity(${id})"]`);
+                    if(btn) {
+                        btn.classList.add('btn-disabled');
+                        btn.innerText = "Completado ✅";
+                        btn.disabled = true;
+                    }
+                });
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('display-name').innerText = gameState.studentName;
+            document.getElementById('progress-bar').style.width = gameState.progress + "%";
+            
+            // Map points 0-5 to elements
+            const lvl = Math.min(Math.floor(gameState.points), 5);
+            document.getElementById('level-badge').innerText = `${elements[lvl].symbol} (${lvl})`;
+        }
+
+        function addPoints(amount) {
+            gameState.points += amount;
+            if(gameState.points > 5) gameState.points = 5;
+            
+            // Simple logic: 10 notebook activities + 1 ICFES + Pre = 100%
+            // Let's just increment progress based on interactions
+            gameState.progress += 8; // approx increment
+            if(gameState.progress > 100) gameState.progress = 100;
+            
+            saveState();
+            updateUI();
+        }
+
+        // --- SPECIFIC SECTIONS LOGIC ---
+
+        function checkPresaberes() {
+            const a1 = document.getElementById('pre1').value;
+            const a2 = document.getElementById('pre2').value;
+            const a3 = document.getElementById('pre3').value;
+            
+            const feedback = document.getElementById('pre-feedback');
+            
+            if(a1 === '0' || a2 === '0' || a3 === '0') {
+                alert("Responde todas las preguntas de pre-saberes.");
+                return;
+            }
+
+            let correct = 0;
+            if(a1 === 'b') correct++;
+            if(a2 === 'b') correct++;
+            if(a3 === 'c') correct++;
+
+            feedback.style.display = 'block';
+            feedback.innerHTML = `<strong>Resultados:</strong> Tienes ${correct} de 3 correctas.<br>
+            1. Agua y aceite se separan (Heterogénea).<br>
+            2. La panela se disuelve (Homogénea).<br>
+            3. Una piedra no es ingrediente culinario soluble.`;
+            
+            if(correct === 3) feedback.className = "feedback correct";
+            else feedback.className = "feedback incorrect";
+
+            // Save simply indicating attempted
+            gameState.answers['presaberes'] = `Score: ${correct}/3`;
+            addPoints(0.5); // Small reward for trying
+        }
+
+        function markActivity(id) {
+            if (gameState.activitiesDone.includes(id)) return;
+            
+            gameState.activitiesDone.push(id);
+            addPoints(0.4); // 10 activities * 0.4 = 4 points total available here approx
+            
+            const btn = document.querySelector(`button[onclick="markActivity(${id})"]`);
+            btn.classList.add('btn-disabled');
+            btn.innerText = "Completado ✅";
+            btn.disabled = true;
+        }
+
+        function checkICFES() {
+            const options = document.getElementsByName('icfes');
+            let selected = null;
+            for(const op of options) {
+                if(op.checked) selected = op.value;
+            }
+
+            if(!selected) {
+                alert("Selecciona una opción.");
+                return;
+            }
+
+            const feedback = document.getElementById('icfes-feedback');
+            feedback.style.display = 'block';
+
+            if(selected === 'C') {
+                feedback.className = "feedback correct";
+                feedback.innerHTML = `<strong>¡Correcto!</strong><br>
+                <strong>¿Por qué?</strong> La temperatura es un factor clave en la solubilidad. Al aumentar la temperatura (Agua Caliente 80°C), las moléculas del agua se mueven con mayor energía cinética, chocando más frecuentemente con el soluto (panela) y ayudando a disolverlo más rápido. Esta es la hipótesis correcta a indagar.`;
+                addPoints(0.5);
+            } else {
+                feedback.className = "feedback incorrect";
+                let explanation = "";
+                if(selected === 'A') explanation = "El frío, por lo general, disminuye la capacidad de disolución y la velocidad de las moléculas, haciendo el proceso más lento.";
+                if(selected === 'B') explanation = "Aunque revolver ayuda, la disolución ocurre naturalmente debido al movimiento de las partículas, solo que más lento. No es cierto que 'no se disolverá'.";
+                if(selected === 'D') explanation = "Si la panela sigue sólida, no se ha formado una solución (mezcla homogénea). El objetivo es ver cuándo se integra.";
+                
+                feedback.innerHTML = `<strong>Incorrecto.</strong><br>${explanation}<br><strong>La respuesta correcta es la C.</strong>`;
+            }
+            
+            // Disable inputs after answering
+            for(const op of options) op.disabled = true;
+            gameState.answers['icfes'] = selected;
+        }
+
+        // --- FINAL WORKSHOP GENERATION ---
+        
+        const finalQuizData = [
+            { q: "¿Qué es una mezcla homogénea?", options: ["Una donde se ven los componentes", "Una donde los componentes no se distinguen", "Una mezcla de solo sólidos", "Una mezcla explosiva"], correct: 1 },
+            { q: "¿Cuál es el solvente universal?", options: ["El Aceite", "El Alcohol", "El Agua", "El Aire"], correct: 2 },
+            { q: "¿Qué sustancia es el soluto en el agua de panela?", options: ["El Agua", "La Olla", "La Panela", "La Cuchara"], correct: 2 },
+            { q: "¿Qué significa que una solución esté saturada?", options: ["Que está muy caliente", "Que tiene poco soluto", "Que ya no disuelve más soluto", "Que es transparente"], correct: 2 },
+            { q: "¿Qué tipo de mezcla es una ensalada de frutas?", options: ["Homogénea", "Heterogénea", "Solución", "Aleación"], correct: 1 }
+        ];
+
+        const openQuestionsData = [
+            "Define con tus palabras qué es un Soluto.",
+            "Explica por qué el aceite y el agua no son mezcla homogénea.",
+            "Describe qué sucede con el azúcar en un jugo caliente.",
+            "¿Por qué compartir en la mesa se parece a una mezcla?",
+            "Nombra dos ejemplos de mezclas homogéneas en tu casa."
+        ];
+
+        function renderFinalQuiz() {
+            // Multiple Choice
+            const mcContainer = document.getElementById('final-quiz-container');
+            let html = "";
+            finalQuizData.forEach((item, index) => {
+                html += `<div class="quiz-item"><p><strong>${index+1}. ${item.q}</strong></p>`;
+                item.options.forEach((opt, optIndex) => {
+                    html += `<label style="display:block; margin:5px 0;"><input type="radio" name="fq_${index}" value="${optIndex}"> ${opt}</label>`;
+                });
+                html += `</div>`;
+            });
+            mcContainer.innerHTML = html;
+
+            // Open Questions
+            const openContainer = document.getElementById('open-questions-container');
+            let htmlOpen = "";
+            openQuestionsData.forEach((q, index) => {
+                htmlOpen += `<div class="quiz-item">
+                    <p><strong>${index+1}. ${q}</strong></p>
+                    <textarea id="oq_${index}" rows="2" onpaste="return false" placeholder="Escribe aquí (10-15 palabras)..."></textarea>
+                    <button class="btn-check" onclick="verifyOpenQ(${index})" id="btn_oq_${index}">Verificar (No IA/Copy)</button>
+                    <span id="msg_oq_${index}" style="margin-left:10px; font-weight:bold;"></span>
+                </div>`;
+            });
+            openContainer.innerHTML = htmlOpen;
+        }
+
+        function verifyOpenQ(index) {
+            const val = document.getElementById(`oq_${index}`).value.trim();
+            const msg = document.getElementById(`msg_oq_${index}`);
+            const words = val.split(/\s+/).filter(w => w.length > 0).length;
+
+            if (words < 10) {
+                msg.style.color = "red";
+                msg.innerText = `Muy corto (${words} palabras). Mínimo 10.`;
+            } else if (words > 15) {
+                msg.style.color = "red";
+                msg.innerText = `Muy largo (${words} palabras). Máximo 15.`;
+            } else {
+                msg.style.color = "green";
+                msg.innerText = "¡Válido! Respuesta guardada.";
+                gameState.answers[`open_q_${index}`] = val;
+                document.getElementById(`btn_oq_${index}`).disabled = true;
+                document.getElementById(`oq_${index}`).disabled = true;
+                addPoints(0.1); // Small bonus
+            }
+        }
+
+        function downloadAnswers() {
+            // Gather MC answers
+            let scoreMC = 0;
+            finalQuizData.forEach((item, index) => {
+                const ops = document.getElementsByName(`fq_${index}`);
+                let val = "No respondida";
+                for(const op of ops) {
+                    if(op.checked) {
+                        if(parseInt(op.value) === item.correct) scoreMC++;
+                        val = item.options[op.value];
+                    }
+                }
+                gameState.answers[`final_mc_${index}`] = val;
+            });
+
+            // Construct Text Content
+            let content = `REPORTE DE ACTIVIDADES OVA: MEZCLAS HOMOGÉNEAS\n`;
+            content += `Estudiante: ${gameState.studentName}\n`;
+            content += `Fecha: ${new Date().toLocaleString()}\n`;
+            content += `Puntaje Nivel Alcanzado: ${gameState.points.toFixed(1)}/5\n`;
+            content += `Progreso General: ${gameState.progress}%\n`;
+            content += `-------------------------------------------\n\n`;
+            
+            content += `RESPUESTAS SELECCIÓN MÚLTIPLE FINAL (${scoreMC}/5 Correctas):\n`;
+            finalQuizData.forEach((item, index) => {
+                content += `${index+1}. ${item.q} -> R/ ${gameState.answers[`final_mc_${index}`] || 'N/A'}\n`;
+            });
+
+            content += `\nRESPUESTAS ABIERTAS:\n`;
+            openQuestionsData.forEach((q, index) => {
+                content += `${index+1}. ${q}\n   R/ ${gameState.answers[`open_q_${index}`] || 'Sin validar'}\n`;
+            });
+
+            content += `\n-------------------------------------------\n`;
+            content += `Fin del reporte.`;
+
+            // Create Blob and Download
+            const blob = new Blob([content], { type: "text/plain" });
+            const anchor = document.createElement("a");
+            anchor.download = `Respuestas_${gameState.studentName.replace(/\s+/g, '_')}.txt`;
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.target = "_blank";
+            anchor.style.display = "none";
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: La Densidad y las Propiedades Periódicas</title>
+    <style>
+        :root {
+            --primary: #2C3E50; /* Azul oscuro */
+            --secondary: #1ABC9C; /* Turquesa */
+            --accent: #E67E22; /* Naranja para gamificación */
+            --bg: #ECF0F1; /* Gris claro */
+            --card-bg: #FFFFFF;
+            --text: #34495E;
+            --success: #27AE60;
+            --error: #C0392B;
+        }
+
+        body {
+            font-family: 'Verdana', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding-bottom: 60px;
+            line-height: 1.6;
+        }
+
+        /* --- UI: Barra Superior y Login --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
+            color: white;
+        }
+
+        #top-bar {
+            position: sticky;
+            top: 0;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 10px 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- Gamificación: Tabla Periódica --- */
+        .gamification-panel {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-grow: 1;
+            max-width: 600px;
+            margin-left: 20px;
+        }
+
+        .progress-track {
+            flex-grow: 1;
+            height: 12px;
+            background: #BDC3C7;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            transition: width 0.5s ease;
+        }
+
+        .element-badge {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--primary);
+            background: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            border-radius: 4px;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .element-number { font-size: 0.7em; align-self: flex-start; margin-left: 4px; }
+        .element-symbol { font-size: 1.4em; color: var(--accent); }
+
+        /* --- Contenedor Principal --- */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: none; /* Se activa tras login */
+        }
+
+        section {
+            background: var(--card-bg);
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 6px solid var(--secondary);
+        }
+
+        h1, h2, h3 { color: var(--primary); }
+        
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        button:hover { background: var(--secondary); }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #BDC3C7;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: inherit;
+        }
+
+        /* --- Feedback y Actividades --- */
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            font-size: 0.95em;
+        }
+        .correct { background: #D5F5E3; color: #145A32; border: 1px solid var(--success); }
+        .incorrect { background: #FADBD8; color: #7B241C; border: 1px solid var(--error); }
+
+        .notebook-activity {
+            background: #F4F6F6;
+            border: 2px dashed var(--secondary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .notebook-activity h4 { margin-top: 0; color: var(--secondary); }
+
+        /* --- Tablas y Gráficos --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th { background-color: var(--secondary); color: white; }
+
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .mcq-options button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 8px;
+            background: white;
+            color: var(--text);
+            border: 1px solid #BDC3C7;
+        }
+        .mcq-options button:hover { background: #EAEDED; }
+
+        /* --- Inputs especiales --- */
+        .login-input { width: 300px; margin-bottom: 15px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <h1>⚗️ Laboratorio Virtual: Densidad</h1>
+        <p>Introduce tus Nombres y Apellidos para comenzar la investigación.</p>
+        <input type="text" id="username" class="login-input" placeholder="Ej: Pepito Pérez">
+        <button onclick="login()">Ingresar al Laboratorio</button>
+    </div>
+
+    <div id="top-bar">
+        <div class="user-info">
+            <span id="display-name">Estudiante</span>
+        </div>
+        <div class="gamification-panel">
+            <span>Nivel:</span>
+            <div class="element-badge" id="badge">
+                <div class="element-number" id="badge-num">1</div>
+                <div class="element-symbol" id="badge-sym">H</div>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="main-content">
+
+        <section id="inicio">
+            <h2>🎯 Objetivo de Aprendizaje</h2>
+            <p>Comprender el concepto de <strong>densidad</strong> como una propiedad intrínseca de la materia, aprender a medirla con paciencia y precisión, y relacionarla con la organización de la Tabla Periódica.</p>
+            
+            <h3>🧠 Pre-saberes: ¿Qué nos dice tu intuición?</h3>
+            
+            <div class="notebook-activity" style="border-style: solid; border-color: #ddd;">
+                <p><strong>1. Tienes un kilo de algodón y un kilo de plomo. ¿Cuál ocupa más espacio (volumen)?</strong></p>
+                <div class="mcq-options">
+                    <button onclick="checkMCQ('pre1', 'a', false)">El plomo ocupa más espacio.</button>
+                    <button onclick="checkMCQ('pre1', 'b', true)">El algodón ocupa más espacio.</button>
+                    <button onclick="checkMCQ('pre1', 'c', false)">Ocupan el mismo espacio porque pesan lo mismo.</button>
+                </div>
+                <div id="fb-pre1" class="feedback"></div>
+            </div>
+
+            <div class="notebook-activity" style="border-style: solid; border-color: #ddd;">
+                <p><strong>2. Si lanzas una piedra pequeña a un vaso con agua, ¿qué le pasa al nivel del agua?</strong></p>
+                <div class="mcq-options">
+                    <button onclick="checkMCQ('pre2', 'a', true)">El nivel del agua sube.</button>
+                    <button onclick="checkMCQ('pre2', 'b', false)">El nivel del agua baja.</button>
+                    <button onclick="checkMCQ('pre2', 'c', false)">El nivel se queda igual.</button>
+                </div>
+                <div id="fb-pre2" class="feedback"></div>
+            </div>
+
+            <div class="notebook-activity" style="border-style: solid; border-color: #ddd;">
+                <p><strong>3. ¿Por qué el aceite flota sobre el agua?</strong></p>
+                <div class="mcq-options">
+                    <button onclick="checkMCQ('pre3', 'a', false)">Porque el aceite es más espeso (viscoso).</button>
+                    <button onclick="checkMCQ('pre3', 'b', true)">Porque el aceite es menos denso que el agua.</button>
+                    <button onclick="checkMCQ('pre3', 'c', false)">Porque el agua repele químicamente al aceite.</button>
+                </div>
+                <div id="fb-pre3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>🔍 Parte 1: El Misterio de la Maleta Llena</h2>
+            
+            <p>Imagina que te vas de viaje. Tienes dos maletas exactamente del mismo tamaño. En la <strong>Maleta A</strong>, metes solo una almohada de plumas. En la <strong>Maleta B</strong>, metes libros, zapatos, piedras y herramientas hasta que no cabe nada más.</p>
+            <p>Aunque las maletas se ven iguales por fuera (tienen el mismo <strong>Volumen</strong>), la Maleta B es muchísimo más pesada (tiene más <strong>Masa</strong>). En ciencias, decimos que la Maleta B tiene mayor <strong>Densidad</strong>.</p>
+            
+            <p><strong>La Paciencia en la Ciencia:</strong> A diferencia de las maletas, los átomos son invisibles. Para saber qué tan "apretados" están los átomos en un metal, los científicos tuvieron que medir miles de veces con balanzas antiguas, anotando datos con muchísima paciencia. Un pequeño error al leer la balanza podía arruinar días de trabajo.</p>
+
+            <div class="svg-container">
+                <svg width="400" height="200" viewBox="0 0 400 200">
+                    <rect x="50" y="50" width="100" height="100" fill="none" stroke="#2C3E50" stroke-width="2"/>
+                    <text x="100" y="170" text-anchor="middle" font-size="12">Baja Densidad (Gas/Madera)</text>
+                    <circle cx="70" cy="70" r="5" fill="#E67E22"/>
+                    <circle cx="120" cy="110" r="5" fill="#E67E22"/>
+                    <circle cx="90" cy="90" r="5" fill="#E67E22"/>
+                    
+                    <rect x="250" y="50" width="100" height="100" fill="none" stroke="#2C3E50" stroke-width="2"/>
+                    <text x="300" y="170" text-anchor="middle" font-size="12">Alta Densidad (Metal/Roca)</text>
+                    <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <circle cx="10" cy="10" r="5" fill="#2C3E50"/>
+                    </pattern>
+                    <rect x="250" y="50" width="100" height="100" fill="url(#dots)" opacity="0.5"/>
+                </svg>
+            </div>
+
+            <p>La densidad es, básicamente, qué tanta materia (masa) logramos empaquetar en un espacio determinado (volumen). En la tabla periódica, los elementos no están organizados al azar; sus átomos tienen tamaños y pesos diferentes, lo que define su densidad natural.</p>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 1: Definición Propia</h4>
+                <p>Sin usar fórmulas matemáticas, explica en tu cuaderno qué es la densidad usando el ejemplo de un bus vacío vs. un bus lleno. Escribe "Listo" aquí.</p>
+                <input type="text" id="act1">
+                <button onclick="verifyNotebook('act1')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 2: Dibujo Científico</h4>
+                <p>Dibuja en tu cuaderno dos cubos del mismo tamaño. Uno etiquétalo "Espuma" (pocos puntos dentro) y el otro "Plomo" (lleno de puntos). Confirma escribiendo "Dibujo realizado".</p>
+                <input type="text" id="act2">
+                <button onclick="verifyNotebook('act2')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 3: Tabla Comparativa</h4>
+                <p>Copia esta tabla en tu cuaderno y complétala con "Alta" o "Baja" según tu intuición:</p>
+                <table>
+                    <tr><th>Objeto</th><th>Densidad (Intuición)</th></tr>
+                    <tr><td>Corcho</td><td>...</td></tr>
+                    <tr><td>Moneda de Oro</td><td>...</td></tr>
+                    <tr><td>Aire</td><td>...</td></tr>
+                </table>
+                <p>Escribe "Tabla copiada" para avanzar.</p>
+                <input type="text" id="act3">
+                <button onclick="verifyNotebook('act3')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 4: Mapa Mental</h4>
+                <p>Crea un mapa mental con la palabra central "MATERIA". Saca dos ramas principales: "Masa" (cuánto pesa) y "Volumen" (cuánto espacio ocupa). Únelas para formar "Densidad". Escribe "Hecho".</p>
+                <input type="text" id="act4">
+                <button onclick="verifyNotebook('act4')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 5: Reflexión</h4>
+                <p>¿Por qué crees que un científico debe tener paciencia al medir líquidos en el laboratorio? Responde en tu cuaderno y escribe aquí una palabra clave de tu respuesta.</p>
+                <input type="text" id="act5">
+                <button onclick="verifyNotebook('act5')">Verificar</button>
+            </div>
+        </section>
+
+        <section id="icfes">
+            <h2>🕵️ Competencia: Indagar</h2>
+            <div style="background: #E8F6F3; padding: 20px; border-radius: 8px;">
+                <h3>El Problema de la Corona y la Bañera</h3>
+                <p>Arquímedes necesitaba saber el volumen de una corona irregular de oro sin fundirla. Se dio cuenta de que al entrar en una bañera llena, el agua se derramaba. ¡Eureka! El agua desplazada era igual al volumen de su cuerpo.</p>
+                
+                <div class="svg-container">
+                    <svg width="300" height="200" viewBox="0 0 300 200">
+                        <rect x="50" y="50" width="40" height="120" stroke="#333" fill="none" stroke-width="2"/>
+                        <rect x="50" y="100" width="40" height="70" fill="#AED6F1"/>
+                        <text x="20" y="100" font-size="12">V1 = 50ml</text>
+                        
+                        <path d="M 110,100 L 140,100" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+                        
+                        <rect x="170" y="50" width="40" height="120" stroke="#333" fill="none" stroke-width="2"/>
+                        <rect x="170" y="70" width="40" height="100" fill="#AED6F1"/>
+                        <circle cx="190" cy="150" r="10" fill="#7D6608"/> <text x="220" y="70" font-size="12">V2 = 75ml</text>
+                    </svg>
+                </div>
+
+                <p>Un estudiante sumerge una piedra en una probeta. El nivel inicial del agua (V1) era 50 ml. Al meter la piedra, el nivel sube a 75 ml (V2). </p>
+                <p><strong>Pregunta:</strong> ¿Cuál es el procedimiento correcto para hallar el volumen de la piedra y cuál es el resultado?</p>
+
+                <div class="mcq-options">
+                    <button onclick="checkICFES('a')">A. Sumar los dos volúmenes: 50 + 75 = 125 ml.</button>
+                    <button onclick="checkICFES('b')">B. Restar el volumen final menos el inicial: 75 - 50 = 25 ml.</button>
+                    <button onclick="checkICFES('c')">C. Dividir el volumen final entre el inicial: 75 / 50 = 1.5 ml.</button>
+                    <button onclick="checkICFES('d')">D. Multiplicar ambos volúmenes para obtener el área.</button>
+                </div>
+                <div id="fb-icfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>📘 Parte 2: Matemáticas y Tabla Periódica</h2>
+            
+            <p>Ahora que sabemos cómo medir el volumen (con agua desplazada) y la masa (con una balanza), podemos calcular la densidad con exactitud matemática. La fórmula mágica es:</p>
+            
+            <div style="text-align: center; font-size: 1.5em; background: #FFF; padding: 10px; border: 2px solid var(--primary); margin: 10px auto; width: 200px;">
+                d = m / v
+            </div>
+            <p style="text-align: center;"><em>Densidad es igual a Masa dividida por Volumen</em></p>
+
+            <p><strong>¿Qué tiene que ver la Tabla Periódica?</strong><br>
+            Cada elemento de la tabla periódica tiene una densidad única, como si fuera su huella digital. Esto depende de qué tan pesados son sus átomos y qué tan juntos están empacados.</p>
+
+            <table>
+                <caption>Densidades de Sustancias Comunes (a 20°C)</caption>
+                <thead>
+                    <tr><th>Sustancia</th><th>Densidad (g/cm³)</th><th>¿Flota en agua? (d=1.0)</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Madera de Balsa</td><td>0.16</td><td>Sí (Flota mucho)</td></tr>
+                    <tr><td>Agua</td><td>1.00</td><td>-</td></tr>
+                    <tr><td>Aluminio (Al)</td><td>2.70</td><td>No</td></tr>
+                    <tr><td>Hierro (Fe)</td><td>7.87</td><td>No (Se hunde rápido)</td></tr>
+                    <tr><td>Oro (Au)</td><td>19.32</td><td>No (¡Muy pesado!)</td></tr>
+                </tbody>
+            </table>
+
+            <p>Observa el Oro. ¡Es casi 20 veces más denso que el agua! Por eso, una pepita de oro pequeña se siente muy pesada en la mano, mientras que un trozo grande de aluminio se siente ligero.</p>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 6: Calculadora Humana</h4>
+                <p>Si una roca tiene una masa de 100 gramos y un volumen de 20 cm³, calcula su densidad (100 ÷ 20). Escribe el resultado en tu cuaderno y aquí.</p>
+                <input type="text" id="act6">
+                <button onclick="verifyNotebook('act6')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 7: El Triángulo Mágico</h4>
+                <p>Dibuja un triángulo dividido en 3. Arriba pon la 'm' (masa), abajo a la izquierda la 'd' (densidad) y a la derecha la 'v' (volumen). Esto sirve para despejar fórmulas. Escribe "Dibujado".</p>
+                <input type="text" id="act7">
+                <button onclick="verifyNotebook('act7')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 8: Falsificaciones</h4>
+                <p>La pirita ("oro de los tontos") brilla como el oro pero su densidad es solo 5.0 g/cm³. Si encuentras una piedra dorada y calculas su densidad en 5.0, ¿es oro real? Responde.</p>
+                <input type="text" id="act8">
+                <button onclick="verifyNotebook('act8')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 9: Unidades</h4>
+                <p>Las unidades de densidad suelen ser g/cm³ (gramos por centímetro cúbico) o kg/L. Escribe en tu cuaderno qué significan estas letras. Escribe "Entendido" aquí.</p>
+                <input type="text" id="act9">
+                <button onclick="verifyNotebook('act9')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 10: Importancia Industrial</h4>
+                <p>Los ingenieros deben elegir materiales según su densidad. ¿Por qué crees que los aviones se hacen de Aluminio y no de Hierro? (Mira la tabla). Responde.</p>
+                <input type="text" id="act10">
+                <button onclick="verifyNotebook('act10')">Verificar</button>
+            </div>
+        </section>
+
+        <section id="final">
+            <h2>🏆 Taller Final: Demuestra tu Saber</h2>
+            
+            <h3>Parte A: Selección Múltiple</h3>
+            <div class="notebook-activity">
+                <p>1. ¿Cuál es la fórmula correcta para calcular la densidad?</p>
+                <div class="mcq-options">
+                    <button onclick="checkFinalMCQ('f1', 'a', false)">d = v / m</button>
+                    <button onclick="checkFinalMCQ('f1', 'b', true)">d = m / v</button>
+                    <button onclick="checkFinalMCQ('f1', 'c', false)">d = m + v</button>
+                    <button onclick="checkFinalMCQ('f1', 'd', false)">d = m x v</button>
+                </div>
+            </div>
+
+            <div class="notebook-activity">
+                <p>2. Si un objeto tiene una densidad de 0.5 g/cm³ y lo echas al agua (densidad 1.0), ¿qué pasará?</p>
+                <div class="mcq-options">
+                    <button onclick="checkFinalMCQ('f2', 'a', false)">Se hunde inmediatamente.</button>
+                    <button onclick="checkFinalMCQ('f2', 'b', true)">Flotará en la superficie.</button>
+                    <button onclick="checkFinalMCQ('f2', 'c', false)">Se disolverá.</button>
+                    <button onclick="checkFinalMCQ('f2', 'd', false)">Quedará suspendido en el centro.</button>
+                </div>
+            </div>
+
+            <div class="notebook-activity">
+                <p>3. ¿Qué instrumento se usa para medir la masa de un objeto?</p>
+                <div class="mcq-options">
+                    <button onclick="checkFinalMCQ('f3', 'a', false)">Una probeta.</button>
+                    <button onclick="checkFinalMCQ('f3', 'b', false)">Un termómetro.</button>
+                    <button onclick="checkFinalMCQ('f3', 'c', true)">Una balanza.</button>
+                    <button onclick="checkFinalMCQ('f3', 'd', false)">Una regla.</button>
+                </div>
+            </div>
+
+            <div class="notebook-activity">
+                <p>4. ¿Por qué es importante medir con paciencia en el laboratorio?</p>
+                <div class="mcq-options">
+                    <button onclick="checkFinalMCQ('f4', 'a', false)">Para no aburrirse.</button>
+                    <button onclick="checkFinalMCQ('f4', 'b', true)">Para reducir errores y obtener datos precisos.</button>
+                    <button onclick="checkFinalMCQ('f4', 'c', false)">Porque los instrumentos son lentos.</button>
+                    <button onclick="checkFinalMCQ('f4', 'd', false)">No es importante.</button>
+                </div>
+            </div>
+
+             <div class="notebook-activity">
+                <p>5. ¿Cuál de estos metales es el más denso según lo visto?</p>
+                <div class="mcq-options">
+                    <button onclick="checkFinalMCQ('f5', 'a', false)">Aluminio</button>
+                    <button onclick="checkFinalMCQ('f5', 'b', true)">Oro</button>
+                    <button onclick="checkFinalMCQ('f5', 'c', false)">Hierro</button>
+                    <button onclick="checkFinalMCQ('f5', 'd', false)">Madera</button>
+                </div>
+            </div>
+
+            <h3>Parte B: Preguntas Abiertas (Responder entre 10 y 15 palabras)</h3>
+            <p><em>El sistema validará que tu respuesta tenga la extensión justa.</em></p>
+
+            <div class="notebook-activity">
+                <p>6. Define con tus palabras qué es la densidad.</p>
+                <input type="text" id="open1" placeholder="Tu respuesta aquí...">
+                <button onclick="validateOpen('open1')">Validar Extensión</button>
+                <div id="fb-open1" class="feedback"></div>
+            </div>
+
+            <div class="notebook-activity">
+                <p>7. Explica cómo Arquímedes midió el volumen de la corona.</p>
+                <input type="text" id="open2" placeholder="Tu respuesta aquí...">
+                <button onclick="validateOpen('open2')">Validar Extensión</button>
+                <div id="fb-open2" class="feedback"></div>
+            </div>
+
+            <div class="notebook-activity">
+                <p>8. ¿Qué relación existe entre el tamaño de los átomos y la densidad?</p>
+                <input type="text" id="open3" placeholder="Tu respuesta aquí...">
+                <button onclick="validateOpen('open3')">Validar Extensión</button>
+                <div id="fb-open3" class="feedback"></div>
+            </div>
+
+            <div class="notebook-activity">
+                <p>9. ¿Por qué es útil conocer la densidad de los materiales en ingeniería?</p>
+                <input type="text" id="open4" placeholder="Tu respuesta aquí...">
+                <button onclick="validateOpen('open4')">Validar Extensión</button>
+                <div id="fb-open4" class="feedback"></div>
+            </div>
+
+            <div class="notebook-activity">
+                <p>10. ¿Qué pasa si te equivocas al medir el volumen de una roca?</p>
+                <input type="text" id="open5" placeholder="Tu respuesta aquí...">
+                <button onclick="validateOpen('open5')">Validar Extensión</button>
+                <div id="fb-open5" class="feedback"></div>
+            </div>
+
+        </section>
+
+        <section style="text-align: center;">
+            <h2>¡Misión Cumplida!</h2>
+            <p>Descarga tus resultados para entregarlos a tu profesor.</p>
+            <button onclick="downloadResults()" style="font-size: 1.2em; background: var(--success);">📥 Descargar Reporte .txt</button>
+        </section>
+
+    </div>
+
+    <script>
+        // --- LÓGICA DEL SISTEMA ---
+        
+        const gameState = {
+            user: "",
+            score: 0,
+            answers: {},
+            totalTasks: 21, // 3 Pre + 10 Act + 1 ICFES + 5 MCQ + 2*5 Open = aprox
+            completedTasks: 0
+        };
+
+        // Elementos para Gamificación (Periodo 2: Li, Be, B, C, N...)
+        // Usaremos Nivel 1-5 con elementos simbólicos H, He, Li, Be, B
+        const levels = [
+            { num: 1, sym: "H", name: "Hidrógeno" },
+            { num: 2, sym: "He", name: "Helio" },
+            { num: 3, sym: "Li", name: "Litio" },
+            { num: 4, sym: "Be", name: "Berilio" },
+            { num: 5, sym: "B", name: "Boro" }
+        ];
+
+        // 1. Inicialización
+        window.onload = function() {
+            const saved = localStorage.getItem('OVA_Densidad_Data');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                gameState.user = parsed.user;
+                gameState.score = parsed.score;
+                gameState.answers = parsed.answers;
+                gameState.completedTasks = Object.keys(gameState.answers).length;
+                
+                if (gameState.user) {
+                    initApp();
+                }
+            }
+        };
+
+        function login() {
+            const name = document.getElementById('username').value.trim();
+            if (name.length > 2) {
+                gameState.user = name;
+                saveGame();
+                initApp();
+            } else {
+                alert("Por favor escribe tu nombre completo.");
+            }
+        }
+
+        function initApp() {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('top-bar').style.display = 'flex';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('display-name').textContent = gameState.user;
+            updateProgress();
+        }
+
+        function saveGame() {
+            localStorage.setItem('OVA_Densidad_Data', JSON.stringify(gameState));
+            updateProgress();
+        }
+
+        function updateProgress() {
+            // Calcular porcentaje
+            let percent = (gameState.completedTasks / 21) * 100;
+            if (percent > 100) percent = 100;
+
+            document.getElementById('progress-bar').style.width = percent + "%";
+
+            // Determinar Nivel (0-20% H, 21-40% He, etc)
+            let levelIndex = Math.floor(percent / 20);
+            if (levelIndex >= levels.length) levelIndex = levels.length - 1;
+
+            const lvl = levels[levelIndex];
+            document.getElementById('badge-num').textContent = lvl.num;
+            document.getElementById('badge-sym').textContent = lvl.sym;
+            
+            // Cambio de color según nivel
+            const badge = document.getElementById('badge');
+            if(levelIndex === 0) badge.style.borderColor = "#BDC3C7"; // Gris
+            if(levelIndex === 1) badge.style.borderColor = "#F1C40F"; // Amarillo
+            if(levelIndex === 2) badge.style.borderColor = "#E67E22"; // Naranja
+            if(levelIndex === 3) badge.style.borderColor = "#E74C3C"; // Rojo
+            if(levelIndex === 4) badge.style.borderColor = "#9B59B6"; // Morado
+        }
+
+        // 2. Lógica de Preguntas
+
+        // Selección Múltiple (Pre-saberes)
+        window.checkMCQ = function(id, option, isCorrect) {
+            if (gameState.answers[id]) return; // Ya respondida
+
+            const fb = document.getElementById('fb-' + id);
+            fb.style.display = 'block';
+
+            if (isCorrect) {
+                fb.className = 'feedback correct';
+                fb.innerHTML = "<strong>¡Correcto!</strong> Tu intuición científica es buena.";
+                gameState.score += 2;
+            } else {
+                fb.className = 'feedback incorrect';
+                fb.innerHTML = "<strong>Incorrecto.</strong> No te preocupes, sigue leyendo para descubrir por qué.";
+            }
+
+            gameState.answers[id] = option;
+            gameState.completedTasks++;
+            saveGame();
+        }
+
+        // Actividades Cuaderno
+        window.verifyNotebook = function(id) {
+            const val = document.getElementById(id).value.trim();
+            if (val.length < 2) {
+                alert("Por favor escribe algo válido.");
+                return;
+            }
+
+            if (!gameState.answers[id]) {
+                gameState.answers[id] = "Actividad completada: " + val;
+                gameState.completedTasks++;
+                gameState.score += 1;
+                alert("¡Muy bien! Actividad registrada. Asegúrate de tenerla en tu cuaderno.");
+                saveGame();
+            } else {
+                alert("Ya registraste esta actividad.");
+            }
+        }
+
+        // ICFES
+        window.checkICFES = function(option) {
+            if (gameState.answers['icfes']) return;
+
+            const fb = document.getElementById('fb-icfes');
+            fb.style.display = 'block';
+
+            if (option === 'b') {
+                fb.className = 'feedback correct';
+                fb.innerHTML = "<strong>¡Excelente!</strong> Restando el volumen final (75) menos el inicial (50) obtenemos el espacio que ocupó la piedra (25 ml). Así funciona el desplazamiento.";
+                gameState.score += 5;
+            } else {
+                fb.className = 'feedback incorrect';
+                let reason = "";
+                if(option === 'a') reason = "Sumarlos nos daría un volumen inexistente.";
+                if(option === 'c') reason = "Dividir no tiene sentido físico aquí.";
+                if(option === 'd') reason = "Multiplicar daría unidades cuadráticas, no volumen desplazado.";
+                fb.innerHTML = "<strong>Incorrecto.</strong> " + reason + " Intenta restar lo que tienes al final menos lo que tenías al principio.";
+            }
+
+            gameState.answers['icfes'] = option;
+            gameState.completedTasks++;
+            saveGame();
+        }
+
+        // Final MCQ
+        window.checkFinalMCQ = function(id, option, isCorrect) {
+            if(gameState.answers[id]) return;
+            
+            // Visual feedback on button directly
+            const btn = event.target;
+            
+            if(isCorrect) {
+                btn.style.background = "var(--success)";
+                gameState.score += 3;
+            } else {
+                btn.style.background = "var(--error)";
+            }
+            
+            gameState.answers[id] = option + (isCorrect ? " (Correcta)" : " (Incorrecta)");
+            gameState.completedTasks++;
+            saveGame();
+        }
+
+        // Final Open Questions (Word Count)
+        window.validateOpen = function(id) {
+            const text = document.getElementById(id).value;
+            // Contar palabras (separar por espacios)
+            const wordCount = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+            const fb = document.getElementById('fb-' + id);
+            fb.style.display = 'block';
+
+            if (wordCount >= 10 && wordCount <= 15) {
+                fb.className = 'feedback correct';
+                fb.innerText = `¡Perfecto! Tienes ${wordCount} palabras. Respuesta registrada.`;
+                
+                if (!gameState.answers[id]) {
+                    gameState.answers[id] = text;
+                    gameState.completedTasks++;
+                    gameState.score += 3;
+                    saveGame();
+                }
+            } else {
+                fb.className = 'feedback incorrect';
+                fb.innerText = `Tienes ${wordCount} palabras. Debes tener entre 10 y 15. Ajusta tu respuesta.`;
+            }
+        }
+
+        // Descarga
+        window.downloadResults = function() {
+            let txt = `REPORTE DE LABORATORIO: DENSIDAD\n`;
+            txt += `Estudiante: ${gameState.user}\n`;
+            txt += `Fecha: ${new Date().toLocaleDateString()}\n`;
+            txt += `Puntaje Obtenido: ${gameState.score} puntos\n`;
+            txt += `Nivel Alcanzado: ${document.getElementById('badge-sym').innerText} (Elemento)\n`;
+            txt += `------------------------------------\n`;
+            txt += `HISTORIAL DE RESPUESTAS:\n\n`;
+
+            for (let [key, val] of Object.entries(gameState.answers)) {
+                txt += `[${key}]: ${val}\n`;
+            }
+
+            const blob = new Blob([txt], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Reporte_${gameState.user.replace(/\s+/g, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+</html>

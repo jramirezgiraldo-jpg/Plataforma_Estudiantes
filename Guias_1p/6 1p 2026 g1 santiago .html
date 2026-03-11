@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Misión Científica de Santiago: El Comandante de la Materia</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    :root {
+        --army-green: #3e4e2a;
+        --car-red: #e63946;
+        --road-grey: #2b2d42;
+        --food-orange: #f3722c;
+        --bg-color: #f8f9fa;
+        --text-color: #1d3557;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1d3557 0%, #457b9d 100%);
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    /* Diseño de Pantalla Completa */
+    .full-container {
+        width: 95%;
+        max-width: 1400px;
+        background: white;
+        margin: 20px 0;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .header-banner {
+        background: var(--army-green);
+        color: white;
+        padding: 40px;
+        text-align: center;
+        border-bottom: 8px solid var(--car-red);
+    }
+
+    .header-banner h1 { margin: 0; font-size: 2.5rem; }
+    .header-banner p { font-size: 1.2rem; opacity: 0.9; }
+
+    .main-content { padding: 40px; }
+
+    /* Gamificación - Barra de Progreso */
+    .progress-section {
+        background: #f1faee;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        border: 2px solid var(--army-green);
+    }
+
+    .progress-bar-container {
+        height: 30px;
+        background: #ddd;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #ffb703, #fb8500);
+        transition: width 0.5s ease-in-out;
+    }
+
+    /* Misiones (Horas de Clase) */
+    .mission-block {
+        display: none; /* Se muestran por pasos */
+        animation: fadeIn 0.8s;
+    }
+
+    .active-mission { display: block; }
+
+    .card {
+        background: #fff;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        border-left: 10px solid var(--army-green);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .car-card { border-left-color: var(--car-red); }
+    .food-card { border-left-color: var(--food-orange); }
+
+    h2 { color: var(--army-green); display: flex; align-items: center; gap: 15px; }
+
+    /* Botones Interactivos */
+    .btn-next {
+        background: var(--car-red);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s;
+        display: block;
+        margin: 20px auto;
+    }
+
+    .btn-next:hover { transform: scale(1.1); background: #c1121f; }
+
+    .option-btn {
+        padding: 15px;
+        margin: 10px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        background: white;
+        cursor: pointer;
+        font-size: 1rem;
+        width: 250px;
+        transition: 0.2s;
+    }
+
+    .option-btn:hover { border-color: var(--car-red); background: #fff1f2; }
+    .correct { background: #dcfce7 !important; border-color: #22c55e !important; }
+
+    textarea {
+        width: 100%;
+        height: 100px;
+        padding: 15px;
+        border-radius: 10px;
+        border: 2px solid #ddd;
+        font-size: 1rem;
+        margin-top: 10px;
+    }
+
+    .notebook-instruction {
+        background: #fff9db;
+        padding: 15px;
+        border-radius: 10px;
+        border: 2px dashed #fab005;
+        margin: 15px 0;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .final-badge {
+        text-align: center;
+        display: none;
+    }
+
+    .final-badge img { width: 200px; }
+</style>
+</head>
+<body>
+
+<div class="full-container">
+    <div class="header-banner">
+        <h1>¡Hola, Santiago! Bienvido a tu Misión de Comandante Científico</h1>
+        <p>Hoy vamos a descubrir de qué está hecho tu mundo usando tus carros, soldados y comidas favoritas.</p>
+    </div>
+
+    <div class="main-content">
+        <div class="progress-section">
+            <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                <span>Progreso de la Misión</span>
+                <span id="progText">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-fill" id="barFill"></div>
+            </div>
+            <p id="rank" style="margin-top: 10px; color: var(--army-green); font-weight: bold;">Rango: Recluta de Ciencias 🕵️‍♂️</p>
+        </div>
+
+        <div id="m1" class="mission-block active-mission">
+            <h2>🪖 Misión 1: El Cuartel de los Sólidos (Hora 1)</h2>
+            <div class="card">
+                <p>Santiago, mira tus <strong>soldados de juguete</strong> y tus <strong>carros</strong>. Son duros, tienen una forma que no cambia y si los pones en una caja, siguen siendo iguales. ¡Eso es porque son <strong>SÓLIDOS</strong>!</p>
+                <p>La materia sólida tiene sus partes muy junticas, como soldados formados en fila sin moverse.</p>
+            </div>
+
+            <div class="card car-card">
+                <h3>🚗 Actividad Interactiva</h3>
+                <p>Haz clic en los objetos que sean <strong>SÓLIDOS</strong> para guardarlos en tu camión de transporte:</p>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+                    <button class="option-btn" onclick="checkSolid(this, true)">Tanque de Juguete</button>
+                    <button class="option-btn" onclick="checkSolid(this, false)">Jugo de Naranja</button>
+                    <button class="option-btn" onclick="checkSolid(this, true)">Tu Carro Rojo</button>
+                    <button class="option-btn" onclick="checkSolid(this, false)">Humo del fogón</button>
+                    <button class="option-btn" onclick="checkSolid(this, true)">Un plato de Arroz</button>
+                </div>
+            </div>
+
+            <div class="notebook-instruction">
+                <h3>✏️ Actividad en tu cuaderno</h3>
+                <p>Dibuja tu carro favorito y a su lado dibuja un soldado de juguete. Escribe debajo con color rojo: <strong>"LOS SÓLIDOS TIENEN FORMA PROPIA"</strong>.</p>
+            </div>
+            <button class="btn-next" onclick="nextMission(2)">¡Misión 1 Completada! Ir a la Hora 2 ➔</button>
+        </div>
+
+        <div id="m2" class="mission-block">
+            <h2>🥣 Misión 2: El Combustible y el Vapor (Hora 2)</h2>
+            <div class="card food-card">
+                <p>¡Santiago, qué hambre! Vamos a pensar en tu almuerzo favorito: <strong>frijoles, lentejas y un huevito</strong>.</p>
+                <ul>
+                    <li><strong>Líquido:</strong> El agua para cocinar los frijoles o el jugo que tomas. No tienen forma, toman la forma del vaso o la olla.</li>
+                    <li><strong>Gaseoso:</strong> ¿Ves el humo o vapor que sale de los frijoles calientes? ¡Eso es un gas! Las partes están muy separadas y vuelan por el aire.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>🧪 El Experimento del Huevito</h3>
+                <p>Santiago, antes de cocinar el <strong>huevito</strong>, por dentro es casi líquido. Pero cuando el calor lo toca, ¡pum!, se vuelve sólido. ¿Te gusta comerlo así?</p>
+                <textarea id="respHuevito" placeholder="Santiago, cuéntame: ¿De qué color es el huevito cuando ya está cocinado y es sólido?"></textarea>
+            </div>
+
+            <div class="notebook-instruction">
+                <h3>✏️ Actividad en tu cuaderno</h3>
+                <p>Haz una lista de 3 cosas líquidas que hay en tu cocina (Ejemplo: Leche, agua, aceite). Al lado, dibuja el vapor saliendo de una olla de frijoles para representar el <strong>GAS</strong>.</p>
+            </div>
+            <button class="btn-next" onclick="nextMission(3)">¡Misión 2 Completada! Ir a la Hora 3 ➔</button>
+        </div>
+
+        <div id="m3" class="mission-block">
+            <h2>🏁 Misión 3: El Gran Desfile de Materiales (Hora 3)</h2>
+            <div class="card car-card">
+                <p>Última hora, Comandante Santiago. Debemos clasificar qué es de la naturaleza y qué ha fabricado el hombre (Artificial).</p>
+                <p>Tus <strong>carros de metal</strong> son artificiales. Las <strong>lentejas y el arroz</strong> son naturales porque vienen de la tierra.</p>
+            </div>
+
+            <div class="card">
+                <h3>🎮 Juego: El Inspector de Materiales</h3>
+                <p>Escribe <strong>NATURAL</strong> o <strong>ARTIFICIAL</strong> según corresponda:</p>
+                <p>1. Un soldado de plástico: <input type="text" id="j1" placeholder="..."> (Pista: Lo hizo una fábrica)</p>
+                <p>2. Un grano de fríjol: <input type="text" id="j2" placeholder="..."> (Pista: Viene de una planta)</p>
+                <button class="btn-next" onclick="checkGame()">Verificar mi Inteligencia</button>
+            </div>
+
+            <div class="notebook-instruction">
+                <h3>✏️ Actividad Final en el cuaderno</h3>
+                <p>Divide una hoja en dos. En un lado dibuja cosas <strong>Naturales</strong> (Arroz, madera, agua). En el otro dibuja cosas <strong>Artificiales</strong> (Tus carros, tus soldados, tu televisor).</p>
+            </div>
+            <button class="btn-next" onclick="finishAll()">¡TERMINAR TODA LA MISIÓN! 🎖️</button>
+        </div>
+
+        <div id="final" class="final-badge">
+            <h1 style="color: #ffb703;">🎖️ ¡FELICITACIONES, COMANDANTE SANTIAGO! 🎖️</h1>
+            <p style="font-size: 1.5rem;">Has demostrado ser un experto en la materia de tu mundo.</p>
+            <img src="https://cdn-icons-png.flaticon.com/512/610/610333.png" alt="Medalla de Oro">
+            <p>Ahora puedes ir a jugar con tus carros y soldados, ¡porque ya sabes de qué están hechos!</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let progress = 0;
+
+    function updateProgress(amount) {
+        progress += amount;
+        if(progress > 100) progress = 100;
+        document.getElementById('barFill').style.width = progress + '%';
+        document.getElementById('progText').innerText = progress + '%';
+        
+        if(progress >= 30) document.getElementById('rank').innerText = "Rango: Sargento de la Ciencia 🎖️";
+        if(progress >= 60) document.getElementById('rank').innerText = "Rango: Capitán de los Átomos 🚀";
+        if(progress >= 100) document.getElementById('rank').innerText = "Rango: COMANDANTE SUPREMO SANTIAGO 🏆";
+    }
+
+    function checkSolid(btn, isCorrect) {
+        if(isCorrect) {
+            btn.classList.add('correct');
+            btn.innerText = "¡SÍ! ✅";
+            updateProgress(5);
+        } else {
+            btn.style.background = "#ffccd5";
+            btn.innerText = "Este fluye... 💧";
+        }
+    }
+
+    function nextMission(num) {
+        document.querySelectorAll('.mission-block').forEach(m => m.classList.remove('active-mission'));
+        document.getElementById('m' + num).classList.add('active-mission');
+        window.scrollTo(0,0);
+        updateProgress(10);
+    }
+
+    function checkGame() {
+        let r1 = document.getElementById('j1').value.toLowerCase();
+        let r2 = document.getElementById('j2').value.toLowerCase();
+        
+        if(r1.includes('art') && r2.includes('nat')) {
+            alert("¡Excelente Santiago! Eres un gran observador.");
+            updateProgress(20);
+        } else {
+            alert("Revisa bien, Santiago. Recuerda que las plantas son naturales.");
+        }
+    }
+
+    function finishAll() {
+        document.querySelectorAll('.mission-block').forEach(m => m.style.display = 'none');
+        document.getElementById('final').style.display = 'block';
+        updateProgress(30);
+    }
+</script>
+
+</body>
+</html>

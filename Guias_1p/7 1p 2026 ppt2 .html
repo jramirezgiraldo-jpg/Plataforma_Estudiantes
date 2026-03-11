@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>El átomo y su estructura - Prof. Juan Felipe Ramírez Giraldo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root{
+            --color1:#1e3c72;
+            --color2:#2a5298;
+            --color3:#ffcc00;
+            --color4:#ff6f61;
+            --color5:#00c9a7;
+        }
+        *{box-sizing:border-box;}
+        body{
+            margin:0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: radial-gradient(circle at top, #222, #050816);
+            color:#fff;
+            overflow:hidden;
+        }
+        h1,h2,h3{margin:0 0 10px;}
+        .container{
+            width:100vw;
+            height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            position:relative;
+        }
+        .slide{
+            width:90%;
+            max-width:1000px;
+            height:85vh;
+            background:rgba(0,0,0,0.7);
+            border-radius:20px;
+            box-shadow:0 0 25px rgba(0,0,0,0.8);
+            padding:20px 30px 70px;
+            display:none;
+            position:relative;
+            overflow:hidden;
+        }
+        .slide.active{display:block;animation:fadeIn 0.6s ease;}
+        @keyframes fadeIn{
+            from{opacity:0; transform:scale(0.96);}
+            to{opacity:1; transform:scale(1);}
+        }
+        .nav-buttons{
+            position:absolute;
+            bottom:15px;
+            left:0;
+            width:100%;
+            display:flex;
+            justify-content:space-between;
+            padding:0 25px;
+            align-items:center;
+        }
+        button{
+            padding:8px 16px;
+            border:none;
+            border-radius:20px;
+            cursor:pointer;
+            font-weight:bold;
+            transition:transform 0.2s, box-shadow 0.2s, background 0.3s;
+        }
+        .btn-prev{background:#555; color:#fff;}
+        .btn-next{background:linear-gradient(135deg,var(--color3),var(--color4)); color:#000;}
+        button:hover{transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,0.4);}
+        button:disabled{opacity:0.3; cursor:not-allowed; box-shadow:none; transform:none;}
+
+        .top-bar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:10px;
+        }
+        .tag{
+            font-size:0.85rem;
+            padding:4px 10px;
+            border-radius:20px;
+            background:rgba(255,255,255,0.1);
+        }
+        .progress{
+            width:180px;
+            height:8px;
+            background:rgba(255,255,255,0.15);
+            border-radius:10px;
+            overflow:hidden;
+        }
+        .progress-inner{
+            height:100%;
+            width:0%;
+            background:linear-gradient(90deg,var(--color5),var(--color3));
+            transition:width 0.3s;
+        }
+        .points{
+            font-size:0.9rem;
+            padding:4px 12px;
+            border-radius:20px;
+            background:rgba(0,0,0,0.4);
+            border:1px solid rgba(255,255,255,0.2);
+        }
+
+        .columns{
+            display:grid;
+            grid-template-columns:1.3fr 1fr;
+            gap:20px;
+            height:calc(100% - 70px);
+        }
+        .full{
+            height:calc(100% - 70px);
+            overflow-y:auto;
+        }
+        .card{
+            background:rgba(255,255,255,0.05);
+            border-radius:15px;
+            padding:12px 15px;
+            margin-bottom:10px;
+            border:1px solid rgba(255,255,255,0.08);
+        }
+        .chip{
+            display:inline-block;
+            padding:3px 8px;
+            border-radius:12px;
+            font-size:0.7rem;
+            background:rgba(0,0,0,0.4);
+            margin-right:5px;
+            margin-bottom:5px;
+        }
+        ul{padding-left:18px; margin-top:5px;}
+        li{margin-bottom:4px;}
+
+        .orbit-scene{
+            position:relative;
+            width:100%;
+            height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .nucleus{
+            width:90px;
+            height:90px;
+            border-radius:50%;
+            background:radial-gradient(circle,var(--color3),var(--color4));
+            box-shadow:0 0 25px rgba(255,255,255,0.6);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:bold;
+            text-align:center;
+            font-size:0.9rem;
+        }
+        .orbit{
+            position:absolute;
+            border:1px dashed rgba(255,255,255,0.4);
+            border-radius:50%;
+            animation:spin 12s linear infinite;
+        }
+        .orbit-inner{width:170px;height:170px;}
+        .orbit-mid{width:240px;height:240px;animation-duration:18s;}
+        .orbit-outer{width:320px;height:320px;animation-duration:24s;}
+        @keyframes spin{
+            from{transform:rotate(0deg);}
+            to{transform:rotate(360deg);}
+        }
+        .electron{
+            width:20px;
+            height:20px;
+            border-radius:50%;
+            background:var(--color5);
+            box-shadow:0 0 12px rgba(0,201,167,0.9);
+            position:absolute;
+        }
+        .electron::after{
+            content:"e⁻";
+            font-size:0.7rem;
+            color:#000;
+            font-weight:bold;
+            position:absolute;
+            top:2px;
+            left:4px;
+        }
+
+        .pill{
+            display:inline-block;
+            padding:4px 10px;
+            border-radius:999px;
+            background:rgba(0,0,0,0.5);
+            margin-right:6px;
+            font-size:0.8rem;
+        }
+
+        .question-box{
+            margin-top:10px;
+            padding:10px;
+            background:rgba(0,0,0,0.6);
+            border-radius:10px;
+            border:1px solid rgba(255,255,255,0.15);
+        }
+        .question-box p{margin-bottom:8px;}
+        .question-box label{display:block; margin-bottom:4px; cursor:pointer;}
+
+        .feedback{
+            margin-top:6px;
+            padding:6px 8px;
+            border-radius:8px;
+            font-size:0.85rem;
+            display:none;
+        }
+        .feedback.ok{background:rgba(0,201,167,0.25); border:1px solid var(--color5);}
+        .feedback.bad{background:rgba(255,111,97,0.25); border:1px solid var(--color4);}
+
+        .badge{
+            display:inline-block;
+            background:linear-gradient(135deg,var(--color3),var(--color4));
+            color:#000;
+            padding:4px 10px;
+            border-radius:15px;
+            font-size:0.8rem;
+            font-weight:bold;
+            margin-bottom:8px;
+        }
+
+        a.link{
+            color:var(--color3);
+            text-decoration:none;
+            font-weight:bold;
+        }
+
+        .seed-legend{
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            margin-top:8px;
+        }
+        .seed{
+            display:flex;
+            align-items:center;
+            gap:5px;
+            font-size:0.85rem;
+        }
+        .seed-dot{
+            width:16px;height:16px;border-radius:50%;
+        }
+
+        .points-pop{
+            position:absolute;
+            top:10px;
+            right:210px;
+            font-size:0.9rem;
+            padding:4px 8px;
+            border-radius:10px;
+            background:rgba(0,0,0,0.7);
+            border:1px solid rgba(255,255,255,0.5);
+            display:none;
+            animation:pop 0.8s ease-out forwards;
+        }
+        @keyframes pop{
+            from{opacity:0; transform:translateY(-10px) scale(0.8);}
+            to{opacity:1; transform:translateY(0) scale(1);}
+        }
+        .hidden{display:none;}
+        .highlight{color:var(--color3); font-weight:bold;}
+
+        .full::-webkit-scrollbar{width:6px;}
+        .full::-webkit-scrollbar-thumb{
+            background:rgba(255,255,255,0.3);
+            border-radius:10px;
+        }
+        .full::-webkit-scrollbar-track{background:transparent;}
+
+        @media (max-width:800px){
+            .columns{grid-template-columns:1fr;}
+            .slide{height:90vh;padding:15px 15px 75px;}
+            .orbit-outer{display:none;}
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="pointsPop" class="points-pop">+10 pts</div>
+
+    <!-- Diapositiva 1: Presentación del docente y del tema -->
+    <div class="slide active" data-index="0">
+        <div class="top-bar">
+            <div class="tag">Tema: El átomo y su estructura</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner" id="progressBar"></div></div>
+                <div class="points" id="pointsBox">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <span class="badge">Bienvenidos y bienvenidas</span>
+                <h1>El átomo, sus partículas y el modelo de Bohr</h1>
+                <p>
+                    Docente: <span class="highlight">Juan Felipe Ramírez Giraldo</span><br>
+                    Licenciado en biología y educación ambiental.<br>
+                    Magíster en recursos digitales aplicados a la educación.<br>
+                    Estudiante de Doctorado en ciencias biomédicas.
+                </p>
+                <div class="card">
+                    <h3>Objetivo de aprendizaje</h3>
+                    <ul>
+                        <li>Reconocer y diferenciar protones, neutrones y electrones en la estructura del átomo.</li>
+                        <li>Representar un modelo de Bohr usando semillas o piedras de colores de la vereda.</li>
+                        <li>Reflexionar sobre el equilibrio de cargas cuando hay igual número de protones y electrones.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Evidencias de aprendizaje</h3>
+                    <ul>
+                        <li>Boceto en el cuaderno de un átomo con sus partículas identificadas.</li>
+                        <li>Modelo físico de Bohr elaborado con semillas/piedras de colores.</li>
+                        <li>Breve reflexión escrita sobre qué significa que un átomo sea neutro.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="orbit-scene">
+                <div class="nucleus">
+                    Núcleo<br>p⁺ + n⁰
+                </div>
+                <div class="orbit orbit-inner">
+                    <div class="electron" style="top:-10px; left:75px;"></div>
+                </div>
+                <div class="orbit orbit-mid">
+                    <div class="electron" style="top:100px; left:-10px;"></div>
+                    <div class="electron" style="top:100px; right:-10px;"></div>
+                </div>
+                <div class="orbit orbit-outer">
+                    <div class="electron" style="bottom:-8px; left:140px;"></div>
+                    <div class="electron" style="top:140px; right:-8px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev" disabled>&larr; Anterior</button>
+            <span>Diapositiva 1 / 10</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 2: ¿Qué es un átomo? -->
+    <div class="slide" data-index="1">
+        <div class="top-bar">
+            <div class="tag">Recordando conceptos básicos</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>¿Qué es un átomo?</h2>
+            <div class="card">
+                <p>
+                    Un átomo es la porción más pequeña de materia que conserva las propiedades de un elemento químico.
+                </p>
+            </div>
+            <div class="card">
+                <h3>Partes principales del átomo</h3>
+                <ul>
+                    <li><span class="highlight">Núcleo</span>: zona central donde se encuentran protones y neutrones.</li>
+                    <li><span class="highlight">Nube o corteza electrónica</span>: región alrededor del núcleo por donde “se mueven” los electrones.</li>
+                </ul>
+                <p>
+                    Aunque el átomo parece sólido, la mayor parte es espacio vacío entre el núcleo y los electrones.
+                </p>
+            </div>
+            <div class="question-box" data-question="q1">
+                <p><strong>Pregunta 1:</strong> ¿Cuál parte del átomo contiene protones y neutrones?</p>
+                <label><input type="radio" name="q1" value="a"> La nube de electrones</label>
+                <label><input type="radio" name="q1" value="b"> El núcleo</label>
+                <label><input type="radio" name="q1" value="c"> Toda la materia que lo rodea</label>
+                <button onclick="checkQuestion('q1','b')">Comprobar</button>
+                <div class="feedback" id="fb-q1"></div>
+            </div>
+            <p style="margin-top:10px;">
+                ✏️ En tu cuaderno: dibuja un átomo muy sencillo y señala con flechas el núcleo y la nube de electrones.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 2 / 10</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 3: Protones, neutrones y electrones -->
+    <div class="slide" data-index="2">
+        <div class="top-bar">
+            <div class="tag">Partículas subatómicas</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>Protones, neutrones y electrones</h2>
+                <div class="card">
+                    <span class="chip">Protones (p⁺)</span>
+                    <p>
+                        Tienen carga eléctrica positiva y se encuentran en el núcleo del átomo.
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="chip">Neutrones (n⁰)</span>
+                    <p>
+                        No tienen carga eléctrica (son neutros) y también se ubican en el núcleo.
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="chip">Electrones (e⁻)</span>
+                    <p>
+                        Tienen carga eléctrica negativa y se mueven alrededor del núcleo formando la nube electrónica.
+                    </p>
+                </div>
+                <div class="card">
+                    <h3>En resumen</h3>
+                    <ul>
+                        <li>Protones y neutrones forman el núcleo (también se les llama nucleones).</li>
+                        <li>Los electrones ocupan la región externa y son mucho más ligeros que protones y neutrones.</li>
+                    </ul>
+                </div>
+            </div>
+            <div>
+                <h3>Mini reto</h3>
+                <p>Arriba de cada línea, escribe en tu cuaderno si la partícula es positiva, negativa o neutra:</p>
+                <ul>
+                    <li>Protones: ____________</li>
+                    <li>Neutrones: ____________</li>
+                    <li>Electrones: ____________</li>
+                </ul>
+                <div class="question-box" data-question="q2">
+                    <p><strong>Pregunta 2:</strong> ¿Qué partículas se encuentran en el núcleo?</p>
+                    <label><input type="radio" name="q2" value="a"> Solo electrones</label>
+                    <label><input type="radio" name="q2" value="b"> Protones y neutrones</label>
+                    <label><input type="radio" name="q2" value="c"> Neutrones y electrones</label>
+                    <button onclick="checkQuestion('q2','b')">Comprobar</button>
+                    <div class="feedback" id="fb-q2"></div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 3 / 10</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 4: Átomos neutros y equilibrio de cargas -->
+    <div class="slide" data-index="3">
+        <div class="top-bar">
+            <div class="tag">Equilibrio de cargas</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Átomo neutro: equilibrio entre p⁺ y e⁻</h2>
+            <div class="card">
+                <p>
+                    Un átomo está en estado neutro cuando tiene el mismo número de protones (carga positiva) que de electrones (carga negativa).
+                </p>
+                <p>
+                    Las cargas positivas y negativas se equilibran y la carga eléctrica total del átomo es cero.
+                </p>
+            </div>
+            <div class="card">
+                <h3>Ejemplo sencillo</h3>
+                <ul>
+                    <li>Si un átomo tiene 8 protones, debe tener 8 electrones para ser neutro.</li>
+                    <li>Si gana o pierde electrones, deja de ser neutro y se convierte en ion.</li>
+                </ul>
+            </div>
+            <div class="question-box" data-question="q3">
+                <p><strong>Pregunta 3:</strong> Si un átomo tiene 6 protones y 6 electrones, su carga total es:</p>
+                <label><input type="radio" name="q3" value="a"> Positiva</label>
+                <label><input type="radio" name="q3" value="b"> Negativa</label>
+                <label><input type="radio" name="q3" value="c"> Neutra</label>
+                <button onclick="checkQuestion('q3','c')">Comprobar</button>
+                <div class="feedback" id="fb-q3"></div>
+            </div>
+            <p style="margin-top:10px;">
+                📝 En tu cuaderno: explica con tus palabras qué significa que un átomo esté “en equilibrio de cargas”.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 4 / 10</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 5: Modelo atómico de Bohr -->
+    <div class="slide" data-index="4">
+        <div class="top-bar">
+            <div class="tag">Modelo de Bohr</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>¿Qué propone el modelo de Bohr?</h2>
+                <div class="card">
+                    <p>
+                        Niels Bohr propuso que los electrones giran alrededor del núcleo en órbitas definidas llamadas niveles de energía.
+                    </p>
+                    <p>
+                        Cada órbita tiene una energía específica y los electrones pueden “saltar” de un nivel a otro ganando o perdiendo energía.
+                    </p>
+                </div>
+                <div class="card">
+                    <h3>Características clave</h3>
+                    <ul>
+                        <li>El núcleo permanece en el centro con protones y neutrones.</li>
+                        <li>Los electrones se representan en círculos (órbitas) alrededor del núcleo.</li>
+                        <li>Este modelo se usa mucho para explicar átomos sencillos como el hidrógeno.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="orbit-scene">
+                <div class="nucleus">
+                    p⁺ + n⁰
+                </div>
+                <div class="orbit orbit-inner">
+                    <div class="electron" style="top:-10px; left:75px;"></div>
+                </div>
+                <div class="orbit orbit-mid">
+                    <div class="electron" style="top:100px; left:-10px;"></div>
+                    <div class="electron" style="top:100px; right:-10px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 5 / 10</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 6: Actividad con semillas/piedras (planificación) -->
+    <div class="slide" data-index="5">
+        <div class="top-bar">
+            <div class="tag">Preparando el modelo con semillas</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Modelo de Bohr con semillas o piedras de la vereda</h2>
+            <div class="card">
+                <h3>Materiales sugeridos</h3>
+                <ul>
+                    <li>Semillas o piedras pequeñas de <span class="highlight">tres colores</span> diferentes.</li>
+                    <li>Cartón reciclado o cartulina.</li>
+                    <li>Pega, marcadores y lápiz.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Significado de los colores</h3>
+                <div class="seed-legend">
+                    <div class="seed">
+                        <div class="seed-dot" style="background:#ff4b5c;"></div> Protones (p⁺)
+                    </div>
+                    <div class="seed">
+                        <div class="seed-dot" style="background:#f0f0f0;"></div> Neutrones (n⁰)
+                    </div>
+                    <div class="seed">
+                        <div class="seed-dot" style="background:#00c9a7;"></div> Electrones (e⁻)
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Elección del átomo</h3>
+                <p>
+                    Elige un átomo sencillo (por ejemplo, oxígeno o nitrógeno) que tenga un número manejable de protones y electrones para representar su modelo de Bohr.
+                </p>
+                <p>
+                    Recuerda: el número de protones es igual al número de electrones si el átomo es neutro.
+                </p>
+            </div>
+            <p>
+                🧠 Piensa: ¿qué ventajas tiene usar materiales de la vereda (semillas, piedras) para aprender ciencia?
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 6 / 10</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 7: Pasos para construir el modelo -->
+    <div class="slide" data-index="6">
+        <div class="top-bar">
+            <div class="tag">Manos a la obra</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Pasos para construir tu modelo de Bohr</h2>
+            <ol>
+                <li>Dibuja un círculo grande en el centro del cartón: será el núcleo.</li>
+                <li>
+                    Coloca dentro del núcleo semillas/piedras del color de protones y neutrones, respetando el número de protones del elemento elegido.
+                </li>
+                <li>Dibuja uno o varios círculos alrededor del núcleo: serán las órbitas o niveles de energía.</li>
+                <li>
+                    Ubica en las órbitas las semillas/piedras del color de los electrones, cuidando que su número sea igual al de protones si quieres un átomo neutro.
+                </li>
+                <li>Escribe al lado el nombre del elemento y su número de protones, neutrones y electrones.</li>
+            </ol>
+            <div class="question-box" data-question="q4">
+                <p><strong>Pregunta 4:</strong> ¿Dónde debes ubicar las semillas que representan los electrones?</p>
+                <label><input type="radio" name="q4" value="a"> Dentro del núcleo</label>
+                <label><input type="radio" name="q4" value="b"> En las órbitas alrededor del núcleo</label>
+                <label><input type="radio" name="q4" value="c"> Mezcladas con protones y neutrones</label>
+                <button onclick="checkQuestion('q4','b')">Comprobar</button>
+                <div class="feedback" id="fb-q4"></div>
+            </div>
+            <p style="margin-top:10px;">
+                📸 Evidencia: toma una foto de tu modelo terminado para compartirla con tu docente.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 7 / 10</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 8: Reflexión sobre el equilibrio -->
+    <div class="slide" data-index="7">
+        <div class="top-bar">
+            <div class="tag">Reflexión: equilibrio en el átomo</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>¿Qué nos enseña el equilibrio entre p⁺ y e⁻?</h2>
+            <div class="card">
+                <p>
+                    Cuando un átomo tiene el mismo número de protones y electrones, sus cargas se cancelan y el átomo es neutro.
+                </p>
+                <p>
+                    Ese equilibrio nos recuerda que en la naturaleza muchas cosas funcionan gracias a fuerzas opuestas que se compensan.
+                </p>
+            </div>
+            <div class="card">
+                <h3>Actividad de reflexión escrita</h3>
+                <p>En tu cuaderno escribe un párrafo respondiendo:</p>
+                <ul>
+                    <li>¿Qué ocurre si hay más protones que electrones?</li>
+                    <li>¿Y si hay más electrones que protones?</li>
+                    <li>¿Cómo relacionas ese equilibrio del átomo con el equilibrio en tu vida cotidiana?</li>
+                </ul>
+            </div>
+            <div class="question-box" data-question="q5">
+                <p><strong>Pregunta 5:</strong> Marca la opción correcta.</p>
+                <label><input type="radio" name="q5" value="a"> Un átomo con 10 p⁺ y 8 e⁻ es neutro.</label>
+                <label><input type="radio" name="q5" value="b"> Un átomo con 10 p⁺ y 10 e⁻ es neutro.</label>
+                <label><input type="radio" name="q5" value="c"> Un átomo con 0 p⁺ y 10 e⁻ es neutro.</label>
+                <button onclick="checkQuestion('q5','b')">Comprobar</button>
+                <div class="feedback" id="fb-q5"></div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 8 / 10</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 9: Autoevaluación rápida -->
+    <div class="slide" data-index="8">
+        <div class="top-bar">
+            <div class="tag">Autoevaluación</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>¿Qué tanto aprendí?</h2>
+            <div class="card">
+                <p>Responde en tu cuaderno y luego verifica mentalmente:</p>
+                <ol>
+                    <li>Escribe la definición de átomo que recuerdes.</li>
+                    <li>Indica qué partícula tiene carga positiva, cuál no tiene carga y cuál tiene carga negativa.</li>
+                    <li>Explica qué representa cada color de semilla en tu modelo de Bohr.</li>
+                    <li>Di cuándo un átomo es neutro.</li>
+                </ol>
+            </div>
+            <div class="card">
+                <h3>Checklist personal</h3>
+                <p>Marca con ✔️ en tu cuaderno:</p>
+                <ul>
+                    <li>Comprendí qué es un átomo y sus partes.</li>
+                    <li>Puedo señalar protones, neutrones y electrones en un dibujo.</li>
+                    <li>Sé construir un modelo de Bohr con semillas o piedras.</li>
+                    <li>Entiendo el equilibrio entre protones y electrones.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 9 / 10</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 10: Cierre y proyección -->
+    <div class="slide" data-index="9">
+        <div class="top-bar">
+            <div class="tag">Cierre del aprendizaje</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Lo que logramos hoy</h2>
+            <div class="card">
+                <h3>Saberes alcanzados</h3>
+                <ul>
+                    <li>Reconocer protones, neutrones y electrones como las partículas que forman el átomo.</li>
+                    <li>Comprender el modelo de Bohr como una forma sencilla de representar el átomo.</li>
+                    <li>Valorar el equilibrio entre protones y electrones para entender el estado neutro del átomo.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Actividad final (evidencia)</h3>
+                <p>
+                    Entrega a tu docente:
+                </p>
+                <ul>
+                    <li>Foto o vídeo corto explicando tu modelo de Bohr con semillas/piedras.</li>
+                    <li>Tu reflexión escrita sobre el equilibrio de cargas en el átomo.</li>
+                </ul>
+            </div>
+            <p>
+                🌟 ¡Felicitaciones! Has dado un paso importante para entender cómo está formada toda la materia que te rodea.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 10 / 10</span>
+            <button class="btn-next" disabled>Fin</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+    let points = 0;
+
+    function updateSlide(index){
+        slides.forEach((s,i)=>{
+            s.classList.toggle('active', i === index);
+            const pBar = s.querySelector('.progress-inner');
+            const pBox = s.querySelector('.points');
+            if(pBar){
+                const progress = ((index+1)/totalSlides)*100;
+                pBar.style.width = progress + '%';
+            }
+            if(pBox){
+                pBox.textContent = 'Puntos: ' + points;
+            }
+            const label = s.querySelector('.nav-buttons span');
+            if(label){
+                label.textContent = 'Diapositiva ' + (index+1) + ' / ' + totalSlides;
+            }
+            const prevBtn = s.querySelector('.btn-prev');
+            const nextBtn = s.querySelector('.btn-next');
+            if(prevBtn){
+                prevBtn.onclick = ()=>changeSlide(-1);
+                prevBtn.disabled = (index===0);
+            }
+            if(nextBtn){
+                nextBtn.onclick = ()=>changeSlide(1);
+                if(index===totalSlides-1){
+                    nextBtn.disabled = true;
+                }
+            }
+        });
+    }
+
+    function changeSlide(direction){
+        const newIndex = currentSlide + direction;
+        if(newIndex>=0 && newIndex<totalSlides){
+            currentSlide = newIndex;
+            updateSlide(currentSlide);
+        }
+    }
+
+    function showPointsPop(){
+        const pop = document.getElementById('pointsPop');
+        pop.style.display='block';
+        pop.style.animation='none';
+        void pop.offsetWidth;
+        pop.style.animation='pop 0.8s ease-out forwards';
+        setTimeout(()=>{ pop.style.display='none'; },800);
+    }
+
+    function checkQuestion(qId, correct){
+        const selected = document.querySelector('input[name="'+qId+'"]:checked');
+        const fb = document.getElementById('fb-'+qId);
+        if(!fb) return;
+        if(!selected){
+            fb.textContent = 'Primero selecciona una respuesta.';
+            fb.className = 'feedback bad';
+            fb.style.display='block';
+            return;
+        }
+        if(selected.value === correct){
+            fb.textContent = '¡Muy bien! Respuesta correcta.';
+            fb.className = 'feedback ok';
+            if(!fb.dataset.counted){
+                points += 10;
+                fb.dataset.counted = 'true';
+                showPointsPop();
+                updateSlide(currentSlide);
+            }
+        }else{
+            fb.textContent = 'No es correcto. Revisa la explicación de la diapositiva.';
+            fb.className = 'feedback bad';
+        }
+        fb.style.display='block';
+    }
+
+    updateSlide(currentSlide);
+</script>
+</body>
+</html>

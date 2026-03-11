@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Mecanismos de Reacción y Neutralización</title>
+    <style>
+        :root {
+            --primary: #1a2a6c;
+            --secondary: #b21f1f;
+            --accent: #fdbb2d;
+            --bg: #f4f7f6;
+            --text: #2c3e50;
+            --white: #ffffff;
+            --success: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* --- Pantalla de Logueo --- */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* --- Barra de Progreso --- */
+        header {
+            position: sticky;
+            top: 0;
+            background: var(--white);
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 900;
+            display: none;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, var(--accent), var(--success));
+            transition: width 0.5s ease;
+        }
+
+        /* --- Contenido --- */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        section {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 15px;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h1, h2, h3 { color: var(--primary); }
+
+        .svg-box {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1rem;
+            background: #fafafa;
+            border-radius: 10px;
+        }
+
+        .activity-card {
+            border-left: 5px solid var(--accent);
+            background: #fff9e6;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover { background: var(--secondary); }
+
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 5px;
+            display: none;
+        }
+
+        /* --- Evaluación --- */
+        .quiz-option {
+            display: block;
+            margin: 10px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .quiz-option:hover { background: #e9ecef; }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        #fortalecimiento-box {
+            display: none;
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            padding: 2rem;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>Laboratorio de Química de Suelos</h2>
+            <p>Ingresa tus datos para iniciar la simulación</p>
+            <input type="text" id="user-name" placeholder="Nombres y Apellidos">
+            <br><br>
+            <button class="btn" onclick="iniciarSesion()">Ingresar al OVA</button>
+        </div>
+    </div>
+
+    <header id="main-header">
+        <div class="container" style="padding: 0;">
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Estudiante: <span id="display-name"></span></strong>
+                <strong>Elemento: <span id="current-element">Hidrógeno (H)</span></strong>
+            </div>
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container" id="content-container" style="display: none;">
+        
+        <section id="inicio">
+            <h1>Objetivo de Aprendizaje</h1>
+            <p>Al finalizar esta unidad, podrás clasificar reacciones de descomposición y neutralización mediante la simulación de corrección de suelos ácidos, relacionando estos procesos químicos con la resolución pacífica de conflictos en tu comunidad.</p>
+            
+            <h3>Pre-saberes</h3>
+            <div class="activity-card">
+                <p>1. ¿Qué sucede cuando mezclas una sustancia ácida con una básica?</p>
+                <button class="btn" onclick="checkPre(1, 'correct')">Se neutralizan</button>
+                <button class="btn" onclick="checkPre(1, 'wrong')">Explotan siempre</button>
+                <div id="pre-fb-1" class="feedback"></div>
+            </div>
+            <div class="activity-card">
+                <p>2. ¿Cuál es el pH de un suelo ideal para la mayoría de los cultivos?</p>
+                <button class="btn" onclick="checkPre(2, 'wrong')">pH 1 (Muy ácido)</button>
+                <button class="btn" onclick="checkPre(2, 'correct')">pH 6.5 - 7 (Casi neutro)</button>
+                <div id="pre-fb-2" class="feedback"></div>
+            </div>
+            <div class="activity-card">
+                <p>3. ¿Qué representa una reacción de descomposición?</p>
+                <button class="btn" onclick="checkPre(3, 'correct')">Una sustancia se divide en varias</button>
+                <button class="btn" onclick="checkPre(3, 'wrong')">Varias se unen en una</button>
+                <div id="pre-fb-3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>Mecanismos Inductivos: El lenguaje de la Tierra</h2>
+            <div class="text-content">
+                <p>Imagina que caminas por una vereda donde los cultivos de café lucen amarillentos y pequeños. El agricultor, preocupado, te comenta que la tierra está "agria". En química, esto significa que el suelo tiene una alta concentración de iones Hidrógeno (H+), lo cual lo hace ácido. Para corregir este problema, el campesino utiliza "cal" (Carbonato de Calcio). Pero, ¿qué sucede realmente a nivel molecular?</p>
+                
+                <p>Observamos primero un fenómeno de <strong>descomposición</strong>. La cal, al entrar en contacto con la humedad y otros factores, inicia un proceso donde las moléculas complejas se rompen para liberar los componentes que actuarán sobre la acidez. Es como desarmar una estructura para usar sus ladrillos de forma más eficiente. En la naturaleza, nada se pierde; simplemente se reorganiza para buscar un nuevo equilibrio.</p>
+                
+                <div class="svg-box">
+                    <svg width="400" height="200" viewBox="0 0 400 200">
+                        <rect x="20" y="50" width="150" height="100" fill="#e74c3c" opacity="0.3" />
+                        <text x="50" y="40" font-weight="bold">Suelo Ácido</text>
+                        <circle cx="50" cy="80" r="5" fill="red" /> <text x="60" y="85">H+</text>
+                        <circle cx="100" cy="120" r="5" fill="red" /> <text x="110" y="125">H+</text>
+                        
+                        <path d="M190 100 L230 100" stroke="black" stroke-width="2" marker-end="url(#arrow)" />
+                        
+                        <rect x="240" y="50" width="150" height="100" fill="#2ecc71" opacity="0.3" />
+                        <text x="270" y="40" font-weight="bold">Suelo Neutralizado</text>
+                        <circle cx="280" cy="100" r="10" fill="blue" /> <text x="295" y="105">H2O</text>
+                        <circle cx="340" cy="80" r="8" fill="gray" /> <text x="350" y="85">Sal</text>
+                        
+                        <defs>
+                            <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+                                <path d="M0,0 L0,6 L9,3 z" fill="#000" />
+                            </marker>
+                        </defs>
+                    </svg>
+                    <p><em>Esquema 1: Transmisión de un estado ácido a uno neutro mediante enmiendas.</em></p>
+                </div>
+
+                <p>La neutralización es el mecanismo de reacción donde un ácido y una base reaccionan para formar agua y una sal. Es el "abrazo" químico definitivo. En nuestro sentido de vida, los conflictos funcionan igual. Un conflicto es como un suelo ácido: quema, detiene el crecimiento y genera amargura. Resolver un conflicto no es ignorarlo, sino aplicar un mecanismo de "neutralización" donde la base (el respeto y la escucha) reacciona con el ácido (la ira o el malentendido) para producir algo nuevo: la paz (agua y sal, elementos estables).</p>
+
+                <p>Al igual que en la química, si aplicamos demasiada cal o poca, el equilibrio no se alcanza. La precisión en nuestras reacciones —químicas y humanas— es la clave para la fertilidad del territorio y del espíritu.</p>
+            </div>
+
+            <div class="activity-card">
+                <h3>Actividades para el Cuaderno (Sección Inductiva)</h3>
+                <ol>
+                    <li>Dibuja el Esquema 1 en tu cuaderno usando colores. <button class="btn" onclick="checkActivity(1)">Verificar</button></li>
+                    <li>Crea una tabla comparativa entre un suelo ácido y uno neutralizado. <button class="btn" onclick="checkActivity(2)">Verificar</button></li>
+                    <li>Escribe una lista de 3 "ácidos" (actitudes negativas) que ves en tu colegio. <button class="btn" onclick="checkActivity(3)">Verificar</button></li>
+                    <li>Dibuja una molécula de agua (H2O) y explica por qué es neutra. <button class="btn" onclick="checkActivity(4)">Verificar</button></li>
+                    <li>Diseña un mapa mental sobre cómo la cal ayuda al agricultor. <button class="btn" onclick="checkActivity(5)">Verificar</button></li>
+                </ol>
+            </div>
+
+            <div class="activity-card">
+                <h3>Pregunta ICFES (Competencia Indagar)</h3>
+                <div class="svg-box">
+                    <svg width="300" height="150">
+                        <line x1="30" y1="120" x2="280" y2="120" stroke="black" />
+                        <line x1="30" y1="120" x2="30" y2="20" stroke="black" />
+                        <polyline points="30,30 80,40 130,80 180,110 230,120" fill="none" stroke="red" stroke-width="3" />
+                        <text x="10" y="15" font-size="12">Acidez (H+)</text>
+                        <text x="200" y="140" font-size="12">Cantidad de Cal</text>
+                    </svg>
+                </div>
+                <p>De acuerdo con la gráfica anterior, ¿qué relación existe entre la adición de cal y la acidez del suelo?</p>
+                <div class="quiz-option" onclick="checkIcfes('A')">A. A mayor cantidad de cal, mayor es la acidez.</div>
+                <div class="quiz-option" onclick="checkIcfes('B')">B. La cal no afecta la concentración de iones H+.</div>
+                <div class="quiz-option" onclick="checkIcfes('C')">C. La adición de cal disminuye proporcionalmente la acidez.</div>
+                <div class="quiz-option" onclick="checkIcfes('D')">D. El suelo se vuelve ácido al contacto con cualquier base.</div>
+                <div id="icfes-feedback" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>Mecanismos Deductivos: Las Leyes de la Reacción</h2>
+            <div class="text-content">
+                <p>Una vez que hemos observado la neutralización en el campo, podemos deducir las leyes universales que la rigen. Una reacción de neutralización sigue el modelo general: Ácido + Base produce Sal + Agua. Si analizamos la reacción de neutralización del ácido clorhídrico (HCl) con el hidróxido de sodio (NaOH), vemos que el ion Hidrógeno se une al grupo Hidroxilo para formar agua (H2O). Lo que queda (el Cloro y el Sodio) se une para formar Cloruro de Sodio (NaCl), la sal de mesa.</p>
+                
+                <p>Deducimos entonces que los mecanismos de reacción implican el rompimiento y la formación de nuevos enlaces químicos. En una reacción de <strong>descomposición</strong>, una sola sustancia reactiva se rompe para formar dos o más productos. Un ejemplo clásico es la descomposición del Carbonato de Calcio (CaCO3) mediante calor para producir Óxido de Calcio (CaO) y Dióxido de Carbono (CO2). Aquí, la energía es el motor que separa los átomos originales.</p>
+                
+                <div class="svg-box">
+                    <svg width="500" height="150" viewBox="0 0 500 150">
+                        <rect x="20" y="50" width="80" height="40" rx="5" fill="#3498db" />
+                        <text x="35" y="75" fill="white">CaCO3</text>
+                        <text x="110" y="75" font-size="24">+</text>
+                        <text x="140" y="75" font-style="italic">Calor</text>
+                        <line x1="200" y1="75" x2="250" y2="75" stroke="black" stroke-width="2" marker-end="url(#arrow)" />
+                        
+                        <rect x="270" y="50" width="80" height="40" rx="5" fill="#e67e22" />
+                        <text x="295" y="75" fill="white">CaO</text>
+                        <text x="360" y="75" font-size="24">+</text>
+                        <rect x="385" y="50" width="80" height="40" rx="5" fill="#95a5a6" />
+                        <text x="405" y="75" fill="white">CO2</text>
+                    </svg>
+                    <p><em>Esquema 2: Representación de una reacción de descomposición térmica.</em></p>
+                </div>
+
+                <p>Desde la deducción, entendemos que para que ocurra una reacción, las moléculas deben colisionar con suficiente energía y en la orientación correcta. Esto se llama Teoría de las Colisiones. Si aplicamos esto a la resolución de conflictos, entendemos que para "neutralizar" un problema, el acercamiento debe ser directo y con la "energía" correcta (empatía). Si el acercamiento es violento o mal orientado, la reacción será fallida y el conflicto persistirá.</p>
+
+                <p>Finalmente, la ley de conservación de la masa nos dice que la cantidad de materia al inicio de la reacción es igual a la del final. Nada desaparece. Por ello, en una neutralización, el "ácido" no desaparece mágicamente, sino que se transforma en algo útil o inofensivo. De igual forma, en un conflicto resuelto, las emociones no se borran, sino que se transforman en aprendizaje y resiliencia.</p>
+            </div>
+
+            <div class="activity-card">
+                <h3>Actividades para el Cuaderno (Sección Deductiva)</h3>
+                <ol>
+                    <li>Escribe la ecuación química de la neutralización entre HCl y NaOH. <button class="btn" onclick="checkActivity(6)">Verificar</button></li>
+                    <li>Define con tus palabras la "Teoría de las Colisiones". <button class="btn" onclick="checkActivity(7)">Verificar</button></li>
+                    <li>Haz un dibujo que represente la Ley de Conservación de la Masa. <button class="btn" onclick="checkActivity(8)">Verificar</button></li>
+                    <li>Identifica qué tipo de reacción es: 2H2O -> 2H2 + O2. <button class="btn" onclick="checkActivity(9)">Verificar</button></li>
+                    <li>Redacta un compromiso personal sobre cómo neutralizar un conflicto en tu casa. <button class="btn" onclick="checkActivity(10)">Verificar</button></li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="evaluacion">
+            <h2>Evaluación Final: Taller de Maestría</h2>
+            <div id="final-quiz">
+                <h3>Preguntas de Selección Múltiple</h3>
+                <div class="activity-card">
+                    <p>1. ¿Qué tipo de reacción ocurre cuando el CaCO3 se rompe en CaO y CO2?</p>
+                    <select id="q1">
+                        <option value="x">Selecciona...</option>
+                        <option value="des">Descomposición</option>
+                        <option value="neu">Neutralización</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>2. En una neutralización, los productos principales son:</p>
+                    <select id="q2">
+                        <option value="x">Selecciona...</option>
+                        <option value="sa">Sal y Agua</option>
+                        <option value="ab">Ácido y Base</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>3. El ion responsable de la acidez del suelo es:</p>
+                    <select id="q3">
+                        <option value="x">Selecciona...</option>
+                        <option value="h">Hidrógeno (H+)</option>
+                        <option value="oh">Hidroxilo (OH-)</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>4. ¿Qué concepto químico se relaciona con el respeto en un conflicto?</p>
+                    <select id="q4">
+                        <option value="x">Selecciona...</option>
+                        <option value="ba">Base neutralizadora</option>
+                        <option value="ac">Ácido corrosivo</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>5. La ley de conservación de la masa indica que:</p>
+                    <select id="q5">
+                        <option value="x">Selecciona...</option>
+                        <option value="con">La masa no se crea ni se destruye</option>
+                        <option value="des">La masa desaparece en la neutralización</option>
+                    </select>
+                </div>
+
+                <h3>Preguntas Abiertas (Análisis de Conflictos)</h3>
+                <p>Responde en un rango de 10 a 15 palabras exactas.</p>
+                <div class="activity-card">
+                    <p>6. ¿Cómo aplicarías la neutralización química para resolver una discusión con un compañero?</p>
+                    <textarea id="a6" oninput="validateOpen(6)"></textarea>
+                    <small id="c6">Palabras: 0</small>
+                </div>
+                <div class="activity-card">
+                    <p>7. Explica por qué la cal mejora la productividad de un suelo agrio.</p>
+                    <textarea id="a7" oninput="validateOpen(7)"></textarea>
+                    <small id="c7">Palabras: 0</small>
+                </div>
+                <div class="activity-card">
+                    <p>8. Describe qué sucede con los átomos durante una reacción de descomposición.</p>
+                    <textarea id="a8" oninput="validateOpen(8)"></textarea>
+                    <small id="c8">Palabras: 0</small>
+                </div>
+                <div class="activity-card">
+                    <p>9. ¿Cuál es la importancia de la precisión al neutralizar un suelo?</p>
+                    <textarea id="a9" oninput="validateOpen(9)"></textarea>
+                    <small id="c9">Palabras: 0</small>
+                </div>
+                <div class="activity-card">
+                    <p>10. Relaciona la formación de agua en la neutralización con la armonía social.</p>
+                    <textarea id="a10" oninput="validateOpen(10)"></textarea>
+                    <small id="c10">Palabras: 0</small>
+                </div>
+
+                <button class="btn" onclick="calificar()">Enviar Evaluación</button>
+            </div>
+
+            <div id="fortalecimiento-box">
+                <h2>Ruta de Fortalecimiento Personalizada</h2>
+                <p id="instruccion-pedagogica" style="font-weight: bold; color: var(--secondary);"></p>
+                <p id="refuerzo-texto"></p>
+                <br>
+                <button class="btn" onclick="descargarReporte()">Descargar Reporte Final</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let puntos = 0;
+        let actividadesCompletadas = 0;
+        const elementos = ["Hidrógeno (H)", "Helio (He)", "Litio (Li)", "Berilio (Be)", "Boro (B)", "Carbono (C)"];
+
+        // Gestión de Usuario
+        function iniciarSesion() {
+            const nombre = document.getElementById('user-name').value;
+            if (nombre.trim() === "") {
+                alert("Por favor ingresa tu nombre");
+                return;
+            }
+            localStorage.setItem('ova_usuario', nombre);
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('main-header').style.display = 'block';
+            document.getElementById('content-container').style.display = 'block';
+            document.getElementById('display-name').innerText = nombre;
+            cargarProgreso();
+        }
+
+        function cargarProgreso() {
+            const guardado = localStorage.getItem('ova_puntos');
+            if (guardado) {
+                puntos = parseFloat(guardado);
+                actualizarBarra();
+            }
+        }
+
+        function actualizarBarra() {
+            const porcentaje = (puntos / 5) * 100;
+            document.getElementById('progress-bar').style.width = porcentaje + '%';
+            let idx = Math.floor(puntos);
+            if (idx > 5) idx = 5;
+            document.getElementById('current-element').innerText = elementos[idx];
+            localStorage.setItem('ova_puntos', puntos);
+        }
+
+        // Interactividad
+        function checkPre(n, type) {
+            const fb = document.getElementById('pre-fb-' + n);
+            fb.style.display = 'block';
+            if (type === 'correct') {
+                fb.innerText = "¡Excelente! Tienes bases sólidas.";
+                fb.style.background = "#d4edda";
+                puntos = Math.min(5, puntos + 0.1);
+            } else {
+                fb.innerText = "No es exacto, pero lo aprenderás en esta unidad.";
+                fb.style.background = "#f8d7da";
+            }
+            actualizarBarra();
+        }
+
+        function checkActivity(n) {
+            alert("¡Actividad registrada en tu cuaderno virtual!");
+            puntos = Math.min(5, puntos + 0.1);
+            actualizarBarra();
+        }
+
+        function checkIcfes(ans) {
+            const fb = document.getElementById('icfes-feedback');
+            fb.style.display = 'block';
+            if (ans === 'C') {
+                fb.innerHTML = "<strong>Correcto:</strong> Al ser la cal una base, neutraliza los iones H+, disminuyendo la acidez de forma lineal.";
+                fb.style.background = "#d4edda";
+                puntos = Math.min(5, puntos + 0.5);
+            } else {
+                fb.innerHTML = "<strong>Incorrecto:</strong> Revisa la gráfica; a medida que aumenta el eje X (cal), el eje Y (acidez) baja.";
+                fb.style.background = "#f8d7da";
+            }
+            actualizarBarra();
+        }
+
+        function validateOpen(id) {
+            const text = document.getElementById('a' + id).value.trim();
+            const words = text === "" ? 0 : text.split(/\s+/).length;
+            const counter = document.getElementById('c' + id);
+            counter.innerText = "Palabras: " + words;
+            counter.style.color = (words >= 10 && words <= 15) ? "green" : "red";
+        }
+
+        // Calificación y Fortalecimiento
+        function calificar() {
+            let correctasInductivas = 0;
+            let correctasDeductivas = 0;
+
+            // MCQ
+            if (document.getElementById('q1').value === 'des') correctasInductivas++;
+            if (document.getElementById('q2').value === 'sa') correctasDeductivas++;
+            if (document.getElementById('q3').value === 'h') correctasInductivas++;
+            if (document.getElementById('q4').value === 'ba') correctasDeductivas++;
+            if (document.getElementById('q5').value === 'con') correctasDeductivas++;
+
+            // Abiertas (simulación de validación de extensión)
+            let abiertasValidas = 0;
+            for (let i = 6; i <= 10; i++) {
+                const text = document.getElementById('a' + i).value.trim();
+                const words = text === "" ? 0 : text.split(/\s+/).length;
+                if (words >= 10 && words <= 15) abiertasValidas++;
+            }
+
+            const totalAciertos = correctasInductivas + correctasDeductivas + abiertasValidas;
+            const notaFinal = (totalAciertos / 10) * 5;
+            puntos = notaFinal;
+            actualizarBarra();
+
+            const box = document.getElementById('fortalecimiento-box');
+            const instruccion = document.getElementById('instruccion-pedagogica');
+            const refuerzo = document.getElementById('refuerzo-texto');
+
+            box.style.display = 'block';
+            instruccion.innerText = "De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades:";
+
+            let mensaje = "";
+            if (correctasInductivas < 2) {
+                mensaje += "Debes fortalecer los conceptos básicos de observación. Repasa cómo se identifica visualmente un cambio químico en el suelo y la clasificación primaria de las reacciones. ";
+            }
+            if (correctasDeductivas < 3 || abiertasValidas < 3) {
+                mensaje += "Necesitas profundizar en la aplicación de leyes químicas. Estudia la Teoría de las Colisiones y la Ley de Conservación de la Masa para entender por qué las reacciones son predecibles. ";
+            }
+            if (totalAciertos === 10) {
+                mensaje = "¡Felicidades! Has alcanzado la maestría química. Tu capacidad para neutralizar suelos y conflictos es excepcional.";
+            }
+
+            refuerzo.innerText = mensaje;
+            localStorage.setItem('ova_refuerzo', mensaje);
+            box.scrollIntoView();
+        }
+
+        function descargarReporte() {
+            const nombre = localStorage.getItem('ova_usuario');
+            const nota = puntos.toFixed(1);
+            const elemento = document.getElementById('current-element').innerText;
+            const refuerzo = localStorage.getItem('ova_refuerzo');
+
+            const contenido = `REPORTE DE PROGRESO - QUÍMICA 10\n
+Estudiante: ${nombre}\n
+Nota Final: ${nota} / 5.0\n
+Elemento Alcanzado: ${elemento}\n
+Ruta de Fortalecimiento:\n${refuerzo}\n
+-----------------------------------\n
+Generado automáticamente por el Sistema OVA.`;
+
+            const blob = new Blob([contenido], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Reporte_${nombre}.txt`;
+            link.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Química Orgánica y Procesos del Quindío - Grado 11</title>
+    <style>
+        :root {
+            --coffee-dark: #3e2723;
+            --coffee-light: #d7ccc8;
+            --leaf-green: #2e7d32;
+            --citrus-orange: #ef6c00;
+            --lab-white: #ffffff;
+            --text-main: #212121;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--lab-white);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-top: 6px solid var(--coffee-dark);
+        }
+
+        /* HEADER */
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--leaf-green);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 { margin: 0; color: var(--coffee-dark); font-size: 2rem; }
+        h2 { margin: 10px 0 0; color: var(--leaf-green); font-size: 1.2rem; font-weight: normal; }
+        .context-note { font-style: italic; color: #555; font-size: 0.9rem; margin-top: 5px; }
+
+        /* LOGIN */
+        .login-panel {
+            background: var(--coffee-light);
+            padding: 20px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+            border: 1px solid #a1887f;
+        }
+
+        .input-group label { font-weight: bold; margin-right: 5px; color: var(--coffee-dark); }
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #8d6e63;
+            border-radius: 4px;
+            width: 200px;
+        }
+
+        /* SECCIONES */
+        .section-header {
+            background-color: var(--coffee-dark);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-top: 40px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .grid-container { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* TARJETAS DE JUEGO */
+        .game-card {
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 6px;
+            background: white;
+            transition: box-shadow 0.3s;
+            position: relative;
+        }
+        .game-card:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #757575;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .hint { font-weight: bold; color: var(--citrus-orange); font-size: 0.95rem; margin-bottom: 10px; display: block; }
+
+        /* ZONAS INTERACTIVAS */
+        .drop-zone {
+            min-height: 45px;
+            background: #fafafa;
+            border: 2px dashed #bdbdbd;
+            border-radius: 4px;
+            padding: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .drop-zone.filled { background: #e8f5e9; border-color: var(--leaf-green); }
+
+        /* FICHAS */
+        .tile {
+            background: white;
+            border: 1px solid var(--coffee-dark);
+            color: var(--coffee-dark);
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            user-select: none;
+            font-weight: bold;
+            box-shadow: 0 2px 0 #a1887f;
+            transition: transform 0.1s;
+        }
+        .tile:hover { background: var(--coffee-dark); color: white; transform: translateY(-2px); }
+        .tile.word { font-size: 0.85rem; background: #fff3e0; border-color: var(--citrus-orange); color: #e65100; }
+        .tile.word:hover { background: var(--citrus-orange); color: white; }
+
+        /* CONTROLES */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        button {
+            padding: 6px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+        .btn-check { background-color: var(--leaf-green); }
+        .btn-reset { background-color: #757575; }
+        .btn-check:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .feedback { margin-left: 10px; font-weight: bold; font-size: 0.9rem; }
+        .success { color: var(--leaf-green); }
+        .error { color: #c62828; }
+
+        /* PANEL FINAL */
+        #results-panel {
+            display: none;
+            margin-top: 50px;
+            padding: 40px;
+            background: #fff8e1; /* Cream color */
+            border: 2px solid var(--coffee-dark);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .periodic-element {
+            width: 150px;
+            height: 150px;
+            border: 5px solid #333;
+            margin: 20px auto;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+            font-family: serif;
+        }
+        
+        .atomic-number { align-self: flex-start; margin-left: 10px; font-size: 0.9rem; }
+        .symbol { font-size: 4rem; font-weight: bold; color: var(--text-main); margin: -10px 0; }
+        .mass { font-size: 0.8rem; }
+        .element-name { font-size: 1rem; text-transform: uppercase; margin-top: 5px; }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            background-color: var(--coffee-dark);
+            color: white;
+            margin-top: 30px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        .submit-btn:hover { background-color: #5d4037; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>☕ Química del Quindío & Procesos Pericíclicos</h1>
+        <h2>Reacciones, Aromas y Honestidad Técnica - Grado 11</h2>
+        <div class="context-note">"La precisión en la etiqueta es tan vital como la armonía en la reacción."</div>
+    </header>
+
+    <div class="login-panel">
+        <div class="input-group">
+            <label>Estudiante:</label>
+            <input type="text" id="fname" placeholder="Nombres">
+        </div>
+        <div class="input-group">
+            <label>Apellido:</label>
+            <input type="text" id="lname" placeholder="Apellidos">
+        </div>
+    </div>
+
+    <div class="section-header">I. Ciclación y Estructura (Ordenar Letras)</div>
+    <div class="grid-container" id="letters-grid"></div>
+
+    <div class="section-header">II. Procesos y Etiquetado Técnico (Ordenar Frases)</div>
+    <div class="grid-container" id="words-grid"></div>
+
+    <button class="submit-btn" onclick="finalize()">📈 ENTREGAR TALLER Y VER RESULTADO</button>
+
+    <div id="results-panel">
+        <h2 id="student-name"></h2>
+        <h3>Puntaje Final: <span id="final-score" style="font-size: 2rem; color: var(--coffee-dark);">0.0</span> / 5.0</h3>
+        <p id="feedback-msg" style="font-style: italic; margin-bottom: 20px;"></p>
+        <div id="element-reward"></div>
+    </div>
+</div>
+
+<script>
+    /* --- DATOS: 10 Juegos de Letras --- */
+    // Temas: Diels-Alder, Café, Cítricos, Seguridad, Nomenclatura
+    const letterGames = [
+        { id: 'L1', target: 'DIELSALDER', hint: 'Reacción famosa de cicloadición [4+2].' },
+        { id: 'L2', target: 'LIMONENO', hint: 'Terpeno cíclico responsable del aroma a cítricos.' },
+        { id: 'L3', target: 'CAFEINA', hint: 'Alcaloide del café, estructura heterocíclica.' },
+        { id: 'L4', target: 'AROMATICO', hint: 'Compuesto cíclico con resonancia (ej. Benceno).' },
+        { id: 'L5', target: 'SIGMATROPICO', hint: 'Reordenamiento donde migra un enlace sigma.' },
+        { id: 'L6', target: 'ETIQUETA', hint: 'Debe contener la información real del producto.' },
+        { id: 'L7', target: 'CONCERTADA', hint: 'Reacción que ocurre en un solo paso, sin intermedios.' },
+        { id: 'L8', target: 'ORBITALES', hint: 'Su simetría determina si la reacción es posible.' },
+        { id: 'L9', target: 'TOXICIDAD', hint: 'Dato vital a reportar en agroinsumos.' },
+        { id: 'L10', target: 'QUINDIO', hint: 'Departamento líder en producción agrícola orgánica.' }
+    ];
+
+    /* --- DATOS: 10 Juegos de Frases --- */
+    // Temas: Armonía natural, precisión IUPAC, honestidad.
+    const wordGames = [
+        { id: 'W1', target: 'LA REACCION DE DIELS ALDER FORMA CICLOS', hint: 'Principio básico de cicloadición.' },
+        { id: 'W2', target: 'EL LIMONENO ES UN COMPUESTO ORGANICO NATURAL', hint: 'Química de los cítricos.' },
+        { id: 'W3', target: 'LA NOMENCLATURA IUPAC GARANTIZA PRECISION TECNICA', hint: 'Importancia de los estándares.' },
+        { id: 'W4', target: 'EL ETIQUETADO HONESTO PREVIENE ACCIDENTES QUIMICOS', hint: 'Ética profesional.' },
+        { id: 'W5', target: 'LA SIMETRIA ORBITAL CONTROLA LA REACCION', hint: 'Teoría de Hoffmann-Woodward.' },
+        { id: 'W6', target: 'LOS AGROINSUMOS ORGANICOS PROTEGEN EL SUELO', hint: 'Contexto agrícola del Quindío.' },
+        { id: 'W7', target: 'LA CAFEINA TIENE UNA ESTRUCTURA HETEROCICLICA', hint: 'Química del café.' },
+        { id: 'W8', target: 'UN REORDENAMIENTO CAMBIA LA ESTRUCTURA INTERNA', hint: 'Definición de reacción.' },
+        { id: 'W9', target: 'LA VERDAD ES FUNDAMENTAL EN LA CIENCIA', hint: 'Valor ético.' },
+        { id: 'W10', target: 'LOS PROCESOS NATURALES BUSCAN LA ESTABILIDAD', hint: 'Armonía termodinámica.' }
+    ];
+
+    // Estado Global
+    const MAX_ATTEMPTS = 3;
+    let gameState = {};
+
+    /* --- INICIALIZACIÓN --- */
+    function init() {
+        const lContainer = document.getElementById('letters-grid');
+        const wContainer = document.getElementById('words-grid');
+
+        // Renderizar Letras
+        letterGames.forEach(g => renderGame(lContainer, g, 'letter'));
+        // Renderizar Palabras
+        wordGames.forEach(g => renderGame(wContainer, g, 'word'));
+    }
+
+    function renderGame(container, data, type) {
+        // Inicializar estado del juego específico
+        gameState[data.id] = {
+            attempts: 0,
+            solved: false,
+            score: 0,
+            target: data.target
+        };
+
+        const div = document.createElement('div');
+        div.className = 'game-card';
+        div.innerHTML = `
+            <div class="game-info">
+                <span>Ref: ${data.id}</span>
+                <span id="att-${data.id}">Intentos: 0/3</span>
+            </div>
+            <span class="hint">${data.hint}</span>
+            
+            <div class="drop-zone" id="src-${data.id}"></div>
+            <div class="drop-zone filled" id="dest-${data.id}"></div>
+
+            <div class="controls">
+                <div>
+                    <button class="btn-check" id="btn-${data.id}" onclick="check('${data.id}', '${type}')">Validar</button>
+                    <button class="btn-reset" onclick="reset('${data.id}', '${type}')">Reiniciar</button>
+                </div>
+                <span id="msg-${data.id}" class="feedback"></span>
+            </div>
+        `;
+        container.appendChild(div);
+        
+        // Llenar fichas iniciales
+        reset(data.id, type);
+    }
+
+    /* --- LÓGICA DEL JUEGO --- */
+    function reset(id, type) {
+        if(gameState[id].solved) return;
+
+        const src = document.getElementById(`src-${id}`);
+        const dest = document.getElementById(`dest-${id}`);
+        const msg = document.getElementById(`msg-${id}`);
+
+        src.innerHTML = '';
+        dest.innerHTML = '';
+        msg.textContent = '';
+
+        // Preparar partes (letras o palabras)
+        let parts = type === 'letter' 
+            ? gameState[id].target.split('') 
+            : gameState[id].target.split(' ');
+        
+        // Aleatorizar
+        parts.sort(() => Math.random() - 0.5);
+
+        // Crear elementos DOM
+        parts.forEach(part => {
+            const tile = document.createElement('div');
+            tile.className = type === 'letter' ? 'tile' : 'tile word';
+            tile.textContent = part;
+            
+            // Evento de movimiento
+            tile.onclick = function() {
+                if(gameState[id].solved) return;
+                
+                // Mover entre contenedores
+                if(this.parentNode === src) dest.appendChild(this);
+                else src.appendChild(this);
+            };
+            
+            src.appendChild(tile);
+        });
+    }
+
+    function check(id, type) {
+        if(gameState[id].solved) return;
+
+        const dest = document.getElementById(`dest-${id}`);
+        // Reconstruir respuesta
+        const userAns = Array.from(dest.children)
+            .map(t => t.textContent)
+            .join(type === 'letter' ? '' : ' ');
+        
+        const correct = gameState[id].target;
+        const msg = document.getElementById(`msg-${id}`);
+        const btn = document.getElementById(`btn-${id}`);
+
+        gameState[id].attempts++;
+        document.getElementById(`att-${id}`).textContent = `Intentos: ${gameState[id].attempts}/3`;
+
+        if(userAns === correct) {
+            // Acierto
+            msg.textContent = "¡Correcto! Proceso validado.";
+            msg.className = "feedback success";
+            gameState[id].solved = true;
+            gameState[id].score = calculateItemScore(gameState[id].attempts);
+            btn.disabled = true;
+            lockTiles(dest);
+        } else {
+            // Error
+            if(gameState[id].attempts >= MAX_ATTEMPTS) {
+                msg.textContent = "Agotado. Resp: " + correct;
+                msg.className = "feedback error";
+                gameState[id].solved = true;
+                gameState[id].score = 0;
+                btn.disabled = true;
+                lockTiles(dest);
+            } else {
+                msg.textContent = "Incorrecto. Revise la estructura.";
+                msg.className = "feedback error";
+            }
+        }
+    }
+
+    function calculateItemScore(tries) {
+        // 20 items en total. Max Global = 5.0.
+        // Base por item = 0.25
+        const base = 0.25;
+        if(tries === 1) return base * 1.0; // 0.25
+        if(tries === 2) return base * 0.7; // 0.175
+        if(tries === 3) return base * 0.4; // 0.1
+        return 0;
+    }
+
+    function lockTiles(container) {
+        Array.from(container.children).forEach(c => {
+            c.style.cursor = "default";
+            c.style.opacity = "0.9";
+            c.onclick = null;
+        });
+    }
+
+    /* --- FINALIZACIÓN --- */
+    function finalize() {
+        const f = document.getElementById('fname').value;
+        const l = document.getElementById('lname').value;
+
+        if(!f || !l) {
+            alert("Atención: Debe ingresar su Nombre y Apellido para certificar el taller.");
+            window.scrollTo(0,0);
+            return;
+        }
+
+        let total = 0;
+        Object.values(gameState).forEach(g => total += g.score);
+        total = parseFloat(total.toFixed(2));
+
+        // Mostrar Panel
+        const panel = document.getElementById('results-panel');
+        panel.style.display = 'block';
+        document.getElementById('student-name').textContent = `Estudiante: ${f} ${l}`;
+        document.getElementById('final-score').textContent = total;
+
+        // Determinar Recompensa (Elementos de Alto Valor / Estabilidad)
+        let r = {};
+        
+        if(total >= 4.5) {
+            r = { n: 78, s: 'Pt', name: 'Platino', w: '195.08', desc: '¡Excelente! Noble, resistente y catalítico. Rendimiento superior.' };
+        } else if(total >= 3.8) {
+            r = { n: 47, s: 'Ag', name: 'Plata', w: '107.87', desc: '¡Muy bien! Brillante y conductor de buenas prácticas.' };
+        } else if(total >= 3.0) {
+            r = { n: 6, s: 'C', name: 'Carbono', w: '12.01', desc: 'Aprobado. La base de la vida orgánica y la estructura.' };
+        } else if(total >= 2.0) {
+            r = { n: 16, s: 'S', name: 'Azufre', w: '32.06', desc: 'Básico. Necesario, pero cuidado con las reacciones indeseadas.' };
+        } else {
+            r = { n: 82, s: 'Pb', name: 'Plomo', w: '207.2', desc: 'Insuficiente. Pesado y tóxico. Requiere depuración de conocimientos.' };
+        }
+
+        document.getElementById('feedback-msg').textContent = r.desc;
+        document.getElementById('element-reward').innerHTML = `
+            <div class="periodic-element">
+                <span class="atomic-number">${r.n}</span>
+                <span class="symbol" style="color:${total >= 3 ? '#2e7d32' : '#c62828'}">${r.s}</span>
+                <span class="element-name">${r.name}</span>
+                <span class="mass">${r.w}</span>
+            </div>
+        `;
+
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    // Arrancar
+    init();
+
+</script>
+
+</body>
+</html>

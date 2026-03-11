@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Electrones de Valencia - El Potencial de Enlace</title>
+    <style>
+        :root {
+            --primary: #1b5e20;
+            --secondary: #4caf50;
+            --accent: #ff9800;
+            --bg: #f5f5f5;
+            --text: #333;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        /* Pantalla de Logueo */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--primary), #000);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        /* Header y Progreso */
+        header {
+            background: var(--white);
+            padding: 15px 30px;
+            position: sticky; top: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 900;
+            display: none;
+        }
+
+        .header-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            align-items: center;
+        }
+
+        .progress-container {
+            height: 12px; background: #e0e0e0; border-radius: 6px; overflow: hidden;
+        }
+
+        #progress-bar {
+            height: 100%; background: var(--secondary); width: 0%; transition: 0.8s ease;
+        }
+
+        /* Contenido Principal */
+        .container {
+            max-width: 1000px; margin: 30px auto; padding: 40px;
+            background: var(--white); border-radius: 15px; display: none;
+        }
+
+        h1, h2 { color: var(--primary); border-bottom: 3px solid var(--secondary); padding-bottom: 10px; }
+
+        .activity-box {
+            background: #f1f8e9; border-left: 6px solid var(--primary);
+            padding: 20px; margin: 30px 0; border-radius: 0 10px 10px 0;
+        }
+
+        .table-custom {
+            width: 100%; border-collapse: collapse; margin: 25px 0;
+        }
+
+        .table-custom th, .table-custom td {
+            border: 1px solid #ccc; padding: 15px; text-align: center;
+        }
+
+        .table-custom th { background: var(--primary); color: white; }
+
+        .btn {
+            background: var(--primary); color: white; border: none;
+            padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold;
+        }
+
+        .btn:hover { background: var(--secondary); }
+
+        .icfes-section {
+            background: #fff3e0; padding: 30px; border-radius: 12px; border: 2px solid var(--accent);
+        }
+
+        .feedback { display: none; margin-top: 20px; padding: 20px; border-radius: 8px; font-weight: bold; }
+        
+        #score-box { font-weight: bold; font-size: 1.1em; color: var(--primary); }
+
+        textarea { width: 100%; height: 60px; margin-top: 10px; border-radius: 8px; border: 1px solid #bbb; padding: 10px; }
+
+        .img-placeholder {
+            background: #eee; border: 2px dashed #999; padding: 40px; text-align: center; margin: 20px 0; color: #666; font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>Portal de Ciencias Grado 8°</h2>
+            <p>Por favor, ingresa tus Nombres y Apellidos:</p>
+            <input type="text" id="user-name" placeholder="Ej: Juan Felipe Ramírez" style="padding: 12px; width: 300px; font-size: 1em;"><br><br>
+            <button class="btn" onclick="initApp()">Entrar al OVA</button>
+        </div>
+    </div>
+
+    <header id="app-header">
+        <div class="header-grid">
+            <div><b>Estudiante:</b> <span id="nav-name"></span></div>
+            <div class="progress-container"><div id="progress-bar"></div></div>
+            <div id="score-box">Nivel: <span id="points-val">0</span> (<span id="el-sym">H</span>)</div>
+        </div>
+    </header>
+
+    <div class="container" id="main-content">
+        <section>
+            <h1>Objetivo de Aprendizaje</h1>
+            <p>Reconocer la importancia de la capa de valencia en los elementos químicos (específicamente N, P, K) para la formación de enlaces y el desarrollo agrícola, integrando este conocimiento con la valoración del potencial propio en la interacción con los demás.</p>
+        </section>
+
+        <section class="activity-box">
+            <h3>¿Qué sabemos antes de empezar?</h3>
+            <div id="pre-quiz">
+                <p>1. ¿Cómo se llaman los electrones que están en el nivel de energía más lejano al núcleo?</p>
+                <input type="radio" name="pr1" value="0"> Protones externos | <input type="radio" name="pr1" value="1"> Electrones de valencia | <input type="radio" name="pr1" value="0"> Electrones de núcleo
+                <p>2. En la tabla periódica, los elementos de un mismo grupo suelen tener:</p>
+                <input type="radio" name="pr2" value="1"> El mismo número de electrones de valencia | <input type="radio" name="pr2" value="0"> La misma masa atómica | <input type="radio" name="pr2" value="0"> El mismo número de neutrones
+                <p>3. ¿Cuál de estos elementos es esencial para el crecimiento de las plantas?</p>
+                <input type="radio" name="pr3" value="0"> Oro | <input type="radio" name="pr3" value="1"> Nitrógeno | <input type="radio" name="pr3" value="0"> Mercurio
+            </div>
+            <button class="btn" style="margin-top:20px;" onclick="checkPre()">Validar Conocimientos</button>
+            <div id="pre-feedback" class="feedback"></div>
+        </section>
+
+        <section>
+            <h2>La Superficie que Conecta Mundos</h2>
+            <p>
+                Imagina que un átomo es como una gran mansión. En el centro, bien protegidos, están los dueños (el núcleo), pero en los jardines exteriores es donde ocurre toda la acción social. Esos jardines representan la capa de valencia, y los electrones que allí habitan son los "mensajeros" encargados de saludar, unirse o incluso pelear con otros átomos. Sin estos electrones de valencia, la materia simplemente no existiría; seríamos un universo de piezas sueltas que nunca se tocan. En química, la importancia de un átomo no reside en cuántos electrones tiene en total, sino en cuántos tiene para compartir. Es su "potencial de entrega".
+            </p>
+            
+            
+
+            <p>
+                Este concepto cobra vida en la agricultura. Los fertilizantes más famosos del mundo se conocen como N-P-K (Nitrógeno, Fósforo y Potasio). ¿Por qué estos tres? Porque la estructura de sus electrones de valencia les permite realizar tareas específicas que otros elementos no pueden. El Nitrógeno (Z=7), con sus 5 electrones de valencia, es el arquitecto de las hojas verdes. El Fósforo (Z=15), también con 5 pero en un nivel superior, es la batería de energía para las raíces. Y el Potasio (Z=19), con un solo electrón de valencia muy fácil de compartir, actúa como el regulador del agua en la planta. 
+            </p>
+            
+            <table class="table-custom">
+                <caption>Tabla 1: Los Elementos del Crecimiento (N-P-K)</caption>
+                <tr><th>Elemento</th><th>Símbolo</th><th>Z (Atómico)</th><th>Electrones de Valencia</th><th>Función en la Planta</th></tr>
+                <tr><td>Nitrógeno</td><td>N</td><td>7</td><td>5</td><td>Crecimiento de hojas</td></tr>
+                <tr><td>Fósforo</td><td>P</td><td>15</td><td>5</td><td>Energía y raíces</td></tr>
+                <tr><td>Potasio</td><td>K</td><td>19</td><td>1</td><td>Resistencia y agua</td></tr>
+            </table>
+
+            <p>
+                Pero más allá de las plantas, este fenómeno nos enseña una lección de vida. Así como los átomos se definen por lo que tienen en su "capa externa" para dar a otros, nosotros los seres humanos tenemos talentos y habilidades que son nuestra propia "capa de valencia". No importa qué tan inteligentes o fuertes seamos por dentro si no cultivamos aquello que compartimos con nuestra comunidad. El reconocimiento del potencial propio es saber que, al igual que el Potasio, a veces un pequeño gesto (un solo electrón entregado) puede cambiar todo un sistema.
+            </p>
+
+            <div class="activity-box">
+                <h4>Actividad 1 (Cuaderno):</h4>
+                <p>Responde: Si el Nitrógeno y el Fósforo tienen el mismo número de electrones de valencia, ¿por qué crees que están en grupos diferentes de la tabla periódica?</p>
+                <button class="btn" onclick="markActivity(1, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 2 (Cuaderno):</h4>
+                <p>Dibuja el modelo de Bohr para el Nitrógeno (N) y el Fósforo (P). Usa colores para resaltar los electrones que están en la capa de valencia.</p>
+                <button class="btn" onclick="markActivity(2, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 3 (Cuaderno):</h4>
+                <p>Crea una tabla comparativa en tu cuaderno entre los tres elementos (N, P, K) basándote en la Tabla 1 del OVA.</p>
+                <button class="btn" onclick="markActivity(3, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 4 (Cuaderno):</h4>
+                <p>Mapa Conceptual: Relaciona los términos: Átomo, Capa de Valencia, Electrones de Enlace, Fertilizante y N-P-K.</p>
+                <button class="btn" onclick="markActivity(4, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 5 (Cuaderno):</h4>
+                <p>Reflexión Personal: Dibuja un átomo que te represente a ti. En el núcleo pon tus valores y en los electrones de valencia escribe 3 talentos que das a los demás (familia, amigos, colegio).</p>
+                <button class="btn" onclick="markActivity(5, 0.5)">Hecho en Cuaderno</button>
+            </div>
+        </section>
+
+        <section class="icfes-section">
+            <h3>Pregunta de Selección Múltiple - Competencia: Indagar</h3>
+            <p>Un agricultor nota que sus plantas de café tienen las hojas amarillentas y no crecen. Al leer sobre química, descubre que el Nitrógeno (Grupo 15) es vital para el verdor. Sin embargo, él decide aplicar grandes cantidades de Neón (Grupo 18), un gas noble que tiene su capa de valencia completa con 8 electrones.</p>
+            
+            
+
+            <p><b>Pregunta:</b> ¿Por qué la estrategia del agricultor de usar Neón fallará para ayudar a sus plantas?</p>
+            
+            <input type="radio" name="icfes" value="a"> A) Porque el Neón tiene demasiados electrones y quemaría las raíces por exceso de energía.<br>
+            <input type="radio" name="icfes" value="b"> B) Porque el Neón es un gas noble y su capa externa completa lo hace inerte, lo que significa que no formará enlaces con la planta.<br>
+            <input type="radio" name="icfes" value="c"> C) Porque el Neón solo funciona en plantas que crecen en la oscuridad.<br>
+            <input type="radio" name="icfes" value="d"> D) Porque los electrones de valencia del Neón son de carga positiva y repelen a la planta.<br>
+            
+            <button class="btn" style="margin-top:20px;" onclick="checkIcfes()">Verificar Respuesta</button>
+            <div id="icfes-feedback" class="feedback"></div>
+        </section>
+
+        <section>
+            <h2>Deducción: El Destino de un Átomo según su Valencia</h2>
+            <p>
+                A partir de lo observado en el comportamiento de los fertilizantes, podemos deducir una regla universal: la estabilidad es la meta de todo sistema biológico y químico. ¿Por qué el Potasio es tan reactivo? Porque le "estorba" un electrón para ser estable. ¿Por qué el Oxígeno es tan "agresivo" al oxidar cosas? Porque le faltan dos. Esta deducción nos lleva a la Regla del Octeto, que dice que los átomos harán lo que sea necesario para tener 8 electrones en su capa externa, ya sea robando, regalando o compartiendo.
+            </p>
+
+            
+
+            <p>
+                Si analizamos el Potasio (K) en la agricultura, deducimos que su importancia en la regulación del agua se debe precisamente a su capacidad de moverse rápidamente entre las células gracias a que pierde su único electrón de valencia muy fácil, convirtiéndose en un ion positivo (K+). Sin esta "generosidad" química, las plantas en el eje cafetero no podrían sobrevivir a los periodos de sequía. Por lo tanto, la vida no es solo una acumulación de elementos, sino una constante negociación electrónica impulsada por la búsqueda de estabilidad.
+            </p>
+
+            <div class="table-custom">
+                <table>
+                    <caption>Tabla 2: Deducciones de Reactividad por Grupo</caption>
+                    <tr><th>Grupo</th><th>Electrones Valencia</th><th>Comportamiento Deducido</th></tr>
+                    <tr><td>1 (Alcalinos)</td><td>1</td><td>Muy reactivos, pierden 1 e-</td></tr>
+                    <tr><td>15 (Nitrogenoides)</td><td>5</td><td>Buscan ganar o compartir 3 e-</td></tr>
+                    <tr><td>18 (Gases Nobles)</td><td>8</td><td>Estables, no reaccionan</td></tr>
+                </table>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 6 (Cuaderno):</h4>
+                <p>Deduce: Si un elemento X tiene 7 electrones de valencia, ¿será muy reactivo o poco reactivo? Justifica tu respuesta.</p>
+                <button class="btn" onclick="markActivity(6, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 7 (Cuaderno):</h4>
+                <p>Dibuja el modelo de Lewis para el Potasio (K) y el Cloro (Cl) y muestra con una flecha cómo el Potasio le entrega su electrón.</p>
+                <button class="btn" onclick="markActivity(7, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 8 (Cuaderno):</h4>
+                <p>Tabla Comparativa: Compara un Gas Noble (Estable) con un Metal Alcalino (Inestable). ¿En qué se diferencian sus capas de valencia?</p>
+                <button class="btn" onclick="markActivity(8, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 9 (Cuaderno):</h4>
+                <p>Mapa Mental: Los beneficios del N-P-K en la economía de tu región (ej. el café o el plátano).</p>
+                <button class="btn" onclick="markActivity(9, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 10 (Cuaderno):</h4>
+                <p>Escribe una conclusión de 10 líneas sobre cómo tu potencial propio puede ayudar a mejorar tu salón de clases.</p>
+                <button class="btn" onclick="markActivity(10, 0.5)">Hecho en Cuaderno</button>
+            </div>
+        </section>
+
+        <section class="icfes-section" style="background: white;">
+            <h2>Taller de Cierre</h2>
+            <div id="final-test">
+                <p><b>1. ¿Cuántos electrones de valencia tiene el Fósforo (Z=15)?</b></p>
+                <input type="radio" name="t1" value="0"> 15 | <input type="radio" name="t1" value="1"> 5 | <input type="radio" name="t1" value="0"> 8 | <input type="radio" name="t1" value="0"> 2
+                <p><b>2. La "estabilidad" química se alcanza generalmente con:</b></p>
+                <input type="radio" name="t2" value="0"> 1 electrón | <input type="radio" name="t2" value="1"> 8 electrones | <input type="radio" name="t2" value="0"> 10 electrones | <input type="radio" name="t2" value="0"> 0 electrones
+                <p><b>3. El símbolo "K" en los fertilizantes representa al:</b></p>
+                <input type="radio" name="t3" value="0"> Kriptón | <input type="radio" name="t3" value="1"> Potasio | <input type="radio" name="t3" value="0"> Calcio | <input type="radio" name="t3" value="0"> Carbono
+            </div>
+
+            <h3>Preguntas Abiertas (10 a 15 palabras)</h3>
+            <p>A1. ¿Por qué son importantes los electrones externos para formar un nuevo enlace químico?</p>
+            <textarea id="qa1"></textarea> <button class="btn" onclick="validateOpen('qa1')">Verificar</button>
+            
+            <p>A2. Define con tus palabras qué significa tener un buen potencial de entrega social:</p>
+            <textarea id="qa2"></textarea> <button class="btn" onclick="validateOpen('qa2')">Verificar</button>
+
+            <div style="margin-top:40px; text-align: center;">
+                <button class="btn" style="background:var(--accent); font-size: 1.2em;" onclick="downloadData()">Descargar Resultados .txt</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let userData = {
+            name: "",
+            progress: 0,
+            points: 0,
+            activities: [],
+            answers: {}
+        };
+
+        const chemLevels = ["H", "He", "Li", "Be", "B", "C"];
+
+        function initApp() {
+            const name = document.getElementById('user-name').value.trim();
+            if (name.length < 5) return alert("Por favor, ingresa nombre y apellido completo.");
+            
+            userData.name = name;
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('app-header').style.display = 'block';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('nav-name').innerText = name;
+            
+            loadLocal();
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('progress-bar').style.width = userData.progress + "%";
+            document.getElementById('points-val').innerText = userData.points.toFixed(1);
+            let idx = Math.min(Math.floor(userData.points), 5);
+            document.getElementById('el-sym').innerText = chemLevels[idx];
+            
+            localStorage.setItem('ova_gr8_valencia', JSON.stringify(userData));
+        }
+
+        function markActivity(id, p) {
+            if (!userData.activities.includes(id)) {
+                userData.activities.push(id);
+                userData.progress += 8;
+                userData.points += p;
+                if (userData.progress > 100) userData.progress = 100;
+                alert("✓ Actividad registrada en tu bitácora.");
+                updateUI();
+            } else { alert("Ya has registrado esta actividad."); }
+        }
+
+        function checkPre() {
+            const fb = document.getElementById('pre-feedback');
+            fb.style.display = "block";
+            fb.style.background = "#e8f5e9";
+            fb.innerHTML = "RETROALIMENTACIÓN: 1. Electrones de valencia. 2. Los grupos comparten electrones de valencia. 3. El Nitrógeno es clave para las plantas. ¡Has ganado 0.2 puntos!";
+            userData.points += 0.2;
+            updateUI();
+        }
+
+        function checkIcfes() {
+            const sel = document.querySelector('input[name="icfes"]:checked')?.value;
+            const fb = document.getElementById('icfes-feedback');
+            fb.style.display = "block";
+            if (sel === 'b') {
+                fb.style.background = "#d4edda";
+                fb.innerHTML = "¡EXCELENTE INDAGACIÓN! El Neón no reacciona porque es un Gas Noble con su octeto completo. El Nitrógeno, al tener solo 5 e-, 'necesita' interactuar con la planta para estabilizarse, lo cual permite el intercambio de nutrientes. Los distractores A, C y D usan conceptos falsos sobre la carga y la función de los gases.";
+                userData.points += 0.8;
+            } else {
+                fb.style.background = "#f8d7da";
+                fb.innerHTML = "INCORRECTO. Recuerda la importancia de la reactividad. El Neón es estable (no reacciona), por eso no ayuda a la planta.";
+            }
+            updateUI();
+        }
+
+        function validateOpen(id) {
+            const text = document.getElementById(id).value.trim();
+            const words = text.split(/\s+/);
+            if (words.length >= 10 && words.length <= 15) {
+                alert("✓ Respuesta válida y original.");
+                userData.answers[id] = text;
+                userData.points += 0.3;
+                updateUI();
+            } else {
+                alert("Debe tener entre 10 y 15 palabras. Actualmente tienes: " + words.length);
+            }
+        }
+
+        function loadLocal() {
+            const saved = localStorage.getItem('ova_gr8_valencia');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.name === userData.name) {
+                    userData = parsed;
+                }
+            }
+        }
+
+        function downloadData() {
+            let data = `REPORTE DE LOGROS - QUÍMICA 8\n`;
+            data += `Estudiante: ${userData.name}\n`;
+            data += `Puntos: ${userData.points.toFixed(2)}/5.0\n`;
+            data += `Progreso: ${userData.progress}%\n\n`;
+            data += `Respuestas Abiertas:\n${JSON.stringify(userData.answers, null, 2)}`;
+            
+            const blob = new Blob([data], {type: 'text/plain'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Resultados_${userData.name}.txt`;
+            link.click();
+        }
+    </script>
+</body>
+</html>

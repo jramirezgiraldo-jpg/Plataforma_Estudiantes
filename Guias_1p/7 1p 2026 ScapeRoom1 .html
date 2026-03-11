@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: El Viaje al Interior de la Materia</title>
+    <style>
+        /* =========================================================
+           VARIABLES Y DISEÑO BASE (MODO OSCURO / NEÓN)
+           ========================================================= */
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #1e293b;
+            --text-main: #e2e8f0;
+            --accent-green: #10b981;
+            --accent-blue: #38bdf8;
+            --accent-red: #ef4444;
+            --border-color: #334155;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.05), transparent 25%);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 95%;
+            max-width: 1000px;
+            height: 90vh;
+            background-color: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5), 0 0 15px rgba(56, 189, 248, 0.2);
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: #0f172a;
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-blue);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+
+        /* LAYOUT PRINCIPAL */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column; }
+            .inventory-panel { border-left: none !important; border-top: 1px solid var(--border-color); height: 150px; }
+            .game-area { overflow-y: auto; }
+        }
+
+        /* ÁREA DE JUEGO (Izquierda) */
+        .game-area {
+            flex: 3;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .phase-title {
+            color: var(--accent-green);
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed var(--accent-green);
+            padding-bottom: 5px;
+        }
+
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .clue-box {
+            background-color: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid var(--accent-blue);
+            padding: 15px;
+            margin-bottom: 25px;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* CONTROLES DE ENTRADA */
+        .input-section {
+            background-color: var(--panel-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .input-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-family: var(--font-mono);
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: var(--accent-blue);
+            color: #0f172a;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #7dd3fc;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+        }
+
+        button:disabled {
+            background-color: #475569;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+        }
+
+        .message.error {
+            display: block;
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .message.success {
+            display: block;
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        /* PANEL DE INVENTARIO (Derecha) */
+        .inventory-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            border-left: 2px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .inventory-title {
+            text-align: center;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .inventory-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        .item {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border-color: var(--accent-green);
+        }
+
+        .item-icon {
+            font-size: 2rem;
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-name {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--accent-green);
+        }
+
+        .item-hint {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        /* MODAL PARA LEER OBJETOS (ej. Enciclopedia) */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            color: var(--text-main);
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .close-modal:hover { color: var(--accent-red); }
+
+        .modal-title {
+            color: var(--accent-blue);
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .modal-body {
+            font-family: var(--font-mono);
+            line-height: 1.5;
+            color: #cbd5e1;
+            margin-top: 20px;
+        }
+
+        /* Tabla dentro del modal */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: #0f172a;
+        }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: center;
+        }
+        th { background-color: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
+
+        /* Pantalla final */
+        .victory-screen {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .victory-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🔬 Escape Room: Viaje al Interior de la Materia</h1>
+        </header>
+
+        <div class="main-layout">
+            <!-- Zona Izquierda: Historia y Puzle -->
+            <div class="game-area" id="game-area">
+                <div id="phase-content">
+                    <!-- El contenido se inyecta por JS -->
+                </div>
+
+                <div class="input-section" id="input-section">
+                    <label id="input-label" for="answer">Introduce tu respuesta:</label>
+                    <div class="input-group">
+                        <input type="text" id="answer" placeholder="Escribe aquí..." autocomplete="off">
+                        <button id="submit-btn" onclick="checkAnswer()">Validar</button>
+                    </div>
+                    <div id="message-box" class="message"></div>
+                </div>
+            </div>
+
+            <!-- Zona Derecha: Inventario -->
+            <div class="inventory-panel">
+                <h3 class="inventory-title">🎒 Inventario</h3>
+                <div class="inventory-items" id="inventory-list">
+                    <!-- Los objetos se inyectan por JS -->
+                    <div style="text-align: center; color: #64748b; font-size: 0.9rem; margin-top: 20px;" id="empty-inventory">
+                        Tu inventario está vacío.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para leer pistas (Enciclopedia, notas, etc) -->
+    <div class="modal-overlay" id="item-modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">✖</button>
+            <h2 class="modal-title" id="modal-title">Título</h2>
+            <div class="modal-body" id="modal-body">
+                Contenido del objeto.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =========================================================
+           CONFIGURACIÓN DE LAS FASES DEL JUEGO Y SUS RESPUESTAS
+           ========================================================= */
+        // Profesores: Aquí pueden cambiar los textos, pistas y respuestas (answer).
+        const gameData = [
+            {
+                id: 1,
+                title: "Fase 1: El Átomo Fundamental",
+                story: "El aire huele a ozono y electricidad. Tras un destello cegador, descubres que el excéntrico Dr. Mendeleiev te ha encogido al tamaño de un neutrón. Estás atrapado dentro de un tubo de ensayo de cristal gigantesco en su Laboratorio Cuántico. Para volver a tu tamaño original, debes atravesar 5 compuertas de seguridad.",
+                clue: "En el cristal hay una ecuación grabada a fuego y una nota del Doctor:\n\n'La llave de salida comienza con la química de la vida. Piensa en el átomo neutro fundamental para la biología terrestre.\nEste átomo posee exactamente 6 partículas con carga eléctrica positiva en su núcleo.\nPara mantener la estabilidad nuclear, cuenta también con 6 partículas sin carga.\n\nPara abrir la primera escotilla, el panel numérico exige un código de tres dígitos:\nDigita primero su MASA ATÓMICA (la suma de todas las partículas en su núcleo) e inmediatamente después, sin espacios, su NÚMERO ATÓMICO (Z, la cantidad de protones).'",
+                question: "¿Cuál es el código de la primera escotilla?",
+                answer: "126", // Masa = 6+6=12. Número atómico = 6. Código: 126.
+                reward: {
+                    id: "lente",
+                    name: "Lente Cuántico",
+                    icon: "🔍",
+                    hint: "Haz clic para examinar",
+                    content: "Un dispositivo monocular que permite ver los electrones orbitando alrededor de un núcleo. Ideal para analizar el Modelo de Bohr."
+                }
+            },
+            {
+                id: 2,
+                title: "Fase 2: El Acelerador de Bohr",
+                story: "La compuerta se abre con un siseo. Entras a una sala esférica por donde pasan ráfagas de luz. Acabas de obtener el 'Lente Cuántico' (mira tu inventario). Una enorme terminal holográfica bloquea tu camino hacia la siguiente zona.",
+                clue: "Al asomarte por tu nuevo Lente Cuántico, logras ver un átomo gigante rotando frente a la puerta. Su núcleo es borroso, pero gracias al científico Niels Bohr, puedes distinguir claramente los niveles de energía (órbitas) donde se mueven los electrones.\n\nCuentas con cuidado:\n- En el primer nivel (K, el más cercano al núcleo) hay 2 electrones zumbando.\n- En el segundo nivel (L), cuentas 8 electrones girando rápidamente.\n- En el tercer y último nivel (M), observas 3 solitarios electrones.\n\nLa pantalla de la terminal parpadea con el mensaje:\n'ADVERTENCIA: Para calibrar el salto al siguiente sector, introduzca el número total de electrones que posee este átomo neutro.'",
+                question: "Introduce el número total de electrones del átomo observado:",
+                answer: "13", // 2 + 8 + 3 = 13 (Aluminio)
+                reward: {
+                    id: "enciclopedia",
+                    name: "Enciclopedia Atómica",
+                    icon: "📖",
+                    hint: "Haz clic para abrir. ¡MUY IMPORTANTE!",
+                    content: `
+                        <strong>Extracto de la Base de Datos Mendeleiev:</strong><br><br>
+                        <em>Recuerda: Los elementos se organizan en Grupos (columnas verticales) y Periodos (filas horizontales).<br>
+                        Regla de oro: En los grupos 13 al 18, la cantidad de electrones de valencia (los de la última capa) equivale al número del grupo menos 10.</em><br>
+                        <table>
+                            <tr><th>Elemento</th><th>Z (Nº Atómico)</th><th>Grupo</th><th>Periodo</th></tr>
+                            <tr><td>Carbono (C)</td><td>6</td><td>14</td><td>2</td></tr>
+                            <tr><td>Flúor (F)</td><td>9</td><td>17</td><td>2</td></tr>
+                            <tr><td>Neón (Ne)</td><td>10</td><td>18</td><td>2</td></tr>
+                            <tr><td>Magnesio (Mg)</td><td>12</td><td>2</td><td>3</td></tr>
+                            <tr><td>Aluminio (Al)</td><td>13</td><td>13</td><td>3</td></tr>
+                            <tr><td>Fósforo (P)</td><td>15</td><td>15</td><td>3</td></tr>
+                            <tr><td>Argón (Ar)</td><td>18</td><td>18</td><td>3</td></tr>
+                        </table>
+                    `
+                }
+            },
+            {
+                id: 3,
+                title: "Fase 3: La Bóveda Periódica",
+                story: "Has entrado a la inmensa 'Sala de los Elementos'. Te encuentras frente a una pesada puerta acorazada. Afortunadamente, al entrar encontraste la 'Enciclopedia Atómica' (Abre tu inventario y léela atentamente, la necesitarás de ahora en adelante).",
+                clue: "El panel de la bóveda tiene un escáner molecular y exige un número de dos dígitos. Un mensaje de audio robótico te da las instrucciones:\n\n'El código de acceso es el resultado de una suma matemática.\nDebes buscar en tu Enciclopedia dos elementos específicos y SUMAR sus Números Atómicos (Z).\n\n1. El primer elemento es el metal alcalinotérreo ubicado en el GRUPO 2, PERIODO 3.\n2. El segundo elemento es el halógeno altamente reactivo, ubicado en el GRUPO 17, PERIODO 2.'\n\n(¡Usa lápiz y papel si es necesario!)",
+                question: "¿Cuál es la suma matemática de los dos números atómicos?",
+                answer: "21", // Magnesio (Z=12) + Flúor (Z=9) = 21.
+                reward: {
+                    id: "enlace",
+                    name: "Núcleo de Enlace",
+                    icon: "🔋",
+                    hint: "Batería de energía compartida",
+                    content: "Una batería que funciona compartiendo electrones. Contiene una nota: 'El Modelo de Lewis nos enseña que los átomos buscan tener 8 electrones en su última capa (regla del octeto) para ser estables como los gases nobles.'"
+                }
+            },
+            {
+                id: 4,
+                title: "Fase 4: El Reactor de Lewis",
+                story: "La bóveda cede y accedes al Reactor Químico. Tubos de neón brillan mostrando uniones de átomos. Esta sala evalúa el 'Modelo de Lewis', donde lo que importa son los electrones de valencia (los de la capa más externa que participan en los enlaces).",
+                clue: "Una pantalla te muestra un diagrama incompleto.\n'El sistema necesita estabilizar una molécula para generar energía. Tienes un átomo central de Carbono (C).\nSi consultas tu Enciclopedia, el Carbono está en el Grupo 14, por lo tanto, tiene 4 electrones de valencia.\nSu objetivo para ser estable y sobrevivir es cumplir la regla del octeto (llegar a 8 electrones compartiendo con otros).\n\nPara ayudarle, dispones de un suministro infinito de átomos de Flúor (F). El Flúor, al estar en el Grupo 17, tiene 7 electrones de valencia, por lo que a cada átomo de Flúor solo le hace falta 1 electrón para llegar a 8, formando un enlace simple con el Carbono.'\n\nDeducción lógica:\n¿Cuántos átomos de Flúor EXACTOS debes enlazar al átomo de Carbono central para que TODOS los átomos de la molécula cumplan el octeto de manera perfecta?",
+                question: "Introduce la cantidad de átomos de Flúor necesarios:",
+                answer: "4", // El C necesita 4. Cada F comparte 1. CF4.
+                reward: {
+                    id: "llave_maestra",
+                    name: "Tarjeta Cuántica",
+                    icon: "💳",
+                    hint: "Acceso al agrandador",
+                    content: "Es la tarjeta de acceso a la última sala. Su reverso dice: 'La memoria es la herramienta principal del científico. Todo está conectado.'"
+                }
+            },
+            {
+                id: 5,
+                title: "Fase 5: La Consola de Agrandamiento",
+                story: "¡Has llegado a la sala final! Frente a ti se alza una máquina imponente con un rayo láser apuntando hacia donde estás. Es la 'Máquina de Agrandamiento'. Para activarla y volver a tu tamaño humano, debes demostrar que dominas la estructura íntima de la materia.",
+                clue: "La consola principal tiene un teclado numérico. Para arrancar el sistema debes ingresar un código maestro de 4 dígitos consecutivos.\nRecuerda revisar tu Enciclopedia y las notas que tomaste durante tu viaje.\n\nConstruye el código uniendo en orden los siguientes números:\n\n- PRIMER DÍGITO: La cantidad de electrones de valencia (última capa) que posee el elemento Fósforo (P), ubicado en el Grupo 15.\n- SEGUNDO Y TERCER DÍGITO: El número atómico (Z) del Gas Noble que se encuentra en el Periodo 3 (el que tiene todas sus capas K, L y M completamente llenas).\n- CUARTO DÍGITO: La cantidad de protones del elemento de la vida que descifraste en la primerísima habitación (el que tenía masa 12).\n\nUne los cuatro números sin espacios.",
+                question: "Introduce el código maestro final de 4 dígitos:",
+                answer: "5186", // P valencia=5. Gas Noble P3=Argón(18). Protones del carbono = 6. Código: 5186.
+                reward: null // Fin del juego
+            }
+        ];
+
+        /* =========================================================
+           LÓGICA DEL JUEGO (JAVASCRIPT)
+           ========================================================= */
+        let currentPhaseIndex = 0;
+        let inventory = [];
+
+        // Referencias al DOM
+        const phaseContentDiv = document.getElementById("phase-content");
+        const answerInput = document.getElementById("answer");
+        const submitBtn = document.getElementById("submit-btn");
+        const messageBox = document.getElementById("message-box");
+        const inventoryList = document.getElementById("inventory-list");
+        const emptyInventoryMsg = document.getElementById("empty-inventory");
+        const inputLabel = document.getElementById("input-label");
+        
+        // Modal referencias
+        const modalOverlay = document.getElementById("item-modal");
+        const modalTitle = document.getElementById("modal-title");
+        const modalBody = document.getElementById("modal-body");
+
+        // Inicializar el juego
+        function initGame() {
+            renderPhase();
+            // Permitir enviar con la tecla Enter
+            answerInput.addEventListener("keypress", function(event) {
+                if (event.key === "Enter" && !submitBtn.disabled) {
+                    event.preventDefault();
+                    checkAnswer();
+                }
+            });
+        }
+
+        // Renderizar la fase actual
+        function renderPhase() {
+            if (currentPhaseIndex >= gameData.length) {
+                showVictory();
+                return;
+            }
+
+            const phase = gameData[currentPhaseIndex];
+            
+            // Construir el HTML de la fase
+            let html = `
+                <h2 class="phase-title">${phase.title}</h2>
+                <div class="story-text">${phase.story.replace(/\n/g, '<br>')}</div>
+                <div class="clue-box">${phase.clue.replace(/\n/g, '<br>')}</div>
+            `;
+            
+            phaseContentDiv.innerHTML = html;
+            inputLabel.innerText = phase.question;
+            answerInput.value = "";
+            answerInput.focus();
+            hideMessage();
+        }
+
+        // Comprobar la respuesta introducida
+        function checkAnswer() {
+            const phase = gameData[currentPhaseIndex];
+            // Limpiar espacios y pasar a minúsculas por seguridad
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            const correctAnswer = phase.answer.trim().toLowerCase();
+
+            if (userAnswer === correctAnswer) {
+                // RESPUESTA CORRECTA
+                showMessage(`¡Código Aceptado! Acceso permitido.`, "success");
+                submitBtn.disabled = true;
+                answerInput.disabled = true;
+
+                // Añadir objeto al inventario si existe
+                if (phase.reward) {
+                    addToInventory(phase.reward);
+                }
+
+                // Pasar a la siguiente fase después de 2 segundos
+                setTimeout(() => {
+                    currentPhaseIndex++;
+                    submitBtn.disabled = false;
+                    answerInput.disabled = false;
+                    renderPhase();
+                }, 2000);
+
+            } else {
+                // RESPUESTA INCORRECTA - PENALIZACIÓN DE 5 SEGUNDOS
+                applyPenalty();
+            }
+        }
+
+        // Aplicar penalización para evitar fuerza bruta
+        function applyPenalty() {
+            let timeLeft = 5;
+            submitBtn.disabled = true;
+            answerInput.disabled = true;
+            
+            showMessage(`Respuesta incorrecta. Sistema de seguridad bloqueado. Reintentar en ${timeLeft}s...`, "error");
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    showMessage(`Respuesta incorrecta. Sistema de seguridad bloqueado. Reintentar en ${timeLeft}s...`, "error");
+                } else {
+                    clearInterval(timer);
+                    submitBtn.disabled = false;
+                    answerInput.disabled = false;
+                    answerInput.value = "";
+                    answerInput.focus();
+                    hideMessage();
+                }
+            }, 1000);
+        }
+
+        // Mostrar mensajes (éxito o error)
+        function showMessage(text, type) {
+            messageBox.innerHTML = text;
+            messageBox.className = `message ${type}`;
+        }
+
+        function hideMessage() {
+            messageBox.className = "message";
+            messageBox.innerHTML = "";
+            messageBox.style.display = "none";
+        }
+
+        // Lógica del Inventario
+        function addToInventory(item) {
+            inventory.push(item);
+            emptyInventoryMsg.style.display = "none";
+
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "item";
+            itemDiv.onclick = () => openModal(item);
+
+            itemDiv.innerHTML = `
+                <div class="item-icon">${item.icon}</div>
+                <div class="item-info">
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-hint">${item.hint}</span>
+                </div>
+            `;
+            
+            // Animación de entrada
+            itemDiv.style.opacity = "0";
+            inventoryList.appendChild(itemDiv);
+            
+            setTimeout(() => {
+                itemDiv.style.transition = "opacity 0.5s";
+                itemDiv.style.opacity = "1";
+            }, 100);
+        }
+
+        // Manejo del Modal (Pantalla emergente para objetos)
+        function openModal(item) {
+            modalTitle.innerText = item.name;
+            modalBody.innerHTML = item.content;
+            modalOverlay.classList.add("active");
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove("active");
+        }
+
+        // Cerrar modal al hacer clic fuera de la caja
+        modalOverlay.addEventListener("click", function(e) {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+
+        // Pantalla Final de Victoria
+        function showVictory() {
+            const inputSection = document.getElementById("input-section");
+            inputSection.style.display = "none"; // Ocultar controles
+
+            phaseContentDiv.innerHTML = `
+                <div class="victory-screen">
+                    <div class="victory-icon">🧑‍🔬🎉</div>
+                    <h2 style="color: var(--accent-green); font-size: 2rem;">¡SISTEMA ACTIVADO!</h2>
+                    <p class="story-text" style="text-align: center; margin-top: 20px;">
+                        El rayo láser te impacta y sientes cómo tus átomos se expanden. Regresas a tu tamaño normal justo a tiempo. 
+                        Has demostrado un excelente dominio sobre la estructura atómica, el Modelo de Bohr, la Tabla Periódica y los enlaces de Lewis.
+                        <br><br>
+                        <strong>¡Has superado el Escape Room con éxito!</strong>
+                    </p>
+                </div>
+            `;
+        }
+
+        // Arrancar el juego al cargar la página
+        window.onload = initGame;
+
+    </script>
+</body>
+</html>

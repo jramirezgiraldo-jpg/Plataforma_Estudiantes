@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: El Laboratorio Metabólico</title>
+    <style>
+        /* ================= ESTILOS CSS INMERSIVOS (CYBER-BIOLOGÍA NEÓN) ================= */
+        :root {
+            --bg-color: #020617; /* Slate muy oscuro */
+            --panel-bg: #0f172a;
+            --text-main: #f8fafc;
+            --neon-pink: #ec4899; /* Calor / Termoquímica */
+            --neon-green: #22c55e; /* Bioquímica / Enzimas */
+            --neon-cyan: #06b6d4; /* Carbohidratos */
+            --neon-alert: #f43f5e;
+            --font-mono: 'Fira Code', 'Courier New', monospace;
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding-bottom: 60px;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(236, 72, 153, 0.05), transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(34, 197, 94, 0.05), transparent 40%);
+        }
+
+        /* HUD - Cabecera e Inventario */
+        header {
+            background: rgba(2, 6, 23, 0.95);
+            border-bottom: 3px solid var(--neon-pink);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(236, 72, 153, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 { 
+            font-size: 1.3rem; 
+            color: #fff;
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            text-shadow: 0 0 10px var(--neon-pink); 
+        }
+
+        #inventory-panel {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: #0f172a;
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--neon-cyan);
+            font-weight: bold;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            animation: pulseIn 0.5s ease-out;
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+
+        /* Estructura de Habitaciones */
+        .room-container { max-width: 950px; margin: 40px auto; padding: 20px; }
+
+        .room {
+            background-color: var(--panel-bg);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            opacity: 0.3;
+            pointer-events: none;
+            transition: all 0.6s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .room::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: #334155; transition: background 0.6s;
+        }
+
+        .room.active { opacity: 1; pointer-events: auto; border-color: #334155; }
+        .room.active::before { background: linear-gradient(90deg, var(--neon-green), var(--neon-pink)); box-shadow: 0 0 15px var(--neon-pink); }
+
+        .room-header {
+            font-size: 1.6rem;
+            color: #fff;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .room-header::before { content: '>'; color: var(--neon-green); font-family: var(--font-mono); font-weight: bold; }
+
+        /* Cajas de Acertijos */
+        .puzzle-box {
+            background: #020617;
+            border-left: 3px solid #334155;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 0 8px 8px 0;
+            position: relative;
+        }
+
+        .puzzle-box.solved {
+            border-left-color: var(--neon-green);
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        .puzzle-title { 
+            font-family: var(--font-mono); 
+            font-weight: bold; 
+            color: var(--neon-cyan); 
+            margin-bottom: 15px; 
+            font-size: 1.1rem;
+        }
+
+        .reading-block {
+            font-family: var(--font-sans);
+            background: #000;
+            padding: 20px;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            color: #cbd5e1;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            border-left: 4px solid var(--neon-pink);
+        }
+
+        /* Controles (Inputs y Botones) */
+        .input-group { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+
+        input[type="text"] {
+            padding: 12px 15px;
+            border: 1px solid #334155;
+            border-radius: 4px;
+            background-color: #0f172a;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            flex-grow: 1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        input:focus { outline: none; border-color: var(--neon-pink); box-shadow: 0 0 10px rgba(236, 72, 153, 0.2); }
+        input:disabled { opacity: 0.6; cursor: not-allowed; border-color: var(--neon-green); color: var(--neon-green); }
+
+        button {
+            padding: 12px 25px;
+            background-color: transparent;
+            color: var(--neon-pink);
+            border: 1px solid var(--neon-pink);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        button:hover { background-color: rgba(236, 72, 153, 0.1); box-shadow: 0 0 15px rgba(236, 72, 153, 0.4); }
+        button:disabled { border-color: #334155; color: #64748b; background: transparent; cursor: not-allowed; box-shadow: none; }
+        
+        button.solved-btn { 
+            background-color: rgba(34, 197, 94, 0.1); 
+            color: var(--neon-green); 
+            border-color: var(--neon-green);
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
+        }
+
+        .error-msg {
+            color: var(--neon-alert);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+            padding: 8px;
+            background: rgba(244, 63, 94, 0.1);
+            border-left: 2px solid var(--neon-alert);
+        }
+
+        /* Modal / Alertas del Sistema */
+        #custom-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.9); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #0f172a; padding: 40px; border-radius: 8px;
+            border: 1px solid var(--neon-pink); max-width: 500px; text-align: center;
+            box-shadow: 0 0 40px rgba(236, 72, 153, 0.2);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .modal-title { font-size: 1.5rem; color: #fff; margin-bottom: 15px; font-family: var(--font-mono); }
+        .modal-btn { margin-top: 25px; background: var(--neon-pink); color: #fff; border:none; padding: 10px 20px; cursor:pointer; font-weight:bold; border-radius:4px;}
+        .modal-btn:hover { background: #be185d; box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);}
+
+        /* Arte CSS / Contenedores de Imagen */
+        .img-placeholder-container {
+            border: 1px dashed #334155; padding: 20px; margin: 20px 0;
+            background: #000; border-radius: 6px; text-align: center; overflow: auto;
+        }
+
+        /* Simulador CSS Péptido */
+        .css-peptide { font-family: var(--font-mono); font-size: 1.2rem; color: #fff; display:flex; justify-content:center; align-items:center; gap: 5px; flex-wrap:wrap; margin:20px 0;}
+        .amino { padding: 8px 15px; border: 1px solid var(--neon-cyan); border-radius: 20px; background: rgba(6, 182, 212, 0.1); }
+        .bond { width: 30px; height: 3px; background: var(--neon-pink); position:relative;}
+        .bond::after { content: '-H2O'; position: absolute; top: -20px; left: 0; font-size: 0.7rem; color: var(--neon-pink); }
+
+        /* Simulador Gráfica Exotérmica */
+        .css-graph { width: 300px; height: 150px; border-left: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1; position: relative; margin: 20px auto; }
+        .g-line { position: absolute; height: 3px; background: var(--neon-cyan); }
+        .reactants { top: 20px; left: 0; width: 60px; }
+        .curve { top: 20px; left: 60px; width: 100px; height: 80px; border-top: 3px solid var(--neon-pink); border-right: 3px solid var(--neon-pink); border-radius: 0 100% 0 0; }
+        .products { top: 100px; left: 160px; width: 140px; }
+        .g-label { position: absolute; font-family: var(--font-mono); font-size: 0.7rem; color: #94a3b8; }
+
+        /* Animaciones */
+        @keyframes pulseIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        @media (max-width: 650px) {
+            header { flex-direction: column; gap: 15px; text-align: center; }
+            .css-peptide { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🔬 CIBER-LAB: SISTEMA METABÓLICO</h1>
+        <div id="inventory-panel">
+            <span style="color:#64748b; font-family:var(--font-mono);">EQUIPAMIENTO:</span>
+            <span id="empty-inv" style="color: #475569; font-size: 0.9rem;">[Vacío]</span>
+        </div>
+    </header>
+
+    <div class="room-container">
+        
+        <!-- ================= FASE 1: BIO-MACROMOLÉCULAS ================= -->
+        <section class="room active" id="room-1">
+            <h2 class="room-header">Fase 1: Los Ladrillos de la Vida</h2>
+            <p style="margin-bottom: 20px;">Estás en el sector de Síntesis Orgánica. Los macronutrientes proporcionan estructura y energía. Debes identificar las moléculas fundamentales para restablecer los sensores biométricos.</p>
+
+            <div class="puzzle-box" id="box-p1">
+                <div class="puzzle-title">TERMINAL 01: La Aldohexosa Central</div>
+                <p>El combustible principal del cerebro es un carbohidrato simple (monosacárido) de seis carbonos. Su fórmula química es <strong>C6H12O6</strong> y es conocida comúnmente como "el azúcar de la sangre".</p>
+                <p>¿Cuál es el nombre químico de esta molécula indispensable para la respiración celular?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p1" placeholder="Nombre del monosacárido...">
+                    <button id="btn-p1" onclick="checkAnswer('p1')">Ingresar Combustible</button>
+                </div>
+                <div class="error-msg" id="error-p1"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p2">
+                <div class="puzzle-title">TERMINAL 02: Informe de Saponificación y Energía</div>
+                <p>Lee detenidamente el siguiente informe lipídico para encontrar el PIN termoquímico de 3 dígitos necesario para calibrar el calorímetro celular.</p>
+                <div class="reading-block">"Expediente L-89: Hoy analizamos el metabolismo lipídico comparado con los carbohidratos. Los triglicéridos (grasas) son moléculas inmensamente densas en energía. Para romper un triglicérido e iniciar la saponificación (para hacer jabón), necesitamos reaccionarlo con una base fuerte como el NaOH. El triglicérido se rompe liberando 1 molécula de glicerol y 3 moléculas de ácidos grasos libres.
+
+Sin embargo, el interés real de la corporación es la generación de energía celular (ATP). Sabemos que una molécula de glucosa, tras pasar por la glucólisis y el Ciclo de Krebs, rinde exactamente treinta y seis (36) moléculas de ATP netas. Por otro lado, la Beta-Oxidación de un solo ácido graso como el Ácido Palmítico (16 carbonos) es tan eficiente que genera un rendimiento neto masivo de ciento seis (106) moléculas de ATP. Las grasas son el verdadero almacén termodinámico a largo plazo del organismo."</div>
+                <div class="input-group">
+                    <input type="text" id="input-p2" placeholder="Código numérico (3 dígitos)...">
+                    <button id="btn-p2" onclick="checkAnswer('p2')">Calibrar ATP</button>
+                </div>
+                <div class="error-msg" id="error-p2"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p3">
+                <div class="puzzle-title">TERMINAL 03: Desencriptación Bioquímica (Premio: Lactasa)</div>
+                <p>El refrigerador de reactivos está cerrado. Su pantalla usa un cifrado de desplazamiento (+2 posiciones en el abecedario). <br>La pista dice: <em>"Para abrir y obtener la proteína catalizadora vital, retrocede 2 letras. Código cifrado: <strong>G P B K O C</strong>"</em></p>
+                <p style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">(Pista: Si la letra cifrada es G, retrocede a F, luego a E...).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p3" placeholder="Palabra descifrada...">
+                    <button id="btn-p3" onclick="checkAnswer('p3')">Desbloquear Reactivo</button>
+                </div>
+                <div class="error-msg" id="error-p3"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 2: PLEGAMIENTO PROTEICO ================= -->
+        <section class="room" id="room-2">
+            <h2 class="room-header">Fase 2: El Enlace Peptídico</h2>
+            <p style="margin-bottom: 20px;">Las proteínas son las máquinas moleculares de la célula. Se forman por la unión de cientos de aminoácidos mediante un proceso de síntesis por deshidratación.</p>
+
+            <div class="puzzle-box" id="box-p4">
+                <div class="puzzle-title">TERMINAL 04: Matemáticas de la Deshidratación</div>
+                <div class="img-placeholder-container">
+                    <p><strong>Simulador de Enlace Peptídico: Pentapéptido</strong></p>
+                    <div class="css-peptide">
+                        <div class="amino">AA1</div><div class="bond"></div>
+                        <div class="amino">AA2</div><div class="bond"></div>
+                        <div class="amino">AA3</div><div class="bond"></div>
+                        <div class="amino">AA4</div><div class="bond"></div>
+                        <div class="amino">AA5</div>
+                    </div>
+                </div>
+                <p>Cada vez que dos aminoácidos se unen para formar un enlace peptídico, se libera exactamente <strong>1 molécula de agua (H2O)</strong>. Observa el esquema superior de un péptido de 5 aminoácidos. ¿Cuántas moléculas de agua en total se liberaron para construir esta cadena?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p4" placeholder="Ingresa solo el número...">
+                    <button id="btn-p4" onclick="checkAnswer('p4')">Calcular Agua Liberada</button>
+                </div>
+                <div class="error-msg" id="error-p4"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p5">
+                <div class="puzzle-title">TERMINAL 05: Análisis de Desnaturalización</div>
+                <p>Las proteínas tienen 4 niveles de estructura (Primaria, Secundaria, Terciaria y Cuaternaria). Cuando fríes un huevo (aplicando calor extremo), la proteína albúmina se desnaturaliza: sus puentes de hidrógeno se rompen, destruyendo sus formas 3D (hélices y plegamientos).</p>
+                <p>Sin embargo, los enlaces peptídicos covalentes (fuertes) que mantienen unida la secuencia original de aminoácidos como un collar de perlas NO se rompen por el simple calor. ¿Cuál de las 4 estructuras mencionadas arriba es la <strong>única</strong> que sobrevive a la desnaturalización térmica?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p5" placeholder="Primaria, Secundaria, Terciaria o Cuaternaria...">
+                    <button id="btn-p5" onclick="checkAnswer('p5')">Identificar Estructura Resiliente</button>
+                </div>
+                <div class="error-msg" id="error-p5"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p6">
+                <div class="puzzle-title">TERMINAL 06: Masa Molar (Premio: Sonda Térmica)</div>
+                <p>Para desbloquear el equipo de termodinámica, necesitas ingresar la masa molar del aminoácido más simple: La <strong>Glicina (C2 H5 N O2)</strong>.</p>
+                <p>Calcula sumando los pesos atómicos: Carbono (12), Hidrógeno (1), Nitrógeno (14), Oxígeno (16). <br>Fórmula = <strong>(12x2) + (1x5) + (14x1) + (16x2)</strong>.</p>
+                <div class="input-group">
+                    <input type="text" id="input-p6" placeholder="Ingresa el resultado en g/mol...">
+                    <button id="btn-p6" onclick="checkAnswer('p6')">Desbloquear Sonda Térmica</button>
+                </div>
+                <div class="error-msg" id="error-p6"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 3: TERMOQUÍMICA ORGÁNICA ================= -->
+        <section class="room" id="room-3">
+            <h2 class="room-header">Fase 3: Transferencia de Calor</h2>
+            <p style="margin-bottom: 20px;">Cada enlace que se rompe absorbe energía; cada enlace que se forma la libera. Toda reacción bioquímica obedece a la Termodinámica.</p>
+
+            <div class="puzzle-box" id="box-p7">
+                <div class="puzzle-title">TERMINAL 07: Variación de Entalpía (ΔH) - USO DE INVENTARIO</div>
+                <p>El reactor requiere medir el calor de una combustión celular. Revisa tu <strong>INVENTARIO</strong>: necesitas la <strong>Sonda Térmica</strong> ganada en la Fase 2.</p>
+                <p>Fórmula de Entalpía: <strong>ΔH = (H de Productos) - (H de Reactivos)</strong>. <br>Si la energía final (Productos) contenida es de <strong>-393 kJ/mol</strong>, y la energía inicial (Reactivos) era de <strong>-74 kJ/mol</strong>, calcula la Variación de Entalpía (ΔH). Cuidado con los signos negativos: -393 - (-74).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p7" placeholder="Ingresa el valor con su signo (ej: -100)...">
+                    <button id="btn-p7" onclick="checkAnswer('p7')">Ejecutar Sonda y Calcular</button>
+                </div>
+                <div class="error-msg" id="error-p7"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p8">
+                <div class="puzzle-title">TERMINAL 08: Diagrama de Energía</div>
+                <div class="img-placeholder-container">
+                    <p style="color: #64748b; font-size:0.8rem; margin-bottom:10px;">[Marcador: <code style="color:#cbd5e1">&lt;img src="perfil_energia.png"&gt;</code>]</p>
+                    <p><strong>Simulador CSS de Perfil de Energía:</strong></p>
+                    <div class="css-graph">
+                        <div class="g-line reactants"></div><span class="g-label" style="top:5px; left:0;">Reactivos (Alta E.)</span>
+                        <div class="g-line curve"></div>
+                        <div class="g-line products"></div><span class="g-label" style="top:85px; left:160px;">Productos (Baja E.)</span>
+                        <div style="position:absolute; bottom:-20px; left:100px; color:#cbd5e1; font-size:0.8rem; font-family:var(--font-mono);">Progreso de Reacción &rarr;</div>
+                    </div>
+                </div>
+                <p style="margin-top:40px;">Observa el gráfico. Los Reactivos comenzaron con mucha energía, y los Productos terminaron con muy poca. Eso significa que la diferencia de energía (el calor) fue liberada hacia el exterior (el matraz se calienta). <br>¿Cómo se clasifica termodinámicamente a toda reacción que <strong>libera</strong> calor?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p8" placeholder="Escribe 'Endotérmica' o 'Exotérmica'...">
+                    <button id="btn-p8" onclick="checkAnswer('p8')">Clasificar Reacción</button>
+                </div>
+                <div class="error-msg" id="error-p8"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p9">
+                <div class="puzzle-title">TERMINAL 09: La Barrera de Activación (Ea)</div>
+                <p>Incluso las reacciones que liberan energía necesitan una "chispa" inicial para romper los enlaces viejos. A esto se le llama Energía de Activación (Ea).</p>
+                <p>Una reacción química en el laboratorio tiene una Ea altísima de <strong>120 kJ/mol</strong>, por lo que es casi imposible que inicie a temperatura ambiente. Si agregamos un catalizador metálico, la nueva Ea baja a solo <strong>35 kJ/mol</strong>.</p>
+                <p>¿Cuántos kJ/mol exactos de "obstáculo" o barrera de energía nos <strong>ahorró</strong> el catalizador? (Haz la resta).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p9" placeholder="Ingresa solo el número...">
+                    <button id="btn-p9" onclick="checkAnswer('p9')">Calcular Eficiencia</button>
+                </div>
+                <div class="error-msg" id="error-p9"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 4: CINÉTICA Y CATÁLISIS ================= -->
+        <section class="room" id="room-4">
+            <h2 class="room-header">Fase 4: Velocidad de Reacción</h2>
+            <p style="margin-bottom: 20px;">La termodinámica te dice SI una reacción ocurrirá, pero la Cinética te dice QUÉ TAN RÁPIDO. Aquí el tiempo es el factor clave.</p>
+
+            <div class="puzzle-box" id="box-p10">
+                <div class="puzzle-title">TERMINAL 10: Ecuación de Velocidad</div>
+                <div class="reading-block" style="border-left-color: var(--neon-cyan);">
+LEY DE VELOCIDAD:
+La velocidad (v) de una reacción general A + B -> Productos se expresa como: 
+v = k[A]¹[B]²
+Donde [A] y [B] son las concentraciones molares, y los exponentes son el 'orden' de la reacción.
+                </div>
+                <p>En la ecuación anterior (<strong>v = k[A][B]²</strong>), la concentración de A se mantiene igual (factor de 1), pero la concentración del reactivo [B] se <strong>duplica</strong> (factor de 2). <br>Como [B] está elevado al cuadrado en la fórmula, ¿por qué <strong>factor matemático (número)</strong> se multiplicará la velocidad total de la reacción?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p10" placeholder="Ingresa solo el número (ej: 3, 4, 8)...">
+                    <button id="btn-p10" onclick="checkAnswer('p10')">Ajustar Tasa de Cinética</button>
+                </div>
+                <div class="error-msg" id="error-p10"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p11">
+                <div class="puzzle-title">TERMINAL 11: Catálisis Enzimática - USO DE INVENTARIO</div>
+                <p>Las enzimas son catalizadores biológicos (proteínas) que aceleran las reacciones bajando la Energía de Activación, uniéndose a un sustrato específico como una llave a una cerradura.</p>
+                <p>Revisa tu <strong>INVENTARIO</strong>. En la Fase 1 obtuviste una enzima biológica específica. Si inyectas esa enzima (Lactasa) en una molécula de Lactosa (el azúcar de la leche), la hidrolizará separándola en dos monosacáridos: Glucosa y... ¿cuál es el otro azúcar simple formado?</p>
+                <p style="font-size: 0.85rem; color: #64748b;">(Pista: El nombre de la enzima te da una gran pista de este azúcar derivado).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p11" placeholder="Nombre del monosacárido resultante...">
+                    <button id="btn-p11" onclick="checkAnswer('p11')">Ejecutar Reacción Enzimática</button>
+                </div>
+                <div class="error-msg" id="error-p11"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 5: LA SÍNTESIS MAESTRA ================= -->
+        <section class="room" id="room-5">
+            <h2 class="room-header">Fase 5: El Metabolismo Central</h2>
+            <p style="margin-bottom: 20px;">Última barrera. Integra tus conocimientos sobre termodinámica, enzimas y carbohidratos para estabilizar el sistema metabólico.</p>
+
+            <div class="puzzle-box" id="box-p12">
+                <div class="puzzle-title">TERMINAL 12: La Paradoja del Catalizador</div>
+                <div class="reading-block" style="border-left-color: var(--neon-green);">
+DEDUCCIÓN CRUZADA:
+- Sabemos que una enzima (catalizador) disminuye la Energía de Activación, haciendo que la velocidad de reacción aumente drásticamente (Cinética).
+- También sabemos que la Entalpía (ΔH) es la diferencia estricta de energía entre los Productos Finales y los Reactivos Iniciales (Termodinámica).
+                </div>
+                <p>Pregunta de Máster: Aunque el catalizador cambia el "camino" (haciéndolo más fácil), los reactivos y los productos siguen siendo exactamente los mismos al principio y al final. Por lo tanto, ¿un catalizador tiene la capacidad de alterar el valor de la <strong>Entalpía Total (ΔH)</strong> de una reacción? (Responde SÍ o NO).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p12" placeholder="Escribe 'SI' o 'NO'...">
+                    <button id="btn-p12" onclick="checkAnswer('p12')">Confirmar Teoría</button>
+                </div>
+                <div class="error-msg" id="error-p12"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p13" style="border-left-color: var(--neon-pink); box-shadow: 0 0 20px rgba(236, 72, 153, 0.15);">
+                <div class="puzzle-title" style="color: var(--neon-pink); font-size: 1.25rem;">TERMINAL 13: La Ruta Holográfica (Acertijo Final)</div>
+                
+                <p style="margin-bottom:15px;">Para desbloquear la salida del laboratorio, analiza la proyección holográfica 3D del núcleo. Observa cómo los carbohidratos (hexágonos azules) se rompen en los canales proteicos (enzimas verdes) liberando calor (ondas magenta termoquímicas). Dentro de esta intrincada red de enlaces y energía, hay 11 letras de neón ocultas. Encuéntralas para formar la palabra que define la suma de <strong>todas</strong> las reacciones químicas de síntesis y degradación en una célula.</p>
+                
+                <div class="img-placeholder-container" style="border-color: var(--neon-pink); background: rgba(236, 72, 153, 0.05); padding: 0;">
+                    <!-- IMAGEN GENERADA POR IA INSERTADA AQUÍ (Acertijo Visual Complejo) -->
+                    <img src="http://googleusercontent.com/image_generation_content/5" alt="Holograma de Ruta Metabólica" style="width: 100%; border-radius: 4px; display: block;">
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="input-p13" placeholder="Ingresa la palabra de 11 letras..." style="border-color: var(--neon-pink);">
+                    <button id="btn-p13" onclick="checkAnswer('p13')" style="background-color: var(--neon-pink); color: #fff; border-color: var(--neon-pink);">¡ESTABILIZAR SISTEMA Y ESCAPAR!</button>
+                </div>
+                <div class="error-msg" id="error-p13"></div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODAL PERSONALIZADO -->
+    <div id="custom-modal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modal-title">CIBER-SISTEMA</h3>
+            <p id="modal-text" style="margin-bottom: 20px; color: #cbd5e1;"></p>
+            <button class="modal-btn" onclick="closeModal()">ACEPTAR</button>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT LÓGICA ================= -->
+    <script>
+        // Diccionario de respuestas (evaluadas en mayúsculas sin tildes)
+        const answers = {
+            p1: "GLUCOSA",
+            p2: "106", // ATP del Ácido Palmítico (lectura)
+            p3: "ENZIMA", // Clave G P B K O C -> -2 -> E N Z I M A
+            p4: "4", // 5 aminoácidos hacen 4 enlaces peptídicos
+            p5: "PRIMARIA",
+            p6: "75", 
+            p7: ["-319", "-319 KJ/MOL"], 
+            p8: "EXOTERMICA",
+            p9: "85", // 120 - 35 = 85
+            p10: "4", // [B] al cuadrado. 2^2 = 4
+            p11: "GALACTOSA", 
+            p12: "NO", // Los catalizadores no afectan la termodinámica global
+            p13: "METABOLISMO"
+        };
+        
+        let gameState = {
+            solvedPuzzles: [],
+            inventory: [],
+            activeRoom: 1
+        };
+
+        // Lógica de Modales
+        function showModal(title, text) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').style.display = 'none';
+        }
+
+        // Normalización estricta
+        function normalizeString(str) {
+            return str.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        // Validación principal
+        function checkAnswer(puzzleId) {
+            const inputEl = document.getElementById(`input-${puzzleId}`);
+            const btnEl = document.getElementById(`btn-${puzzleId}`);
+            const errorEl = document.getElementById(`error-${puzzleId}`);
+            
+            const userAnswer = normalizeString(inputEl.value);
+            let isCorrect = false;
+            
+            const correctAnswer = answers[puzzleId];
+            if(Array.isArray(correctAnswer)) {
+                isCorrect = correctAnswer.includes(userAnswer);
+            } else {
+                isCorrect = (userAnswer === normalizeString(correctAnswer));
+            }
+
+            // Dependencias de Inventario Estrictas
+            if(puzzleId === 'p7' && !gameState.inventory.includes('Sonda Térmica')) {
+                showModal("FALTA EQUIPO", "El sistema central no detecta medición de calor. Necesitas desbloquear la 'Sonda Térmica' en la Fase 2 calculando la masa molar de la Glicina.");
+                return;
+            }
+            if(puzzleId === 'p11' && !gameState.inventory.includes('Enzima Lactasa')) {
+                showModal("REACTIVO NO ENCONTRADO", "No puedes realizar hidrólisis sin el catalizador biológico específico. Debes descifrar el casillero de la Fase 1 para obtener la Enzima Lactasa.");
+                return;
+            }
+
+            if(isCorrect) {
+                handleSuccess(puzzleId, inputEl, btnEl, errorEl);
+            } else {
+                handleFailure(puzzleId, inputEl, btnEl, errorEl);
+            }
+        }
+
+        function handleSuccess(puzzleId, inputEl, btnEl, errorEl) {
+            inputEl.disabled = true;
+            btnEl.disabled = true;
+            btnEl.classList.add('solved-btn');
+            btnEl.innerText = 'PROCESADO';
+            errorEl.style.display = 'none';
+            document.getElementById(`box-${puzzleId}`).classList.add('solved');
+
+            if (!gameState.solvedPuzzles.includes(puzzleId)) {
+                gameState.solvedPuzzles.push(puzzleId);
+                
+                // Recompensas de Inventario
+                if(puzzleId === 'p3') addInventoryItem('Enzima Lactasa', '🧬');
+                if(puzzleId === 'p6') addInventoryItem('Sonda Térmica', '🌡️');
+                
+                checkRoomProgress();
+                saveProgress();
+                
+                if(puzzleId === 'p13') {
+                    setTimeout(() => {
+                        showModal("¡ESCAPE BIOQUÍMICO EXITOSO!", "¡Felicidades Científico Nivel 11! Has dominado el intrincado mundo de las biomoléculas, calculado energías de activación y resuelto el misterio cinético de las enzimas. Tu mente funciona como un sistema termodinámico perfecto.");
+                    }, 500);
+                }
+            }
+        }
+
+        function handleFailure(puzzleId, inputEl, btnEl, errorEl) {
+            inputEl.disabled = true;
+            btnEl.disabled = true;
+            let timeLeft = 7; // Penalización antifuerza bruta de 7 segundos
+            
+            errorEl.style.display = 'block';
+            errorEl.innerText = `FALLO SISTÉMICO. Bloqueo de terminal: ${timeLeft}s`;
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                errorEl.innerText = `FALLO SISTÉMICO. Bloqueo de terminal: ${timeLeft}s`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    inputEl.disabled = false;
+                    btnEl.disabled = false;
+                    inputEl.value = "";
+                    errorEl.style.display = 'none';
+                    inputEl.focus();
+                }
+            }, 1000);
+        }
+
+        // Sistema de Inventario
+        function addInventoryItem(itemName, icon) {
+            if (!gameState.inventory.includes(itemName)) {
+                gameState.inventory.push(itemName);
+                renderInventory();
+                showModal("INVENTARIO ACTUALIZADO", `Componente adquirido: ${icon} ${itemName}. La bioquímica requiere herramientas específicas. Úsalo cuando el sistema te lo exija.`);
+            }
+        }
+
+        function renderInventory() {
+            const panel = document.getElementById('inventory-panel');
+            const emptySpan = document.getElementById('empty-inv');
+            
+            if (gameState.inventory.length > 0 && emptySpan) {
+                emptySpan.style.display = 'none';
+            }
+
+            const existingItems = panel.querySelectorAll('.inventory-item');
+            existingItems.forEach(item => item.remove());
+
+            gameState.inventory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'inventory-item';
+                let icon = item === 'Enzima Lactasa' ? '🧬' : '🌡️';
+                div.innerHTML = `${icon} ${item}`;
+                panel.appendChild(div);
+            });
+        }
+
+        // Progreso de Habitaciones
+        function checkRoomProgress() {
+            const r1 = ['p1', 'p2', 'p3'].every(p => gameState.solvedPuzzles.includes(p));
+            const r2 = ['p4', 'p5', 'p6'].every(p => gameState.solvedPuzzles.includes(p));
+            const r3 = ['p7', 'p8', 'p9'].every(p => gameState.solvedPuzzles.includes(p));
+            const r4 = ['p10', 'p11'].every(p => gameState.solvedPuzzles.includes(p));
+
+            if (r1 && gameState.activeRoom < 2) activateRoom(2);
+            if (r1 && r2 && gameState.activeRoom < 3) activateRoom(3);
+            if (r1 && r2 && r3 && gameState.activeRoom < 4) activateRoom(4);
+            if (r1 && r2 && r3 && r4 && gameState.activeRoom < 5) activateRoom(5);
+        }
+
+        function activateRoom(roomNumber) {
+            gameState.activeRoom = roomNumber;
+            const roomEl = document.getElementById(`room-${roomNumber}`);
+            if(roomEl && !roomEl.classList.contains('active')) {
+                roomEl.classList.add('active');
+                setTimeout(() => roomEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 500);
+            }
+        }
+
+        // Persistencia (localStorage)
+        function saveProgress() {
+            try { localStorage.setItem('escapeBioquimica_Grado11', JSON.stringify(gameState)); } 
+            catch (e) { console.error("Error guardando progreso", e); }
+        }
+
+        function loadProgress() {
+            try {
+                const savedData = localStorage.getItem('escapeBioquimica_Grado11');
+                if (savedData) {
+                    gameState = JSON.parse(savedData);
+                    
+                    gameState.solvedPuzzles.forEach(puzzleId => {
+                        const inputEl = document.getElementById(`input-${puzzleId}`);
+                        const btnEl = document.getElementById(`btn-${puzzleId}`);
+                        const errorEl = document.getElementById(`error-${puzzleId}`);
+                        
+                        if(inputEl && btnEl) {
+                            let ans = answers[puzzleId];
+                            inputEl.value = Array.isArray(ans) ? ans[0] : ans;
+                            handleSuccess(puzzleId, inputEl, btnEl, errorEl);
+                        }
+                    });
+
+                    renderInventory();
+                    
+                    for(let i = 1; i <= gameState.activeRoom; i++) {
+                        const roomEl = document.getElementById(`room-${i}`);
+                        if(roomEl) roomEl.classList.add('active');
+                    }
+                }
+            } catch (e) { console.error("Error cargando progreso", e); }
+        }
+
+        window.onload = () => {
+            loadProgress();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sopa de letras: Reacciones Pericíclicas y Nomenclatura IUPAC</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    :root{
+        --bg:#020617;
+        --c1:#0f172a;
+        --c2:#4f46e5;
+        --c3:#22c55e;
+        --c4:#f97316;
+        --c5:#e11d48;
+        --c6:#38bdf8;
+        --text:#e5e7eb;
+    }
+    *{box-sizing:border-box;}
+    body{
+        margin:0;
+        font-family:'Segoe UI',system-ui,Arial,sans-serif;
+        background:radial-gradient(circle at top,var(--c1),var(--bg));
+        color:var(--text);
+        min-height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    }
+    .wrapper{
+        max-width:1150px;
+        width:100%;
+        padding:20px;
+        display:grid;
+        grid-template-columns:1.1fr 1.1fr;
+        gap:20px;
+    }
+    @media(max-width:900px){
+        .wrapper{grid-template-columns:1fr;}
+    }
+    .panel{
+        background:linear-gradient(145deg,rgba(15,23,42,0.96),rgba(15,23,42,0.9));
+        border-radius:18px;
+        padding:16px 18px;
+        box-shadow:0 0 25px rgba(0,0,0,0.6);
+        position:relative;
+        overflow:hidden;
+    }
+    h1{
+        margin:0 0 6px;
+        font-size:1.4rem;
+    }
+    p{margin:4px 0;}
+    .badge{
+        display:inline-block;
+        padding:3px 8px;
+        border-radius:999px;
+        background:linear-gradient(135deg,var(--c2),var(--c6));
+        font-size:0.75rem;
+        color:#e5e7eb;
+        font-weight:600;
+        margin-bottom:6px;
+    }
+    .info-small{
+        font-size:0.8rem;
+        opacity:0.92;
+    }
+    .highlight{color:var(--c4); font-weight:600;}
+
+    .login-box{
+        margin-top:8px;
+        padding:8px;
+        border-radius:12px;
+        background:rgba(15,23,42,0.9);
+        border:1px solid rgba(148,163,184,0.7);
+        font-size:0.82rem;
+        display:flex;
+        flex-direction:column;
+        gap:4px;
+    }
+    .login-box label{
+        font-weight:600;
+        font-size:0.8rem;
+    }
+    .login-box input{
+        padding:6px 8px;
+        border-radius:999px;
+        border:1px solid rgba(148,163,184,0.7);
+        background:#020617;
+        color:var(--text);
+        font-size:0.8rem;
+        outline:none;
+    }
+    .login-box input:focus{
+        border-color:var(--c3);
+        box-shadow:0 0 6px rgba(34,197,94,0.7);
+    }
+    .login-note{
+        font-size:0.75rem;
+        opacity:0.9;
+    }
+
+    .legend{
+        margin-top:8px;
+        font-size:0.8rem;
+    }
+    .legend span{
+        display:inline-block;
+        margin:2px 4px 0 0;
+        padding:2px 6px;
+        border-radius:999px;
+        border:1px solid rgba(148,163,184,0.7);
+        background:rgba(15,23,42,0.9);
+    }
+
+    .grid{
+        display:grid;
+        grid-template-columns:repeat(14,1fr);
+        gap:2px;
+        margin-top:4px;
+        user-select:none;
+    }
+    .cell{
+        width:100%;
+        padding-top:100%;
+        position:relative;
+        cursor:pointer;
+    }
+    .cell-inner{
+        position:absolute;
+        inset:0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-weight:600;
+        font-size:0.9rem;
+        border-radius:6px;
+        background:radial-gradient(circle at 20% 0%,rgba(56,189,248,0.22),rgba(15,23,42,0.95));
+        border:1px solid rgba(148,163,184,0.6);
+        transition:background 0.2s, transform 0.1s, box-shadow 0.2s;
+    }
+    .cell-inner:hover{
+        background:radial-gradient(circle at 20% 0%,rgba(250,204,21,0.25),rgba(15,23,42,1));
+        transform:translateY(-1px);
+        box-shadow:0 0 8px rgba(250,204,21,0.5);
+    }
+    .cell-inner.selected{
+        background:linear-gradient(145deg,var(--c2),var(--c3));
+        color:#0f172a;
+        box-shadow:0 0 10px rgba(79,70,229,0.8);
+    }
+
+    .words{
+        margin-top:8px;
+        font-size:0.85rem;
+    }
+    .word{
+        padding:2px 0;
+    }
+    .word.found{
+        text-decoration:line-through;
+        color:var(--c3);
+        font-weight:700;
+    }
+
+    .glow-orbit{
+        position:absolute;
+        width:190px;
+        height:190px;
+        border-radius:50%;
+        border:1px dashed rgba(148,163,184,0.4);
+        top:-55px;
+        right:-45px;
+        animation:spin 20s linear infinite;
+        pointer-events:none;
+    }
+    .glow-dot{
+        width:10px;
+        height:10px;
+        border-radius:50%;
+        background:var(--c3);
+        position:absolute;
+        top:-5px;
+        left:50%;
+        transform:translateX(-50%);
+        box-shadow:0 0 10px rgba(34,197,94,0.9);
+    }
+    @keyframes spin{
+        from{transform:rotate(0deg);}
+        to{transform:rotate(360deg);}
+    }
+</style>
+</head>
+<body>
+<div class="wrapper">
+    <section class="panel">
+        <span class="badge">Sopa de letras – Reacciones Pericíclicas y Nomenclatura IUPAC</span>
+        <h1>Ciclaciones, aromas del café y comunicación honesta</h1>
+        <p class="info-small">
+            Encuentra 15 palabras sobre <span class="highlight">reacciones pericíclicas, compuestos aromáticos del café/cítricos y nomenclatura IUPAC</span>, valorando la armonía de la naturaleza y la precisión técnica.
+        </p>
+        <div class="login-box">
+            <label for="studentName">Escribe tu nombre completo antes de empezar:</label>
+            <input type="text" id="studentName" placeholder="Nombre y apellidos">
+            <span class="login-note" id="loginNote">
+                Tu nombre aparecerá en el mensaje final cuando completes la sopa de letras.
+            </span>
+        </div>
+        <p class="info-small">
+            Las palabras pueden aparecer en horizontal, vertical o diagonal, en cualquier sentido.
+        </p>
+        <div class="legend">
+            <span>PERICICLICA</span><span>CICLOADICION</span><span>ELECTROCICLICA</span><span>REORDENAMIENTO</span>
+            <span>AROMATICO</span><span>CAFE</span><span>CITRICO</span><span>ANILLO</span>
+            <span>IUPAC</span><span>NOMENCLATURA</span><span>ROTULACION</span><span>AGROINSUMO</span>
+            <span>ARMONIA</span><span>HONESTIDAD</span><span>PRECISION</span>
+        </div>
+        <div class="glow-orbit"><div class="glow-dot"></div></div>
+    </section>
+
+    <section class="panel">
+        <div id="grid" class="grid"></div>
+        <div class="words" id="wordList"></div>
+    </section>
+</div>
+
+<script>
+// Palabras de la sopa (sin espacios, todo mayúsculas)
+const WORDS = [
+    "PERICICLICA",
+    "CICLOADICION",
+    "ELECTROCICLICA",
+    "REORDENAMIENTO",
+    "AROMATICO",
+    "CAFE",
+    "CITRICO",
+    "ANILLO",
+    "IUPAC",
+    "NOMENCLATURA",
+    "ROTULACION",
+    "AGROINSUMO",
+    "ARMONIA",
+    "HONESTIDAD",
+    "PRECISION"
+];
+
+// Tamaño de la sopa
+const ROWS = 14;
+const COLS = 14;
+
+// Matriz de letras
+let grid = Array.from({length: ROWS}, () => Array(COLS).fill(""));
+
+// Para marcar posiciones de cada palabra
+let wordPositions = {}; // nombre -> array de {r,c}
+
+// Letra aleatoria
+function randomLetter(){
+    const letters = "ABCDEFGHIJKLMNOPRSTUVWXYZ";
+    return letters[Math.floor(Math.random()*letters.length)];
+}
+
+// Intentar colocar una palabra en la cuadrícula
+function placeWord(word){
+    const directions = [
+        {dr:0, dc:1},   // derecha
+        {dr:0, dc:-1},  // izquierda
+        {dr:1, dc:0},   // abajo
+        {dr:-1, dc:0},  // arriba
+        {dr:1, dc:1},   // diag abajo-dcha
+        {dr:1, dc:-1},  // diag abajo-izq
+        {dr:-1, dc:1},  // diag arriba-dcha
+        {dr:-1, dc:-1}  // diag arriba-izq
+    ];
+
+    for(let attempt=0; attempt<200; attempt++){
+        const dir = directions[Math.floor(Math.random()*directions.length)];
+        const maxRow = dir.dr === 1 ? ROWS - word.length : ROWS-1;
+        const minRow = dir.dr === -1 ? word.length-1 : 0;
+        const maxCol = dir.dc === 1 ? COLS - word.length : COLS-1;
+        const minCol = dir.dc === -1 ? word.length-1 : 0;
+
+        const startRow = Math.floor(Math.random()*(maxRow - minRow + 1)) + minRow;
+        const startCol = Math.floor(Math.random()*(maxCol - minCol + 1)) + minCol;
+
+        let fits = true;
+        let positions = [];
+
+        for(let i=0;i<word.length;i++){
+            const r = startRow + dir.dr*i;
+            const c = startCol + dir.dc*i;
+            const current = grid[r][c];
+            if(current !== "" && current !== word[i]){
+                fits = false;
+                break;
+            }
+            positions.push({r,c});
+        }
+
+        if(!fits) continue;
+
+        positions.forEach((pos, idx)=>{
+            grid[pos.r][pos.c] = word[idx];
+        });
+        wordPositions[word] = positions;
+        return true;
+    }
+    return false;
+}
+
+// Construir sopa
+function buildWordSearch(){
+    WORDS.forEach(w=>{
+        placeWord(w);
+    });
+
+    for(let r=0;r<ROWS;r++){
+        for(let c=0;c<COLS;c++){
+            if(grid[r][c] === ""){
+                grid[r][c] = randomLetter();
+            }
+        }
+    }
+}
+
+// Renderizar cuadrícula
+let selectedCells = [];
+let foundWords = new Set();
+
+function renderGrid(){
+    const gridEl = document.getElementById("grid");
+    gridEl.innerHTML = "";
+    for(let r=0;r<ROWS;r++){
+        for(let c=0;c<COLS;c++){
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.dataset.row = r;
+            cell.dataset.col = c;
+            const inner = document.createElement("div");
+            inner.className = "cell-inner";
+            inner.textContent = grid[r][c];
+            cell.appendChild(inner);
+            cell.addEventListener("click", ()=>onCellClick(r,c,inner));
+            gridEl.appendChild(cell);
+        }
+    }
+}
+
+// Renderizar lista de palabras
+function renderWordList(){
+    const listEl = document.getElementById("wordList");
+    listEl.innerHTML = "<strong>Palabras a encontrar:</strong>";
+    WORDS.forEach(w=>{
+        const div = document.createElement("div");
+        div.className = "word";
+        div.id = "word-" + w;
+        div.textContent = w;
+        listEl.appendChild(div);
+    });
+}
+
+// Selección y comprobación
+function onCellClick(r,c,innerEl){
+    const name = document.getElementById("studentName").value.trim();
+    if(!name){
+        alert("Antes de jugar, escribe tu nombre completo en el recuadro.");
+        return;
+    }
+
+    const idx = selectedCells.findIndex(pos=>pos.r===r && pos.c===c);
+    if(idx>=0){
+        selectedCells.splice(idx,1);
+        innerEl.classList.remove("selected");
+    }else{
+        selectedCells.push({r,c,el:innerEl});
+        innerEl.classList.add("selected");
+    }
+    checkSelection();
+}
+
+function checkSelection(){
+    if(selectedCells.length < 2) return;
+
+    const sorted = [...selectedCells].sort((a,b)=>{
+        if(a.r === b.r) return a.c - b.c;
+        return a.r - b.r;
+    });
+
+    const letters = sorted.map(s=>grid[s.r][s.c]).join("");
+    const lettersReverse = letters.split("").reverse().join("");
+
+    let matchedWord = null;
+    if(WORDS.includes(letters)){
+        matchedWord = letters;
+    }else if(WORDS.includes(lettersReverse)){
+        matchedWord = lettersReverse;
+    }
+
+    if(matchedWord){
+        foundWords.add(matchedWord);
+        document.getElementById("word-" + matchedWord).classList.add("found");
+        selectedCells.forEach(s=>{
+            s.el.classList.add("selected");
+        });
+        selectedCells = [];
+
+        if(foundWords.size === WORDS.length){
+            const name = document.getElementById("studentName").value.trim() || "Estudiante";
+            setTimeout(()=>{
+                alert("¡Excelente, " + name + "! Reconociste la armonía de las reacciones pericíclicas, los aromas del café y la importancia de la honestidad al nombrar compuestos según la IUPAC.");
+            },200);
+        }
+    }
+}
+
+buildWordSearch();
+renderGrid();
+renderWordList();
+</script>
+</body>
+</html>

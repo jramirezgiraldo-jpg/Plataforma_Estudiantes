@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: La Tabla Periódica y el Manejo de Retos</title>
+    <style>
+        :root {
+            --primary: #2C3E50;    /* Azul oscuro serio */
+            --secondary: #27AE60;  /* Verde esperanza/éxito */
+            --accent: #E67E22;     /* Naranja para resaltar */
+            --bg: #ECF0F1;         /* Gris muy claro para fondo */
+            --text: #34495E;       /* Gris oscuro para lectura */
+            --card: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.8;
+        }
+
+        /* --- LOGIN SYSTEM --- */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 62, 80, 0.98);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .login-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        /* --- STICKY HEADER --- */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .status-bar {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .progress-track {
+            flex-grow: 1;
+            background: rgba(255,255,255,0.2);
+            height: 15px;
+            border-radius: 10px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .element-rank {
+            background: var(--accent);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* --- CONTENT LAYOUT --- */
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 20px;
+            padding-bottom: 100px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 6px solid var(--primary);
+        }
+
+        h1, h2, h3 { color: var(--primary); }
+        h4 { color: var(--accent); margin-top: 1.5rem; }
+
+        /* --- INTERACTIVE ELEMENTS --- */
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+        .btn-primary:hover { transform: scale(1.02); background: #34495E; }
+
+        .btn-check {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        
+        .btn-disabled {
+            background: #BDC3C7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .notebook-activity {
+            background: #F9E79F; /* Amarillo cuaderno */
+            border: 2px dashed #F1C40F;
+            padding: 1.5rem;
+            border-radius: 5px;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        
+        .notebook-activity::before {
+            content: "📓 Actividad en Cuaderno";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #F1C40F;
+            color: #333;
+            padding: 2px 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 3px;
+        }
+
+        /* --- VISUALS --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th { background: var(--primary); color: white; }
+
+        .periodic-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .p-box { border: 1px solid #ccc; padding: 10px; border-radius: 4px; }
+        .p-header { background: #eee; font-weight: bold; }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct { background: #D5F5E3; color: #196F3D; border: 1px solid #196F3D; }
+        .incorrect { background: #FADBD8; color: #943126; border: 1px solid #943126; }
+
+        /* --- ICFES QUESTION --- */
+        .icfes-container {
+            border: 2px solid var(--primary);
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+        }
+        .icfes-options label {
+            display: block;
+            margin: 8px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .icfes-options label:hover { background: #e2e6ea; }
+
+        textarea {
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="color:var(--primary)">Bienvenido al Laboratorio Virtual</h2>
+            <p>Ingresa tu nombre para iniciar tu registro de progreso.</p>
+            <input type="text" id="username" placeholder="Nombres y Apellidos completos">
+            <br><br>
+            <button class="btn-primary" onclick="login()">Comenzar Misión</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="status-bar">
+            <div>
+                <strong id="display-name">Estudiante</strong>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+            <div class="element-rank" id="rank-badge">H (Nivel 0)</div>
+        </div>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2>🎯 Objetivo de Aprendizaje</h2>
+            <p>Comprender la estructura de la Tabla Periódica diferenciando grupos y periodos, ubicar elementos utilizando su número atómico (Z) y masa atómica (A), y aplicar este conocimiento para resolver problemas del entorno, desarrollando estrategias para manejar la frustración ante retos complejos.</p>
+        </div>
+
+        <div class="card" id="presaberes">
+            <h3>🔍 Activando Pre-saberes</h3>
+            <p>Antes de explorar, veamos qué recuerdas. No te preocupes si fallas, es parte del proceso.</p>
+            
+            <div class="question-block">
+                <p><strong>1. ¿Qué partícula define qué tipo de elemento es un átomo?</strong></p>
+                <select id="pre1">
+                    <option value="0">Selecciona...</option>
+                    <option value="a">El electrón (negativo)</option>
+                    <option value="b">El protón (positivo)</option>
+                    <option value="c">El neutrón (neutro)</option>
+                </select>
+            </div>
+            
+            <div class="question-block">
+                <p><strong>2. En un edificio, los pisos van de abajo hacia arriba (horizontales). En la tabla periódica, ¿cómo llamamos a las filas horizontales?</strong></p>
+                <select id="pre2">
+                    <option value="0">Selecciona...</option>
+                    <option value="a">Grupos</option>
+                    <option value="b">Familias</option>
+                    <option value="c">Periodos</option>
+                </select>
+            </div>
+
+            <div class="question-block">
+                <p><strong>3. Si intentas resolver un problema difícil y no te sale a la primera, ¿qué es lo más útil?</strong></p>
+                <select id="pre3">
+                    <option value="0">Selecciona...</option>
+                    <option value="a">Romper la hoja y empezar de cero.</option>
+                    <option value="b">Respirar, analizar en qué fallé y volver a intentar con otra estrategia.</option>
+                    <option value="c">Copiar la respuesta de un compañero rápidamente.</option>
+                </select>
+            </div>
+            <br>
+            <button class="btn-primary" onclick="checkPresaberes()">Verificar Pre-saberes</button>
+            <div id="pre-feedback" class="feedback"></div>
+        </div>
+
+        <div class="card">
+            <h3>El Gran Mapa del Universo: Orden en el Caos</h3>
+            <p>Imagina que entras en la biblioteca más grande del mundo. Hay millones de libros tirados en el suelo. Si buscas el libro de "Historia de Colombia", tardarías años en encontrarlo. Necesitas un sistema: estantes, secciones, orden alfabético. En la naturaleza, los "libros" son los <strong>Elementos Químicos</strong>. Todo lo que ves, tocas y respiras está hecho de ellos.</p>
+            
+            <p>Durante siglos, los científicos estuvieron frustrados. Descubrían elementos como el Oro, el Oxígeno o el Hierro, pero no entendían cómo se relacionaban. Fue un ruso llamado <strong>Dmitri Mendeléyev</strong> quien, con inmensa paciencia y tras muchos intentos fallidos (manejo de la frustración), organizó las fichas de este rompecabezas. Él notó que las propiedades de los elementos se repetían periódicamente, como las notas musicales en un piano.</p>
+
+            <div class="notebook-activity">
+                <h4>Actividad en el Cuaderno #1: Dibujar</h4>
+                <p>Dibuja en tu cuaderno un edificio de 7 pisos. Al lado de cada piso escribe "Periodo 1", "Periodo 2", hasta el 7. Dibuja ventanas verticales y nómbralas "Grupos". Esto te servirá de guía visual.</p>
+                <button class="btn-check" onclick="markActivity(1)">¡Ya lo dibujé!</button>
+            </div>
+
+            <p>La Tabla Periódica moderna se organiza bajo dos coordenadas principales, igual que un plano cartesiano o el juego de Batalla Naval:</p>
+
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Dirección</th>
+                        <th>¿Qué significa?</th>
+                        <th>Analogía</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>PERIODOS</strong></td>
+                        <td>Filas Horizontales (➡️)</td>
+                        <td>Indican el número de niveles de energía (capas) que tiene el átomo. Hay 7 periodos.</td>
+                        <td>Son los "Pisos" del edificio. Un átomo del periodo 1 es pequeño (1 piso). Uno del periodo 7 es un rascacielos.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>GRUPOS</strong></td>
+                        <td>Columnas Verticales (⬇️)</td>
+                        <td>Indican el número de electrones en la última capa (electrones de valencia). Hay 18 grupos.</td>
+                        <td>Son las "Familias". Los miembros de una familia se parecen. El Grupo 1 (Alcalinos) son todos explosivos con agua.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="notebook-activity">
+                <h4>Actividad en el Cuaderno #2: Mapa Mental</h4>
+                <p>Crea un mapa mental con el título "Organización de la Tabla". Saca dos ramas principales: "Periodos" y "Grupos". En cada rama escribe sus características principales según la tabla anterior.</p>
+                <button class="btn-check" onclick="markActivity(2)">¡Mapa mental listo!</button>
+            </div>
+
+            <p>A veces, encontrar un elemento es difícil. Mendeléyev dejó espacios vacíos prediciendo elementos que aún no se descubrían. ¡Imagina la confianza en su método! Cuando estudiamos química, a menudo nos sentimos perdidos. Sentimos que "no entendemos". Esa sensación es normal. La clave no es la inteligencia instantánea, sino la persistencia. Si confundes grupo con periodo, respira, mira tu dibujo del edificio y corrige. El error es el mejor maestro.</p>
+
+            <div class="notebook-activity">
+                <h4>Actividad en el Cuaderno #3: Tabla Comparativa</h4>
+                <p>Busca en una tabla periódica (o en tu libro) los siguientes elementos: Hidrógeno (H), Carbono (C) y Cloro (Cl). Haz una tabla donde indiques para cada uno: ¿En qué Periodo está? ¿En qué Grupo está?</p>
+                <button class="btn-check" onclick="markActivity(3)">¡Tabla completada!</button>
+            </div>
+            
+            <p>Los metales, no metales y metaloides se agrupan en zonas específicas. Los metales (buenos conductores de calor y electricidad, como el cobre de los cables) están a la izquierda y al centro. Los no metales (frágiles, malos conductores, como el oxígeno) están a la derecha. Esta distribución no es al azar; depende de su estructura atómica.</p>
+
+            <div class="notebook-activity">
+                <h4>Actividad en el Cuaderno #4: Contestar</h4>
+                <p>¿Por qué crees que los cables de luz están hechos de cobre (Metal) y recubiertos de plástico (compuesto de Carbono, un No Metal)? Relaciona esto con su ubicación en la tabla.</p>
+                <button class="btn-check" onclick="markActivity(4)">¡Respuesta escrita!</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>Actividad en el Cuaderno #5: Reflexión Personal</h4>
+                <p>Escribe un párrafo de 5 renglones sobre alguna vez que te sentiste frustrado aprendiendo algo nuevo. ¿Qué hiciste? ¿Te rendiste o seguiste intentando? ¿Cómo se relaciona esto con la paciencia de los científicos?</p>
+                <button class="btn-check" onclick="markActivity(5)">¡Reflexión terminada!</button>
+            </div>
+        </div>
+
+        <div class="card icfes-container">
+            <h3>🔬 Ponte a Prueba: Competencia INDAGAR</h3>
+            
+            <div style="text-align:center; margin-bottom:20px;">
+                <div style="background:#eee; padding:15px; border-radius:10px; display:inline-block;">
+                    <strong>Experimento Mental:</strong><br>
+                    Imagina tres vasos con agua.<br>
+                    1. Al primer vaso le lanzas Litio (Periodo 2): Burbujea suavemente.<br>
+                    2. Al segundo le lanzas Sodio (Periodo 3): Chispea y se mueve rápido.<br>
+                    3. Al tercero le lanzas Potasio (Periodo 4): ¡Explota violentamente! 💥
+                </div>
+            </div>
+
+            <p><strong>Contexto:</strong> Un estudiante observa que los elementos del <strong>Grupo 1 (Metales Alcalinos)</strong> reaccionan con el agua de formas diferentes. Nota que a medida que baja por el grupo (aumenta el periodo), la reacción es más fuerte.</p>
+            
+            <p><strong>Pregunta:</strong> El estudiante quiere indagar la causa de este fenómeno. Basándose en la estructura del átomo (pisos del edificio), ¿cuál de las siguientes hipótesis es la más probable para explicar por qué el Potasio explota y el Litio no?</p>
+
+            <div class="icfes-options" id="icfes-options">
+                <label><input type="radio" name="icfes" value="A"> A. Porque el Potasio es más nuevo que el Litio y tiene más energía acumulada por el tiempo.</label>
+                <label><input type="radio" name="icfes" value="B"> B. Porque al bajar en el grupo, el átomo es más grande y el último electrón está más lejos del núcleo, por lo que es más fácil de "perder" o reaccionar.</label>
+                <label><input type="radio" name="icfes" value="C"> C. Porque el agua prefiere reaccionar con elementos que empiezan con la letra P.</label>
+                <label><input type="radio" name="icfes" value="D"> D. Porque los elementos de arriba de la tabla son más pesados y aplastan al agua, impidiendo la explosión.</label>
+            </div>
+            
+            <button class="btn-primary" style="margin-top:15px;" onclick="checkICFES()">Enviar Respuesta</button>
+            <div id="icfes-feedback" class="feedback"></div>
+        </div>
+
+        <div class="card">
+            <h3>El DNI de los Átomos: Z y A</h3>
+            <p>Hasta ahora hemos visto el mapa general (barrios y calles). Ahora vamos a ver la cédula de ciudadanía de cada habitante. Para ubicar y entender un elemento con precisión matemática, usamos dos números clave: <strong>Z</strong> y <strong>A</strong>. Aquí es donde muchos estudiantes sienten frustración porque entra la matemática simple. Pero recuerda: si sabes sumar y restar, ¡sabes esto!</p>
+
+            <table border="1">
+                <tr>
+                    <th style="background:var(--accent)">Símbolo</th>
+                    <th>Significado</th>
+                    <th>Fórmula</th>
+                </tr>
+                <tr>
+                    <td><strong>Z</strong></td>
+                    <td><strong>Número Atómico.</strong> Es la identidad del átomo. Indica la cantidad de <strong>Protones (+)</strong>. Si Z cambia, el elemento deja de ser él mismo.</td>
+                    <td>Z = # Protones = # Electrones (en átomo neutro)</td>
+                </tr>
+                <tr>
+                    <td><strong>A</strong></td>
+                    <td><strong>Masa Atómica.</strong> Es lo que pesa el átomo. El peso está en el centro (núcleo). Es la suma de Protones y Neutrones.</td>
+                    <td>A = Z + Neutrones</td>
+                </tr>
+            </table>
+
+            <p>De aquí deducimos una fórmula mágica para hallar los Neutrones, que son las partículas que dan estabilidad pero no carga: <br><strong>Neutrones = A - Z</strong> (Masa menos Número Atómico).</p>
+            
+            <p><em>Ejemplo de manejo de frustración:</em> Tienes el Sodio (Na). La tabla dice Masa: 22.989. ¡Pánico! ¿Cómo resto eso? Regla de oro: <strong>Redondea</strong>. 22.989 se vuelve 23. Z es 11. <br>Neutrones = 23 - 11 = 12. ¡Listo! Problema resuelto con calma.</p>
+
+            <div class="notebook-activity">
+                <h4>Actividad en el Cuaderno #6: Matemáticas Atómicas</h4>
+                <p>Calcula el número de protones, electrones y neutrones para: <br>1. Flúor (Z=9, A=19)<br>2. Fósforo (Z=15, A=31)<br>3. Oro (Z=79, A=197). <br>Recuerda: Neutrones = A - Z.</p>
+                <button class="btn-check" onclick="markActivity(6)">¡Cálculos hechos!</button>
+            </div>
+
+            <p><strong>El Crucigrama Elemental del Entorno:</strong><br>
+            La tabla periódica no es solo papel. Es la lista de ingredientes de tu vida. Si miras el banano de tu lonchera, estás viendo Potasio (K). Si respiras profundo, inhalas Oxígeno (O) y Nitrógeno (N). Si miras el chip de un computador, ves Silicio (Si). Resolver problemas complejos requiere conectar la teoría con la realidad. </p>
+
+            <div class="notebook-activity">
+                <h4>Actividad en el Cuaderno #7: El Detective</h4>
+                <p>Mira a tu alrededor en tu casa o salón. Identifica 3 objetos y averigua cuál es su elemento principal. Ejemplo: Joya -> Oro (Au) o Plata (Ag). Tubería -> Cobre (Cu) o PVC (Carbono y Cloro).</p>
+                <button class="btn-check" onclick="markActivity(7)">¡Objetos identificados!</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>Actividad en el Cuaderno #8: Mapa Conceptual</h4>
+                <p>Crea un mapa conceptual que conecte estos términos: Átomo, Núcleo, Corteza, Protones, Neutrones, Electrones, Z, A. Usa flechas para indicar quién contiene a quién.</p>
+                <button class="btn-check" onclick="markActivity(8)">¡Mapa conceptual listo!</button>
+            </div>
+
+            <p>Finalmente, deducimos que la posición (Grupo y Periodo) nos dice indirectamente Z y A. Al avanzar a la derecha en un periodo, Z aumenta de uno en uno. Al bajar en un grupo, aumentan las capas. Todo está conectado. Cuando sientas que la química es difícil, recuerda que estás aprendiendo el lenguaje con el que se escribió el universo. Es normal que cueste, ¡pero vale la pena!</p>
+
+            <div class="notebook-activity">
+                <h4>Actividad en el Cuaderno #9: Dibujar Átomo</h4>
+                <p>Elige tu elemento favorito entre el 1 y el 10. Dibuja su átomo poniendo los protones y neutrones en el centro, y los electrones girando alrededor en sus capas correspondientes.</p>
+                <button class="btn-check" onclick="markActivity(9)">¡Dibujo terminado!</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>Actividad en el Cuaderno #10: Carta a la Frustración</h4>
+                <p>Escribe una breve nota (3 líneas) dándote un consejo a ti mismo para cuando no entiendas un tema en el futuro. Ejemplo: "Juan, cuando no entiendas, no cierres el libro. Levántate, toma agua y lee despacio otra vez".</p>
+                <button class="btn-check" onclick="markActivity(10)">¡Consejo escrito!</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📝 Taller Final de Evaluación</h3>
+            <p>Demuestra tu conocimiento. Recuerda: respira y lee bien.</p>
+            
+            <h4>Selección Múltiple</h4>
+            <div id="final-mc-container">
+                </div>
+
+            <h4>Preguntas Abiertas (Anti-Copy/Paste)</h4>
+            <p><em>(Mínimo 10 palabras, máximo 15 palabras. Debes escribir, no pegar).</em></p>
+            <div id="final-open-container">
+                </div>
+            
+            <br>
+            <button class="btn-primary" style="width:100%; background:var(--secondary);" onclick="downloadReport()">📥 Descargar Mis Resultados (.txt)</button>
+        </div>
+
+    </main>
+
+    <script>
+        // --- DATA MANAGEMENT ---
+        const gameState = {
+            user: "",
+            progress: 0,
+            score: 0,
+            activities: [],
+            answers: {},
+            lastLevel: 0
+        };
+
+        const ranks = ["H (Hidrógeno)", "He (Helio)", "Li (Litio)", "Be (Berilio)", "B (Boro)", "C (Carbono)"];
+
+        // --- INIT ---
+        window.onload = function() {
+            if(localStorage.getItem('ovaTabla7_user')) {
+                loadState();
+                document.getElementById('login-screen').style.display = 'none';
+                updateUI();
+            }
+            renderFinalWorkshop();
+        };
+
+        function login() {
+            const name = document.getElementById('username').value.trim();
+            if(name.length > 3) {
+                gameState.user = name;
+                saveState();
+                document.getElementById('login-screen').style.display = 'none';
+                updateUI();
+            } else {
+                alert("Por favor escribe tu nombre completo.");
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('ovaTabla7_user', JSON.stringify(gameState));
+        }
+
+        function loadState() {
+            const data = JSON.parse(localStorage.getItem('ovaTabla7_user'));
+            Object.assign(gameState, data);
+            
+            // Restore visual state of buttons
+            gameState.activities.forEach(id => {
+                const btn = document.querySelector(`button[onclick="markActivity(${id})"]`);
+                if(btn) disableBtn(btn);
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('display-name').innerText = gameState.user;
+            document.getElementById('progress-bar').style.width = gameState.progress + "%";
+            
+            // Calculate Level (0-5 based on score)
+            let levelIndex = Math.floor(gameState.score);
+            if(levelIndex > 5) levelIndex = 5;
+            document.getElementById('rank-badge').innerText = ranks[levelIndex] + ` - Puntos: ${gameState.score.toFixed(1)}`;
+        }
+
+        function addPoints(pts, progressInc) {
+            gameState.score += pts;
+            if(gameState.score > 5) gameState.score = 5;
+            
+            gameState.progress += progressInc;
+            if(gameState.progress > 100) gameState.progress = 100;
+            
+            saveState();
+            updateUI();
+        }
+
+        function disableBtn(btn) {
+            btn.classList.add('btn-disabled');
+            btn.innerText = "✅ Completado";
+            btn.disabled = true;
+        }
+
+        // --- SECTIONS LOGIC ---
+
+        function checkPresaberes() {
+            const r1 = document.getElementById('pre1').value;
+            const r2 = document.getElementById('pre2').value;
+            const r3 = document.getElementById('pre3').value;
+            const fb = document.getElementById('pre-feedback');
+
+            if(r1 === '0' || r2 === '0' || r3 === '0') {
+                alert("Responde las 3 preguntas.");
+                return;
+            }
+
+            let correct = 0;
+            if(r1 === 'b') correct++;
+            if(r2 === 'c') correct++;
+            if(r3 === 'b') correct++;
+
+            fb.style.display = 'block';
+            fb.innerHTML = `<strong>Resultado:</strong> ${correct}/3 correctas.<br>
+            1. Los protones definen la identidad (Z).<br>
+            2. Las filas horizontales son Periodos.<br>
+            3. Manejar la frustración requiere pausa y análisis.`;
+            
+            if(correct === 3) {
+                fb.className = "feedback correct";
+                addPoints(0.5, 5);
+            } else {
+                fb.className = "feedback incorrect";
+                addPoints(0.2, 5); // Points for trying
+            }
+            
+            gameState.answers.presaberes = correct;
+            saveState();
+        }
+
+        function markActivity(id) {
+            if(!gameState.activities.includes(id)) {
+                gameState.activities.push(id);
+                // 10 activities worth approx 3.5 points total distributed
+                addPoints(0.35, 6); 
+                const btn = document.querySelector(`button[onclick="markActivity(${id})"]`);
+                disableBtn(btn);
+            }
+        }
+
+        function checkICFES() {
+            const options = document.getElementsByName('icfes');
+            let val = null;
+            for(let op of options) if(op.checked) val = op.value;
+
+            if(!val) { alert("Selecciona una opción"); return; }
+
+            const fb = document.getElementById('icfes-feedback');
+            fb.style.display = 'block';
+
+            if(val === 'B') {
+                fb.className = "feedback correct";
+                fb.innerHTML = `<strong>¡EXCELENTE INDAGACIÓN!</strong><br>
+                Has conectado la estructura con la función. Al bajar en un grupo, aumentan los periodos (pisos), por lo tanto, el átomo es más grande. El electrón externo está más lejos del núcleo (que es como un imán positivo). Al estar lejos, el núcleo lo atrae con menos fuerza y se "escapa" más fácil, causando una reacción violenta.`;
+                addPoints(1.0, 10);
+            } else {
+                fb.className = "feedback incorrect";
+                let exp = "";
+                if(val === 'A') exp = "La antigüedad no afecta la reactividad química.";
+                if(val === 'C') exp = "La química no depende de las letras del nombre, sino de los electrones.";
+                if(val === 'D') exp = "El peso no 'aplasta' al agua de esa manera. Es una cuestión de electrones.";
+                fb.innerHTML = `<strong>Incorrecto.</strong><br>${exp}<br>La respuesta correcta es la B. Piénsalo como un imán: si alejas el metal (electrón) del imán (núcleo), se cae más fácil.`;
+                addPoints(0.1, 10); // Reward for trying
+            }
+            
+            // Disable inputs
+            for(let op of options) op.disabled = true;
+            gameState.answers.icfes = val;
+            saveState();
+        }
+
+        // --- FINAL WORKSHOP GENERATION ---
+        
+        const mcQuestions = [
+            { q: "¿Qué representa la letra Z?", ops: ["Masa Atómica", "Número Atómico", "Neutrones", "Grupo"], cor: 1 },
+            { q: "¿Dónde están los gases nobles?", ops: ["Grupo 1", "Periodo 7", "Grupo 18", "En el centro"], cor: 2 },
+            { q: "¿Cómo se calculan los neutrones?", ops: ["A + Z", "A - Z", "Z - A", "A x Z"], cor: 1 },
+            { q: "Si un elemento está en el Periodo 3...", ops: ["Tiene 3 electrones", "Tiene 3 niveles de energía", "Es un gas", "Es radiactivo"], cor: 1 },
+            { q: "¿Qué elemento es vital para respirar?", ops: ["Carbono", "Hierro", "Helio", "Oxígeno"], cor: 3 }
+        ];
+
+        const openQuestions = [
+            "Explica con tus palabras qué es un Periodo.",
+            "¿Cuál es la diferencia entre Z y A?",
+            "¿Por qué es importante manejar la frustración al estudiar?",
+            "Nombra un elemento metálico y dónde lo has visto.",
+            "¿Cómo ayuda la Tabla Periódica a organizar la información?"
+        ];
+
+        function renderFinalWorkshop() {
+            // MC Render
+            let htmlMC = "";
+            mcQuestions.forEach((item, idx) => {
+                htmlMC += `<div style="margin-bottom:15px;"><p><strong>${idx+1}. ${item.q}</strong></p>`;
+                item.ops.forEach((op, oIdx) => {
+                    htmlMC += `<label style="margin-right:15px;"><input type="radio" name="fmc_${idx}" value="${oIdx}"> ${op}</label>`;
+                });
+                htmlMC += `</div>`;
+            });
+            document.getElementById('final-mc-container').innerHTML = htmlMC;
+
+            // Open Render
+            let htmlOpen = "";
+            openQuestions.forEach((q, idx) => {
+                htmlOpen += `<div style="margin-bottom:15px;">
+                    <p><strong>${idx+1}. ${q}</strong></p>
+                    <textarea id="open_${idx}" rows="2" placeholder="Escribe entre 10 y 15 palabras..." onpaste="return false"></textarea>
+                    <button class="btn-check" id="btn_open_${idx}" onclick="verifyOpen(${idx})">Verificar Texto</button>
+                    <span id="msg_open_${idx}" style="margin-left:10px; font-weight:bold; font-size:0.8rem;"></span>
+                </div>`;
+            });
+            document.getElementById('final-open-container').innerHTML = htmlOpen;
+        }
+
+        function verifyOpen(idx) {
+            const txt = document.getElementById(`open_${idx}`).value.trim();
+            const msg = document.getElementById(`msg_open_${idx}`);
+            // Count words (splitting by spaces)
+            const words = txt.split(/\s+/).filter(w => w.length > 0).length;
+
+            if(words < 10) {
+                msg.style.color = "red";
+                msg.innerText = `Muy corto (${words} p). Mínimo 10.`;
+            } else if (words > 15) {
+                msg.style.color = "red";
+                msg.innerText = `Muy largo (${words} p). Máximo 15.`;
+            } else {
+                msg.style.color = "green";
+                msg.innerText = "¡Válido! Respuesta guardada.";
+                document.getElementById(`open_${idx}`).disabled = true;
+                document.getElementById(`btn_open_${idx}`).disabled = true;
+                
+                gameState.answers[`open_${idx}`] = txt;
+                addPoints(0.1, 2); // Small bonus
+            }
+        }
+
+        function downloadReport() {
+            // Collect MC answers
+            let mcScore = 0;
+            let mcLog = "";
+            mcQuestions.forEach((item, idx) => {
+                const radios = document.getElementsByName(`fmc_${idx}`);
+                let ans = "Sin responder";
+                for(let r of radios) {
+                    if(r.checked) {
+                        ans = item.ops[r.value];
+                        if(parseInt(r.value) === item.cor) mcScore++;
+                    }
+                }
+                mcLog += `P${idx+1}: ${ans}\n`;
+            });
+
+            const content = `REPORTE DE OVA: LA TABLA PERIÓDICA
+Estudiante: ${gameState.user}
+Fecha: ${new Date().toLocaleString()}
+Progreso Final: ${gameState.progress}%
+Puntaje Acumulado: ${gameState.score.toFixed(2)} / 5.0
+----------------------------------------
+ACTIVIDADES EN CUADERNO:
+Realizadas: ${gameState.activities.length} / 10
+----------------------------------------
+PREGUNTAS DE INDAGACIÓN (ICFES):
+Respuesta: ${gameState.answers.icfes || 'N/A'}
+----------------------------------------
+TEST FINAL (Selección Múltiple):
+Aciertos: ${mcScore} / 5
+Detalle:
+${mcLog}
+----------------------------------------
+RESPUESTAS ABIERTAS (Verificadas):
+1. ${gameState.answers['open_0'] || '---'}
+2. ${gameState.answers['open_1'] || '---'}
+3. ${gameState.answers['open_2'] || '---'}
+4. ${gameState.answers['open_3'] || '---'}
+5. ${gameState.answers['open_4'] || '---'}
+----------------------------------------
+Fin del reporte.`;
+
+            const blob = new Blob([content], {type: "text/plain"});
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Reporte_${gameState.user.replace(/\s+/g, '_')}.txt`;
+            link.click();
+        }
+    </script>
+</body>
+</html>

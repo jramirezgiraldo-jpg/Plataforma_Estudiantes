@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Teoría de Lewis - El Baile de los Electrones</title>
+    <style>
+        :root {
+            --primary: #4a148c;
+            --secondary: #7b1fa2;
+            --accent: #ffc107;
+            --bg: #f3e5f5;
+            --text: #212121;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6; margin: 0; padding: 0;
+        }
+
+        /* Pantalla de Inicio */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 40px; border-radius: 15px;
+            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Barra Superior */
+        header {
+            background: var(--white);
+            padding: 10px 20px;
+            position: sticky; top: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 900; display: none;
+        }
+
+        .status-bar {
+            max-width: 1000px; margin: auto;
+            display: flex; align-items: center; gap: 20px;
+        }
+
+        .progress-bg {
+            flex-grow: 1; height: 15px; background: #e0e0e0; border-radius: 10px; overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%; background: var(--secondary); width: 0%; transition: 0.5s;
+        }
+
+        /* Contenido */
+        .container {
+            max-width: 1000px; margin: 20px auto; padding: 40px;
+            background: var(--white); border-radius: 15px; display: none;
+        }
+
+        .activity-box {
+            background: #f9f0ff; border-left: 6px solid var(--primary);
+            padding: 20px; margin: 25px 0; border-radius: 5px;
+        }
+
+        .table-custom {
+            width: 100%; border-collapse: collapse; margin: 20px 0;
+        }
+
+        .table-custom th, .table-custom td {
+            border: 1px solid #ddd; padding: 12px; text-align: left;
+        }
+
+        .table-custom th { background: var(--primary); color: white; }
+
+        .btn {
+            background: var(--primary); color: white; border: none;
+            padding: 10px 20px; border-radius: 5px; cursor: pointer;
+        }
+
+        .btn:hover { background: var(--secondary); }
+
+        .icfes-zone {
+            background: #fff9c4; padding: 25px; border-radius: 10px; border: 2px solid #fbc02d;
+        }
+
+        .feedback { display: none; margin-top: 15px; padding: 15px; border-radius: 8px; }
+
+        textarea { width: 100%; border-radius: 5px; border: 1px solid #ccc; padding: 10px; font-family: inherit; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>Química Grado 9°: Ácidos y Bases</h2>
+            <p>Ingresa tus datos para acceder al material:</p>
+            <input type="text" id="student-name-input" placeholder="Nombres y Apellidos" style="padding: 10px; width: 80%;"><br><br>
+            <button class="btn" onclick="login()">Iniciar Exploración</button>
+        </div>
+    </div>
+
+    <header id="app-header">
+        <div class="status-bar">
+            <div><b>Estudiante:</b> <span id="display-name"></span></div>
+            <div class="progress-bg"><div id="progress-fill"></div></div>
+            <div>Puntos: <span id="pts">0</span> (<span id="el-tag">H</span>)</div>
+        </div>
+    </header>
+
+    <div class="container" id="main-content">
+        <section>
+            <h1>Unidad: La Teoría de Lewis y el Intercambio Electrónico</h1>
+            <h3>Objetivo de Aprendizaje</h3>
+            <p>Analizar el intercambio de pares electrónicos en las reacciones químicas para identificar ácidos y bases según la teoría de Lewis, valorando la importancia de las diferentes perspectivas científicas y el respeto por el pensamiento ajeno.</p>
+        </section>
+
+        <hr>
+
+        <section class="activity-box">
+            <h3>Desafío de Pre-saberes</h3>
+            <div id="pre-quiz">
+                <p>1. Según la teoría de Brönsted-Lowry, un ácido es una sustancia que:</p>
+                <input type="radio" name="p1" value="0"> Dona electrones | <input type="radio" name="p1" value="1"> Dona protones | <input type="radio" name="p1" value="0"> Produce OH-
+                <p>2. ¿Cuántos electrones se comparten en un enlace covalente simple?</p>
+                <input type="radio" name="p2" value="0"> 1 electrón | <input type="radio" name="p2" value="1"> 2 electrones (un par) | <input type="radio" name="p2" value="0"> 4 electrones
+                <p>3. ¿Qué representa un "par solitario" en una estructura de Lewis?</p>
+                <input type="radio" name="p3" value="1"> Electrones de valencia no compartidos | <input type="radio" name="p3" value="0"> Protones del núcleo | <input type="radio" name="p3" value="0"> Un enlace doble
+            </div>
+            <button class="btn" style="margin-top:15px;" onclick="checkPre()">Verificar</button>
+            <div id="pre-feedback" class="feedback"></div>
+        </section>
+
+        <section id="inductivo">
+            <h2>Inducción: Más allá de los Protones</h2>
+            <p>
+                Hasta ahora, hemos aprendido que los ácidos y las bases se definen por el movimiento de iones hidrógeno (protones). Sin embargo, la ciencia es un camino de perspectivas que se amplían. Imagina que estás en una fiesta: Arrhenius solo veía a los que llevaban bebidas (H+ o OH-); Brönsted-Lowry se fijaba en quién entregaba o recibía un regalo (protones). Pero Gilbert N. Lewis, en 1923, propuso una mirada mucho más profunda y universal: fijarse en la moneda de cambio fundamental de toda la química: los electrones.
+            </p>
+            <p>
+                La teoría de Lewis no contradice a las anteriores, sino que las abraza y las supera en alcance. Un ácido de Lewis es cualquier sustancia capaz de aceptar un par de electrones, mientras que una base de Lewis es aquella que puede donar un par de electrones. Esto es revolucionario porque permite clasificar como ácidos a sustancias que ni siquiera tienen hidrógeno en su composición, como el trifluoruro de boro. Esta visión nos enseña que el respeto por las diferentes teorías es lo que permite que el conocimiento avance; cada científico aporta una pieza del rompecabezas desde su propio ángulo de visión.
+            </p>
+
+            
+
+            <p>
+                En el mundo real, esta teoría explica procesos vitales, desde cómo se transporta el oxígeno en nuestra sangre hasta cómo funcionan muchos catalizadores industriales. Entender el intercambio electrónico es entender la "generosidad" química: una base de Lewis es "generosa" porque ofrece sus electrones sobrantes para formar un nuevo enlace (llamado enlace covalente coordinado). Esta interacción nos invita a reflexionar sobre nuestra propia convivencia: así como los átomos buscan estabilidad compartiendo lo que tienen, los seres humanos logramos armonía cuando respetamos y valoramos las perspectivas de los demás.
+            </p>
+
+            <div class="activity-box">
+                <h4>Actividad 1 (Cuaderno):</h4>
+                <p>Responde: ¿Por qué la teoría de Lewis se considera más general que la de Brönsted-Lowry?</p>
+                <button class="btn" onclick="saveAct(1, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 2 (Cuaderno):</h4>
+                <p>Dibuja un diagrama donde compares una fiesta de "protones" (Brönsted) vs una fiesta de "electrones" (Lewis).</p>
+                <button class="btn" onclick="saveAct(2, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 3 (Cuaderno):</h4>
+                <p>Realiza una tabla comparativa en tu cuaderno entre Arrhenius, Brönsted-Lowry y Lewis. Usa columnas para: Científico, Definición de Ácido y Definición de Base.</p>
+                <button class="btn" onclick="saveAct(3, 1.0)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 4 (Cuaderno):</h4>
+                <p>Crea un mapa mental sobre la importancia de respetar las opiniones diferentes en el salón de clases, conectándolo con cómo los científicos aceptan nuevas teorías.</p>
+                <button class="btn" onclick="saveAct(4, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 5 (Cuaderno):</h4>
+                <p>Dibuja la estructura de Lewis del Amoniaco (NH3) e indica dónde está el par de electrones que lo convierte en una base de Lewis.</p>
+                <button class="btn" onclick="saveAct(5, 0.5)">Hecho en Cuaderno</button>
+            </div>
+        </section>
+
+        <section class="icfes-zone">
+            <h3>Pregunta de Selección Múltiple - Competencia: Indagar</h3>
+            <p>Un estudiante analiza la reacción entre el Trifluoruro de Boro (BF3) y el Amoniaco (NH3). Observa que el Boro en el BF3 solo tiene 6 electrones a su alrededor y necesita 2 más para completar su octeto. El Nitrógeno en el NH3 tiene un par de electrones solitarios.</p>
+            
+            
+
+            <p><b>Pregunta:</b> Basado en la teoría de Lewis y la observación del estudiante, ¿cuál es el papel de cada sustancia en la formación del enlace?</p>
+            
+            <input type="radio" name="icfes" value="a"> A) El BF3 es una base de Lewis porque dona protones al amoniaco.<br>
+            <input type="radio" name="icfes" value="b"> B) El NH3 es el ácido de Lewis porque acepta el par de electrones del boro.<br>
+            <input type="radio" name="icfes" value="c"> C) El NH3 es la base de Lewis porque dona su par de electrones solitarios al boro, quien actúa como ácido al aceptarlos.<br>
+            <input type="radio" name="icfes" value="d"> D) Ambas sustancias son ácidos porque ninguna produce iones OH- en solución acuosa.<br>
+            
+            <button class="btn" style="margin-top:20px;" onclick="checkIcfes()">Verificar Respuesta</button>
+            <div id="icfes-fb" class="feedback"></div>
+        </section>
+
+        <section id="deductivo">
+            <h2>Deducción: Estructuras y Comportamiento Químico</h2>
+            <p>
+                A partir de la definición de Lewis, podemos deducir que la capacidad de una sustancia para actuar como ácido o base depende exclusivamente de su estructura electrónica. Si observamos una molécula y detectamos que tiene pares de electrones "libres" o "solitarios", podemos deducir inmediatamente que tiene el potencial de ser una base de Lewis. Por el contrario, si vemos un átomo central con octeto incompleto o una carga positiva, deducimos que buscará electrones, actuando como un ácido.
+            </p>
+            <p>
+                Esta lógica nos permite predecir el comportamiento de sustancias complejas en la química orgánica e inorgánica. Por ejemplo, en los ácidos y bases de Lewis, no necesitamos agua para que la reacción ocurra; esto nos lleva a concluir que la acidez es una propiedad mucho más intrínseca de la materia de lo que Arrhenius pensaba. Al analizar estas estructuras, también deducimos la importancia del orden: los electrones siguen patrones específicos que dictan la estabilidad de todo lo que nos rodea. El respeto por estas reglas naturales es lo que permite a los químicos diseñar nuevos materiales y medicinas.
+            </p>
+
+            <table class="table-custom">
+                <caption>Tabla 1: Comparativa de las 3 Teorías Clásicas</caption>
+                <tr><th>Teoría</th><th>Ácido</th><th>Base</th><th>Contexto</th></tr>
+                <tr><td>Arrhenius</td><td>Libera H+</td><td>Libera OH-</td><td>Solo soluciones acuosas</td></tr>
+                <tr><td>Brönsted-Lowry</td><td>Dona H+ (Protones)</td><td>Acepta H+</td><td>Transferencia de protones</td></tr>
+                <tr><td>Lewis</td><td>Acepta Par Electrónico</td><td>Dona Par Electrónico</td><td>Transferencia de electrones</td></tr>
+            </table>
+
+            <div class="activity-box">
+                <h4>Actividad 6 (Cuaderno):</h4>
+                <p>Deduce: ¿Podría un ácido de Arrhenius ser también un ácido de Lewis? Explica tu razonamiento.</p>
+                <button class="btn" onclick="saveAct(6, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 7 (Cuaderno):</h4>
+                <p>Dibuja la estructura de Lewis del ion Hidronio (H3O+) y explica por qué se formó a partir de una base de Lewis (Agua).</p>
+                <button class="btn" onclick="saveAct(7, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 8 (Cuaderno):</h4>
+                <p>Copia el cuadro comparativo de las 3 teorías (Tabla 1) en tu cuaderno y resalta con color la teoría de Lewis.</p>
+                <button class="btn" onclick="saveAct(8, 0.5)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 9 (Cuaderno):</h4>
+                <p>Realiza un mapa conceptual que conecte: Electrones de Valencia -> Estructura de Lewis -> Par Solitario -> Base de Lewis.</p>
+                <button class="btn" onclick="saveAct(9, 1.0)">Hecho en Cuaderno</button>
+            </div>
+
+            <div class="activity-box">
+                <h4>Actividad 10 (Cuaderno):</h4>
+                <p>Escribe una reflexión de 10 renglones sobre cómo el conocer diferentes teorías científicas nos ayuda a ser más tolerantes con las ideas de los demás.</p>
+                <button class="btn" onclick="saveAct(10, 0.5)">Hecho en Cuaderno</button>
+            </div>
+        </section>
+
+        <section class="icfes-zone" style="background: white; border: 1px solid #ddd;">
+            <h2>Taller Evaluativo</h2>
+            <div id="final-test">
+                <p><b>1. Una base de Lewis debe tener necesariamente:</b></p>
+                <input type="radio" name="f1" value="0"> Hidrógenos | <input type="radio" name="f1" value="1"> Un par de electrones solitario | <input type="radio" name="f1" value="0"> Carga positiva
+                <p><b>2. El AlCl3 es un ácido de Lewis porque el aluminio tiene:</b></p>
+                <input type="radio" name="f2" value="1"> Su octeto incompleto (6 electrones) | <input type="radio" name="f2" value="0"> Muchos protones | <input type="radio" name="f2" value="0"> 8 electrones de valencia
+                <p><b>3. ¿Qué tipo de enlace se forma entre un ácido y una base de Lewis?</b></p>
+                <input type="radio" name="f3" value="0"> Iónico | <input type="radio" name="f3" value="1"> Covalente Coordinado | <input type="radio" name="f3" value="0"> Metálico
+                <p><b>4. Según Lewis, el agua (H2O) actúa frecuentemente como:</b></p>
+                <input type="radio" name="f4" value="0"> Ácido | <input type="radio" name="f4" value="1"> Base | <input type="radio" name="f4" value="0"> Neutro
+                <p><b>5. ¿En qué año se propuso la teoría de Lewis?</b></p>
+                <input type="radio" name="f5" value="0"> 1884 | <input type="radio" name="f5" value="0"> 1900 | <input type="radio" name="f5" value="1"> 1923
+            </div>
+
+            <h3>Preguntas Abiertas (10 a 15 palabras)</h3>
+            <p>A1. Define con tus palabras qué es un ácido de Lewis en química:</p>
+            <textarea id="ans1"></textarea> <button class="btn" onclick="verifyWordCount('ans1')">Verificar</button>
+            
+            <p>A2. ¿Por qué es importante respetar las diferentes opiniones de tus compañeros?</p>
+            <textarea id="ans2"></textarea> <button class="btn" onclick="verifyWordCount('ans2')">Verificar</button>
+
+            <div style="margin-top:40px; text-align: center;">
+                <button class="btn" style="background:var(--secondary); font-size: 1.2em;" onclick="exportResults()">Descargar Resultados .txt</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let userData = {
+            name: "",
+            progress: 0,
+            points: 0,
+            completedActs: [],
+            openResponses: {}
+        };
+
+        const chemElements = ["H", "He", "Li", "Be", "B", "C"];
+
+        function login() {
+            const name = document.getElementById('student-name-input').value.trim();
+            if (name.length < 5) return alert("Ingresa tu nombre completo.");
+            
+            userData.name = name;
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-header').style.display = 'block';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('display-name').innerText = name;
+            
+            loadData();
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('progress-fill').style.width = userData.progress + "%";
+            document.getElementById('pts').innerText = userData.points.toFixed(1);
+            let idx = Math.min(Math.floor(userData.points), 5);
+            document.getElementById('el-tag').innerText = chemElements[idx];
+            localStorage.setItem('ova_lewis_gr9', JSON.stringify(userData));
+        }
+
+        function saveAct(id, p) {
+            if (!userData.completedActs.includes(id)) {
+                userData.completedActs.push(id);
+                userData.progress += 8;
+                userData.points += p;
+                if (userData.progress > 100) userData.progress = 100;
+                alert("Actividad " + id + " registrada.");
+                updateUI();
+            } else { alert("Ya registrada."); }
+        }
+
+        function checkPre() {
+            const fb = document.getElementById('pre-feedback');
+            fb.style.display = "block";
+            fb.style.background = "#e1f5fe";
+            fb.innerHTML = "<b>Retroalimentación:</b> 1. Brönsted se centra en protones. 2. Un enlace simple es un par (2 e-). 3. Los pares solitarios no están enlazados. ¡Ganaste 0.2 pts!";
+            userData.points += 0.2;
+            updateUI();
+        }
+
+        function checkIcfes() {
+            const sel = document.querySelector('input[name="icfes"]:checked')?.value;
+            const fb = document.getElementById('icfes-fb');
+            fb.style.display = "block";
+            if (sel === 'c') {
+                fb.style.background = "#c8e6c9";
+                fb.innerHTML = "<b>¡Excelente Indagación!</b> El NH3 tiene un par libre (Base) y el BF3 tiene espacio para recibir (Ácido). Los distractores A y B confunden los roles o usan términos de Brönsted. La D es falsa porque Lewis no requiere agua ni OH-.";
+                userData.points += 1.0;
+            } else {
+                fb.style.background = "#ffcdd2";
+                fb.innerHTML = "<b>Incorrecto.</b> Analiza quién tiene el par de electrones libre para donar.";
+            }
+            updateUI();
+        }
+
+        function verifyWordCount(id) {
+            const val = document.getElementById(id).value.trim();
+            const words = val.split(/\s+/);
+            if (words.length >= 10 && words.length <= 15) {
+                alert("Respuesta válida.");
+                userData.openResponses[id] = val;
+                userData.points += 0.3;
+                updateUI();
+            } else { alert("Debe tener entre 10 y 15 palabras. Tienes: " + words.length); }
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('ova_lewis_gr9');
+            if (saved) {
+                const p = JSON.parse(saved);
+                if (p.name === userData.name) userData = p;
+            }
+        }
+
+        function exportResults() {
+            let res = `RESULTADOS OVA QUÍMICA 9\nEstudiante: ${userData.name}\nPuntos: ${userData.points}\nProgreso: ${userData.progress}%\nRespuestas:\n${JSON.stringify(userData.openResponses, null, 2)}`;
+            const blob = new Blob([res], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Resultados_${userData.name}.txt`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

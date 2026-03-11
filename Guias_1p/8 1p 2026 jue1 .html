@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>El Banquete de los Átomos - Aventura Química</title>
+    <style>
+        :root { --ionico: #d32f2f; --covalente: #1976d2; --bg: #fdf6e3; --metal: #ff9800; --nometal: #9c27b0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #eee; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        #game-container { background: white; width: 950px; height: 650px; border-radius: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; border: 6px solid #8d6e63; position: relative; }
+        .hud { padding: 15px; background: #8d6e63; color: white; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        .canvas { flex: 1; position: relative; background: #fffcf0; display: flex; justify-content: center; align-items: center; }
+        .atom { width: 140px; height: 140px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: absolute; font-weight: bold; color: white; transition: 0.5s; z-index: 5; border: 4px solid rgba(0,0,0,0.2); }
+        .electron { width: 24px; height: 24px; background: #ffeb3b; border-radius: 50%; position: absolute; box-shadow: 0 0 15px gold; cursor: grab; z-index: 10; border: 2px solid #fbc02d; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #333; }
+        .zone { width: 100px; height: 100px; border: 3px dashed #8d6e63; border-radius: 50%; position: absolute; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #8d6e63; font-weight: bold; text-align: center; background: rgba(141, 110, 99, 0.05); }
+        .msg-box { height: 100px; padding: 15px; background: #efebe9; border-top: 4px solid #8d6e63; text-align: center; display: flex; align-items: center; justify-content: center; }
+        button { padding: 12px 30px; background: #4caf50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #388e3c; transform: scale(1.05); }
+        .modal { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:100; padding: 40px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="hud">
+        <span id="mission-name">Misión 1: El Regalo del Sodio</span>
+        <span id="step-count">Electrones movidos: 0/1</span>
+    </div>
+
+    <div class="canvas" id="canvas"></div>
+
+    <div class="msg-box">
+        <p id="instruction" style="font-size: 1.1em;"></p>
+    </div>
+
+    <div id="modal" class="modal">
+        <h2 id="modal-title" style="color: #2e7d32;">¡Misión Cumplida!</h2>
+        <p id="modal-text" style="font-size: 1.2em; line-height: 1.5;"></p>
+        <button onclick="loadNextMission()">Continuar Aventura</button>
+    </div>
+</div>
+
+<script>
+    let currentMission = 1;
+    let electronsPlaced = 0;
+
+    const missions = [
+        { title: "Misión 1: El Regalo del Sodio (Iónico)", desc: "En el mercado químico, el Na da su electrón al Cl para formar la sal. ¡Dar genera unión!", goal: 1, type: "ionico", feedback: "¡Enlace Iónico Formado! La generosidad del Sodio ha creado estabilidad. El Cloro ahora está en paz." },
+        { title: "Misión 2: Generosidad Doble (Iónico)", desc: "El Magnesio (Mg) tiene 2 electrones de sobra. El Oxígeno (O) los necesita. ¡Transfiérelos!", goal: 2, type: "ionico", feedback: "¡Increíble! Has formado MgO. Entre más damos, más fuerte es la atracción electrostática." },
+        { title: "Misión 3: Unión Covalente (H2)", desc: "Dos átomos de Hidrógeno comparten sus electrones. ¡Compartir nos hace estables!", goal: 2, type: "covalente", feedback: "¡Unión Covalente! Al compartir, ninguno pierde y ambos ganan estabilidad." },
+        { title: "Misión 4: El Abrazo del Agua (H2O)", desc: "El Oxígeno comparte con dos Hidrógenos. ¡La colaboración sostiene la vida!", goal: 2, type: "covalente", feedback: "¡H2O Formado! La colaboración es el solvente que une a nuestra comunidad." },
+        { title: "Misión 5: Red de Colaboración (Metano CH4)", desc: "El Carbono necesita compartir 4 electrones con 4 Hidrógenos. ¡Colaboración total!", goal: 4, type: "covalente", feedback: "¡Maestro de Enlaces! Has comprendido que compartir es la base de la vida y la energía." }
+    ];
+
+    function loadNextMission() {
+        if(currentMission > 5) { 
+            alert("¡Felicidades Juan Felipe! Tus estudiantes han dominado el arte de dar y compartir.");
+            location.reload(); 
+            return; 
+        }
+        document.getElementById('modal').style.display = "none";
+        const m = missions[currentMission-1];
+        document.getElementById('mission-name').innerText = m.title;
+        document.getElementById('instruction').innerText = m.desc;
+        document.getElementById('step-count').innerText = `Electrones movidos: 0/${m.goal}`;
+        electronsPlaced = 0;
+        setupCanvas(currentMission);
+    }
+
+    function setupCanvas(m) {
+        const canvas = document.getElementById('canvas');
+        canvas.innerHTML = "";
+        
+        if(m === 1) { // NaCl
+            createAtom(canvas, "Na", "#ff9800", -200, 0);
+            createAtom(canvas, "Cl", "#9c27b0", 200, 0);
+            createElectron(canvas, 1, -120, -30);
+            createZone(canvas, 130, 0, "RECIBIR");
+        } else if(m === 2) { // MgO
+            createAtom(canvas, "Mg", "#ff5722", -200, 0);
+            createAtom(canvas, "O", "#673ab7", 200, 0);
+            createElectron(canvas, 1, -120, -40);
+            createElectron(canvas, 2, -120, 40);
+            createZone(canvas, 130, 0, "RECIBIR");
+        } else if(m === 3) { // H2
+            createAtom(canvas, "H", "#2196f3", -180, 0);
+            createAtom(canvas, "H", "#2196f3", 180, 0);
+            createElectron(canvas, 1, -130, 0);
+            createElectron(canvas, 2, 130, 0);
+            createZone(canvas, 0, 0, "COMPARTIR");
+        } else if(m === 4) { // H2O
+            createAtom(canvas, "O", "#e91e63", 0, 0);
+            createAtom(canvas, "H", "#2196f3", -220, -100);
+            createAtom(canvas, "H", "#2196f3", 220, -100);
+            createElectron(canvas, 1, -180, -80);
+            createElectron(canvas, 2, 180, -80);
+            createZone(canvas, -70, -40, "UNIÓN");
+            createZone(canvas, 70, -40, "UNIÓN");
+        } else if(m === 5) { // CH4
+            createAtom(canvas, "C", "#4caf50", 0, 0);
+            createAtom(canvas, "H", "#2196f3", -250, 0);
+            createAtom(canvas, "H", "#2196f3", 250, 0);
+            createAtom(canvas, "H", "#2196f3", 0, -200);
+            createAtom(canvas, "H", "#2196f3", 0, 200);
+            createElectron(canvas, 1, -200, 0);
+            createElectron(canvas, 2, 200, 0);
+            createElectron(canvas, 3, 0, -150);
+            createElectron(canvas, 4, 0, 150);
+            createZone(canvas, -70, 0, "UNIR");
+            createZone(canvas, 70, 0, "UNIR");
+            createZone(canvas, 0, -70, "UNIR");
+            createZone(canvas, 0, 70, "UNIR");
+        }
+    }
+
+    function createAtom(parent, symbol, color, x, y) {
+        let div = document.createElement('div');
+        div.className = "atom";
+        div.innerHTML = `<span style="font-size:1.5em">${symbol}</span>`;
+        div.style.background = color;
+        div.style.left = `calc(50% + ${x}px - 70px)`;
+        div.style.top = `calc(50% + ${y}px - 70px)`;
+        parent.appendChild(div);
+    }
+
+    function createElectron(parent, id, x, y) {
+        let div = document.createElement('div');
+        div.className = "electron";
+        div.draggable = true;
+        div.innerText = "e-";
+        div.style.left = `calc(50% + ${x}px)`;
+        div.style.top = `calc(50% + ${y}px)`;
+        div.id = "e"+id;
+        div.addEventListener('dragstart', (e) => e.dataTransfer.setData("text", e.target.id));
+        parent.appendChild(div);
+    }
+
+    function createZone(parent, x, y, label) {
+        let div = document.createElement('div');
+        div.className = "zone";
+        div.innerText = label;
+        div.style.left = `calc(50% + ${x}px - 50px)`;
+        div.style.top = `calc(50% + ${y}px - 50px)`;
+        div.addEventListener('dragover', (e) => e.preventDefault());
+        div.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const eId = e.dataTransfer.getData("text");
+            const electron = document.getElementById(eId);
+            if(electron) {
+                electron.style.position = "absolute";
+                electron.style.left = "50%";
+                electron.style.top = "50%";
+                electron.style.transform = "translate(-50%, -50%)";
+                e.target.appendChild(electron);
+                electronsPlaced++;
+                document.getElementById('step-count').innerText = `Electrones movidos: ${electronsPlaced}/${missions[currentMission-1].goal}`;
+                if(electronsPlaced >= missions[currentMission-1].goal) {
+                    setTimeout(showWin, 500);
+                }
+            }
+        });
+        parent.appendChild(div);
+    }
+
+    function showWin() {
+        const modal = document.getElementById('modal');
+        document.getElementById('modal-text').innerText = missions[currentMission-1].feedback;
+        modal.style.display = "flex";
+        currentMission++;
+    }
+
+    loadNextMission();
+</script>
+</body>
+</html>

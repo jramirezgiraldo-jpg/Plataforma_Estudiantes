@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Magia de la Recombinación: Nutriendo la Tierra</title>
+    <style>
+        :root {
+            --soil-brown: #3d2b1f;
+            --leaf-green: #2ecc71;
+            --sky-blue: #3498db;
+            --valencia-gold: #f1c40f;
+            --atom-n: #3498db;
+            --atom-h: #ecf0f1;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #ecf0f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            width: 95%;
+            max-width: 850px;
+            background: var(--soil-brown);
+            border: 4px solid var(--leaf-green);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen { display: none; text-align: center; animation: slideIn 0.4s ease-out; }
+        .active { display: block; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        h1 { color: var(--leaf-green); text-shadow: 2px 2px #000; }
+        .theory-box {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-left: 5px solid var(--valencia-gold);
+            margin: 15px 0;
+            text-align: left;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+
+        .btn {
+            background: var(--leaf-green);
+            color: var(--soil-brown);
+            border: none;
+            padding: 12px 24px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin: 10px;
+        }
+
+        .btn:hover { background: var(--valencia-gold); transform: scale(1.05); }
+
+        /* Estilos Misión 1: Recombinación */
+        .assembly-area {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 150px;
+        }
+
+        .atom {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: grab;
+            margin: 5px;
+            box-shadow: 0 4px #999;
+        }
+
+        .atom:active { cursor: grabbing; }
+        .n-atom { background: var(--atom-n); color: white; }
+        .h-atom { background: var(--atom-h); color: #333; }
+
+        .drop-target {
+            width: 120px;
+            height: 120px;
+            border: 3px dashed var(--leaf-green);
+            border-radius: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Canvas Bohr */
+        #bohr-canvas {
+            background: #000;
+            border-radius: 50%;
+            margin: 10px auto;
+            border: 2px solid #555;
+        }
+
+        .feedback { font-weight: bold; margin-top: 15px; height: 20px; }
+        .success { color: var(--leaf-green); }
+        .error { color: #e74c3c; }
+
+        select, input { padding: 8px; border-radius: 5px; border: none; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    
+    <div id="scr-intro" class="screen active">
+        <h1>🌱 La Magia de la Recombinación</h1>
+        <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#2ecc71" stroke-width="2" stroke-dasharray="5,5" />
+            <circle cx="50" cy="50" r="10" fill="#f1c40f" />
+        </svg>
+        <p>Tu misión: Ayudar a los cultivos de la región transformando el aire en alimento para la tierra. Aprenderás que nada se pierde, todo se transforma y se reinventa.</p>
+        <button class="btn" onclick="showScreen('scr-m1')">EMPEZAR LABORATORIO</button>
+    </div>
+
+    <div id="scr-m1" class="screen">
+        <h2>Misión 1: El Arte de Desarmar y Unir</h2>
+        <div class="theory-box">
+            <b>Just-in-Time Learning:</b> En una reacción química, los átomos no desaparecen. Los enlaces se rompen (Reactivos) y los mismos átomos se ordenan de forma distinta (Productos). Es un <b>nuevo comienzo</b>.
+        </div>
+        <p>Desarma el Nitrógeno (N₂) y el Hidrógeno (H₂) para crear <b>Amoníaco (NH₃)</b>.</p>
+        
+        <div class="assembly-area">
+            <div id="source-atoms">
+                <div class="atom n-atom" draggable="true" ondragstart="drag(event)" id="n1">N</div>
+                <div class="atom h-atom" draggable="true" ondragstart="drag(event)" id="h1">H</div>
+                <div class="atom h-atom" draggable="true" ondragstart="drag(event)" id="h2">H</div>
+                <div class="atom h-atom" draggable="true" ondragstart="drag(event)" id="h3">H</div>
+            </div>
+            <div class="drop-target" ondrop="drop(event)" ondragover="allowDrop(event)" id="target-nh3">
+                <small>Suelta aquí para formar NH₃</small>
+            </div>
+        </div>
+        <p id="msg-m1" class="feedback"></p>
+        <button class="btn" onclick="checkM1()">VERIFICAR ESTRUCTURA</button>
+    </div>
+
+    <div id="scr-m2" class="screen">
+        <h2>Misión 2: El Potencial de Entrega</h2>
+        <div class="theory-box">
+            <b>La Capa de Valencia:</b> Es la capa más externa del átomo. Los electrones allí ubicados deciden cómo se une un átomo a otro. Es como "lo que tienes para ofrecer al mundo" para formar vínculos.
+        </div>
+        <p>Si el Nitrógeno (N) está en el Grupo 15 (o V A) de la Tabla Periódica, ¿cuántos electrones de valencia tiene?</p>
+        <input type="number" id="input-valencia" placeholder="?">
+        <button class="btn" onclick="checkM2()">VALIDAR</button>
+        <p id="msg-m2" class="feedback"></p>
+    </div>
+
+    <div id="scr-m3" class="screen">
+        <h2>Misión 3: Fertilizantes Vitales (NPK)</h2>
+        <div class="theory-box">
+            El <b>Fósforo (P)</b> es vital para las raíces. Tiene 15 electrones. Según Bohr, se distribuyen: 2 en la 1ra capa, 8 en la 2da y el resto en la 3ra (Capa de Valencia).
+        </div>
+        <canvas id="bohr-canvas" width="250" height="250"></canvas>
+        <p>¿Cuántos electrones hay en la <b>capa de valencia</b> del Fósforo?</p>
+        <div id="options-m3">
+            <button class="btn" onclick="checkM3(5)">5 Electrones</button>
+            <button class="btn" onclick="checkM3(8)">8 Electrones</button>
+            <button class="btn" onclick="checkM3(15)">15 Electrones</button>
+        </div>
+        <p id="msg-m3" class="feedback"></p>
+    </div>
+
+    <div id="scr-m4" class="screen">
+        <h2>Misión 4: Reinvención Atómica</h2>
+        <p>En el suelo, el Amonio (NH₄⁺) se transforma en Nitrato (NO₃⁻) mediante bacterias. <br>Si el proceso mantiene el mismo átomo de Nitrógeno, ¿qué cambió?</p>
+        <select id="select-m4">
+            <option value="0">-- Elige una opción --</option>
+            <option value="1">Se crearon átomos nuevos de la nada.</option>
+            <option value="2">El Nitrógeno se recombinó con Oxígeno.</option>
+            <option value="3">El átomo se destruyó para siempre.</option>
+        </select>
+        <button class="btn" onclick="checkM4()">ENVIAR RESPUESTA</button>
+        <p id="msg-m4" class="feedback"></p>
+    </div>
+
+    <div id="scr-m5" class="screen">
+        <h2>Misión 5: Tu Capa de Valencia</h2>
+        <div class="theory-box">
+            Así como los átomos dan o comparten electrones para crear algo nuevo y estable, los seres humanos tenemos habilidades para compartir.
+        </div>
+        <p>Para trabajar en equipo y "recombinarte" con otros, ¿qué "electrón de valencia" (talento) aportas tú hoy?</p>
+        <select id="talent">
+            <option value="0">-- Selecciona tu potencial --</option>
+            <option value="1">Liderazgo (Organizo el equipo)</option>
+            <option value="2">Empatía (Escucho a los demás)</option>
+            <option value="3">Creatividad (Doy ideas locas)</option>
+            <option value="4">Esfuerzo (No me rindo fácil)</option>
+        </select>
+        <br>
+        <button class="btn" onclick="finishGame()">FINALIZAR RECOMBINACIÓN</button>
+    </div>
+
+    <div id="scr-final" class="screen">
+        <h2 id="final-title">¡Reinvención Completada!</h2>
+        <div id="result-summary"></div>
+        <p>Has entendido que los átomos, como las personas, tienen un potencial interno (electrones de valencia) y que los cambios son solo nuevas formas de organizarse para crecer.</p>
+        <button class="btn" onclick="location.reload()">VOLVER A EMPEZAR</button>
+    </div>
+
+</div>
+
+<script>
+    // Sistema de navegación
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id === 'scr-m3') drawBohrP();
+    }
+
+    // Misión 1: Drag & Drop
+    let droppedAtoms = [];
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+    function drop(ev) {
+        ev.preventDefault();
+        let data = ev.dataTransfer.getData("text");
+        let node = document.getElementById(data);
+        ev.target.appendChild(node);
+        if(!droppedAtoms.includes(data)) droppedAtoms.push(data);
+    }
+
+    function checkM1() {
+        const target = document.getElementById('target-nh3');
+        const atomsIn = target.querySelectorAll('.atom');
+        let n = 0, h = 0;
+        atomsIn.forEach(a => {
+            if(a.innerText === 'N') n++;
+            if(a.innerText === 'H') h++;
+        });
+
+        const msg = document.getElementById('msg-m1');
+        if(n === 1 && h === 3) {
+            msg.innerHTML = "<span class='success'>¡Excelente! Has formado NH₃. ¡Nuevos comienzos!</span>";
+            setTimeout(() => showScreen('scr-m2'), 2000);
+        } else {
+            msg.innerHTML = "<span class='error'>Revisa la receta: El Amoníaco necesita 1 Nitrógeno y 3 Hidrógenos.</span>";
+        }
+    }
+
+    // Misión 2: Valencia N
+    function checkM2() {
+        const val = document.getElementById('input-valencia').value;
+        const msg = document.getElementById('msg-m2');
+        if(val == 5) {
+            msg.innerHTML = "<span class='success'>¡Correcto! El grupo nos indica esos electrones externos.</span>";
+            setTimeout(() => showScreen('scr-m3'), 1500);
+        } else {
+            msg.innerHTML = "<span class='error'>Casi. El Nitrógeno tiene 7 electrones totales, pero en su capa de valencia solo hay...</span>";
+        }
+    }
+
+    // Misión 3: Bohr Fósforo
+    function drawBohrP() {
+        const canvas = document.getElementById('bohr-canvas');
+        const ctx = canvas.getContext('2d');
+        const center = { x: 125, y: 125 };
+        
+        ctx.clearRect(0, 0, 250, 250);
+        
+        // Órbitas
+        ctx.strokeStyle = "#444";
+        [40, 70, 100].forEach(r => {
+            ctx.beginPath(); ctx.arc(center.x, center.y, r, 0, Math.PI*2); ctx.stroke();
+        });
+
+        // Núcleo
+        ctx.fillStyle = "#e67e22";
+        ctx.beginPath(); ctx.arc(center.x, center.y, 15, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = "white"; ctx.fillText("P", center.x-5, center.y+5);
+
+        // Electrones (Simplificado para visualización)
+        ctx.fillStyle = "yellow";
+        const drawE = (r, count) => {
+            for(let i=0; i<count; i++) {
+                let ang = (i * Math.PI * 2) / count;
+                ctx.beginPath();
+                ctx.arc(center.x + r*Math.cos(ang), center.y + r*Math.sin(ang), 4, 0, Math.PI*2);
+                ctx.fill();
+            }
+        };
+        drawE(40, 2); drawE(70, 8); drawE(100, 5);
+    }
+
+    function checkM3(val) {
+        const msg = document.getElementById('msg-m3');
+        if(val === 5) {
+            msg.innerHTML = "<span class='success'>¡Exacto! Los 5 de la última órbita son los que reaccionan.</span>";
+            setTimeout(() => showScreen('scr-m4'), 1500);
+        } else {
+            msg.innerHTML = "<span class='error'>Cuenta solo los puntos amarillos del círculo exterior.</span>";
+        }
+    }
+
+    // Misión 4: Lógica
+    function checkM4() {
+        const val = document.getElementById('select-m4').value;
+        const msg = document.getElementById('msg-m4');
+        if(val === "2") {
+            msg.innerHTML = "<span class='success'>¡Correcto! La materia se reordena, no se destruye.</span>";
+            setTimeout(() => showScreen('scr-m5'), 1500);
+        } else {
+            msg.innerHTML = "<span class='error'>Recuerda la ley de conservación: los átomos solo cambian de pareja.</span>";
+        }
+    }
+
+    // Finalización
+    function finishGame() {
+        const t = document.getElementById('talent').value;
+        if(t === "0") return alert("Por favor, selecciona un talento para compartir.");
+        
+        const summary = document.getElementById('result-summary');
+        summary.innerHTML = `<div class="theory-box">Has completado el ciclo del Nitrógeno y el Fósforo. <br> Has demostrado que posees el talento número ${t} para tu comunidad.</div>`;
+        showScreen('scr-final');
+    }
+</script>
+
+</body>
+</html>

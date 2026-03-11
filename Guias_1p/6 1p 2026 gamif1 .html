@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Sustancias Puras y Mezclas en la Finca</title>
+    <style>
+        :root {
+            --primary: #2e7d32; /* Verde café */
+            --secondary: #4e342e; /* Café tierra */
+            --accent: #ff6f00; /* Naranja maduro */
+            --light: #f1f8e9;
+            --correct: #66bb6a;
+            --wrong: #ef5350;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 { color: var(--primary); }
+        h2 { color: var(--secondary); margin-top: 40px; border-left: 5px solid var(--accent); padding-left: 10px;}
+        h3 { color: var(--primary); font-size: 1.1em;}
+
+        .login-panel {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            border: 1px solid var(--primary);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        button:hover { background-color: var(--secondary); }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        /* Estilos generales de juegos */
+        .game-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .attempt-badge {
+            font-size: 0.8em;
+            background: var(--accent);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+
+        /* Ordenar Letras */
+        .scramble-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .scramble-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--secondary);
+        }
+
+        .letters-box {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .letter-btn {
+            background: var(--light);
+            border: 1px solid var(--primary);
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .letter-btn:hover { background: #dcedc8; }
+
+        /* Ordenar Palabras */
+        .sentence-box {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .word-pool { margin-bottom: 10px; }
+        .word-btn {
+            display: inline-block;
+            background: #fff3e0;
+            border: 1px solid var(--accent);
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+
+        .drop-zone {
+            min-height: 40px;
+            background: #f1f1f1;
+            border-bottom: 2px dashed #ccc;
+            padding: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        /* Sopa de Letras */
+        #wordsearch-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 30px);
+            gap: 2px;
+            justify-content: center;
+            margin: 20px 0;
+            user-select: none;
+        }
+
+        .ws-cell {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .ws-cell.selected { background-color: #ffcc80; }
+        .ws-cell.found { background-color: var(--correct); color: white; }
+
+        /* Crucigrama */
+        .crossword-grid {
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+        .crossword-cell {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #333;
+            text-align: center;
+            padding: 0;
+        }
+        .crossword-cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: bold;
+            padding: 0;
+            margin: 0;
+        }
+        .black-cell { background-color: black; }
+
+        /* Resultados */
+        #result-panel {
+            text-align: center;
+            padding: 40px;
+            background: #fff8e1;
+            border: 2px solid var(--accent);
+            border-radius: 15px;
+            display: none;
+            margin-top: 30px;
+        }
+
+        .element-card {
+            width: 120px;
+            height: 140px;
+            border: 3px solid #333;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: white;
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.2);
+        }
+
+        .atomic-number { font-size: 12px; align-self: flex-start; padding-left: 10px; }
+        .symbol { font-size: 40px; font-weight: bold; color: var(--primary); }
+        .name { font-size: 14px; }
+        
+        .feedback { font-weight: bold; margin-top: 5px; font-size: 0.9em; }
+        .feedback.correct { color: var(--correct); }
+        .feedback.incorrect { color: var(--wrong); }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🧪 Química en la Finca: Compuestos y Mezclas</h1>
+        <p>Aprende sobre sustancias puras y mezclas ayudando en las tareas del hogar y la finca.</p>
+    </header>
+
+    <div class="login-panel" id="login">
+        <div class="form-group">
+            <label>Nombre:</label>
+            <input type="text" id="fname" placeholder="Tu nombre">
+        </div>
+        <div class="form-group">
+            <label>Apellido:</label>
+            <input type="text" id="lname" placeholder="Tu apellido">
+        </div>
+        <button onclick="startApp()">Comenzar Actividades</button>
+    </div>
+
+    <div id="main-content" style="display:none;">
+        
+        <p style="background: #e3f2fd; padding: 15px; border-radius: 5px; border-left: 5px solid #2196f3;">
+            <strong>Contexto:</strong> En nuestra finca en Quimbaya, usamos química todos los días. Cuando salamos la comida usamos un <em>compuesto</em> (Sal), y cuando lavamos el café, separamos <em>mezclas</em> (tierra y agua). ¡Ayuda a organizar los conceptos!
+        </p>
+
+        <h2>1. Descifra los Elementos y Compuestos (10 Juegos)</h2>
+        <p>Ordena las letras para encontrar la palabra oculta relacionada con la química doméstica.</p>
+        <div class="scramble-container" id="scramble-games">
+            </div>
+
+        <h2>2. Ordena las Ideas (10 Frases)</h2>
+        <p>Pon las palabras en el orden correcto para formar oraciones lógicas sobre salud y mezclas.</p>
+        <div id="sentence-games">
+            </div>
+
+        <h2>3. Sopa de Letras de la Finca</h2>
+        <p>Encuentra 5 palabras: <strong>AGUA, ACEITE, MEZCLA, SALUD, FASES</strong></p>
+        <div class="game-section" style="text-align: center;">
+            <div id="wordsearch-grid"></div>
+            <p id="ws-feedback" class="feedback"></p>
+            <button onclick="checkWordSearch()">Verificar Sopa de Letras</button>
+            <span class="attempt-badge" id="ws-attempts">Intentos: 0/3</span>
+        </div>
+
+        <h2>4. Crucigrama Rápido</h2>
+        <div class="game-section">
+            <p><strong>Pistas:</strong></p>
+            <ul>
+                <li><strong>Horizontal:</strong> 1. Sustancia pura formada por H y O. | 3. Lo opuesto a mezcla homogénea (se ven fases).</li>
+                <li><strong>Vertical:</strong> 2. Metal blando que forma la sal de mesa. | 4. Elemento vital que respiramos.</li>
+            </ul>
+            <table class="crossword-grid" id="crossword">
+                </table>
+            <br>
+            <button onclick="checkCrossword()">Verificar Crucigrama</button>
+            <span class="attempt-badge" id="cw-attempts">Intentos: 0/3</span>
+            <p id="cw-feedback" class="feedback"></p>
+        </div>
+
+        <div style="text-align: center; margin-top: 50px;">
+            <button onclick="calculateFinalScore()" style="font-size: 20px; padding: 15px 30px; background: var(--accent);">📊 Finalizar y Ver Nota</button>
+        </div>
+    </div>
+
+    <div id="result-panel">
+        <h2 id="student-name-display"></h2>
+        <p>Tu puntaje final es:</p>
+        <h1 style="font-size: 50px;" id="final-score">0.0</h1>
+        <p>Tu recompensa química es:</p>
+        
+        <div id="reward-card" class="element-card" style="background: #eee;">
+            <span class="atomic-number">?</span>
+            <span class="symbol">?</span>
+            <span class="name">???</span>
+        </div>
+        <p id="reward-msg" style="margin-top: 15px; font-style: italic;"></p>
+        
+        <button onclick="location.reload()" style="margin-top: 20px;">Intentar de nuevo</button>
+    </div>
+
+</div>
+
+<script>
+    // --- DATOS DE LOS JUEGOS ---
+
+    // 1. Ordenar Letras (10 items)
+    const scrambleData = [
+        { word: "SODIO", hint: "Elemento metálico de la sal." },
+        { word: "CLORO", hint: "Elemento gaseoso de la sal." },
+        { word: "AGUA", hint: "Compuesto vital H2O." },
+        { word: "MEZCLA", hint: "Unión física de sustancias." },
+        { word: "FASES", hint: "Lo que ves en una mezcla heterogénea." },
+        { word: "SALUD", hint: "Resultado de buena alimentación." },
+        { word: "CAFE", hint: "Producto de nuestra finca." },
+        { word: "TIERRA", hint: "Sólido que se mezcla con agua." },
+        { word: "ACEITE", hint: "No se mezcla con el agua." },
+        { word: "ATOMO", hint: "Unidad básica de la materia." }
+    ];
+
+    // 2. Ordenar Palabras (10 items)
+    const sentenceData = [
+        "El agua es un compuesto puro",
+        "La sal tiene sodio y cloro",
+        "El aceite flota sobre el agua",
+        "Las mezclas heterogéneas tienen fases visibles",
+        "Debemos escuchar a los compañeros",
+        "Comer frutas es muy saludable",
+        "El lavado del café usa agua",
+        "Los compuestos se forman de elementos",
+        "El trabajo en equipo es vital",
+        "La tierra y agua se separan"
+    ];
+
+    // --- ESTADO GLOBAL ---
+    let gameState = {
+        scramble: new Array(10).fill({ attempts: 0, solved: false, score: 1 }), // Score 1 = max, drops to 0.6, 0.3, 0
+        sentences: new Array(10).fill({ attempts: 0, solved: false, score: 1 }),
+        wordsearch: { attempts: 0, solved: false, score: 1, found: 0 },
+        crossword: { attempts: 0, solved: false, score: 1 }
+    };
+
+    // --- INICIALIZACIÓN ---
+    function startApp() {
+        const fname = document.getElementById('fname').value;
+        const lname = document.getElementById('lname').value;
+        if(fname.trim() === "" || lname.trim() === "") {
+            alert("Por favor ingresa tu nombre y apellido.");
+            return;
+        }
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        
+        initScramble();
+        initSentences();
+        initWordSearch();
+        initCrossword();
+    }
+
+    // --- LÓGICA DE JUEGOS ---
+
+    // 1. Scramble Logic
+    function initScramble() {
+        const container = document.getElementById('scramble-games');
+        scrambleData.forEach((item, index) => {
+            const shuffled = item.word.split('').sort(() => 0.5 - Math.random()).join('');
+            
+            const div = document.createElement('div');
+            div.className = 'scramble-item';
+            div.innerHTML = `
+                <strong>${index + 1}. ${item.hint}</strong><br>
+                <div class="letters-box" id="src-box-${index}">
+                    ${shuffled.split('').map(l => `<button class="letter-btn" onclick="moveLetter(${index}, '${l}', this)">${l}</button>`).join('')}
+                </div>
+                <div style="border-bottom: 2px solid #333; min-height: 30px; margin-bottom: 5px; font-weight:bold; letter-spacing: 5px;" id="ans-box-${index}"></div>
+                <button onclick="resetScramble(${index}, '${shuffled}')" style="font-size: 12px; padding: 5px;">Borrar</button>
+                <button onclick="checkScramble(${index}, '${item.word}')" style="font-size: 12px; padding: 5px;">Validar</button>
+                <span id="scramble-feed-${index}" class="feedback"></span>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function moveLetter(idx, char, btn) {
+        if(gameState.scramble[idx].solved) return;
+        const ansBox = document.getElementById(`ans-box-${idx}`);
+        ansBox.textContent += char;
+        btn.style.display = 'none'; // Ocultar botón usado
+    }
+
+    function resetScramble(idx, originalShuffled) {
+        if(gameState.scramble[idx].solved) return;
+        document.getElementById(`ans-box-${idx}`).textContent = "";
+        const srcBox = document.getElementById(`src-box-${idx}`);
+        // Restaurar botones
+        const buttons = srcBox.querySelectorAll('button');
+        buttons.forEach(b => b.style.display = 'inline-block');
+        document.getElementById(`scramble-feed-${idx}`).textContent = "";
+    }
+
+    function checkScramble(idx, correctWord) {
+        if(gameState.scramble[idx].solved) return;
+        const userAns = document.getElementById(`ans-box-${idx}`).textContent;
+        const feedback = document.getElementById(`scramble-feed-${idx}`);
+        
+        if (userAns === correctWord) {
+            feedback.textContent = "¡Correcto!";
+            feedback.className = "feedback correct";
+            gameState.scramble[idx].solved = true;
+        } else {
+            gameState.scramble[idx].attempts++;
+            updateScore(gameState.scramble, idx);
+            feedback.textContent = `Incorrecto. Intentos: ${gameState.scramble[idx].attempts}/3`;
+            feedback.className = "feedback incorrect";
+            if(gameState.scramble[idx].attempts >= 3) {
+                 feedback.textContent = `Fallaste. La respuesta era ${correctWord}`;
+                 gameState.scramble[idx].solved = true; // Lock
+                 gameState.scramble[idx].score = 0;
+            } else {
+                // Auto reset for retry
+                setTimeout(() => resetScramble(idx, ""), 1000);
+            }
+        }
+    }
+
+    // 2. Sentence Logic
+    function initSentences() {
+        const container = document.getElementById('sentence-games');
+        sentenceData.forEach((sent, index) => {
+            const words = sent.split(' ');
+            const shuffled = [...words].sort(() => 0.5 - Math.random());
+            
+            const div = document.createElement('div');
+            div.className = 'sentence-box';
+            div.innerHTML = `
+                <strong>Frase ${index + 1}:</strong>
+                <div class="drop-zone" id="drop-${index}"></div>
+                <div class="word-pool" id="pool-${index}">
+                    ${shuffled.map(w => `<span class="word-btn" onclick="moveWord(${index}, this)">${w}</span>`).join('')}
+                </div>
+                <button onclick="checkSentence(${index}, '${sent}')" style="font-size: 12px; padding: 5px;">Verificar</button>
+                <button onclick="resetSentence(${index})" style="font-size: 12px; padding: 5px;">Reiniciar</button>
+                <span id="sent-feed-${index}" class="feedback"></span>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function moveWord(idx, el) {
+        if(gameState.sentences[idx].solved) return;
+        const pool = document.getElementById(`pool-${idx}`);
+        const drop = document.getElementById(`drop-${idx}`);
+        
+        if (el.parentNode === pool) {
+            drop.appendChild(el);
+        } else {
+            pool.appendChild(el);
+        }
+    }
+
+    function resetSentence(idx) {
+        if(gameState.sentences[idx].solved) return;
+        const pool = document.getElementById(`pool-${idx}`);
+        const drop = document.getElementById(`drop-${idx}`);
+        while (drop.firstChild) {
+            pool.appendChild(drop.firstChild);
+        }
+        document.getElementById(`sent-feed-${idx}`).textContent = "";
+    }
+
+    function checkSentence(idx, correctSent) {
+        if(gameState.sentences[idx].solved) return;
+        const drop = document.getElementById(`drop-${idx}`);
+        const userSent = Array.from(drop.children).map(s => s.textContent).join(' ');
+        const feedback = document.getElementById(`sent-feed-${idx}`);
+
+        if (userSent === correctSent) {
+            feedback.textContent = "¡Correcto!";
+            feedback.className = "feedback correct";
+            gameState.sentences[idx].solved = true;
+        } else {
+            gameState.sentences[idx].attempts++;
+            updateScore(gameState.sentences, idx);
+            feedback.textContent = `Incorrecto. Intentos: ${gameState.sentences[idx].attempts}/3`;
+            feedback.className = "feedback incorrect";
+            if(gameState.sentences[idx].attempts >= 3) {
+                 feedback.textContent = "Agotaste tus intentos.";
+                 gameState.sentences[idx].solved = true;
+                 gameState.sentences[idx].score = 0;
+            }
+        }
+    }
+
+    // 3. Word Search Logic (Simple Grid Selection)
+    // Grid 10x10. Words: AGUA, ACEITE, MEZCLA, SALUD, FASES
+    // Pre-filled simplified grid for demo functionality without complex generator
+    const wsLetters = [
+        "A","G","U","A","X","S","A","L","U","D",
+        "C","X","X","C","X","X","X","X","X","X",
+        "E","X","X","E","X","X","X","X","X","X",
+        "I","X","X","I","X","X","F","A","S","E", // FASES horizontal broken? No, manual fix below
+        "T","X","X","T","M","E","Z","C","L","A",
+        "E","X","X","E","X","X","A","X","X","X",
+        "X","X","X","X","X","X","S","X","X","X",
+        "X","X","X","X","X","X","E","X","X","X",
+        "X","X","X","X","X","X","S","X","X","X",
+        "X","X","X","X","X","X","X","X","X","X"
+    ]; 
+    // Manual fix for better grid
+    const wsGridChars = [
+        ['A','G','U','A','L','S','A','L','U','D'],
+        ['Z','Q','W','C','P','O','I','U','Y','T'],
+        ['A','C','E','I','T','E','R','E','W','Q'],
+        ['S','D','F','G','H','J','F','A','S','E'], // FASE needs S -> FASES
+        ['M','E','Z','C','L','A','V','B','N','S'],
+        ['P','O','I','U','Y','T','R','E','W','Q'],
+        ['A','S','D','F','G','H','J','K','L','Ñ'],
+        ['Z','X','C','V','B','N','M','Q','W','E'],
+        ['R','T','Y','U','I','O','P','A','S','D'],
+        ['F','G','H','J','K','L','Ñ','Z','X','C']
+    ];
+    // Correct Coords (Row, Col) 0-indexed
+    // AGUA: (0,0)-(0,3)
+    // SALUD: (0,5)-(0,9)
+    // ACEITE: (2,0)-(2,5)
+    // MEZCLA: (4,0)-(4,5)
+    // FASES: (3,6)-(3,9) -> FASE... let's fix grid to have FASES
+    // (3,6) is F, (3,7) A, (3,8) S, (3,9) E. Add S at (4,9)? No, horizontal.
+    // Let's adjust grid data manually in code to be sure.
+    
+    // Words to find: AGUA, ACEITE, MEZCLA, SALUD, FASES
+    const correctWords = ["AGUA", "ACEITE", "MEZCLA", "SALUD", "FASES"];
+    let selectedCells = [];
+
+    function initWordSearch() {
+        const grid = document.getElementById('wordsearch-grid');
+        // Override row 3 for FASES
+        wsGridChars[3][6]='F'; wsGridChars[3][7]='A'; wsGridChars[3][8]='S'; wsGridChars[3][9]='E'; wsGridChars[3][5]='S'; //Wait, FASES is 5 letters.
+        // Let's simplify: horizontal words only for this demo reliability
+        // R0: AGUA... SALUD
+        // R2: ACEITE
+        // R4: MEZCLA
+        // R6: FASES
+        wsGridChars[6][0]='F'; wsGridChars[6][1]='A'; wsGridChars[6][2]='S'; wsGridChars[6][3]='E'; wsGridChars[6][4]='S';
+
+        wsGridChars.forEach((row, r) => {
+            row.forEach((char, c) => {
+                const cell = document.createElement('div');
+                cell.className = 'ws-cell';
+                cell.textContent = char;
+                cell.dataset.r = r;
+                cell.dataset.c = c;
+                cell.onclick = () => toggleCell(cell);
+                grid.appendChild(cell);
+            });
+        });
+    }
+
+    function toggleCell(cell) {
+        if(gameState.wordsearch.solved) return;
+        if (cell.classList.contains('selected')) {
+            cell.classList.remove('selected');
+            selectedCells = selectedCells.filter(c => c !== cell);
+        } else {
+            cell.classList.add('selected');
+            selectedCells.push(cell);
+        }
+    }
+
+    function checkWordSearch() {
+        if(gameState.wordsearch.solved) return;
+        // Construct word from selected cells (sort by position)
+        selectedCells.sort((a,b) => (a.dataset.r - b.dataset.r) || (a.dataset.c - b.dataset.c));
+        const word = selectedCells.map(c => c.textContent).join('');
+        
+        const feedback = document.getElementById('ws-feedback');
+        
+        if (correctWords.includes(word)) {
+            feedback.textContent = `¡Encontraste ${word}!`;
+            feedback.className = "feedback correct";
+            selectedCells.forEach(c => {
+                c.classList.remove('selected');
+                c.classList.add('found');
+            });
+            selectedCells = [];
+            gameState.wordsearch.found++;
+            if(gameState.wordsearch.found === 5) {
+                feedback.textContent = "¡Todas encontradas!";
+                gameState.wordsearch.solved = true;
+            }
+        } else {
+            gameState.wordsearch.attempts++;
+            document.getElementById('ws-attempts').textContent = `Intentos: ${gameState.wordsearch.attempts}/3`;
+            feedback.textContent = "Palabra incorrecta.";
+            feedback.className = "feedback incorrect";
+            
+            // Clear selection
+            selectedCells.forEach(c => c.classList.remove('selected'));
+            selectedCells = [];
+
+            if(gameState.wordsearch.attempts >= 3) {
+                 feedback.textContent = "Fin de intentos en sopa de letras.";
+                 gameState.wordsearch.solved = true; // Partial score based on found?
+                 // Simple logic: if failed attempts, 0 score for remaining words.
+                 // We will calculate score proportionally at the end.
+            }
+        }
+    }
+
+    // 4. Crossword Logic (Simple Table)
+    function initCrossword() {
+        // Layout:
+        //   0 1 2 3 4 5 6 7 8 9
+        // 0 . S . . . . . . . .
+        // 1 A G U A . . . . . .
+        // 2 . D O . . . . . . .
+        // 3 . I X . . . . . . .
+        // 4 . O I . . . . . . .
+        // 5 H E T E R O G E N E A (col 0 to 10) - wait, too long for 10px? No.
+        
+        // Let's render the HTML table rows manually for precision
+        const table = document.getElementById('crossword');
+        const layout = [
+            ['','S','','','','','','','','',''],
+            ['A','G','U','A','','','','','','',''],
+            ['','D','O','','','','','','','',''],
+            ['','I','X','','','','','','','',''],
+            ['','O','I','','','','','','','',''],
+            ['H','E','T','E','R','O','G','E','N','E','A'],
+            ['','','E','','','','','','','',''],
+            ['','','N','','','','','','','',''],
+            ['','','O','','','','','','','','']
+        ];
+        
+        layout.forEach(row => {
+            const tr = document.createElement('tr');
+            row.forEach(cell => {
+                const td = document.createElement('td');
+                td.className = cell ? 'crossword-cell' : 'crossword-cell black-cell';
+                if(cell) {
+                    const inp = document.createElement('input');
+                    inp.maxLength = 1;
+                    inp.dataset.answer = cell;
+                    td.appendChild(inp);
+                }
+                tr.appendChild(td);
+            });
+            table.appendChild(tr);
+        });
+    }
+
+    function checkCrossword() {
+        if(gameState.crossword.solved) return;
+        const inputs = document.querySelectorAll('#crossword input');
+        let allCorrect = true;
+        inputs.forEach(inp => {
+            if(inp.value.toUpperCase() !== inp.dataset.answer) allCorrect = false;
+        });
+
+        const feedback = document.getElementById('cw-feedback');
+        
+        if(allCorrect) {
+            feedback.textContent = "¡Crucigrama Correcto!";
+            feedback.className = "feedback correct";
+            gameState.crossword.solved = true;
+        } else {
+            gameState.crossword.attempts++;
+            document.getElementById('cw-attempts').textContent = `Intentos: ${gameState.crossword.attempts}/3`;
+            feedback.textContent = "Hay errores.";
+            feedback.className = "feedback incorrect";
+            
+            // Reduce score
+            if(gameState.crossword.attempts === 1) gameState.crossword.score = 0.6;
+            if(gameState.crossword.attempts === 2) gameState.crossword.score = 0.3;
+            if(gameState.crossword.attempts >= 3) {
+                gameState.crossword.score = 0;
+                gameState.crossword.solved = true;
+                feedback.textContent = "Fallaste el crucigrama.";
+            }
+        }
+    }
+
+    // --- PUNTAJE Y RECOMPENSAS ---
+    function updateScore(arr, idx) {
+        if(arr[idx].attempts === 1) arr[idx].score = 0.6;
+        if(arr[idx].attempts === 2) arr[idx].score = 0.3;
+        if(arr[idx].attempts >= 3) arr[idx].score = 0;
+    }
+
+    function calculateFinalScore() {
+        // Total Items: 10 (scramble) + 10 (sentence) + 1 (WS) + 1 (CW) = 22 items.
+        // Wait, Wordsearch has 5 words inside. Let's count it as 1 big task or 5 small?
+        // Let's count WS as 1 task (score * 1) but 'found' 5/5 needed for 100%. 
+        // Logic fix: WS Score is calculated by found/5 * attempt_penalty.
+        
+        let totalPoints = 0;
+        
+        // 1. Scramble (max 10)
+        gameState.scramble.forEach(g => totalPoints += (g.solved && g.score > 0 ? g.score : 0));
+        
+        // 2. Sentences (max 10)
+        gameState.sentences.forEach(g => totalPoints += (g.solved && g.score > 0 ? g.score : 0));
+        
+        // 3. Wordsearch (max 1)
+        // If attempts failed, score is 0. If solved, score is based on attempts.
+        // But also check if they actually found all words.
+        let wsScore = 0;
+        if(gameState.wordsearch.found === 5) {
+            wsScore = 1;
+            if(gameState.wordsearch.attempts === 1) wsScore = 0.6;
+            if(gameState.wordsearch.attempts === 2) wsScore = 0.3;
+        }
+        totalPoints += wsScore;
+
+        // 4. Crossword (max 1)
+        totalPoints += (gameState.crossword.solved && gameState.crossword.score > 0 ? gameState.crossword.score : 0);
+
+        // Max possible raw points = 22.
+        // Scale to 5.0
+        const maxRaw = 22;
+        const finalGrade = (totalPoints / maxRaw) * 5;
+        const roundedGrade = finalGrade.toFixed(1);
+
+        // UI Update
+        document.getElementById('student-name-display').textContent = 
+            `Estudiante: ${document.getElementById('fname').value} ${document.getElementById('lname').value}`;
+        document.getElementById('final-score').textContent = roundedGrade;
+        
+        // Reward Logic
+        const rewardCard = document.getElementById('reward-card');
+        const rewardMsg = document.getElementById('reward-msg');
+        let atomic, symbol, name, color, msg;
+
+        if(roundedGrade < 2.0) {
+            atomic = "1"; symbol = "H"; name = "Hidrógeno"; color = "#eeeeee";
+            msg = "El elemento más simple. ¡Hay que estudiar más las bases!";
+        } else if (roundedGrade < 3.5) {
+            atomic = "6"; symbol = "C"; name = "Carbono"; color = "#a1887f";
+            msg = "La base de la vida. ¡Vas por buen camino!";
+        } else if (roundedGrade < 4.0) {
+            atomic = "26"; symbol = "Fe"; name = "Hierro"; color = "#b0bec5";
+            msg = "Fuerte y resistente. ¡Buen trabajo!";
+        } else if (roundedGrade < 4.8) {
+            atomic = "47"; symbol = "Ag"; name = "Plata"; color = "#e0e0e0";
+            msg = "¡Brillante! Casi perfecto.";
+        } else {
+            atomic = "79"; symbol = "Au"; name = "Oro"; color = "#ffd54f";
+            msg = "¡Excelente! Eres un maestro de la química.";
+        }
+
+        rewardCard.style.background = color;
+        rewardCard.querySelector('.atomic-number').textContent = atomic;
+        rewardCard.querySelector('.symbol').textContent = symbol;
+        rewardCard.querySelector('.name').textContent = name;
+        rewardMsg.textContent = msg;
+
+        document.getElementById('result-panel').style.display = 'block';
+        document.getElementById('main-content').style.display = 'none';
+        window.scrollTo(0,0);
+    }
+
+</script>
+
+</body>
+</html>

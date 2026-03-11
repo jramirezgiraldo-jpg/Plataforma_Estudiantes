@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA Química 10°: El Notario de la Materia</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #27ae60;
+            --accent: #e67e22;
+            --gold: #f1c40f;
+            --silver: #bdc3c7;
+            --iron: #95a5a6;
+            --bg: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: var(--primary);
+        }
+
+        /* Login Overlay */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+        }
+
+        .login-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            color: var(--primary);
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        /* Header Fijo */
+        header {
+            position: fixed;
+            top: 0; width: 100%;
+            background: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 900;
+        }
+
+        .user-info { font-weight: bold; color: var(--secondary); }
+        .score-box { 
+            background: var(--primary); 
+            color: white; 
+            padding: 5px 15px; 
+            border-radius: 20px;
+        }
+
+        /* Contenedor de Actividades */
+        main {
+            margin-top: 80px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;
+        }
+
+        .activity-card {
+            background: white;
+            margin-bottom: 40px;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 8px solid var(--secondary);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .activity-card:hover { transform: translateY(-5px); }
+
+        .scrambled {
+            font-size: 1.4rem;
+            letter-spacing: 5px;
+            color: var(--accent);
+            font-weight: bold;
+            margin: 15px 0;
+            text-transform: uppercase;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:disabled { background: #ccc; }
+
+        .badge {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            border-radius: 50%;
+            text-align: center;
+            font-weight: bold;
+            margin-left: 10px;
+            color: white;
+        }
+
+        .badge-Au { background: var(--gold); }
+        .badge-Ag { background: var(--silver); color: #333; }
+        .badge-Fe { background: var(--iron); }
+
+        .feedback { margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>Laboratorio de Química Virtual</h2>
+            <p>Ingresa tus datos para comenzar</p>
+            <input type="text" id="name" placeholder="Nombre">
+            <input type="text" id="lastname" placeholder="Apellido">
+            <br><br>
+            <button onclick="login()">Entrar al Laboratorio</button>
+        </div>
+    </div>
+
+    <header id="main-header" style="display:none;">
+        <div class="user-info">Estudiante: <span id="display-name"></span></div>
+        <div class="score-box">Puntaje Total: <span id="total-score">0</span> pts</div>
+    </header>
+
+    <main id="content" style="display:none;">
+        <h1 style="text-align:center;">Desafío: El Notario Químico</h1>
+        <p style="text-align:center;">Demuestra tu dominio sobre Ácidos, Sales y Balanceo.</p>
+        <hr>
+        <div id="activities-container"></div>
+    </main>
+
+    <script>
+        // --- CONFIGURACIÓN DE DATOS ---
+        const anagrams = [
+            { word: "SULFURICO", hint: "Ácido oxácido fuerte (H2SO4)" },
+            { word: "HIDRICO", hint: "Sufijo de ácidos sin oxígeno" },
+            { word: "NITRATO", hint: "Sal derivada del ácido nítrico" },
+            { word: "CARBONATO", hint: "Sal en cáscaras de huevo y mármol" },
+            { word: "FOSFATO", hint: "Componente clave de fertilizantes (P)" },
+            { word: "CLORURO", hint: "Sal común: de sodio" },
+            { word: "HIDROXIDO", hint: "Base necesaria para formar sales" },
+            { word: "OXIDACION", hint: "Cambio en el estado de carga" },
+            { word: "ESTEQUIOMETRIA", hint: "Cálculo de relaciones molares" },
+            { word: "BINARIA", hint: "Sal formada por metal y no metal" }
+        ];
+
+        const sentences = [
+            { correct: "La materia no se crea ni se destruye", scrambled: "destruye ni materia se crea se La", theme: "Ley de Lavoisier" },
+            { correct: "El vinagre reacciona con el bicarbonato", scrambled: "con bicarbonato reacciona El el vinagre", theme: "Reacción Química" },
+            { correct: "Los acidos liberan iones de hidrogeno", scrambled: "hidrogeno liberan acidos de iones Los", theme: "Propiedades" },
+            { correct: "Las sales neutras no tienen hidrogeno", scrambled: "no hidrogeno tienen Las neutras sales", theme: "Sales" },
+            { correct: "El balanceo asegura la conservacion masica", scrambled: "masica asegura El conservacion la balanceo", theme: "Cálculo" },
+            { correct: "IUPAC regula los nombres cientificos", scrambled: "cientificos nombres regula los IUPAC", theme: "Normas" },
+            { correct: "La fotosintesis consume dioxido de carbono", scrambled: "carbono de consume fotosintesis dioxido La", theme: "Naturaleza" },
+            { correct: "El nitrogeno es vital para suelos", scrambled: "suelos para vital es nitrogeno El", theme: "Fertilizantes" },
+            { correct: "Una reaccion balanceada es una verdad", scrambled: "verdad una es balanceada reaccion Una", theme: "Coherencia" },
+            { correct: "El sistema cerrado mantiene la masa", scrambled: "masa la mantiene cerrado sistema El", theme: "Experimento" }
+        ];
+
+        let currentUser = { name: "", score: 0 };
+
+        // --- LÓGICA DE PERSISTENCIA ---
+        function login() {
+            const n = document.getElementById('name').value;
+            const l = document.getElementById('lastname').value;
+            if(n && l) {
+                currentUser.name = `${n} ${l}`;
+                localStorage.setItem('ova_user', JSON.stringify(currentUser));
+                initApp();
+            } else {
+                alert("Por favor completa tus datos");
+            }
+        }
+
+        function initApp() {
+            const saved = localStorage.getItem('ova_user');
+            if(saved) {
+                currentUser = JSON.parse(saved);
+                document.getElementById('display-name').innerText = currentUser.name;
+                document.getElementById('total-score').innerText = currentUser.score;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-header').style.display = 'flex';
+                document.getElementById('content').style.display = 'block';
+                renderActivities();
+            }
+        }
+
+        // --- ALGORITMO FISHER-YATES ---
+        function shuffle(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            // Si el resultado es igual al original, re-barajar (seguridad de flujo)
+            if(arr.join('') === array.join('')) return shuffle(array);
+            return arr;
+        }
+
+        // --- RENDERIZADO ---
+        function renderActivities() {
+            const container = document.getElementById('activities-container');
+            container.innerHTML = "";
+
+            // 1. Render Anagramas
+            anagrams.forEach((item, index) => {
+                const scrambled = shuffle(item.word.split('')).join('-');
+                createCard(container, `Actividad ${index + 1}: Anagrama Químico`, item.hint, scrambled, item.word, "anagram");
+            });
+
+            // 2. Render Oraciones
+            sentences.forEach((item, index) => {
+                createCard(container, `Actividad ${index + 11}: Orden Lógico`, `Tema: ${item.theme}`, item.scrambled, item.correct, "sentence");
+            });
+        }
+
+        function createCard(parent, title, hint, displayData, answer, type) {
+            const card = document.createElement('div');
+            card.className = 'activity-card';
+            card.innerHTML = `
+                <h3>${title}</h3>
+                <p><i>${hint}</i></p>
+                <div class="scrambled">${displayData}</div>
+                <input type="text" id="input-${title}" placeholder="Tu respuesta aquí...">
+                <div id="feedback-${title}" class="feedback"></div>
+                <button onclick="validate('${title}', '${answer}')" id="btn-${title}">Validar</button>
+                <span id="badge-container-${title}"></span>
+            `;
+            parent.appendChild(card);
+        }
+
+        // --- LÓGICA DE GAMIFICACIÓN ---
+        const attempts = {};
+
+        function validate(id, correct) {
+            const input = document.getElementById(`input-${id}`);
+            const feedback = document.getElementById(`feedback-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+            const userAns = input.value.trim().toUpperCase();
+            
+            if(!attempts[id]) attempts[id] = 0;
+            attempts[id]++;
+
+            if(userAns === correct.toUpperCase()) {
+                let pts = 0;
+                let symbol = "";
+                if(attempts[id] === 1) { pts = 5; symbol = "Au"; }
+                else if(attempts[id] === 2) { pts = 3; symbol = "Ag"; }
+                else { pts = 1.5; symbol = "Fe"; }
+
+                feedback.innerHTML = `<span style="color:green;">¡Correcto! +${pts} pts</span>`;
+                btn.disabled = true;
+                input.disabled = true;
+                addPoints(pts, id, symbol);
+            } else {
+                if(attempts[id] >= 3) {
+                    feedback.innerHTML = `<span style="color:red;">Fallaste. La respuesta era: ${correct}</span>`;
+                    btn.disabled = true;
+                    input.disabled = true;
+                } else {
+                    feedback.innerHTML = `<span style="color:orange;">Intento ${attempts[id]}/3. ¡Sigue probando!</span>`;
+                }
+            }
+        }
+
+        function addPoints(pts, id, symbol) {
+            currentUser.score += pts;
+            document.getElementById('total-score').innerText = currentUser.score;
+            document.getElementById(`badge-container-${id}`).innerHTML = `<span class="badge badge-${symbol}">${symbol}</span>`;
+            localStorage.setItem('ova_user', JSON.stringify(currentUser));
+        }
+
+        window.onload = () => {
+            if(localStorage.getItem('ova_user')) initApp();
+        };
+    </script>
+</body>
+</html>

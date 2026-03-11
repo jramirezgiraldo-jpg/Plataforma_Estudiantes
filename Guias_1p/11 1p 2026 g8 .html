@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Termoquímica Orgánica y Clima Emocional</title>
+    <style>
+        :root {
+            --primary: #1a2a6c;
+            --secondary: #b21f1f;
+            --accent: #fdbb2d;
+            --bg: #f4f7f6;
+            --text: #2c3e50;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            scroll-behavior: smooth;
+        }
+
+        /* LOGIN SCREEN */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex; justify-content: center; align-items: center;
+            z-index: 2000;
+        }
+
+        .login-box {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 400px; width: 90%;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        /* MAIN LAYOUT */
+        #main-content { display: none; }
+
+        header {
+            position: sticky;
+            top: 0;
+            background: var(--white);
+            padding: 10px 5%;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            background: #eee;
+            border-radius: 6px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(to right, var(--accent), var(--secondary));
+            transition: width 0.5s ease;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        section {
+            background: var(--white);
+            padding: 40px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        h1, h2 { color: var(--primary); border-bottom: 3px solid var(--accent); padding-bottom: 10px; }
+
+        .svg-container { text-align: center; margin: 30px 0; padding: 20px; background: #fafafa; border-radius: 10px; }
+
+        /* ACTIVITIES */
+        .activity-card {
+            border-left: 5px solid var(--accent);
+            background: #fff9e6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        .btn:hover { background: var(--secondary); transform: translateY(-2px); }
+
+        .btn-check { background: #27ae60; margin-top: 10px; }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-weight: 500;
+        }
+
+        /* EVALUATION */
+        .quiz-option {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .quiz-option:hover { background: #e9ecef; }
+
+        .open-question { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; }
+
+        .word-counter { font-size: 0.8rem; color: #666; }
+
+        #fortalecimiento-box {
+            display: none;
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+
+        footer { text-align: center; padding: 40px; color: #888; }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <svg width="60" height="60" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#1a2a6c" stroke-width="5"/>
+                <path d="M30 70 Q50 30 70 70" fill="none" stroke="#b21f1f" stroke-width="5"/>
+                <circle cx="50" cy="40" r="10" fill="#fdbb2d"/>
+            </svg>
+            <h2>Termo-Energía Orgánica</h2>
+            <p>Ingresa tus datos para iniciar la experiencia de aprendizaje.</p>
+            <input type="text" id="username" placeholder="Nombres y Apellidos">
+            <button class="btn" onclick="iniciarSesion()">Ingresar al Sistema</button>
+        </div>
+    </div>
+
+    <header id="main-header" style="display:none;">
+        <div class="nav-info">
+            <span>Estudiante: <span id="user-display">---</span></span>
+            <span>Rango: <span id="element-display">Hidrógeno (H)</span></span>
+            <span>Puntos: <span id="score-display">0.0</span>/5</span>
+        </div>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+    </header>
+
+    <div class="container" id="main-content">
+        <section id="inicio">
+            <h1>Objetivo de Aprendizaje</h1>
+            <p>Comprender el comportamiento energético de las reacciones orgánicas (Exotérmicas y Endotérmicas) a través del estudio de la combustión de alcoholes, relacionando estos fenómenos químicos con el reconocimiento del "clima emocional" personal para la toma de decisiones asertivas.</p>
+            
+            <h3>Pre-saberes: ¿Qué traes en tu mochila?</h3>
+            <div class="activity-card">
+                <p>1. ¿Qué sucede con la temperatura del entorno cuando se quema alcohol etílico?</p>
+                <button class="btn" onclick="preguntaPre(1, 'correct')">Aumenta</button>
+                <button class="btn" onclick="preguntaPre(1, 'wrong')">Disminuye</button>
+                <div id="fb-pre-1" class="feedback"></div>
+            </div>
+
+            <div class="activity-card">
+                <p>2. ¿Cómo te sientes físicamente cuando experimentas una emoción intensa como la ira?</p>
+                <button class="btn" onclick="preguntaPre(2, 'correct')">Siento calor o tensión</button>
+                <button class="btn" onclick="preguntaPre(2, 'wrong')">No hay cambios físicos</button>
+                <div id="fb-pre-2" class="feedback"></div>
+            </div>
+
+            <div class="activity-card">
+                <p>3. En una reacción exotérmica, la energía se...</p>
+                <button class="btn" onclick="preguntaPre(3, 'correct')">Libera al entorno</button>
+                <button class="btn" onclick="preguntaPre(3, 'wrong')">Absorbe del entorno</button>
+                <div id="fb-pre-3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>Cuerpo Inductivo: El Calor de la Vida</h2>
+            <div class="text-block">
+                <p>La termoquímica orgánica es el estudio de los cambios de energía, específicamente en forma de calor, que acompañan a las reacciones de compuestos que contienen carbono. Para entender este mundo, debemos observar lo cotidiano. Pensemos en la combustión de alcoholes, una reacción que ha movido al mundo desde las lámparas antiguas hasta los modernos bio-combustibles. Cuando encendemos una muestra de etanol (C2H5OH), estamos presenciando un evento termodinámico fascinante. Los enlaces químicos de la molécula orgánica se rompen para reorganizarse en formas más estables (CO2 y H2O), liberando en el proceso la energía que mantenía unidos a esos átomos.</p>
+                
+                <p>Esta liberación de energía define a las reacciones <strong>exotérmicas</strong>. Al medir la temperatura con un termómetro mientras se queman diferentes alcoholes, notamos variaciones significativas. El metanol (CH3OH) libera una cantidad de energía diferente al butanol (C4H9OH). Esto se debe a que el tamaño de la cadena de carbonos influye directamente en la cantidad de energía "almacenada" en sus enlaces C-C y C-H. A mayor número de enlaces disponibles para oxidarse, generalmente mayor es el desprendimiento de calor. Pero, ¿por qué importa esto? En la agricultura moderna, el uso de bio-combustibles busca optimizar esta liberación de energía de manera sostenible, utilizando desechos orgánicos para producir alcoholes que alimenten motores de forma más limpia.</p>
+
+                <div class="svg-container">
+                    <svg width="400" height="200" viewBox="0 0 400 200">
+                        <rect x="50" y="150" width="40" height="10" fill="#333" />
+                        <path d="M70 150 Q60 110 70 80 Q80 110 70 150" fill="#fdbb2d">
+                            <animate attributeName="d" values="M70 150 Q60 110 70 80 Q80 110 70 150; M70 150 Q55 120 70 70 Q85 120 70 150; M70 150 Q60 110 70 80 Q80 110 70 150" dur="1s" repeatCount="indefinite" />
+                        </path>
+                        <line x1="150" y1="180" x2="350" y2="180" stroke="#000" stroke-width="2" />
+                        <line x1="150" y1="180" x2="150" y2="20" stroke="#000" stroke-width="2" />
+                        <path d="M150 100 Q200 80 250 150 T350 160" fill="none" stroke="#b21f1f" stroke-width="3" />
+                        <text x="170" y="40" font-size="12">Energía (Liberación Exotérmica)</text>
+                    </svg>
+                    <p><em>Esquema 1: Perfil energético de la combustión de un alcohol.</em></p>
+                </div>
+
+                <p>Ahora, traslademos esto a nuestro interior. Las emociones son reacciones psicofisiológicas que, al igual que la combustión, generan un "clima". Una reacción emocional de ira puede compararse con una combustión rápida y violenta: liberamos energía de golpe, nuestra temperatura corporal sube y el impacto en el entorno es evidente. Por el contrario, un estado de melancolía o reflexión profunda puede sentirse "endotérmico", como si absorbiéramos la energía de nuestro alrededor, sintiendo frío o pesadez. Identificar nuestro clima emocional es como medir la temperatura de una reacción; nos permite saber si estamos "quemando" nuestros puentes o si estamos absorbiendo la energía necesaria para sanar. La termoquímica orgánica no es solo sobre moléculas; es sobre cómo la energía se transforma dentro y fuera de nosotros.</p>
+            </div>
+
+            <div class="activity-card">
+                <h3>Actividades para el Cuaderno (Sección 1)</h3>
+                <ol>
+                    <li>Dibuja un termómetro y marca en él las temperaturas promedio de combustión del Metanol, Etanol y Propanol. <button class="btn-check" onclick="registrarActividad(1)">Registrar</button></li>
+                    <li>Crea un cuadro comparativo entre reacciones Exotérmicas y Endotérmicas. <button class="btn-check" onclick="registrarActividad(2)">Registrar</button></li>
+                    <li>Dibuja el Esquema 1 en tu cuaderno detallando los ejes. <button class="btn-check" onclick="registrarActividad(3)">Registrar</button></li>
+                    <li>Realiza una lista de 5 momentos de tu semana y clasifícalos como "clima emocional cálido" o "frío". <button class="btn-check" onclick="registrarActividad(4)">Registrar</button></li>
+                    <li>Investiga y escribe la fórmula estructural de un bio-combustible usado en Colombia. <button class="btn-check" onclick="registrarActividad(5)">Registrar</button></li>
+                </ol>
+            </div>
+
+            <h3>Desafío ICFES: Competencia Indagar</h3>
+            <div class="activity-card">
+                <p>Un estudiante realiza un experimento midiendo el aumento de temperatura en 100ml de agua al quemar 1g de tres alcoholes diferentes. Los resultados se muestran en la siguiente tabla:</p>
+                <div class="svg-container">
+                    <table style="width:100%; border-collapse: collapse; background: white;">
+                        <tr style="background: #1a2a6c; color: white;"><th>Alcohol</th><th>Temp. Inicial</th><th>Temp. Final</th></tr>
+                        <tr><td>Metanol</td><td>20°C</td><td>35°C</td></tr>
+                        <tr><td>Etanol</td><td>20°C</td><td>42°C</td></tr>
+                        <tr><td>Butanol</td><td>20°C</td><td>58°C</td></tr>
+                    </table>
+                </div>
+                <p>¿Cuál es la conclusión más acertada sobre el comportamiento energético de estos compuestos?</p>
+                <button class="quiz-option" onclick="feedbackIcfes('a', 'wrong')">A. Todos los alcoholes son endotérmicos porque el agua no hirvió.</button>
+                <button class="quiz-option" onclick="feedbackIcfes('b', 'correct')">B. El Butanol libera más energía por gramo debido a su mayor cadena de carbonos.</button>
+                <button class="quiz-option" onclick="feedbackIcfes('c', 'wrong')">C. El Metanol es el mejor combustible porque aumenta menos la temperatura.</button>
+                <button class="quiz-option" onclick="feedbackIcfes('d', 'wrong')">D. La temperatura inicial impide saber cuál liberó más energía.</button>
+                <div id="fb-icfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>Cuerpo Deductivo: Leyes y Enfoque de Análisis</h2>
+            <div class="text-block">
+                <p>Para sistematizar lo observado, debemos recurrir a las leyes de la termodinámica aplicadas a la orgánica. La Entalpía de Reacción (H) es la magnitud que nos permite cuantificar ese calor intercambiado a presión constante. En la combustión de hidrocarburos y alcoholes, el valor de Delta H es siempre negativo (Delta H < 0), lo que confirma matemáticamente su carácter exotérmico. El análisis deductivo nos permite predecir que, a medida que la estructura molecular se vuelve más compleja, la energía de enlace acumulada requerirá una mayor activación, pero también resultará en una mayor liberación energética final.</p>
+                
+                <p>Este comportamiento se rige por la Ley de Hess, que establece que el calor total de una reacción es el mismo sin importar si esta ocurre en uno o varios pasos. En el metabolismo humano, por ejemplo, la oxidación de la glucosa (C6H12O6) es una serie de pasos termoquímicos que liberan energía para nuestras funciones vitales. Deducimos entonces que la eficiencia de un combustible orgánico o de un alimento depende de su densidad energética y de la capacidad del sistema para romper esos enlaces de forma controlada. Si la reacción es demasiado rápida e incontrolada, perdemos energía en forma de calor residual inútil.</p>
+
+                <div class="svg-container">
+                    <svg width="400" height="150" viewBox="0 0 400 150">
+                        <rect x="50" y="50" width="100" height="50" rx="10" fill="#e3f2fd" stroke="#2196f3" />
+                        <text x="65" y="80" font-size="14">Reactivos</text>
+                        <rect x="250" y="50" width="100" height="50" rx="10" fill="#f8d7da" stroke="#b21f1f" />
+                        <text x="265" y="80" font-size="14">Productos</text>
+                        <path d="M150 75 L240 75" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+                        <path d="M100 100 Q200 140 300 100" fill="none" stroke="#27ae60" stroke-dasharray="5,5" stroke-width="2" />
+                        <text x="160" y="140" font-size="10">Camino alternativo (Ley de Hess)</text>
+                        <defs>
+                            <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto">
+                                <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+                            </marker>
+                        </defs>
+                    </svg>
+                    <p><em>Esquema 2: La energía es independiente del camino seguido.</em></p>
+                </div>
+
+                <p>En el ámbito emocional, la deducción nos lleva a la autorregulación. Si sabemos que una "chispa" (provocación) en un "combustible" específico (nuestras inseguridades) generará una reacción exotérmica de ira, podemos deducir estrategias para desviar esa energía. La inteligencia emocional funciona como un catalizador o como una barrera térmica: nos permite elegir si queremos que la energía se disipe en un estallido o si preferimos canalizarla en una reacción controlada y constructiva. Al igual que un ingeniero químico diseña un motor para aprovechar el calor, nosotros diseñamos nuestra respuesta emocional para que la energía liberada no nos destruya, sino que nos impulse. El clima emocional, por tanto, deja de ser un azar para convertirse en un sistema que podemos gestionar con el conocimiento adecuado.</p>
+            </div>
+
+            <div class="activity-card">
+                <h3>Actividades de Análisis (Sección 2)</h3>
+                <ol>
+                    <li>Calcula el calor liberado por 50g de etanol sabiendo que su calor de combustión es 1367 kJ/mol. <button class="btn-check" onclick="registrarActividad(6)">Registrar</button></li>
+                    <li>Escribe la ecuación balanceada de la combustión completa del Propanol (C3H7OH). <button class="btn-check" onclick="registrarActividad(7)">Registrar</button></li>
+                    <li>Dibuja un diagrama de energía para una reacción endotérmica (Delta H > 0). <button class="btn-check" onclick="registrarActividad(8)">Registrar</button></li>
+                    <li>Redacta un párrafo deduciendo por qué un incendio forestal es difícil de apagar usando términos de termoquímica. <button class="btn-check" onclick="registrarActividad(9)">Registrar</button></li>
+                    <li>Diseña un "plan de enfriamiento" emocional para una situación que te genere estrés alto. <button class="btn-check" onclick="registrarActividad(10)">Registrar</button></li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="evaluacion">
+            <h2>Evaluación Final (Taller de Maestría)</h2>
+            <div id="quiz-final">
+                <h3>Parte 1: Selección Múltiple</h3>
+                <div class="activity-card">
+                    <p>1. ¿Qué característica describe mejor a una reacción de combustión orgánica?</p>
+                    <select class="open-question" id="q1">
+                        <option value="x">Selecciona una...</option>
+                        <option value="a">Es endotérmica porque consume oxígeno.</option>
+                        <option value="b">Es exotérmica porque libera energía al entorno.</option>
+                        <option value="c">No hay cambio energético medible.</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>2. Si el Delta H de una reacción es -890 kJ, podemos afirmar que:</p>
+                    <select class="open-question" id="q2">
+                        <option value="x">Selecciona una...</option>
+                        <option value="a">La reacción absorbe calor.</option>
+                        <option value="b">La reacción es espontánea y exotérmica.</option>
+                        <option value="c">La temperatura del entorno bajará.</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>3. ¿Qué factor aumenta el calor de combustión en los alcoholes?</p>
+                    <select class="open-question" id="q3">
+                        <option value="x">Selecciona una...</option>
+                        <option value="a">Aumentar la cantidad de agua en la mezcla.</option>
+                        <option value="b">Tener una cadena de carbonos más larga.</option>
+                        <option value="c">Reducir la cantidad de oxígeno disponible.</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>4. El Clima Emocional "Exotérmico" se asocia comúnmente con:</p>
+                    <select class="open-question" id="q4">
+                        <option value="x">Selecciona una...</option>
+                        <option value="a">La calma y el sueño profundo.</option>
+                        <option value="b">La ira, la euforia o el entusiasmo intenso.</option>
+                        <option value="c">La indiferencia total.</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>5. La Ley de Hess permite calcular el calor de una reacción mediante:</p>
+                    <select class="open-question" id="q5">
+                        <option value="x">Selecciona una...</option>
+                        <option value="a">La suma de los calores de etapas intermedias.</option>
+                        <option value="b">La medición directa con un solo termómetro.</option>
+                        <option value="c">El conteo de átomos de hidrógeno únicamente.</option>
+                    </select>
+                </div>
+
+                <h3>Parte 2: Análisis Abierto (10-15 palabras)</h3>
+                <div class="activity-card">
+                    <p>6. Explica la importancia de los bio-combustibles en la transición energética actual.</p>
+                    <input type="text" class="open-question" id="a1" oninput="contarPalabras(1)">
+                    <span class="word-counter" id="wc-1">Palabras: 0</span>
+                </div>
+                <div class="activity-card">
+                    <p>7. Describe qué ocurre con los enlaces químicos durante una combustión exotérmica.</p>
+                    <input type="text" class="open-question" id="a2" oninput="contarPalabras(2)">
+                    <span class="word-counter" id="wc-2">Palabras: 0</span>
+                </div>
+                <div class="activity-card">
+                    <p>8. ¿Cómo ayuda el autoconocimiento a regular una reacción emocional fuerte?</p>
+                    <input type="text" class="open-question" id="a3" oninput="contarPalabras(3)">
+                    <span class="word-counter" id="wc-3">Palabras: 0</span>
+                </div>
+                <div class="activity-card">
+                    <p>9. Relaciona el concepto de Entalpía con el aprovechamiento de energía en motores.</p>
+                    <input type="text" class="open-question" id="a4" oninput="contarPalabras(4)">
+                    <span class="word-counter" id="wc-4">Palabras: 0</span>
+                </div>
+                <div class="activity-card">
+                    <p>10. ¿Por qué la temperatura final es mayor en alcoholes con más carbonos?</p>
+                    <input type="text" class="open-question" id="a5" oninput="contarPalabras(5)">
+                    <span class="word-counter" id="wc-5">Palabras: 0</span>
+                </div>
+
+                <button class="btn" onclick="finalizarTaller()">Finalizar y Calificar</button>
+            </div>
+
+            <div id="fortalecimiento-box">
+                <h2 id="fort-titulo">Ruta de Fortalecimiento Personalizada</h2>
+                <p id="fort-instruccion" style="font-weight:bold; color:#d32f2f;"></p>
+                <div id="fort-mensaje"></div>
+                <button class="btn" style="margin-top:20px" onclick="descargarTxt()">Descargar Reporte Final (.txt)</button>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>OVA de Química Grado 11 - "Energía y Conciencia" &copy; 2026</p>
+    </footer>
+
+    <script>
+        let totalPuntos = 0;
+        let scoreActividades = 0;
+        const elementos = ["Hidrógeno (H)", "Litio (Li)", "Sodio (Na)", "Potasio (K)", "Rubidio (Rb)", "Cesio (Cs)"];
+
+        // PERSISTENCIA Y LOGIN
+        window.onload = () => {
+            if(localStorage.getItem('ova_name')) {
+                iniciarConStorage();
+            }
+        };
+
+        function iniciarSesion() {
+            const name = document.getElementById('username').value;
+            if(name.length < 3) { alert("Ingresa tu nombre completo"); return; }
+            localStorage.setItem('ova_name', name);
+            iniciarConStorage();
+        }
+
+        function iniciarConStorage() {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('main-header').style.display = 'flex';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('user-display').innerText = localStorage.getItem('ova_name');
+            actualizarUI();
+        }
+
+        function actualizarUI() {
+            let pts = Math.min(5, (totalPuntos + scoreActividades)).toFixed(1);
+            document.getElementById('score-display').innerText = pts;
+            document.getElementById('progress-bar').style.width = (pts * 20) + "%";
+            
+            let idx = Math.floor(pts);
+            document.getElementById('element-display').innerText = elementos[idx] || elementos[5];
+        }
+
+        function preguntaPre(id, tipo) {
+            const fb = document.getElementById('fb-pre-'+id);
+            fb.style.display = 'block';
+            if(tipo === 'correct') {
+                fb.innerText = "¡Correcto! Tienes una buena base conceptual.";
+                fb.style.background = "#d4edda";
+                totalPuntos += 0.1;
+            } else {
+                fb.innerText = "No es exacto. No te preocupes, lo reforzaremos ahora.";
+                fb.style.background = "#f8d7da";
+            }
+            actualizarUI();
+        }
+
+        function registrarActividad(id) {
+            scoreActividades += 0.1;
+            alert("Actividad " + id + " registrada correctamente en tu cuaderno virtual.");
+            actualizarUI();
+        }
+
+        function feedbackIcfes(opcion, tipo) {
+            const fb = document.getElementById('fb-icfes');
+            fb.style.display = 'block';
+            if(tipo === 'correct') {
+                fb.innerText = "¡Excelente! Has deducido que a mayor estructura molecular, mayor es el potencial energético liberado.";
+                fb.style.background = "#d4edda";
+                totalPuntos += 0.5;
+            } else {
+                fb.innerHTML = "Respuesta incorrecta. <b>Pista:</b> Mira la diferencia de temperatura final entre el Metanol y el Butanol.";
+                fb.style.background = "#f8d7da";
+            }
+            actualizarUI();
+        }
+
+        function contarPalabras(id) {
+            const val = document.getElementById('a'+id).value.trim();
+            const count = val ? val.split(/\s+/).length : 0;
+            document.getElementById('wc-'+id).innerText = "Palabras: " + count;
+            document.getElementById('wc-'+id).style.color = (count >= 10 && count <= 15) ? "green" : "red";
+        }
+
+        function finalizarTaller() {
+            let correctas_inductivas = 0;
+            let correctas_deductivas = 0;
+
+            // MCQs
+            if(document.getElementById('q1').value === 'b') correctas_inductivas++;
+            if(document.getElementById('q2').value === 'b') correctas_deductivas++;
+            if(document.getElementById('q3').value === 'b') correctas_inductivas++;
+            if(document.getElementById('q4').value === 'b') correctas_inductivas++;
+            if(document.getElementById('q5').value === 'a') correctas_deductivas++;
+
+            // Open questions (Validation of length)
+            let abiertas = 0;
+            for(let i=1; i<=5; i++) {
+                const text = document.getElementById('a'+i).value.trim();
+                const count = text.split(/\s+/).length;
+                if(count >= 10 && count <= 15) abiertas++;
+                else correctas_deductivas--; // Error deductivo por no seguir instruccion
+            }
+
+            let calificacionFinal = ((correctas_inductivas + correctas_deductivas + abiertas) / 10) * 5;
+            totalPuntos = Math.max(0, calificacionFinal);
+            actualizarUI();
+
+            generarFortalecimiento(correctas_inductivas, correctas_deductivas);
+        }
+
+        function generarFortalecimiento(ind, ded) {
+            const box = document.getElementById('fortalecimiento-box');
+            const inst = document.getElementById('fort-instruccion');
+            const mens = document.getElementById('fort-mensaje');
+            box.style.display = 'block';
+            inst.innerText = "De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades:";
+            
+            let html = "";
+            if(ind < 2) {
+                html += "<p><b>Refuerzo en Teoría Básica (Inductivo):</b> Necesitas repasar la observación de fenómenos exotérmicos. Recuerda que la combustión siempre libera calor y que este calor es proporcional al tamaño de la cadena orgánica. El clima emocional es tu primer indicador: si sientes calor físico, estás en una reacción de liberación energética.</p>";
+            }
+            if(ded < 2) {
+                html += "<p><b>Refuerzo en Aplicación de Leyes (Deductivo):</b> Debes profundizar en el uso de la Entalpía y la Ley de Hess. No olvides que la energía no se crea ni se destruye, solo se transforma; esto aplica tanto para motores de combustión como para la gestión de tus emociones bajo estrés.</p>";
+            }
+            if(ind >= 2 && ded >= 2) {
+                html += "<p><b>¡Excelente desempeño!</b> Has integrado los conceptos técnicos con la inteligencia emocional de forma magistral. Sigue aplicando la termoquímica para entender el mundo y a ti mismo.</p>";
+            }
+            mens.innerHTML = html;
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function descargarTxt() {
+            const nombre = localStorage.getItem('ova_name');
+            const nota = document.getElementById('score-display').innerText;
+            const elemento = document.getElementById('element-display').innerText;
+            const refuerzo = document.getElementById('fort-mensaje').innerText;
+            
+            let contenido = `REPORTE DE PROGRESO - OVA TERMOQUÍMICA ORGÁNICA\n`;
+            contenido += `Estudiante: ${nombre}\n`;
+            contenido += `Nota Final: ${nota} / 5.0\n`;
+            contenido += `Elemento Alcanzado: ${elemento}\n`;
+            contenido += `--------------------------------------------------\n`;
+            contenido += `RUTA DE FORTALECIMIENTO PERSONALIZADA:\n`;
+            contenido += `${refuerzo}\n`;
+            contenido += `--------------------------------------------------\n`;
+            contenido += `Fecha: ${new Date().toLocaleDateString()}\n`;
+
+            const blob = new Blob([contenido], {type: "text/plain"});
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Reporte_Termoquimica_${nombre}.txt`;
+            link.click();
+        }
+    </script>
+</body>
+</html>

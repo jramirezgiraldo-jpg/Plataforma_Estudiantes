@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Gases Nobles y Estabilidad</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #7c3aed;
+            --accent: #10b981;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* --- Pantalla de Logueo --- */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 1rem 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            box-sizing: border-box;
+        }
+
+        /* --- Header y Progreso --- */
+        header {
+            position: sticky;
+            top: 0;
+            background: var(--white);
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 900;
+            display: none;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 24px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            line-height: 24px;
+            color: #1e293b;
+        }
+
+        /* --- Contenedor General --- */
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            display: none;
+        }
+
+        section {
+            background: var(--white);
+            padding: 3rem;
+            border-radius: 1rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2, h3 { color: var(--primary); }
+
+        .svg-box {
+            text-align: center;
+            margin: 2rem 0;
+            background: #f1f5f9;
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+
+        .activity-card {
+            border-left: 6px solid var(--secondary);
+            background: #f5f3ff;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn:hover { transform: scale(1.05); filter: brightness(1.2); }
+
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+
+        /* --- Evaluación --- */
+        .quiz-option {
+            display: block;
+            margin: 0.5rem 0;
+            padding: 1rem;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+
+        .quiz-option:hover { background: #eff6ff; border-color: #3b82f6; }
+
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            font-family: inherit;
+        }
+
+        #fortalecimiento-box {
+            display: none;
+            background: #ecfdf5;
+            border: 2px solid #10b981;
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>Academia de Estabilidad</h2>
+            <p>Ingresa tus nombres para iniciar la misión</p>
+            <input type="text" id="user-name" placeholder="Nombres y Apellidos">
+            <button class="btn" onclick="iniciarSesion()">Comenzar Misión</button>
+        </div>
+    </div>
+
+    <header id="main-header">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <strong>Agente: <span id="display-name"></span></strong>
+            <strong>Elemento Alcanzado: <span id="current-element">He</span></strong>
+        </div>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+            <div class="progress-text">Progreso hacia el Neón (Ne): <span id="score-val">0.0</span> / 5.0</div>
+        </div>
+    </header>
+
+    <div class="container" id="content-container">
+        
+        <section id="inicio">
+            <h1>Objetivo: El Secreto de la Estabilidad</h1>
+            <p>Aprenderás por qué los gases nobles son los elementos más "relajados" de la tabla periódica y cómo su estructura atómica les permite ser independientes, relacionando esto con los factores que te dan paz y estabilidad emocional.</p>
+            
+            <h3>Pre-saberes</h3>
+            <div class="activity-card">
+                <p>1. ¿Cuántos electrones crees que necesita un átomo en su capa externa para estar tranquilo?</p>
+                <button class="btn" onclick="checkPre(1, '8')">8 electrones</button>
+                <button class="btn" onclick="checkPre(1, '2')">Solo 2 siempre</button>
+                <div id="fb-pre-1" class="feedback"></div>
+            </div>
+            <div class="activity-card">
+                <p>2. ¿Los gases nobles suelen mezclarse con otros elementos?</p>
+                <button class="btn" onclick="checkPre(2, 'no')">No, prefieren estar solos</button>
+                <button class="btn" onclick="checkPre(2, 'si')">Sí, son muy sociables</button>
+                <div id="fb-pre-2" class="feedback"></div>
+            </div>
+            <div class="activity-card">
+                <p>3. ¿Qué te hace sentir más estable o tranquilo en un día difícil?</p>
+                <button class="btn" onclick="checkPre(3, 'paz')">Mi familia/amigos</button>
+                <button class="btn" onclick="checkPre(3, 'caos')">El desorden extremo</button>
+                <div id="fb-pre-3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>Mecanismos Inductivos: ¿Por qué son nobles?</h2>
+            <div class="text-content">
+                <p>Imagina una fiesta en la tabla periódica. El Hidrógeno está buscando desesperadamente a alguien con quien compartir un electrón; el Sodio está intentando regalar uno para quitarse un peso de encima, y el Cloro está casi peleando por conseguir el último que le falta. En medio de todo ese caos, hay un grupo de elementos sentados en una mesa VIP, tranquilos y sin hablar con nadie: los <strong>Gases Nobles</strong>. El Helio (He), Neón (Ne), Argón (Ar), Kriptón (Kr), Xenón (Xe) y Radón (Rn) son la envidia del mundo atómico.</p>
+                
+                <p>Su "nobleza" no viene de un título real, sino de su <strong>estabilidad electrónica</strong>. Casi todos tienen 8 electrones en su último nivel de energía (el Helio tiene 2, pero está igual de lleno). Esta configuración es el estado de mínima energía, lo que significa que no necesitan reaccionar con nadie para ser felices. Son químicamente inertes en condiciones normales. Mientras los demás átomos forman enlaces iónicos o covalentes mediante el intercambio de fichas (electrones) para alcanzar ese mágico número 8, los gases nobles ya nacieron con el premio mayor.</p>
+
+                <div class="svg-box">
+                    <svg width="300" height="300" viewBox="0 0 300 300">
+                        <circle cx="150" cy="150" r="30" fill="#334155" />
+                        <text x="138" y="158" fill="white" font-weight="bold">Ne</text>
+                        <circle cx="150" cy="150" r="60" fill="none" stroke="#94a3b8" stroke-width="2" />
+                        <circle cx="150" cy="90" r="6" fill="#10b981" />
+                        <circle cx="150" cy="210" r="6" fill="#10b981" />
+                        <circle cx="150" cy="150" r="100" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="5,5" />
+                        <circle cx="150" cy="50" r="6" fill="#7c3aed" />
+                        <circle cx="150" cy="250" r="6" fill="#7c3aed" />
+                        <circle cx="50" cy="150" r="6" fill="#7c3aed" />
+                        <circle cx="250" cy="150" r="6" fill="#7c3aed" />
+                        <circle cx="80" cy="80" r="6" fill="#7c3aed" />
+                        <circle cx="220" cy="220" r="6" fill="#7c3aed" />
+                        <circle cx="80" cy="220" r="6" fill="#7c3aed" />
+                        <circle cx="220" cy="80" r="6" fill="#7c3aed" />
+                    </svg>
+                    <p><em>Esquema 1: Configuración del Neón con su octeto completo.</em></p>
+                </div>
+
+                <p>En nuestra vida personal, la estabilidad funciona de forma similar. Cuando nuestras "capas" están llenas (tenemos salud, afecto, seguridad), nos sentimos como gases nobles: tranquilos e independientes. Sin embargo, los seres humanos somos más como el Oxígeno o el Carbono; necesitamos interactuar y "enlazarnos" con otros para encontrar nuestro equilibrio. La <strong>Ley del Octeto</strong> nos enseña que el universo siempre busca el orden y la calma a través del intercambio justo.</p>
+            </div>
+
+            <div class="activity-card">
+                <h3>Actividades para el Cuaderno (Sección Inductiva)</h3>
+                <ol>
+                    <li>Dibuja el átomo de Helio con sus 2 electrones. <button class="btn" onclick="addActivityPoint(1)">Verificar</button></li>
+                    <li>Haz una lista de los 6 gases nobles en orden. <button class="btn" onclick="addActivityPoint(2)">Verificar</button></li>
+                    <li>Dibuja un átomo de Cloro pidiendo un electrón. <button class="btn" onclick="addActivityPoint(3)">Verificar</button></li>
+                    <li>Crea una tabla comparativa: Gas Noble vs. Metal Reactivo. <button class="btn" onclick="addActivityPoint(4)">Verificar</button></li>
+                    <li>Escribe 3 cosas que te den estabilidad emocional hoy. <button class="btn" onclick="addActivityPoint(5)">Verificar</button></li>
+                </ol>
+            </div>
+
+            <div class="activity-card">
+                <h3>Pregunta de Entrenamiento ICFES</h3>
+                <div class="svg-box">
+                    <svg width="400" height="150" viewBox="0 0 400 150">
+                        <rect x="20" y="20" width="100" height="100" fill="#fee2e2" stroke="#ef4444" />
+                        <text x="35" y="75" fill="#ef4444">Átomo A (7e-)</text>
+                        <path d="M130 70 L190 70" stroke="black" stroke-width="2" marker-end="url(#arrow)" />
+                        <rect x="210" y="20" width="100" height="100" fill="#dcfce7" stroke="#10b981" />
+                        <text x="225" y="75" fill="#10b981">Átomo B (8e-)</text>
+                        <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#000" /></marker></defs>
+                    </svg>
+                </div>
+                <p>Según la imagen, el Átomo A busca convertirse en el Átomo B para ganar estabilidad. ¿Cuál es el proceso químico más probable?</p>
+                <div class="quiz-option" onclick="checkIcfes('w1')">A. Perder todos sus electrones para ser más ligero.</div>
+                <div class="quiz-option" onclick="checkIcfes('c')">B. Ganar un electrón para completar su octeto.</div>
+                <div class="quiz-option" onclick="checkIcfes('w2')">C. Convertirse en un protón gigante.</div>
+                <div class="quiz-option" onclick="checkIcfes('w3')">D. Explotar para liberar energía térmica.</div>
+                <div id="icfes-fb" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>Mecanismos Deductivos: La Regla del Octeto</h2>
+            <div class="text-content">
+                <p>A partir de la observación de los gases nobles, los químicos Gilbert N. Lewis y Walther Kossel dedujeron una regla fundamental: la <strong>Regla del Octeto</strong>. Esta ley dicta que los átomos de los elementos ganan, pierden o comparten electrones para adquirir una configuración electrónica estable, igual a la del gas noble más cercano. Es el principio de economía de la naturaleza: todo busca el estado de menor esfuerzo y mayor equilibrio.</p>
+                
+                <p>Podemos predecir el comportamiento de un elemento conociendo su ubicación en la tabla. Un elemento del Grupo 1 (metales alcalinos como el Sodio) tiene 1 electrón de más. Le resulta más fácil "soltar" ese electrón que buscar 7 nuevos. Al hacerlo, su capa anterior queda llena y estable. Por el contrario, un elemento del Grupo 17 necesita solo 1 electrón. Esta danza de dar y recibir es lo que crea las moléculas que forman la vida, desde el agua (H2O) hasta el ADN.</p>
+
+                <div class="svg-box">
+                    <p><strong>Simulación: Juego de Intercambio de Fichas</strong></p>
+                    <svg width="400" height="200" viewBox="0 0 400 200">
+                        <circle cx="100" cy="100" r="40" fill="#bfdbfe" stroke="#3b82f6" />
+                        <text x="85" y="105">Na</text>
+                        <circle cx="100" cy="50" r="5" fill="#ef4444" id="e-jump">
+                            <animate attributeName="cx" values="100;300;100" dur="3s" repeatCount="indefinite" />
+                        </circle>
+                        <circle cx="300" cy="100" r="40" fill="#bbf7d0" stroke="#10b981" />
+                        <text x="285" y="105">Cl</text>
+                        <text x="140" y="180" font-size="12" fill="#64748b">El electrón viaja buscando estabilidad.</text>
+                    </svg>
+                </div>
+
+                <p>Deducimos entonces que la reactividad química es inversamente proporcional a la estabilidad. A menos electrones para completar el octeto, más reactivo (o "ansioso") es el átomo. La estabilidad no es ausencia de movimiento, sino la armonía entre las fuerzas internas y externas. Un gas noble es estable porque sus fuerzas están en equilibrio perfecto.</p>
+            </div>
+
+            <div class="activity-card">
+                <h3>Actividades de Análisis (Sección Deductiva)</h3>
+                <ol>
+                    <li>Calcula cuántos electrones le faltan al Oxígeno (Grupo 16) para ser estable. <button class="btn" onclick="addActivityPoint(6)">Verificar</button></li>
+                    <li>Escribe la configuración de un gas noble usando puntos de Lewis. <button class="btn" onclick="addActivityPoint(7)">Verificar</button></li>
+                    <li>Explica por qué el Helio no sigue la regla de 8 sino de 2. <button class="btn" onclick="addActivityPoint(8)">Verificar</button></li>
+                    <li>Dibuja el enlace entre Na y Cl usando fichas. <button class="btn" onclick="addActivityPoint(9)">Verificar</button></li>
+                    <li>Redacta un párrafo: ¿Cómo el "intercambio de favores" ayuda a la estabilidad de un grupo de amigos? <button class="btn" onclick="addActivityPoint(10)">Verificar</button></li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="evaluacion">
+            <h2>Evaluación Final: Maestro de la Estabilidad</h2>
+            <div id="quiz-container">
+                <div class="activity-card">
+                    <p>1. ¿Cuál es el gas noble más ligero utilizado en globos?</p>
+                    <select id="q1" class="quiz-option">
+                        <option value="x">Selecciona...</option>
+                        <option value="i">Argón</option>
+                        <option value="c">Helio</option>
+                        <option value="i">Neón</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>2. Un átomo con 8 electrones de valencia se considera:</p>
+                    <select id="q2" class="quiz-option">
+                        <option value="x">Selecciona...</option>
+                        <option value="c">Estable e inerte</option>
+                        <option value="i">Altamente explosivo</option>
+                        <option value="i">Un metal alcalino</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>3. ¿Qué grupo de la tabla periódica ocupan los gases nobles?</p>
+                    <select id="q3" class="quiz-option">
+                        <option value="x">Selecciona...</option>
+                        <option value="i">Grupo 1</option>
+                        <option value="c">Grupo 18</option>
+                        <option value="i">Grupo 2</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>4. La regla del octeto dice que los átomos buscan tener electrones en su capa externa:</p>
+                    <select id="q4" class="quiz-option">
+                        <option value="x">Selecciona...</option>
+                        <option value="i">Cinco</option>
+                        <option value="c">Ocho</option>
+                        <option value="i">Diez</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>5. ¿Cuál gas noble se usa en letreros brillantes de colores?</p>
+                    <select id="q5" class="quiz-option">
+                        <option value="x">Selecciona...</option>
+                        <option value="c">Neón</option>
+                        <option value="i">Hidrógeno</option>
+                        <option value="i">Radón</option>
+                    </select>
+                </div>
+
+                <h3>Preguntas Abiertas (Análisis Crítico)</h3>
+                <p>Responde en un rango de 10 a 15 palabras exactas.</p>
+                <div class="activity-card">
+                    <p>6. ¿Por qué es importante para un átomo alcanzar la configuración de un gas noble?</p>
+                    <textarea id="a6" oninput="countWords(6)"></textarea>
+                    <small id="word-count-6">Palabras: 0</small>
+                </div>
+                <div class="activity-card">
+                    <p>7. ¿Cómo se relaciona la estabilidad de los gases nobles con tu propia paz mental?</p>
+                    <textarea id="a7" oninput="countWords(7)"></textarea>
+                    <small id="word-count-7">Palabras: 0</small>
+                </div>
+                <div class="activity-card">
+                    <p>8. Describe el comportamiento social de un átomo que tiene su última capa llena hoy.</p>
+                    <textarea id="a8" oninput="countWords(8)"></textarea>
+                    <small id="word-count-8">Palabras: 0</small>
+                </div>
+                <div class="activity-card">
+                    <p>9. ¿Qué sucede con la energía de un átomo cuando logra completar el octeto químico?</p>
+                    <textarea id="a9" oninput="countWords(9)"></textarea>
+                    <small id="word-count-9">Palabras: 0</small>
+                </div>
+                <div class="activity-card">
+                    <p>10. Explica la diferencia principal entre el Helio y el resto de los gases nobles.</p>
+                    <textarea id="a10" oninput="countWords(10)"></textarea>
+                    <small id="word-count-10">Palabras: 0</small>
+                </div>
+
+                <button class="btn" onclick="calificar()">Finalizar Evaluación</button>
+            </div>
+
+            <div id="fortalecimiento-box">
+                <h2>Ruta de Fortalecimiento Personalizada</h2>
+                <p id="fort-instruction" style="font-weight: bold;"></p>
+                <p id="fort-content"></p>
+                <br>
+                <button class="btn" onclick="descargarReporte()">Descargar Reporte Final</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let puntos = 0;
+        let actCount = 0;
+        const elementos = ["He", "Ne", "Ar", "Kr", "Xe", "Rn"];
+
+        // Gestión de Sesión
+        function iniciarSesion() {
+            const nombre = document.getElementById('user-name').value;
+            if (nombre.trim() === "") { alert("Por favor, ingresa tu nombre"); return; }
+            localStorage.setItem('ova_user', nombre);
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('main-header').style.display = 'block';
+            document.getElementById('content-container').style.display = 'block';
+            document.getElementById('display-name').innerText = nombre;
+            cargarProgreso();
+        }
+
+        function cargarProgreso() {
+            const saved = localStorage.getItem('ova_puntos');
+            if (saved) { puntos = parseFloat(saved); updateUI(); }
+        }
+
+        function updateUI() {
+            const bar = document.getElementById('progress-bar');
+            const scoreText = document.getElementById('score-val');
+            const elemText = document.getElementById('current-element');
+            
+            let displayScore = Math.min(5, puntos).toFixed(1);
+            bar.style.width = (displayScore / 5 * 100) + "%";
+            scoreText.innerText = displayScore;
+            
+            let idx = Math.floor(displayScore);
+            elemText.innerText = elementos[idx] || "Rn";
+            localStorage.setItem('ova_puntos', puntos);
+        }
+
+        function checkPre(n, ans) {
+            const fb = document.getElementById('fb-pre-' + n);
+            fb.style.display = 'block';
+            fb.style.background = "#dcfce7";
+            fb.innerText = "¡Buen análisis! Sigue explorando.";
+            puntos += 0.1;
+            updateUI();
+        }
+
+        function addActivityPoint(n) {
+            alert("Actividad " + n + " registrada en tu cuaderno.");
+            puntos += 0.1;
+            updateUI();
+        }
+
+        function checkIcfes(ans) {
+            const fb = document.getElementById('icfes-fb');
+            fb.style.display = 'block';
+            if (ans === 'c') {
+                fb.innerText = "¡Correcto! Los átomos buscan completar su octeto para alcanzar el estado de menor energía.";
+                fb.style.background = "#dcfce7";
+                puntos += 0.5;
+            } else {
+                fb.innerText = "Incorrecto. Los átomos buscan parecerse a los gases nobles (8 electrones).";
+                fb.style.background = "#fee2e2";
+            }
+            updateUI();
+        }
+
+        function countWords(id) {
+            const text = document.getElementById('a' + id).value.trim();
+            const words = text === "" ? 0 : text.split(/\s+/).length;
+            const counter = document.getElementById('word-count-' + id);
+            counter.innerText = "Palabras: " + words;
+            counter.style.color = (words >= 10 && words <= 15) ? "green" : "red";
+        }
+
+        function calificar() {
+            let aciertosInductivos = 0;
+            let aciertosDeductivos = 0;
+
+            if (document.getElementById('q1').value === 'c') aciertosInductivos++;
+            if (document.getElementById('q2').value === 'c') aciertosInductivos++;
+            if (document.getElementById('q3').value === 'c') aciertosDeductivos++;
+            if (document.getElementById('q4').value === 'c') aciertosDeductivos++;
+            if (document.getElementById('q5').value === 'c') aciertosInductivos++;
+
+            // Validación de abiertas
+            let abiertasValidas = 0;
+            for (let i = 6; i <= 10; i++) {
+                const text = document.getElementById('a' + i).value.trim();
+                const words = text.split(/\s+/).length;
+                if (words >= 10 && words <= 15) abiertasValidas++;
+            }
+
+            puntos = (aciertosInductivos + aciertosDeductivos + abiertasValidas) / 2;
+            updateUI();
+
+            const box = document.getElementById('fortalecimiento-box');
+            const inst = document.getElementById('fort-instruction');
+            const cont = document.getElementById('fort-content');
+            
+            box.style.display = 'block';
+            inst.innerText = "De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades:";
+            
+            let refuerzo = "";
+            if (aciertosInductivos < 2) {
+                refuerzo += "Refuerzo Inductivo: Debes repasar la identidad de los gases nobles y sus usos comunes en la vida diaria. ";
+            }
+            if (aciertosDeductivos < 2) {
+                refuerzo += "Refuerzo Deductivo: Es necesario profundizar en la Regla del Octeto y cómo los átomos intercambian electrones para ganar estabilidad. ";
+            }
+            if (abiertasValidas < 3) {
+                refuerzo += "Refuerzo de Análisis: Práctica redactar tus ideas con precisión técnica y concisión. ";
+            }
+            if (refuerzo === "") refuerzo = "¡Excelente dominio! Eres tan estable como el Argón.";
+
+            cont.innerText = refuerzo;
+            localStorage.setItem('ova_fort', refuerzo);
+        }
+
+        function descargarReporte() {
+            const nombre = localStorage.getItem('ova_user');
+            const nota = puntos.toFixed(1);
+            const elem = document.getElementById('current-element').innerText;
+            const fort = localStorage.getItem('ova_fort');
+            
+            const contenido = `REPORTE DE LABORATORIO QUÍMICO\nAgente: ${nombre}\nNota Final: ${nota}/5.0\nElemento: ${elem}\n\nRetroalimentación:\n${fort}`;
+            
+            const blob = new Blob([contenido], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Reporte_${nombre}.txt`;
+            link.click();
+        }
+    </script>
+</body>
+</html>

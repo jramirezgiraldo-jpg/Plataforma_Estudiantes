@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sustancias Puras: Elementos en el campo</title>
+  <style>
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background: radial-gradient(circle at top, #e3f2fd, #ede7f6, #fce4ec);
+      color:#263238;
+    }
+    header{
+      background: linear-gradient(90deg,#1e88e5,#8e24aa);
+      color:#fff;
+      padding:10px 18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    header h1{
+      margin:0;
+      font-size:20px;
+    }
+    .progress-container{
+      background:rgba(255,255,255,0.25);
+      border-radius:20px;
+      padding:4px;
+      width:260px;
+      max-width:100%;
+    }
+    .progress-bar{
+      background:#fff;
+      border-radius:16px;
+      overflow:hidden;
+      height:16px;
+    }
+    .progress-fill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,#66bb6a,#ffee58,#ff7043);
+      transition:width 0.4s ease;
+    }
+    .progress-text{
+      font-size:11px;
+      text-align:center;
+      margin-top:3px;
+      color:#e3f2fd;
+    }
+
+    main{
+      padding:10px;
+      max-width:1100px;
+      margin:0 auto;
+    }
+    .slide{
+      display:none;
+      background:rgba(255,255,255,0.97);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 4px 14px rgba(0,0,0,0.18);
+      min-height:70vh;
+      position:relative;
+    }
+    .slide.active{display:block;}
+    h2{
+      margin-top:0;
+      font-size:22px;
+      color:#1e88e5;
+    }
+    p{
+      font-size:15px;
+      line-height:1.5;
+    }
+    .nav-buttons{
+      margin-top:10px;
+      text-align:center;
+    }
+    .btn{
+      border:none;
+      border-radius:20px;
+      padding:8px 18px;
+      margin:4px;
+      font-size:13px;
+      cursor:pointer;
+      background:#ff7043;
+      color:#fff;
+      box-shadow:0 2px 6px rgba(0,0,0,0.25);
+      transition:background 0.2s, transform 0.1s;
+    }
+    .btn:hover{
+      background:#f4511e;
+      transform:translateY(-1px);
+    }
+    .btn:active{transform:translateY(0);}
+    .pill{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      margin:2px;
+      background:#e3f2fd;
+      color:#1565c0;
+    }
+    .card-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      margin-top:10px;
+    }
+    .card{
+      flex:1 1 220px;
+      background:linear-gradient(135deg,#fffde7,#e3f2fd);
+      border-radius:12px;
+      padding:10px;
+      border:1px solid #cfd8dc;
+    }
+    .card h3{
+      margin:0 0 6px 0;
+      font-size:16px;
+      color:#6a1b9a;
+    }
+    .big-symbol{
+      font-size:42px;
+      font-weight:bold;
+      text-align:center;
+      margin:8px 0;
+      color:#ef6c00;
+    }
+    .tag{
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:12px;
+      font-size:11px;
+      margin:1px;
+      background:#e8eaf6;
+      color:#3949ab;
+    }
+    .table-box{
+      margin-top:8px;
+      border-radius:10px;
+      overflow:hidden;
+      border:1px solid #cfd8dc;
+      background:#fafafa;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+    }
+    th,td{
+      border:1px solid #b0bec5;
+      padding:4px 6px;
+      text-align:center;
+    }
+    th{
+      background:#eceff1;
+    }
+    .question-block{
+      margin-top:10px;
+      padding:10px;
+      border-radius:10px;
+      background:#e3f2fd;
+    }
+    .question-title{font-weight:bold;margin-bottom:4px;}
+    .options{list-style:none;padding-left:0;margin:4px 0;}
+    .options li{margin-bottom:4px;}
+    .feedback{
+      margin-top:5px;
+      font-size:13px;
+      padding:6px 8px;
+      border-radius:8px;
+    }
+    .correct{background:#c8e6c9;color:#1b5e20;}
+    .incorrect{background:#ffcdd2;color:#b71c1c;}
+    .reward{
+      display:inline-block;
+      margin-left:6px;
+      font-size:18px;
+      animation:pop 0.4s ease-out;
+    }
+    @keyframes pop{
+      0%{transform:scale(0.2);opacity:0;}
+      50%{transform:scale(1.2);opacity:1;}
+      100%{transform:scale(1);opacity:1;}
+    }
+    .diagram-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:16px;
+      margin-top:10px;
+      align-items:flex-start;
+    }
+    .diagram{
+      flex:1 1 260px;
+      background:#f1f8e9;
+      border-radius:12px;
+      padding:10px;
+      border:1px solid #c5e1a5;
+      text-align:center;
+      font-size:13px;
+    }
+    .wire{
+      width:100%;
+      height:50px;
+      border-radius:25px;
+      background:linear-gradient(90deg,#4e342e,#795548,#bcaaa4);
+      position:relative;
+      margin:8px 0;
+    }
+    .wire-core{
+      position:absolute;
+      top:12px;
+      left:10%;
+      width:80%;
+      height:26px;
+      border-radius:13px;
+      background:linear-gradient(90deg,#ffcc80,#ffb300,#fb8c00);
+    }
+    .tools{
+      display:flex;
+      justify-content:space-around;
+      margin:8px 0;
+      font-size:11px;
+    }
+    .tool-icon{
+      width:60px;
+      height:60px;
+      border-radius:50%;
+      background:radial-gradient(circle,#b0bec5,#546e7a);
+      position:relative;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:bold;
+    }
+    .tool-label{
+      margin-top:2px;
+    }
+    .highlight{
+      background:#fff3e0;
+      border-left:4px solid #ffb300;
+      padding:8px 10px;
+      border-radius:6px;
+      font-size:13px;
+    }
+    .activity-box{
+      border-left:4px solid #ffb300;
+      background:#fff8e1;
+      border-radius:6px;
+      padding:8px 10px;
+      margin-top:8px;
+      font-size:13px;
+    }
+    .slide-num{
+      position:absolute;
+      right:14px;
+      bottom:10px;
+      font-size:11px;
+      color:#78909c;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Sustancias Puras: Elementos en el Campo</h1>
+  <div class="progress-container">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">
+      Diapositiva 1 / 10 | Animal: 🌱 Oruga
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Diapositiva 1 -->
+  <section class="slide active" id="slide1">
+    <h2>1. Objetivo de aprendizaje</h2>
+    <div class="highlight">
+      Reconocer elementos químicos como sustancias puras simples e identificar, en el contexto del campo,
+      ejemplos de cobre e hierro en herramientas y minerales, relacionando sus símbolos químicos con la
+      importancia del trabajo manual en la vida rural.
+    </div>
+    <p>
+      En esta secuencia de 10 diapositivas conocerás qué es un elemento químico, cómo distinguirlo en objetos
+      cotidianos y cómo conectar este conocimiento con la valoración del trabajo manual en el campo.
+    </p>
+    <p>
+      Verás ejemplos de cables, herramientas y minerales, participarás en una “cacería de elementos” y
+      realizarás pequeñas actividades de análisis y reflexión sobre tu entorno.
+    </p>
+    <div class="card-row">
+      <div class="card">
+        <h3>Palabras clave</h3>
+        <span class="pill">Sustancia pura</span>
+        <span class="pill">Elemento</span>
+        <span class="pill">Cobre (Cu)</span>
+        <span class="pill">Hierro (Fe)</span>
+        <span class="pill">Trabajo manual</span>
+      </div>
+      <div class="card">
+        <h3>¿Qué harás?</h3>
+        <p style="font-size:13px;">
+          • Observarás gráficos y tablas.<br>
+          • Identificarás elementos en tus herramientas.<br>
+          • Jugarás a una mini “cacería de símbolos”.<br>
+          • Relacionarás ciencia y vida campesina.
+        </p>
+      </div>
+    </div>
+    <div class="slide-num">1 / 10</div>
+  </section>
+
+  <!-- Diapositiva 2 -->
+  <section class="slide" id="slide2">
+    <h2>2. ¿Qué es una sustancia pura y un elemento?</h2>
+    <div class="card-row">
+      <div class="card">
+        <h3>Sustancia pura</h3>
+        <p>
+          Es un tipo de materia que tiene composición fija y propiedades uniformes en toda su masa.
+          No se separa en otras sustancias por métodos físicos sencillos.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Elemento químico</h3>
+        <p>
+          Es una sustancia pura formada por un solo tipo de átomos. Cada elemento se representa con un
+          símbolo químico (por ejemplo, Cu, Fe, O, C).
+        </p>
+      </div>
+    </div>
+
+    <div class="table-box">
+      <table>
+        <tr>
+          <th>Tipo de sustancia</th>
+          <th>Ejemplo</th>
+          <th>¿Es elemento?</th>
+          <th>Símbolo / Fórmula</th>
+        </tr>
+        <tr>
+          <td>Sustancia simple</td>
+          <td>Cobre metálico</td>
+          <td>Sí</td>
+          <td>Cu</td>
+        </tr>
+        <tr>
+          <td>Sustancia simple</td>
+          <td>Hierro metálico</td>
+          <td>Sí</td>
+          <td>Fe</td>
+        </tr>
+        <tr>
+          <td>Compuesto</td>
+          <td>Agua</td>
+          <td>No</td>
+          <td>H₂O</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="question-block">
+      <div class="question-title">Pregunta rápida</div>
+      <ul class="options">
+        <li><label><input type="radio" name="q1" value="a"> El hierro es una mezcla de varios elementos.</label></li>
+        <li><label><input type="radio" name="q1" value="b"> El hierro es un elemento químico con símbolo Fe.</label></li>
+        <li><label><input type="radio" name="q1" value="c"> El hierro solo existe en forma de óxido.</label></li>
+      </ul>
+      <button class="btn" onclick="checkMC('q1','b','fb1')">Verificar</button>
+      <div class="feedback" id="fb1"></div>
+    </div>
+
+    <div class="slide-num">2 / 10</div>
+  </section>
+
+  <!-- Diapositiva 3 -->
+  <section class="slide" id="slide3">
+    <h2>3. Cobre en cables y herramientas</h2>
+    <div class="diagram-row">
+      <div class="diagram">
+        <strong>Cable eléctrico (cobre)</strong>
+        <div class="wire">
+          <div class="wire-core"></div>
+        </div>
+        <p>
+          Muchos cables eléctricos tienen un núcleo de cobre: un elemento metálico excelente conductor de
+          electricidad, con símbolo <strong>Cu</strong>.
+        </p>
+      </div>
+      <div class="diagram">
+        <strong>Herramientas con partes de cobre</strong>
+        <div class="tools">
+          <div>
+            <div class="tool-icon">Cu</div>
+            <div class="tool-label">Alambre</div>
+          </div>
+          <div>
+            <div class="tool-icon">Cu</div>
+            <div class="tool-label">Conector</div>
+          </div>
+        </div>
+        <p>
+          En el campo puedes encontrar cobre en alambres, conexiones eléctricas y motores.
+        </p>
+      </div>
+    </div>
+    <div class="activity-box">
+      <strong>Mini actividad</strong>
+      <p>
+        Mira a tu alrededor (escuela o casa) y piensa en un objeto que probablemente contenga cobre.
+        ¿Qué función cumple ese objeto en el trabajo o en la vida diaria?
+      </p>
+    </div>
+    <div class="slide-num">3 / 10</div>
+  </section>
+
+  <!-- Diapositiva 4 -->
+  <section class="slide" id="slide4">
+    <h2>4. Hierro en herramientas y estructuras</h2>
+    <div class="diagram-row">
+      <div class="diagram">
+        <strong>Herramientas de hierro</strong>
+        <div class="tools">
+          <div>
+            <div class="tool-icon">Fe</div>
+            <div class="tool-label">Pala</div>
+          </div>
+          <div>
+            <div class="tool-icon">Fe</div>
+            <div class="tool-label">Azadón</div>
+          </div>
+        </div>
+        <p>
+          Muchos instrumentos de trabajo en el campo están hechos de hierro: resistente, duro,
+          ideal para cavar, cortar y construir.
+        </p>
+      </div>
+      <div class="diagram">
+        <strong>Estructuras</strong>
+        <p>
+          El hierro también forma parte de varillas, rejas y soportes que hacen posible la
+          construcción de casas, corrales y bodegas.
+        </p>
+        <div class="table-box">
+          <table>
+            <tr><th>Objeto</th><th>Elemento dominante</th><th>Símbolo</th></tr>
+            <tr><td>Azadón</td><td>Hierro</td><td>Fe</td></tr>
+            <tr><td>Varilla</td><td>Hierro / acero</td><td>Fe</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">4 / 10</div>
+  </section>
+
+  <!-- Diapositiva 5 -->
+  <section class="slide" id="slide5">
+    <h2>5. Taller “Cacería de Elementos”</h2>
+    <p>
+      La idea de la cacería es observar tu entorno como si fueras un científico que busca pistas
+      de elementos químicos en objetos reales, especialmente en el trabajo manual del campo.
+    </p>
+    <div class="table-box">
+      <table>
+        <tr>
+          <th>Elemento</th>
+          <th>Símbolo</th>
+          <th>Ejemplo en el campo</th>
+        </tr>
+        <tr>
+          <td>Cobre</td>
+          <td>Cu</td>
+          <td>Cables, bobinas, motores pequeños</td>
+        </tr>
+        <tr>
+          <td>Hierro</td>
+          <td>Fe</td>
+          <td>Herramientas, varillas, clavos</td>
+        </tr>
+      </table>
+    </div>
+    <div class="activity-box">
+      <strong>Reto rápido</strong>
+      <p>
+        Piensa en un lugar de tu vereda donde veas muchos elementos metálicos. ¿Cuáles crees que son
+        de hierro y cuáles podrían tener cobre? ¿Cómo podrías comprobarlo?
+      </p>
+    </div>
+    <div class="slide-num">5 / 10</div>
+  </section>
+
+  <!-- Diapositiva 6 -->
+  <section class="slide" id="slide6">
+    <h2>6. Tabla interactiva: ¿Elemento o no?</h2>
+    <p>Haz clic en cada fila para revelar si se trata de un elemento químico.</p>
+    <div class="table-box">
+      <table>
+        <tr>
+          <th>Material</th>
+          <th>Posible clasificación</th>
+        </tr>
+        <tr onclick="toggleRow(this,'Elemento puro (cobre, Cu)')">
+          <td>Cable de cobre</td>
+          <td class="ans-cell">Haz clic para ver</td>
+        </tr>
+        <tr onclick="toggleRow(this,'Aleación / mezcla de metales')">
+          <td>Herramienta de acero</td>
+          <td class="ans-cell">Haz clic para ver</td>
+        </tr>
+        <tr onclick="toggleRow(this,'Elemento puro (hierro, Fe)')">
+          <td>Clavo de hierro</td>
+          <td class="ans-cell">Haz clic para ver</td>
+        </tr>
+        <tr onclick="toggleRow(this,'Compuesto (agua, H₂O)')">
+          <td>Agua de un balde</td>
+          <td class="ans-cell">Haz clic para ver</td>
+        </tr>
+      </table>
+    </div>
+    <div class="slide-num">6 / 10</div>
+  </section>
+
+  <!-- Diapositiva 7 -->
+  <section class="slide" id="slide7">
+    <h2>7. Mini juego: empareja símbolo y nombre</h2>
+    <p>Observa la tabla y luego responde la pregunta.</p>
+    <div class="table-box">
+      <table>
+        <tr><th>Símbolo</th><th>Nombre</th></tr>
+        <tr><td>Cu</td><td>Cobre</td></tr>
+        <tr><td>Fe</td><td>Hierro</td></tr>
+        <tr><td>O</td><td>Oxígeno</td></tr>
+      </table>
+    </div>
+    <div class="question-block">
+      <div class="question-title">¿Cuál par está bien emparejado?</div>
+      <ul class="options">
+        <li><label><input type="radio" name="q2" value="a"> Cu – Hierro</label></li>
+        <li><label><input type="radio" name="q2" value="b"> Fe – Cobre</label></li>
+        <li><label><input type="radio" name="q2" value="c"> Cu – Cobre</label></li>
+      </ul>
+      <button class="btn" onclick="checkMC('q2','c','fb2')">Verificar</button>
+      <div class="feedback" id="fb2"></div>
+    </div>
+    <div class="slide-num">7 / 10</div>
+  </section>
+
+  <!-- Diapositiva 8 -->
+  <section class="slide" id="slide8">
+    <h2>8. Tabla: símbolos que debes recordar</h2>
+    <div class="table-box">
+      <table>
+        <tr>
+          <th>Elemento</th><th>Símbolo</th><th>Uso típico</th>
+        </tr>
+        <tr>
+          <td>Cobre</td><td class="big-symbol">Cu</td><td>Cables, conexiones</td>
+        </tr>
+        <tr>
+          <td>Hierro</td><td class="big-symbol">Fe</td><td>Herramientas, estructuras</td>
+        </tr>
+        <tr>
+          <td>Oxígeno</td><td class="big-symbol">O</td><td>Respiración, combustión</td>
+        </tr>
+      </table>
+    </div>
+    <div class="activity-box">
+      <strong>Actividad de cuaderno</strong>
+      <p>
+        Dibuja una herramienta o cable de tu entorno y, al lado, escribe el símbolo del elemento
+        principal que lo compone. Añade una frase sobre por qué ese objeto es importante para el trabajo manual.
+      </p>
+    </div>
+    <div class="slide-num">8 / 10</div>
+  </section>
+
+  <!-- Diapositiva 9 -->
+  <section class="slide" id="slide9">
+    <h2>9. Valoración del trabajo manual en el campo</h2>
+    <p>
+      Detrás de cada cable, pala o varilla hay elementos químicos, pero también hay manos que trabajan.
+      Comprender qué es el cobre o el hierro ayuda a cuidar mejor las herramientas y a valorar el conocimiento
+      que hay detrás de su uso.
+    </p>
+    <div class="card-row">
+      <div class="card">
+        <h3>Trabajo manual</h3>
+        <p style="font-size:13px;">
+          • Transformar la tierra.<br>
+          • Construir estructuras.<br>
+          • Mantener la finca en funcionamiento.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Química y campo</h3>
+        <p style="font-size:13px;">
+          • Saber qué elementos hay en tus herramientas.<br>
+          • Comprender por qué se oxidan.<br>
+          • Tomar decisiones sobre su cuidado.
+        </p>
+      </div>
+    </div>
+    <div class="activity-box">
+      <strong>Reflexión rápida</strong>
+      <p>
+        Escribe una frase que relacione un elemento químico (por ejemplo, Fe o Cu) con una persona trabajadora
+        del campo que conozcas. ¿Qué valoras de su trabajo?
+      </p>
+    </div>
+    <div class="slide-num">9 / 10</div>
+  </section>
+
+  <!-- Diapositiva 10 -->
+  <section class="slide" id="slide10">
+    <h2>10. Cierre y autoevaluación</h2>
+    <p>
+      Antes de terminar, responde estas dos preguntas para revisar tu comprensión.
+    </p>
+    <div class="question-block">
+      <div class="question-title">1. ¿Qué afirmación es correcta?</div>
+      <ul class="options">
+        <li><label><input type="radio" name="q3" value="a"> El cobre y el hierro son sustancias puras y elementos químicos.</label></li>
+        <li><label><input type="radio" name="q3" value="b"> El cobre y el hierro son siempre mezclas de muchos elementos.</label></li>
+      </ul>
+      <button class="btn" onclick="checkMC('q3','a','fb3')">Verificar</button>
+      <div class="feedback" id="fb3"></div>
+    </div>
+
+    <div class="question-block">
+      <div class="question-title">2. ¿Por qué es útil reconocer elementos en herramientas y minerales?</div>
+      <ul class="options">
+        <li><label><input type="radio" name="q4" value="a"> Solo para aprobar exámenes.</label></li>
+        <li><label><input type="radio" name="q4" value="b"> Para entender mejor los materiales, cuidarlos y valorar el trabajo que se realiza con ellos.</label></li>
+      </ul>
+      <button class="btn" onclick="checkMC('q4','b','fb4')">Verificar</button>
+      <div class="feedback" id="fb4"></div>
+    </div>
+
+    <p class="highlight">
+      ¡Has llegado al final! Revisa tu progreso y piensa en al menos un elemento químico que ahora
+      ves de forma diferente en tu entorno.
+    </p>
+    <div class="slide-num">10 / 10</div>
+  </section>
+
+  <div class="nav-buttons">
+    <button class="btn" onclick="prevSlide()">&larr; Anterior</button>
+    <button class="btn" onclick="nextSlide()">Siguiente &rarr;</button>
+  </div>
+</main>
+
+<script>
+  let currentSlide = 1;
+  const totalSlides = 10;
+  let points = 0;
+
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+
+  function getAnimal(points){
+    if(points < 1) return '🌱 Oruga';
+    if(points < 2) return '🐟 Pez curioso';
+    if(points < 3.5) return '🦎 Lagartija exploradora';
+    if(points < 4.5) return '🦅 Águila observadora';
+    return '🐯 Tigre científico';
+  }
+
+  function updateProgress(){
+    const percent = (currentSlide / totalSlides) * 100;
+    progressFill.style.width = percent + '%';
+    progressText.textContent = 'Diapositiva ' + currentSlide + ' / ' + totalSlides +
+      ' | Animal: ' + getAnimal(points);
+  }
+
+  function showSlide(n){
+    if(n < 1) n = 1;
+    if(n > totalSlides) n = totalSlides;
+    currentSlide = n;
+    for(let i=1;i<=totalSlides;i++){
+      const s = document.getElementById('slide'+i);
+      if(s) s.classList.toggle('active', i===currentSlide);
+    }
+    updateProgress();
+  }
+  function nextSlide(){ showSlide(currentSlide+1); }
+  function prevSlide(){ showSlide(currentSlide-1); }
+
+  function rewardIcon(){
+    return '<span class="reward">⭐</span>';
+  }
+
+  function checkMC(name, correct, fbId){
+    const radios = document.querySelectorAll('input[name="'+name+'"]');
+    let sel = null;
+    radios.forEach(r => { if(r.checked) sel = r.value; });
+    const fb = document.getElementById(fbId);
+    if(!sel){
+      fb.className = 'feedback incorrect';
+      fb.textContent = 'Selecciona una opción.';
+      return;
+    }
+    if(fb.dataset.done === 'true'){
+      fb.className = 'feedback correct';
+      fb.textContent = 'Ya revisaste esta pregunta.';
+      return;
+    }
+    if(sel === correct){
+      fb.className = 'feedback correct';
+      fb.innerHTML = '¡Correcto!' + rewardIcon();
+      points += 0.5;
+      fb.dataset.done = 'true';
+      updateProgress();
+    }else{
+      fb.className = 'feedback incorrect';
+      fb.textContent = 'Revisa la información de las diapositivas y vuelve a intentarlo.';
+    }
+  }
+
+  function toggleRow(tr, text){
+    const td = tr.querySelector('.ans-cell');
+    if(!td) return;
+    if(td.dataset.open === 'true'){
+      td.textContent = 'Haz clic para ver';
+      td.dataset.open = 'false';
+    }else{
+      td.textContent = text;
+      td.dataset.open = 'true';
+    }
+  }
+
+  // inicializar
+  updateProgress();
+</script>
+</body>
+</html>

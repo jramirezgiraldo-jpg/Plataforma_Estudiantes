@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Reacciones Químicas y Resiliencia - Grado 10°</title>
+    <style>
+        :root {
+            --primary: #1a252f;
+            --accent: #3498db;
+            --gold: #f1c40f;
+            --silver: #bdc3c7;
+            --iron: #e67e22;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0; padding: 0; color: #333;
+            scroll-behavior: smooth;
+        }
+
+        /* Registro y Persistencia */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary); display: flex; justify-content: center;
+            align-items: center; z-index: 1000; transition: 0.5s;
+        }
+
+        .login-box {
+            background: white; padding: 2rem; border-radius: 12px;
+            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 90%; max-width: 400px;
+        }
+
+        /* Header Fijo */
+        header {
+            position: fixed; top: 0; width: 100%; background: white;
+            padding: 10px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 900; box-sizing: border-box;
+        }
+
+        .user-meta { font-weight: bold; color: var(--accent); }
+        .global-score { background: var(--primary); color: white; padding: 5px 15px; border-radius: 20px; }
+
+        /* Contenedor de Actividades */
+        main { max-width: 800px; margin: 100px auto 50px; padding: 0 20px; }
+
+        .module-header { 
+            background: var(--accent); color: white; padding: 15px; 
+            border-radius: 8px; margin-top: 50px; text-align: center;
+        }
+
+        .activity-card {
+            background: white; border-radius: 10px; padding: 25px;
+            margin: 25px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid #ccc; transition: 0.3s;
+        }
+
+        .activity-card.solved { border-left-color: var(--success); }
+
+        .shuffle-display {
+            background: #f8f9fa; padding: 15px; border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.3rem; font-weight: bold; text-align: center;
+            letter-spacing: 3px; margin: 15px 0; border: 1px dashed #bbb;
+        }
+
+        input[type="text"] {
+            width: 100%; padding: 12px; border: 2px solid #ddd;
+            border-radius: 6px; font-size: 1rem; margin-bottom: 10px;
+        }
+
+        .btn-check {
+            background: var(--accent); color: white; border: none;
+            padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+
+        .btn-check:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Recompensas */
+        .badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 50px; height: 50px; border-radius: 50%; 
+            font-weight: bold; margin-top: 10px; border: 2px solid white;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .badge-au { background: var(--gold); color: #000; }
+        .badge-ag { background: var(--silver); color: #000; }
+        .badge-fe { background: var(--iron); color: #fff; }
+
+        .feedback { margin-top: 10px; font-weight: 600; }
+        .hint { font-style: italic; color: #666; font-size: 0.9rem; margin-bottom: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>Laboratorio REDOX Grado 10</h2>
+            <p>Ingresa tus datos para iniciar la sesión</p>
+            <input type="text" id="reg-nombre" placeholder="Nombre" required>
+            <input type="text" id="reg-apellido" placeholder="Apellido" required>
+            <button class="btn-check" style="width:100%" onclick="initSession()">Entrar al Sistema</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="user-meta" id="display-user">Estudiante: -</div>
+        <div class="global-score">Puntaje: <span id="display-score">0</span></div>
+    </header>
+
+    <main id="app-content">
+        </main>
+
+    <script>
+        // --- DATA DE ACTIVIDADES (Grado 10°) ---
+        const activities = [
+            // Módulo 1: REDOX (1-7)
+            { id: 1, type: 'anagrama', word: 'OXIDACION', hint: 'Proceso donde un átomo pierde electrones.' },
+            { id: 2, type: 'anagrama', word: 'REDUCCION', hint: 'Proceso donde un átomo gana electrones.' },
+            { id: 3, type: 'anagrama', word: 'CORROSION', hint: 'Deterioro de metales por reacciones redox ambientales.' },
+            { id: 4, type: 'anagrama', word: 'ELECTRODO', hint: 'Extremo de un conductor en contacto con un electrolito.' },
+            { id: 5, type: 'frase', word: 'La oxidacion ocurre cuando se pierden electrones', hint: 'Define la mecánica básica de transferencia.' },
+            { id: 6, type: 'frase', word: 'El agente reductor se oxida durante la reaccion', hint: 'Relación entre agentes en REDOX.' },
+            { id: 7, type: 'frase', word: 'La resiliencia permite superar el oxido emocional', hint: 'Reflexión: ¿Qué nos ayuda a no desgastarnos?' },
+            
+            // Módulo 2: Mecanismos (8-14)
+            { id: 8, type: 'anagrama', word: 'DESCOMPOSICION', hint: 'Reacción donde una sustancia se divide en dos o más simples.' },
+            { id: 9, type: 'anagrama', word: 'NEUTRALIZACION', hint: 'Reacción entre un ácido y una base para formar sal y agua.' },
+            { id: 10, type: 'anagrama', word: 'ESTEQUIOMETRIA', hint: 'Cálculo de las relaciones cuantitativas en una reacción.' },
+            { id: 11, type: 'frase', word: 'La cal neutraliza la acidez de los suelos', hint: 'Aplicación técnica en agricultura.' },
+            { id: 12, type: 'frase', word: 'El balanceo garantiza la conservacion de la masa', hint: 'Ley fundamental de Lavoisier.' },
+            { id: 13, type: 'frase', word: 'Resolver conflictos requiere neutralizar las emociones negativas', hint: 'Reflexión: Equilibrio en la convivencia.' },
+            { id: 14, type: 'anagrama', word: 'CATALIZADOR', hint: 'Sustancia que aumenta la velocidad de una reacción sin consumirse.' },
+
+            // Módulo 3: Precipitación y Cristales (15-20)
+            { id: 15, type: 'anagrama', word: 'PRECIPITADO', hint: 'Sólido insoluble que se forma en una solución líquida.' },
+            { id: 16, type: 'anagrama', word: 'SOLUBILIDAD', hint: 'Máxima cantidad de soluto que se disuelve en un solvente.' },
+            { id: 17, type: 'frase', word: 'Los cristales crecen mediante un proceso lento', hint: 'Observación de laboratorio sobre la paciencia.' },
+            { id: 18, type: 'frase', word: 'La estequiometria predice la cantidad de producto', hint: 'Uso de moles y gramos en la industria.' },
+            { id: 19, type: 'anagrama', word: 'PUNTUALIDAD', hint: 'Valor: Clave para el éxito en procesos de laboratorio.' },
+            { id: 20, type: 'frase', word: 'La paciencia es necesaria para observar cambios quimicos', hint: 'Reflexión sobre el tiempo en la ciencia.' }
+        ];
+
+        // --- LÓGICA DE ESTADO ---
+        let userState = {
+            name: "",
+            score: 0,
+            progress: {} // id: { attempts: 0, solved: false, badge: '' }
+        };
+
+        // Algoritmo Fisher-Yates
+        function shuffle(str, isSentence = false) {
+            let arr = isSentence ? str.split(' ') : str.split('');
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            let result = isSentence ? arr.join(' / ') : arr.join('-');
+            // Evitar que salga igual al original
+            if (result.toUpperCase() === str.toUpperCase()) return shuffle(str, isSentence);
+            return result;
+        }
+
+        function initSession() {
+            const nom = document.getElementById('reg-nombre').value.trim();
+            const ape = document.getElementById('reg-apellido').value.trim();
+            if(nom && ape) {
+                userState.name = `${nom} ${ape}`;
+                document.getElementById('login-overlay').style.opacity = '0';
+                setTimeout(() => document.getElementById('login-overlay').style.display = 'none', 500);
+                saveData();
+                renderUI();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('ova_redox_data', JSON.stringify(userState));
+            updateHeader();
+        }
+
+        function updateHeader() {
+            document.getElementById('display-user').innerText = `Estudiante: ${userState.name}`;
+            document.getElementById('display-score').innerText = userState.score.toFixed(1);
+        }
+
+        function renderUI() {
+            const container = document.getElementById('app-content');
+            container.innerHTML = "";
+
+            activities.forEach(act => {
+                const state = userState.progress[act.id] || { attempts: 0, solved: false };
+                const isSentence = act.type === 'frase';
+                const card = document.createElement('div');
+                card.className = `activity-card ${state.solved ? 'solved' : ''}`;
+                card.id = `card-${act.id}`;
+
+                card.innerHTML = `
+                    <div class="hint">Tópico: ${act.id <= 7 ? 'REDOX' : act.id <= 14 ? 'Mecanismos' : 'Estequiometría'}</div>
+                    <h3>Actividad ${act.id}</h3>
+                    <p><strong>Pista:</strong> ${act.hint}</p>
+                    <div class="shuffle-display">${state.solved ? act.word.toUpperCase() : shuffle(act.word, isSentence)}</div>
+                    <input type="text" id="input-${act.id}" placeholder="Tu respuesta..." ${state.solved ? 'disabled' : ''}>
+                    <button class="btn-check" id="btn-${act.id}" onclick="checkAnswer(${act.id})" ${state.solved ? 'disabled' : ''}>Validar</button>
+                    <div id="feedback-${act.id}" class="feedback"></div>
+                    <div id="badge-area-${act.id}"></div>
+                    <small style="display:block; margin-top:10px">Intentos: ${state.attempts}/3</small>
+                `;
+                
+                container.appendChild(card);
+                if(state.solved) displayBadge(act.id, state.badge);
+            });
+        }
+
+        function checkAnswer(id) {
+            const act = activities.find(a => a.id === id);
+            const input = document.getElementById(`input-${id}`).value.trim().toUpperCase();
+            const feedback = document.getElementById(`feedback-${id}`);
+            
+            if(!userState.progress[id]) userState.progress[id] = { attempts: 0, solved: false, badge: '' };
+            let state = userState.progress[id];
+
+            if(state.attempts < 3) {
+                state.attempts++;
+                if(input === act.word.toUpperCase()) {
+                    state.solved = true;
+                    let points = 0;
+                    if(state.attempts === 1) { points = 5; state.badge = 'Au'; }
+                    else if(state.attempts === 2) { points = 3; state.badge = 'Ag'; }
+                    else { points = 1.5; state.badge = 'Fe'; }
+
+                    userState.score += points;
+                    feedback.innerHTML = `<span style="color:var(--success)">¡Excelente! +${points} pts</span>`;
+                    document.getElementById(`btn-${id}`).disabled = true;
+                    document.getElementById(`input-${id}`).disabled = true;
+                    document.getElementById(`card-${id}`).classList.add('solved');
+                    displayBadge(id, state.badge);
+                } else {
+                    if(state.attempts >= 3) {
+                        feedback.innerHTML = `<span style="color:var(--error)">Intentos agotados. Era: ${act.word}</span>`;
+                        document.getElementById(`btn-${id}`).disabled = true;
+                        document.getElementById(`input-${id}`).disabled = true;
+                    } else {
+                        feedback.innerHTML = `<span style="color:orange">Incorrecto. Intenta de nuevo.</span>`;
+                    }
+                }
+                saveData();
+            }
+        }
+
+        function displayBadge(id, type) {
+            const area = document.getElementById(`badge-area-${id}`);
+            let label = type === 'Au' ? 'Oro' : type === 'Ag' ? 'Plata' : 'Hierro';
+            area.innerHTML = `<div class="badge badge-${type.toLowerCase()}">${type}</div> <small>Insignia de ${label}</small>`;
+        }
+
+        // Cargar datos previos
+        window.onload = () => {
+            const saved = localStorage.getItem('ova_redox_data');
+            if(saved) {
+                userState = JSON.parse(saved);
+                document.getElementById('login-overlay').style.display = 'none';
+                renderUI();
+                updateHeader();
+            }
+        };
+    </script>
+</body>
+</html>

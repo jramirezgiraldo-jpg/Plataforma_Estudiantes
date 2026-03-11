@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Mundo de las Mezclas - Grado 6°</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --secondary: #1565c0;
+            --accent: #fbc02d;
+            --bg: #f4f7f6;
+            --text: #333;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Registro y Login */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+        }
+
+        .login-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            color: var(--text);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        /* Header Persistente */
+        header {
+            position: fixed;
+            top: 0; width: 100%;
+            background: var(--white);
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 900;
+            box-sizing: border-box;
+        }
+
+        .user-info { font-weight: bold; color: var(--primary); }
+        .score-badge { 
+            background: var(--accent); 
+            padding: 5px 15px; 
+            border-radius: 20px; 
+            font-weight: bold; 
+        }
+
+        /* Contenedor de Actividades */
+        main {
+            margin-top: 80px;
+            padding: 20px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .activity-card {
+            background: white;
+            margin-bottom: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 8px solid var(--secondary);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .activity-card.completed { border-left-color: #4caf50; opacity: 0.9; }
+
+        h2 { color: var(--secondary); margin-top: 0; font-size: 1.2rem; }
+        .scrambled { 
+            font-size: 1.4rem; 
+            letter-spacing: 5px; 
+            color: #d32f2f; 
+            font-weight: bold; 
+            margin: 15px 0;
+            display: block;
+            text-align: center;
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:disabled { background: #ccc; }
+
+        .feedback { margin-top: 10px; font-weight: bold; }
+        .insignia {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            border-radius: 50%;
+            text-align: center;
+            margin-left: 10px;
+            color: white;
+            font-weight: bold;
+            border: 2px solid rgba(0,0,0,0.1);
+        }
+        .insignia-Au { background: #ffd700; color: #000; } /* Oro */
+        .insignia-Ag { background: #c0c0c0; color: #000; } /* Plata */
+        .insignia-Fe { background: #cd7f32; color: #fff; } /* Bronce/Hierro */
+
+        .hint { font-size: 0.9rem; color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <h1>🧪 Laboratorio de Mezclas</h1>
+            <p>Ingresa tus datos para comenzar la aventura científica</p>
+            <input type="text" id="user-name" placeholder="Tu Nombre">
+            <input type="text" id="user-lastname" placeholder="Tu Apellido">
+            <button onclick="login()">Entrar al Laboratorio</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="user-info">👤 Estudiante: <span id="display-name">---</span></div>
+        <div class="score-badge">Puntos: <span id="global-score">0</span></div>
+    </header>
+
+    <main id="activities-container">
+        </main>
+
+    <script>
+        // --- CONFIGURACIÓN DE CONTENIDOS ---
+        const anagramas = [
+            { word: "ACEITE", hint: "Líquido que no se mezcla con el agua (Fase en mezcla heterogénea)." },
+            { word: "SOLUTO", hint: "Sustancia que se disuelve en un solvente." },
+            { word: "SOLVENTE", hint: "El agua es conocida como el ... universal." },
+            { word: "FASES", hint: "Partes visibles de una mezcla heterogénea." },
+            { word: "FILTRACION", hint: "Método para separar café molido del agua." },
+            { word: "HOMOGENEA", hint: "Mezcla donde no se distinguen sus componentes a simple vista." },
+            { word: "HETEROGENEA", hint: "Mezcla como la tierra y el agua." },
+            { word: "SOLUCION", hint: "Otro nombre para una mezcla homogénea." },
+            { word: "BIOETICA", hint: "Ética aplicada al cuidado del agua y la vida." },
+            { word: "DECANTACION", hint: "Dejar reposar una mezcla para que el sólido caiga al fondo." }
+        ];
+
+        const ordenFrases = [
+            { frase: "El agua y el aceite forman una mezcla heterogénea", hint: "Ordena la relación entre estos dos líquidos." },
+            { frase: "El agua de panela es una mezcla homogénea", hint: "Bebida típica de nuestra región." },
+            { frase: "En la finca lavamos el café para quitar impurezas", hint: "Proceso importante en la producción cafetera." },
+            { frase: "El agua es el solvente universal de la naturaleza", hint: "Propiedad química fundamental del agua." },
+            { frase: "Debemos cuidar las quebradas de los abonos químicos", hint: "Acción de bioética ambiental." },
+            { frase: "En una solución el soluto se disuelve totalmente", hint: "Concepto de solubilidad." },
+            { frase: "La mesa es un espacio de unión familiar", hint: "Importancia social de compartir los alimentos." },
+            { frase: "Una mezcla heterogénea tiene dos o más fases", hint: "Definición técnica de fases." },
+            { frase: "El trabajo en equipo requiere una escucha activa", hint: "Valor fundamental en el laboratorio." },
+            { frase: "El jugo de naranja sin pulpa es homogéneo", hint: "Ejemplo cotidiano de mezcla." }
+        ];
+
+        let totalScore = 0;
+        let attempts = {}; // Registro de intentos por ID
+
+        // --- LÓGICA DE PERSISTENCIA ---
+        window.onload = () => {
+            const savedName = localStorage.getItem('ova_user_name');
+            const savedScore = localStorage.getItem('ova_user_score');
+            
+            if (savedName) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('display-name').innerText = savedName;
+                if(savedScore) {
+                    totalScore = parseFloat(savedScore);
+                    document.getElementById('global-score').innerText = totalScore;
+                }
+                renderActivities();
+            }
+        };
+
+        function login() {
+            const name = document.getElementById('user-name').value.trim();
+            const last = document.getElementById('user-lastname').value.trim();
+            if (name && last) {
+                const fullName = `${name} ${last}`;
+                localStorage.setItem('ova_user_name', fullName);
+                document.getElementById('display-name').innerText = fullName;
+                document.getElementById('login-screen').style.display = 'none';
+                renderActivities();
+            } else {
+                alert("Por favor ingresa nombre y apellido.");
+            }
+        }
+
+        // --- ALGORITMO FISHER-YATES ---
+        function shuffle(string) {
+            let array = string.split('');
+            let original = string;
+            
+            // Repetir si el resultado es igual al original para garantizar el desorden
+            do {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            } while (array.join('') === original && original.length > 1);
+            
+            return array.join('-').toUpperCase();
+        }
+
+        function shuffleWords(sentence) {
+            let words = sentence.split(' ');
+            let original = sentence;
+            do {
+                for (let i = words.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [words[i], words[j]] = [words[j], words[i]];
+                }
+            } while (words.join(' ') === original);
+            return words.join(' / ');
+        }
+
+        // --- RENDERIZADO ---
+        function renderActivities() {
+            const container = document.getElementById('activities-container');
+            container.innerHTML = '<h1>Actividades de Aprendizaje</h1>';
+
+            // 1. Render Anagramas
+            anagramas.forEach((item, index) => {
+                const id = `ana_${index}`;
+                attempts[id] = 0;
+                const card = document.createElement('div');
+                card.className = 'activity-card';
+                card.id = `card-${id}`;
+                card.innerHTML = `
+                    <h2>Actividad ${index + 1}: Anagrama Químico</h2>
+                    <p class="hint">${item.hint}</p>
+                    <span class="scrambled">${shuffle(item.word)}</span>
+                    <input type="text" id="input-${id}" placeholder="Escribe la palabra correcta">
+                    <button onclick="validateAnagram('${id}', '${item.word}')" id="btn-${id}">Validar</button>
+                    <div id="feedback-${id}" class="feedback"></div>
+                `;
+                container.appendChild(card);
+            });
+
+            // 2. Render Ordenar Frases
+            ordenFrases.forEach((item, index) => {
+                const id = `ord_${index}`;
+                attempts[id] = 0;
+                const card = document.createElement('div');
+                card.className = 'activity-card';
+                card.id = `card-${id}`;
+                card.innerHTML = `
+                    <h2>Actividad ${index + 11}: Orden Lógico y Técnico</h2>
+                    <p class="hint">${item.hint}</p>
+                    <p style="background:#e3f2fd; padding:10px; border-radius:5px;"><strong>Mezcla:</strong> ${shuffleWords(item.frase)}</p>
+                    <input type="text" id="input-${id}" placeholder="Escribe la oración completa">
+                    <button onclick="validateSentence('${id}', '${item.frase}')" id="btn-${id}">Validar Orden</button>
+                    <div id="feedback-${id}" class="feedback"></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- VALIDACIÓN Y GAMIFICACIÓN ---
+        function validateAnagram(id, correct) {
+            checkAnswer(id, correct.toUpperCase(), document.getElementById(`input-${id}`).value.toUpperCase().trim());
+        }
+
+        function validateSentence(id, correct) {
+            // Limpieza básica de puntuación para validar
+            const userAns = document.getElementById(`input-${id}`).value.replace(/[.,]/g, "").toLowerCase().trim();
+            const correctAns = correct.replace(/[.,]/g, "").toLowerCase().trim();
+            checkAnswer(id, correctAns, userAns);
+        }
+
+        function checkAnswer(id, correct, user) {
+            attempts[id]++;
+            const feedback = document.getElementById(`feedback-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+            const input = document.getElementById(`input-${id}`);
+
+            if (user === correct) {
+                let points = 0;
+                let symbol = "";
+                let className = "";
+
+                if (attempts[id] === 1) { points = 5; symbol = "Au"; className = "insignia-Au"; }
+                else if (attempts[id] === 2) { points = 3; symbol = "Ag"; className = "insignia-Ag"; }
+                else { points = 1.5; symbol = "Fe"; className = "insignia-Fe"; }
+
+                updateScore(points);
+                feedback.innerHTML = `<span style="color:green">¡Correcto! +${points} pts</span> <span class="insignia ${className}">${symbol}</span>`;
+                btn.disabled = true;
+                input.disabled = true;
+                document.getElementById(`card-${id}`).classList.add('completed');
+            } else {
+                if (attempts[id] >= 3) {
+                    feedback.innerHTML = `<span style="color:red">Intentos agotados. La respuesta era: ${correct}</span>`;
+                    btn.disabled = true;
+                    input.disabled = true;
+                } else {
+                    feedback.innerHTML = `<span style="color:orange">Intento ${attempts[id]}/3 incorrecto. ¡Prueba de nuevo!</span>`;
+                }
+            }
+        }
+
+        function updateScore(pts) {
+            totalScore += pts;
+            document.getElementById('global-score').innerText = totalScore;
+            localStorage.setItem('ova_user_score', totalScore);
+        }
+    </script>
+</body>
+</html>

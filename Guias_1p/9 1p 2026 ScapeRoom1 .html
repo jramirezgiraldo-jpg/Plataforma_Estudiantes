@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: Sabores y Saberes</title>
+    <style>
+        /* =========================================
+           VARIABLES Y DISEÑO GENERAL (CSS)
+           ========================================= */
+        :root {
+            --bg-color: #0f111a;
+            --text-color: #e0e6ed;
+            --accent-green: #00ffcc;
+            --accent-purple: #b026ff;
+            --danger-red: #ff3366;
+            --panel-bg: rgba(25, 28, 40, 0.85);
+            --border-glow: 0 0 10px rgba(0, 255, 204, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #1a1e2e 0%, #0f111a 100%);
+        }
+
+        /* =========================================
+           ESTRUCTURA DE PANELES
+           ========================================= */
+        #sidebar {
+            width: 300px;
+            background: var(--panel-bg);
+            border-right: 2px solid var(--accent-green);
+            padding: 20px;
+            box-shadow: var(--border-glow);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        #main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        h1, h2, h3 {
+            color: var(--accent-green);
+            text-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
+        }
+
+        h1 { font-size: 1.5rem; text-align: center; border-bottom: 1px solid var(--accent-green); padding-bottom: 10px;}
+        
+        /* =========================================
+           INVENTARIO Y DIARIO
+           ========================================= */
+        .inventory-box {
+            background: rgba(0,0,0,0.5);
+            border: 1px dashed var(--accent-purple);
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 100px;
+            margin-top: 20px;
+        }
+
+        .inventory-item {
+            color: var(--accent-purple);
+            font-weight: bold;
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(176, 38, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .diary-entry {
+            font-family: 'Courier New', Courier, monospace;
+            background: #fffbe6;
+            color: #333;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+            margin-top: 20px;
+            font-size: 0.9rem;
+            display: none; /* Se muestra cuando se recoge */
+        }
+
+        /* =========================================
+           FASES Y ACERTIJOS
+           ========================================= */
+        .phase {
+            display: none; /* Ocultas por defecto */
+            animation: fadeIn 1s ease-in-out;
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--panel-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .phase.active {
+            display: block;
+        }
+
+        .puzzle-box {
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .puzzle-box.solved {
+            border-left-color: var(--accent-purple);
+            opacity: 0.7;
+        }
+
+        p { line-height: 1.6; font-size: 1.1rem; }
+        
+        /* Imágenes placeholder */
+        .game-image {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid var(--accent-purple);
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(176, 38, 255, 0.4);
+            margin: 15px 0;
+            display: block;
+        }
+
+        /* =========================================
+           INPUTS Y BOTONES
+           ========================================= */
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #111;
+            border: 1px solid var(--accent-green);
+            color: #fff;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        input[type="text"]:disabled {
+            border-color: var(--danger-red);
+            color: #888;
+        }
+
+        button {
+            background: transparent;
+            color: var(--accent-green);
+            border: 2px solid var(--accent-green);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--accent-green);
+            color: var(--bg-color);
+        }
+
+        button:disabled {
+            border-color: #555;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        .feedback {
+            font-weight: bold;
+            margin-top: 10px;
+            min-height: 24px;
+        }
+
+        /* Efectos */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         BARRA LATERAL (INVENTARIO Y PROGRESO)
+         ========================================= -->
+    <div id="sidebar">
+        <h1>Estado del Sistema</h1>
+        <p><strong>Ubicación:</strong> <span id="location-text">Recepción</span></p>
+        
+        <div class="inventory-box">
+            <h3>🎒 Inventario</h3>
+            <div id="inventory-list">
+                <p style="color: #666; font-style: italic;">Vacío</p>
+            </div>
+        </div>
+
+        <div id="diary-container" class="diary-entry">
+            <strong>Diario del Dr. Nova:</strong><br><br>
+            "Recuerda, el pH del agua pura es 7 a 25°C. La constante de ionización del agua (Kw) es 1x10^-14. Para la calibración final, la clave maestra siempre termina en la suma exacta de los dos extremos de la escala de pH clásica. ¡No lo olvides!"
+        </div>
+    </div>
+
+    <!-- =========================================
+         CONTENIDO PRINCIPAL (FASES)
+         ========================================= -->
+    <div id="main-content">
+        
+        <!-- FASE 1: Arrhenius -->
+        <div id="phase-1" class="phase active">
+            <h2>Fase 1: El Laboratorio Abandonado (Teoría de Arrhenius)</h2>
+            <p>La puerta se ha cerrado detrás de ti. Estás en el antiguo laboratorio del Dr. Nova. Sobre la mesa hay una nota polvorienta: <em>"Aquel que no entienda la naturaleza básica de la materia no merece salir. Según mi maestro Arrhenius, en medio acuoso revelamos nuestra verdadera identidad."</em></p>
+
+            <div class="puzzle-box" id="pbox-1">
+                <h3>Acertijo #1: La Taquilla</h3>
+                <p>Para abrir la taquilla necesitas un código de dos dígitos. Lee el registro de inventario del Dr. Nova: <strong>"He almacenado cuidadosamente: HCl, NaOH, CH4, H2SO4, KOH, NaCl, Ca(OH)2, HNO3."</strong></p>
+                <p>El código es el número de Ácidos seguido del número de Bases (estrictamente bajo la teoría de Arrhenius en agua).</p>
+                <input type="text" id="input-1" placeholder="Ej: 54">
+                <button id="btn-1" onclick="checkAnswer(1, '33', unlockDiary)">Intentar</button>
+                <div id="feedback-1" class="feedback"></div>
+            </div>
+
+            <div class="puzzle-box hidden" id="pbox-2">
+                <h3>Acertijo #2: El Candado del Diario</h3>
+                <p>¡Has abierto la taquilla! Dentro encuentras el Diario del Dr. Nova, pero tiene un candado alfanumérico. La inscripción dice: <em>"¿Cuál es la fórmula del ion que define de manera exclusiva a un ácido según Arrhenius?"</em></p>
+                <input type="text" id="input-2" placeholder="Ej: Na+">
+                <button id="btn-2" onclick="checkAnswer(2, ['H+', 'H3O+'], unlockPuzzle3)">Intentar</button>
+                <div id="feedback-2" class="feedback"></div>
+            </div>
+
+            <div class="puzzle-box hidden" id="pbox-3">
+                <h3>Acertijo #3: La Llave Acuosa</h3>
+                <p>El diario menciona: <em>"Para abrir la puerta al invernadero, resuelve esto: He neutralizado exactamente 2 moles de Ácido Clorhídrico con 2 moles de Hidróxido de Sodio. ¿Cuántos moles de la sustancia neutra indispensable para la vida he formado?"</em></p>
+                <input type="text" id="input-3" placeholder="Ingresa un número">
+                <button id="btn-3" onclick="checkAnswer(3, ['2', 'dos'], nextPhase, 2)">Intentar</button>
+                <div id="feedback-3" class="feedback"></div>
+            </div>
+        </div>
+
+        <!-- FASE 2: Indicadores Naturales -->
+        <div id="phase-2" class="phase">
+            <h2>Fase 2: El Invernadero de Indicadores</h2>
+            <p>El aire aquí es húmedo y huele a tierra mojada. Plantas extrañas crecen en tubos de ensayo gigantes.</p>
+            
+            <!-- MARCADOR DE POSICIÓN IMAGEN 1 -->
+            <img src="acertijo_visual_1.jpg" alt="Pista visual 1: Escala de colores de la col lombarda (pH 1 a 14)" class="game-image">
+            
+            <div class="puzzle-box" id="pbox-4">
+                <h3>Acertijo #4: Extracción de Colores</h3>
+                <p>Observa la escala de la pared (imagen superior). Tienes tres muestras anónimas en tu mesa:</p>
+                <ul>
+                    <li>Muestra A: Jugo de limón puro.</li>
+                    <li>Muestra B: Agua destilada.</li>
+                    <li>Muestra C: Lejía (amoniaco altamente básico).</li>
+                </ul>
+                <p>Si añadieras el indicador de esta planta a las tres muestras, ¿qué secuencia de colores observarías? (Escribe los colores separados por comas, ej: naranja, azul, negro).</p>
+                <input type="text" id="input-4" placeholder="colorA, colorB, colorC">
+                <button id="btn-4" onclick="checkAnswer(4, ['rojo,morado,amarillo', 'rosa,morado,amarillo', 'rojo,morado,verde', 'rosa,morado,verde'], unlockPuzzle5)">Intentar</button>
+                <div id="feedback-4" class="feedback"></div>
+            </div>
+
+            <div class="puzzle-box hidden" id="pbox-5">
+                <h3>Acertijo #5: Lógica de Tubos</h3>
+                <p>En un estante hay 4 tubos (T1, T2, T3, T4). Sus etiquetas cayeron, pero hay una nota de observación:</p>
+                <ul>
+                    <li>El T1 enrojece el papel tornasol, pero más lentamente que el T2.</li>
+                    <li>El T3 no cambia el color del tornasol (se mantiene morado).</li>
+                    <li>El T4 vuelve el tornasol azul oscuro.</li>
+                </ul>
+                <p>Ordena los tubos de <strong>MENOR a MAYOR pH</strong> (desde el más ácido al más básico).</p>
+                <input type="text" id="input-5" placeholder="Ej: T1, T2, T3, T4">
+                <button id="btn-5" onclick="checkAnswer(5, ['T2,T1,T3,T4', 't2,t1,t3,t4'], unlockPuzzle6)">Intentar</button>
+                <div id="feedback-5" class="feedback"></div>
+            </div>
+
+            <div class="puzzle-box hidden" id="pbox-6">
+                <h3>Acertijo #6: Cosecha del Indicador</h3>
+                <p>El dispensador robótico te pide una contraseña para entregarte la herramienta necesaria para avanzar: <em>"¿Qué tipo de vegetal (nombre común de dos palabras) estamos usando aquí como nuestro principal indicador de pH?"</em></p>
+                <input type="text" id="input-6" placeholder="Nombre del vegetal">
+                <button id="btn-6" onclick="checkAnswer(6, ['collombarda', 'repollomorado'], getExtractItem)">Intentar</button>
+                <div id="feedback-6" class="feedback"></div>
+            </div>
+        </div>
+
+        <!-- FASE 3: Brönsted-Lowry -->
+        <div id="phase-3" class="phase">
+            <h2>Fase 3: La Biblioteca de Brönsted</h2>
+            <p>Miles de libros de química llenan las estanterías. Una placa de bronce reza: <em>"Aquí, no nos importa si hay agua o no. Lo que importa es quién da y quién recibe... el valioso protón."</em></p>
+
+            <div class="puzzle-box" id="pbox-7">
+                <h3>Acertijo #7: El Libro Bloqueado</h3>
+                <p>Un pesado grimorio está cerrado. Su cerradura pregunta: <em>"Si el poderoso Ácido Sulfúrico (H2SO4) actúa demostrando su generosidad y dona su PRIMER protón, ¿cuál es la fórmula de la base conjugada que deja atrás?"</em></p>
+                <input type="text" id="input-7" placeholder="Fórmula química">
+                <button id="btn-7" onclick="checkAnswer(7, ['hso4-', 'hso4'], unlockPuzzle8)">Intentar</button>
+                <div id="feedback-7" class="feedback"></div>
+            </div>
+
+            <!-- MARCADOR DE POSICIÓN IMAGEN 2 -->
+            <img src="acertijo_visual_2.jpg" alt="Pista visual 2: Reacción de transferencia de protones entre NH3 y H2O" class="game-image hidden" id="img-puzzle-8">
+
+            <div class="puzzle-box hidden" id="pbox-8">
+                <h3>Acertijo #8: La Danza del Protón</h3>
+                <p>Observa el diagrama que acaba de aparecer (imagen superior). En esta reacción específica entre Amoníaco y Agua, fíjate en la trayectoria del protón. Según la teoría de Brönsted-Lowry, en esta interacción particular, ¿qué papel está jugando el Agua (H2O)?</p>
+                <input type="text" id="input-8" placeholder="¿Ácido o Base?">
+                <button id="btn-8" onclick="checkAnswer(8, ['acido', 'ácido'], unlockPuzzle9)">Intentar</button>
+                <div id="feedback-8" class="feedback"></div>
+            </div>
+
+            <div class="puzzle-box hidden" id="pbox-9">
+                <h3>Acertijo #9: El Pergamino Oculto</h3>
+                <p>Has encontrado un pergamino en blanco en el escritorio. Necesitas revelar su mensaje. <em>(Pista: Revisa tu inventario)</em>.</p>
+                <button id="btn-use-extract" onclick="useExtract()">Usar Extracto de Col Lombarda</button>
+                
+                <div id="hidden-message-p9" class="hidden" style="margin-top:15px;">
+                    <p style="color: #ff66b2; font-style: italic;">*Al verter el extracto, el pergamino se tiñe de un ROJO INTENSO y revela un texto.*</p>
+                    <p>El texto dice: "Este pergamino fue escrito con un líquido cuyo valor de pH exacto se encuentra en el extremo más ácido que tu indicador natural de la Fase 2 puede marcar como Rojo. ¿Qué número de pH es?"</p>
+                    <input type="text" id="input-9" placeholder="Número">
+                    <button id="btn-9" onclick="checkAnswer(9, ['2', 'dos'], nextPhase, 4)">Intentar</button>
+                    <div id="feedback-9" class="feedback"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FASE 4: Lewis -->
+        <div id="phase-4" class="phase">
+            <h2>Fase 4: El Observatorio de Electrones (Teoría de Lewis)</h2>
+            <p>El techo es un domo oscuro. Aquí, las reglas cambian. Ya no seguimos protones; rastreamos el flujo de los electrones invisibles.</p>
+
+            <!-- MARCADOR DE POSICIÓN IMAGEN 3 -->
+            <img src="acertijo_visual_3.jpg" alt="Pista visual 3: Estructuras de Lewis del BF3 y NH3 interaccionando" class="game-image">
+
+            <div class="puzzle-box" id="pbox-10">
+                <h3>Acertijo #10: La Proporción del Enlace</h3>
+                <p>Analiza el diagrama de las estructuras de Lewis (arriba). Observa la molécula de la derecha (Amoníaco) y la de la izquierda (Trifluoruro de Boro). Cuenta los <strong>pares de electrones libres</strong> (no compartidos) en la molécula derecha y compáralo con los <strong>espacios vacíos</strong> (para completar el octeto) en el átomo central de la molécula izquierda.</p>
+                <p>¿Cuál es la proporción numérica? (Formato: Libres:Vacíos)</p>
+                <input type="text" id="input-10" placeholder="Ej: 2:1">
+                <button id="btn-10" onclick="checkAnswer(10, ['1:1'], unlockPuzzle11)">Intentar</button>
+                <div id="feedback-10" class="feedback"></div>
+            </div>
+
+            <div class="puzzle-box hidden" id="pbox-11">
+                <h3>Acertijo #11: El Rol en la Sombra</h3>
+                <p>Considerando la imagen anterior y la teoría de Gilbert N. Lewis, si el Amoníaco aporta ese par solitario para formar un enlace coordinado, ¿qué clasificación recibe el Amoníaco en esta teoría?</p>
+                <input type="text" id="input-11" placeholder="Clasificación">
+                <button id="btn-11" onclick="checkAnswer(11, ['base'], unlockPuzzle12)">Intentar</button>
+                <div id="feedback-11" class="feedback"></div>
+            </div>
+
+            <div class="puzzle-box hidden" id="pbox-12">
+                <h3>Acertijo #12: La Definición Carencial</h3>
+                <p>Por deducción, un Ácido de Lewis es una sustancia química que se caracteriza por ser deficiente en... ¿qué partícula subatómica?</p>
+                <input type="text" id="input-12" placeholder="Partícula en plural">
+                <button id="btn-12" onclick="checkAnswer(12, ['electrones'], nextPhase, 5)">Intentar</button>
+                <div id="feedback-12" class="feedback"></div>
+            </div>
+        </div>
+
+        <!-- FASE 5: Integración Final -->
+        <div id="phase-5" class="phase">
+            <h2>Fase 5: La Puerta de la Síntesis Final</h2>
+            <p>Has llegado a la enorme puerta blindada que da al exterior. Una terminal de computadora parpadea con una interfaz de entrada maestra. Debes cruzar toda la información que has recopilado.</p>
+
+            <div class="puzzle-box" id="pbox-13">
+                <h3>Acertijo #13: El Código Maestro</h3>
+                <p>Para desbloquear la puerta final, el sistema requiere una secuencia de seguridad dividida en tres partes, separadas por guiones (Formato: XX-X-XX):</p>
+                <ol>
+                    <li>El código de 2 dígitos que usaste para abrir la taquilla en la <strong>Fase 1</strong>.</li>
+                    <li>El número de pH del líquido que teñía el pergamino en la <strong>Fase 3</strong>.</li>
+                    <li>La suma de los extremos de la escala de pH clásica (revisa tu <strong>Diario</strong> en el inventario).</li>
+                </ol>
+                <p>Introduce la secuencia maestra:</p>
+                <input type="text" id="input-13" placeholder="XX-X-XX">
+                <button id="btn-13" onclick="checkAnswer(13, ['33-2-14'], gameComplete)">INGRESAR SECUENCIA</button>
+                <div id="feedback-13" class="feedback"></div>
+            </div>
+            
+            <!-- Mensaje Final -->
+            <div id="victory-message" class="hidden" style="text-align: center; margin-top: 30px;">
+                <h1 style="color: #00ffcc; font-size: 2.5rem;">¡SISTEMA DESBLOQUEADO!</h1>
+                <p style="font-size: 1.2rem; color: #fff;">Felicidades, científico. Has dominado las teorías de Arrhenius, Brönsted-Lowry y Lewis. La puerta se abre y el aire fresco del exterior golpea tu rostro. Has escapado del Laboratorio del Dr. Nova.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =========================================
+         LÓGICA DEL JUEGO (JAVASCRIPT)
+         ========================================= -->
+    <script>
+        // Variables de Estado
+        let inventory = [];
+        let hasExtract = false;
+
+        // Función central para validar respuestas con penalización
+        function checkAnswer(puzzleId, correctAnswers, onSuccess, nextPhaseNum = null) {
+            const input = document.getElementById(`input-${puzzleId}`);
+            const btn = document.getElementById(`btn-${puzzleId}`);
+            const feedback = document.getElementById(`feedback-${puzzleId}`);
+            
+            // Limpieza de formato (minúsculas, sin espacios)
+            let userAns = input.value.toLowerCase().replace(/\s+/g, '');
+            
+            let isCorrect = false;
+            // Si hay múltiples respuestas válidas
+            if (Array.isArray(correctAnswers)) {
+                // Limpiamos también las correctas para comparar
+                const cleanedCorrects = correctAnswers.map(a => a.toLowerCase().replace(/\s+/g, ''));
+                isCorrect = cleanedCorrects.includes(userAns);
+            } else {
+                let trueAns = correctAnswers.toLowerCase().replace(/\s+/g, '');
+                isCorrect = (userAns === trueAns);
+            }
+
+            if (isCorrect) {
+                // Respuesta Correcta
+                feedback.innerHTML = "¡Respuesta Aceptada! ✔️";
+                feedback.style.color = "var(--accent-green)";
+                input.disabled = true;
+                btn.disabled = true;
+                document.getElementById(`pbox-${puzzleId}`).classList.add('solved');
+                
+                // Ejecutar la acción de recompensa (mostrar siguiente puzle o fase)
+                if (nextPhaseNum !== null) {
+                    onSuccess(nextPhaseNum);
+                } else {
+                    onSuccess();
+                }
+            } else {
+                // Respuesta Incorrecta (Penalización de 5 segundos)
+                input.disabled = true;
+                btn.disabled = true;
+                let timeLeft = 5;
+                feedback.style.color = "var(--danger-red)";
+                
+                // Animación de error en el input
+                input.style.borderColor = "var(--danger-red)";
+                input.style.backgroundColor = "rgba(255, 51, 102, 0.1)";
+
+                feedback.innerHTML = `Error. Protocolo de seguridad activado. Bloqueo por ${timeLeft}s...`;
+                
+                const timer = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft > 0) {
+                        feedback.innerHTML = `Error. Protocolo de seguridad activado. Bloqueo por ${timeLeft}s...`;
+                    } else {
+                        clearInterval(timer);
+                        input.disabled = false;
+                        btn.disabled = false;
+                        feedback.innerHTML = "";
+                        input.value = "";
+                        input.style.borderColor = "var(--accent-green)";
+                        input.style.backgroundColor = "#111";
+                        input.focus();
+                    }
+                }, 1000);
+            }
+        }
+
+        // --- Funciones de Progresión ---
+
+        // Fase 1: Tras el Acertijo 1, mostrar el diario y el Acertijo 2
+        function unlockDiary() {
+            document.getElementById('pbox-2').classList.remove('hidden');
+            document.getElementById('diary-container').style.display = 'block';
+            document.getElementById('inventory-list').innerHTML = ''; // Limpiar el "Vacío"
+            addInventoryItem('📖 Diario del Dr. Nova');
+        }
+
+        function unlockPuzzle3() {
+            document.getElementById('pbox-3').classList.remove('hidden');
+        }
+
+        // Función genérica para cambiar de fase
+        function nextPhase(phaseNum) {
+            // Ocultar todas las fases
+            document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
+            // Mostrar la nueva
+            document.getElementById(`phase-${phaseNum}`).classList.add('active');
+            
+            // Actualizar el texto del sidebar
+            const locations = ["", "Recepción", "Invernadero", "Biblioteca", "Observatorio", "Puerta Principal"];
+            document.getElementById('location-text').innerText = locations[phaseNum];
+        }
+
+        // Fase 2: Progresión
+        function unlockPuzzle5() {
+            document.getElementById('pbox-5').classList.remove('hidden');
+        }
+
+        function unlockPuzzle6() {
+            document.getElementById('pbox-6').classList.remove('hidden');
+        }
+
+        // Tras el Acertijo 6, dar el objeto y pasar de fase
+        function getExtractItem() {
+            hasExtract = true;
+            addInventoryItem('🧪 Extracto de Col Lombarda');
+            alert("¡Has obtenido el Extracto de Col Lombarda! Se ha guardado en tu inventario.");
+            nextPhase(3);
+        }
+
+        // Fase 3: Progresión
+        function unlockPuzzle8() {
+            document.getElementById('img-puzzle-8').classList.remove('hidden');
+            document.getElementById('pbox-8').classList.remove('hidden');
+        }
+
+        function unlockPuzzle9() {
+            document.getElementById('pbox-9').classList.remove('hidden');
+        }
+
+        // Botón especial en la Fase 3
+        function useExtract() {
+            if (hasExtract) {
+                document.getElementById('hidden-message-p9').classList.remove('hidden');
+                document.getElementById('btn-use-extract').style.display = 'none';
+            } else {
+                alert("No tienes nada en tu inventario que sirva para revelar este mensaje. Debes volver a las fases anteriores."); // Teóricamente imposible en flujo lineal, pero buena práctica de validación.
+            }
+        }
+
+        // Fase 4: Progresión
+        function unlockPuzzle11() {
+            document.getElementById('pbox-11').classList.remove('hidden');
+        }
+
+        function unlockPuzzle12() {
+            document.getElementById('pbox-12').classList.remove('hidden');
+        }
+
+        // Función Auxiliar para Inventario
+        function addInventoryItem(itemName) {
+            inventory.push(itemName);
+            const list = document.getElementById('inventory-list');
+            const itemElement = document.createElement('div');
+            itemElement.className = 'inventory-item';
+            itemElement.innerText = itemName;
+            list.appendChild(itemElement);
+        }
+
+        // Final del Juego
+        function gameComplete() {
+            document.getElementById('victory-message').classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>

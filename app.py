@@ -7,8 +7,9 @@ import glob
 app = Flask(__name__)
 app.secret_key = 'super_secret_key_educativa_2026'
 
-# Carpeta donde están los documentos HTML del profesor
-GUIAS_PATH = r"C:\Users\Juan Felipe\Documents\1 2026\Guias 1p"
+# Carpeta donde están los documentos HTML del profesor (Adaptado para producción)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+GUIAS_PATH = os.path.join(BASE_DIR, "Guias_1p")
 
 def get_db_connection():
     conn = sqlite3.connect('users.db')

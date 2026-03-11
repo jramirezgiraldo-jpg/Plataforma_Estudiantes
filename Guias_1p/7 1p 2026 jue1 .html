@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Expedición Quindío: El Tesoro Elemental</title>
+    <style>
+        :root { --metal: #78909c; --nometal: #aed581; --metaloide: #ffd54f; --quindio: #2e7d32; }
+        body { font-family: 'Segoe UI', sans-serif; background: #cfd8dc; margin: 0; display: flex; flex-direction: column; align-items: center; }
+        #game-wrapper { background: #fff; width: 950px; min-height: 650px; margin: 20px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; border: 4px solid var(--quindio); }
+        .header { background: var(--quindio); color: white; padding: 15px; text-align: center; }
+        .main-stage { display: flex; flex: 1; padding: 20px; gap: 20px; }
+        .mine-area { flex: 2; background: #37474f; border-radius: 10px; padding: 20px; color: white; position: relative; display: flex; flex-direction: column; align-items: center; }
+        .controls { flex: 1; background: #f5f5f5; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .element-card { width: 100px; height: 130px; border: 3px solid white; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); margin: 10px; cursor: pointer; transition: 0.3s; }
+        .element-card:hover { transform: scale(1.05); background: rgba(255,255,255,0.2); }
+        .symbol { font-size: 32px; font-weight: bold; }
+        .info { font-size: 12px; margin-top: 5px; }
+
+        .circuit-status { width: 100%; height: 100px; border: 2px solid #555; border-radius: 10px; margin-top: auto; display: flex; align-items: center; justify-content: center; background: #263238; }
+        .led { width: 30px; height: 30px; border-radius: 50%; background: #455a64; margin-right: 15px; box-shadow: 0 0 5px #000; }
+        .led.on { background: #64ffda; box-shadow: 0 0 20px #64ffda; }
+
+        .btn { padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .btn-check { background: var(--quindio); color: white; }
+        
+        .table-hint { font-size: 13px; line-height: 1.4; background: #fff9c4; padding: 10px; border-radius: 5px; border-left: 5px solid #fbc02d; }
+        #feedback { font-weight: bold; text-align: center; min-height: 40px; }
+    </style>
+</head>
+<body>
+
+<div id="game-wrapper">
+    <div class="header">
+        <h1>⛰️ Expedición Quindío: Misión Energía en la Finca</h1>
+        <p>Encuentra el elemento correcto en la mina para reparar el circuito de la escuela.</p>
+    </div>
+
+    <div class="main-stage">
+        <div class="mine-area" id="mine">
+            <h3 id="mision-title">Misión 1: El Cable Maestro</h3>
+            <p id="mision-desc">Necesitamos un material con <b>alta conductividad eléctrica</b>. Busca un elemento del <b>Periodo 4, Grupo 11</b>.</p>
+            
+            <div id="finder" style="display: flex; flex-wrap: wrap; justify-content: center;">
+                </div>
+
+            <div class="circuit-status">
+                <div id="led-indicator" class="led"></div>
+                <span id="circuit-msg">CIRCUITO ABIERTO - FALTA MATERIAL</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div id="feedback">Selecciona un elemento de la mina.</div>
+            
+            <div class="table-hint">
+                <strong>Manual del Explorador:</strong><br>
+                Z = Protones (Número Atómico).<br>
+                A = Masa Atómica.<br>
+                Metales: Conductores (Izquierda/Centro).<br>
+                No Metales: Aislantes (Derecha).
+            </div>
+
+            <div style="background: #e1f5fe; padding: 10px; border-radius: 5px; font-size: 14px;">
+                <strong>Recursos del Quindío:</strong><br>
+                ¿Sabías que el cobre y el oro son metales que podemos encontrar en rocas minerales de nuestra región?
+            </div>
+            
+            <button class="btn btn-check" onclick="testMaterial()">⚡ Probar Conductividad</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const database = [
+        { z: 29, a: 63.5, s: "Cu", name: "Cobre", type: "metal", mission: 1, hint: "Busca Periodo 4, Grupo 11" },
+        { z: 6, a: 12.0, s: "C", name: "Carbono", type: "nometal", mission: 1 },
+        { z: 14, a: 28.1, s: "Si", name: "Silicio", type: "metaloide", mission: 2, hint: "Necesitamos un Semiconductor: Periodo 3, Grupo 14" },
+        { z: 16, a: 32.1, s: "S", name: "Azufre", type: "nometal", mission: 2 },
+        { z: 13, a: 27.0, s: "Al", name: "Aluminio", type: "metal", mission: 3, hint: "Buscamos un metal ligero: Periodo 3, Grupo 13" },
+        { z: 10, a: 20.2, s: "Ne", name: "Neon", type: "nometal", mission: 3 }
+    ];
+
+    let currentMission = 1;
+    let selectedElement = null;
+
+    function initMission() {
+        const finder = document.getElementById('finder');
+        finder.innerHTML = "";
+        database.sort(() => Math.random() - 0.5).forEach(el => {
+            const card = document.createElement('div');
+            card.className = "element-card";
+            card.onclick = () => select(el, card);
+            card.innerHTML = `<span class="symbol">${el.s}</span><span class="info">Z: ${el.z}</span><span class="info">A: ${el.a}</span>`;
+            finder.appendChild(card);
+        });
+    }
+
+    function select(el, card) {
+        selectedElement = el;
+        document.querySelectorAll('.element-card').forEach(c => c.style.borderColor = "white");
+        card.style.borderColor = "var(--ambar)";
+        document.getElementById('feedback').innerText = `Has seleccionado: ${el.name}. ¿Funcionará?`;
+    }
+
+    function testMaterial() {
+        if (!selectedElement) return;
+
+        const led = document.getElementById('led-indicator');
+        const msg = document.getElementById('circuit-msg');
+        const feedback = document.getElementById('feedback');
+
+        if (selectedElement.mission === currentMission && selectedElement.type === "metal" || (currentMission === 2 && selectedElement.type === "metaloide")) {
+            led.classList.add('on');
+            msg.innerText = "¡CIRCUITO FUNCIONANDO!";
+            feedback.innerHTML = `<span style="color:green">¡ÉXITO! El ${selectedElement.name} es un excelente conductor.</span>`;
+            
+            setTimeout(() => {
+                currentMission++;
+                if(currentMission > 3) {
+                    alert("¡Misión Cumplida! Has restaurado la energía de la escuela valorando los minerales de nuestra tierra.");
+                    location.reload();
+                } else {
+                    updateMissionUI();
+                    initMission();
+                }
+            }, 3000);
+        } else {
+            led.classList.remove('on');
+            msg.innerText = "ERROR: MATERIAL NO CONDUCTOR";
+            feedback.innerHTML = `<span style="color:red">FRUSTRACIÓN: El ${selectedElement.name} es un ${selectedElement.type}. No conduce electricidad. ¡Sigue buscando!</span>`;
+        }
+    }
+
+    function updateMissionUI() {
+        const title = document.getElementById('mision-title');
+        const desc = document.getElementById('mision-desc');
+        const led = document.getElementById('led-indicator');
+        led.classList.remove('on');
+        
+        if(currentMission === 2) {
+            title.innerText = "Misión 2: El Chip de Control";
+            desc.innerHTML = "Necesitamos un <b>Metaloide</b> (semiconductor). Busca en el <b>Periodo 3, Grupo 14</b>.";
+        } else if(currentMission === 3) {
+            title.innerText = "Misión 3: Estructura de la Planta";
+            desc.innerHTML = "Buscamos un <b>Metal Ligero</b> para la carcasa. Mira en el <b>Periodo 3, Grupo 13</b>.";
+        }
+    }
+
+    initMission();
+</script>
+</body>
+</html>

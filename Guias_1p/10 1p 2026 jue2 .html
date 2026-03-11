@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Notario Químico: Ácidos y Sales</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #27ae60;
+            --accent: #e67e22;
+            --danger: #c0392b;
+            --paper: #f4f1ea;
+            --ink: #2c3e50;
+            --shadow: rgba(0,0,0,0.2);
+            --font-main: 'Courier New', Courier, monospace; /* Estilo máquina de escribir/documento */
+            --font-ui: 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #34495e;
+            font-family: var(--font-ui);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--ink);
+            overflow: hidden;
+        }
+
+        /* --- UI PRINCIPAL --- */
+        #game-container {
+            width: 100%;
+            max-width: 900px;
+            height: 95vh;
+            background-color: var(--paper);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 10px solid #5d4037; /* Marco de madera */
+        }
+
+        /* HUD - Encabezado tipo expediente */
+        header {
+            background: #d7ccc8;
+            padding: 10px 20px;
+            border-bottom: 2px solid #a1887f;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-main);
+            box-shadow: 0 2px 5px var(--shadow);
+            z-index: 10;
+        }
+
+        .hud-stat { font-weight: bold; font-size: 1.1rem; color: #3e2723; }
+        
+        /* Barra de Progreso */
+        #progress-container {
+            width: 100%;
+            height: 6px;
+            background: #bcaaa4;
+        }
+        #progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--secondary);
+            transition: width 0.5s ease;
+        }
+
+        /* --- ESCENARIO DE JUEGO --- */
+        #game-stage {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Alineación superior para contenido */
+            align-items: center;
+            position: relative;
+            overflow-y: auto;
+            background-image: radial-gradient(#d7ccc8 1px, transparent 1px);
+            background-size: 20px 20px; /* Efecto papel milimetrado sutil */
+        }
+
+        /* Elementos Comunes */
+        .card {
+            background: white;
+            border: 1px solid #bdc3c7;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 4px;
+            box-shadow: 2px 2px 5px var(--shadow);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+            min-width: 120px;
+            display: inline-block;
+        }
+        .card:hover { transform: translateY(-2px); box-shadow: 4px 4px 10px var(--shadow); }
+        .card.selected { border: 2px solid var(--accent); background: #fff3e0; }
+
+        .chemical-formula { font-size: 1.5rem; font-weight: bold; font-family: 'Times New Roman', serif; }
+        
+        .instruction-box {
+            background: #fff;
+            border-left: 5px solid var(--accent);
+            padding: 15px;
+            margin-bottom: 20px;
+            width: 90%;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+        .theory-note { font-size: 0.9rem; color: #7f8c8d; font-style: italic; margin-top: 5px; }
+
+        /* Estilos Misión 1: Clasificación */
+        .bins-container { display: flex; gap: 20px; margin-top: 20px; width: 100%; justify-content: center; }
+        .bin {
+            width: 150px; height: 150px;
+            border: 3px dashed #7f8c8d;
+            border-radius: 10px;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.05);
+            transition: background 0.3s;
+        }
+        .bin:hover { background: rgba(39, 174, 96, 0.1); border-color: var(--secondary); }
+        .bin-label { font-weight: bold; margin-bottom: 10px; }
+
+        /* Estilos Misión 2: Suelos */
+        .soil-sample {
+            width: 200px; height: 100px;
+            background: #5d4037;
+            border-radius: 10px 10px 50px 50px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .soil-layer { width: 100%; height: 100%; opacity: 0.8; transition: background 1s; }
+        
+        /* Estilos Misión 4: Constructor de Nombres */
+        .word-bank { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px; }
+        .sentence-builder { 
+            min-height: 60px; width: 90%; 
+            border-bottom: 2px solid var(--ink); 
+            display: flex; gap: 10px; justify-content: center; align-items: center;
+            margin-bottom: 20px; font-size: 1.2rem; font-weight: bold;
+        }
+
+        /* Estilos Misión 5: Sellos */
+        .document-scan {
+            background: white; border: 1px solid #ccc; padding: 20px;
+            width: 280px; height: 350px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            position: relative;
+            font-family: var(--font-main);
+            text-align: left;
+        }
+        .stamp-btn {
+            width: 80px; height: 80px; border-radius: 50%; border: 3px solid;
+            font-weight: bold; font-size: 0.9rem; cursor: pointer;
+            margin: 10px; background: rgba(255,255,255,0.8);
+            transform: rotate(-15deg); transition: transform 0.2s;
+        }
+        .stamp-btn.approve { color: var(--secondary); border-color: var(--secondary); }
+        .stamp-btn.reject { color: var(--danger); border-color: var(--danger); }
+        .stamp-btn:hover { transform: scale(1.1) rotate(-15deg); }
+
+        /* Feedback y Overlays */
+        #feedback-modal {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; padding: 20px; border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5); z-index: 100;
+            text-align: center; border: 2px solid var(--primary);
+            display: none; animation: popIn 0.3s;
+        }
+        
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(52, 73, 94, 0.95); color: white;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 200;
+            text-align: center; padding: 20px;
+        }
+        .hidden { display: none !important; }
+
+        button.action-btn {
+            background: var(--primary); color: white; border: none;
+            padding: 10px 25px; font-size: 1rem; border-radius: 4px;
+            cursor: pointer; margin-top: 20px; font-family: var(--font-ui);
+        }
+        button.action-btn:hover { background: #1abc9c; }
+
+        @keyframes popIn { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+
+        /* Confeti Canvas */
+        #confetti-canvas { position: absolute; top: 0; left: 0; pointer-events: none; width: 100%; height: 100%; z-index: 90; }
+
+        /* Iconos SVG simples */
+        .icon { width: 40px; height: 40px; margin-bottom: 5px; fill: currentColor; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <div>Notario Químico | Exp. #10-B</div>
+        <div>
+            <span class="hud-stat">Puntos: <span id="score">0</span></span>
+            <span class="hud-stat" style="margin-left: 20px;">Nota: <span id="grade">0.0</span></span>
+        </div>
+    </header>
+    <div id="progress-container"><div id="progress-fill"></div></div>
+
+    <div id="game-stage">
+        </div>
+
+    <div id="feedback-modal">
+        <h3 id="fb-title"></h3>
+        <p id="fb-msg"></p>
+        <button class="action-btn" onclick="game.closeFeedback()">Continuar</button>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div id="start-screen" class="overlay">
+        <h1 style="color: var(--accent);">El Notario Químico</h1>
+        <h2>Misión: Suelos Vivos</h2>
+        <p style="max-width: 600px; line-height: 1.6;">
+            La región agrícola de Pueblo Rico necesita tu ayuda. Se han encontrado fertilizantes falsos y suelos dañados.
+            <br><br>
+            Como <b>Notario Químico</b>, tu deber es identificar sustancias, corregir la acidez del suelo y certificar la verdad química.
+            <br><br>
+            <i>"La tierra no miente, la química tampoco."</i>
+        </p>
+        <button class="action-btn" onclick="game.startLevel(0)">Abrir Expediente</button>
+    </div>
+
+    <div id="end-screen" class="overlay hidden">
+        <h1>Expediente Cerrado</h1>
+        <h2 id="final-verdict">Certificado Aprobado</h2>
+        <p>Nota Final: <span id="final-grade" style="font-size: 3rem; color: var(--accent);">0.0</span> / 5.0</p>
+        <p id="final-msg">Has completado tu labor notarial.</p>
+        <button class="action-btn" onclick="location.reload()">Nueva Misión</button>
+    </div>
+</div>
+
+<script>
+// --- DATOS DEL JUEGO ---
+const missions = [
+    {
+        title: "Misión 1: Clasificación de Inventario",
+        desc: "Han llegado muestras al almacén. Separa los Ácidos (inician con H) de las Sales (Metal + No Metal). Toca la muestra y luego toca su contenedor.",
+        theory: "<b>Just-in-Time:</b> Los <b>Ácidos</b> liberan H<sup>+</sup> (ej. HCl). Las <b>Sales</b> son producto de la neutralización y suelen tener estructura Catión-Anión (ej. NaCl).",
+        type: "sort",
+        items: [
+            { id: "i1", form: "H<sub>2</sub>SO<sub>4</sub>", type: "acid" },
+            { id: "i2", form: "NaCl", type: "salt" },
+            { id: "i3", form: "HNO<sub>3</sub>", type: "acid" },
+            { id: "i4", form: "K<sub>3</sub>PO<sub>4</sub>", type: "salt" }
+        ]
+    },
+    {
+        title: "Misión 2: Diagnóstico del Suelo",
+        desc: "Este suelo está muy alcalino (Básico, pH alto). Debemos bajar el pH para poder sembrar. Selecciona el compuesto adecuado para NEUTRALIZAR sin añadir tóxicos.",
+        theory: "<b>Just-in-Time:</b> Para neutralizar una base, necesitas un <b>Ácido</b>. El Ácido Nítrico (HNO<sub>3</sub>) además aporta Nitrógeno, vital para las plantas.",
+        type: "choice",
+        options: [
+            { id: "opt1", label: "NaOH (Sosa)", correct: false, feedback: "¡Error! Eso es una base fuerte, subirás más el pH." },
+            { id: "opt2", label: "HNO<sub>3</sub> (Ácido Nítrico)", correct: true, feedback: "¡Exacto! Neutraliza y abona con nitrógeno." },
+            { id: "opt3", label: "H<sub>2</sub>O (Agua)", correct: false, feedback: "El agua sola no bajará el pH significativamente." }
+        ]
+    },
+    {
+        title: "Misión 3: El Código N-P-K",
+        desc: "Un campesino necesita un fertilizante rico en POTASIO (K) para la floración. Identifica cuál de estas sales es la fuente correcta en la etiqueta.",
+        theory: "<b>Just-in-Time:</b> Las etiquetas N-P-K indican: N (Nitrógeno/Hojas), P (Fósforo/Raíces), K (Potasio/Frutos). Busca el símbolo <b>K</b>.",
+        type: "choice",
+        options: [
+            { id: "k1", label: "NH<sub>4</sub>NO<sub>3</sub>", correct: false, feedback: "Esto es Nitrato de Amonio (Fuente de N)." },
+            { id: "k2", label: "Ca<sub>3</sub>(PO<sub>4</sub>)<sub>2</sub>", correct: false, feedback: "Esto es Fosfato de Calcio (Fuente de P)." },
+            { id: "k3", label: "KCl", correct: true, feedback: "¡Correcto! El Cloruro de Potasio es fuente de K." }
+        ]
+    },
+    {
+        title: "Misión 4: Escritura Notarial (Nomenclatura)",
+        desc: "Debes redactar el acta oficial para el compuesto: <b>Fe<sub>2</sub>(SO<sub>4</sub>)<sub>3</sub></b>. Construye el nombre correcto según IUPAC.",
+        theory: "<b>Just-in-Time:</b> SO<sub>4</sub> es Sulfato. El Hierro (Fe) aquí actúa con valencia 3 (mira el subíndice del sulfato cruzado).",
+        type: "builder",
+        targetName: ["Sulfato", "de", "Hierro", "(III)"],
+        pool: ["Sulfuro", "Sulfato", "de", "Hierro", "(II)", "(III)", "Ácido"]
+    },
+    {
+        title: "Misión 5: Auditoría de Fraude",
+        desc: "Revisa este documento. ¿El nombre corresponde a la fórmula? Aprueba (Verdadero) o Rechaza (Falso) con tu sello.",
+        theory: "<b>Just-in-Time:</b> Documento: <i>Carbonato de Calcio</i> con fórmula <b>CaSO<sub>4</sub></b>. Recuerda: Carbonato es CO<sub>3</sub>, Sulfato es SO<sub>4</sub>.",
+        type: "stamp",
+        docName: "Carbonato de Calcio",
+        docForm: "CaSO<sub>4</sub>",
+        isCorrect: false, // Es falso, es sulfato
+        feedbackCorrect: "¡Bien detectado! CaSO4 es Sulfato, no Carbonato.",
+        feedbackWrong: "Cuidado Notario, firmaste una falsedad."
+    }
+];
+
+// --- MOTOR DEL JUEGO ---
+const game = {
+    score: 0,
+    level: 0,
+    maxScore: 50,
+    selectedItem: null,
+    tempBuilder: [],
+    
+    startLevel: function(idx) {
+        document.getElementById('start-screen').classList.add('hidden');
+        if (idx >= missions.length) {
+            this.endGame();
+            return;
+        }
+        this.level = idx;
+        this.renderLevel(missions[idx]);
+        this.updateHUD();
+    },
+
+    renderLevel: function(m) {
+        const stage = document.getElementById('game-stage');
+        let html = `
+            <div class="instruction-box">
+                <h3>${m.title}</h3>
+                <p>${m.desc}</p>
+                <div class="theory-note">💡 ${m.theory}</div>
+            </div>
+        `;
+
+        // Renderizado condicional según tipo de misión
+        if (m.type === "sort") {
+            html += `<div id="items-area">`;
+            m.items.forEach(item => {
+                html += `<div class="card" id="${item.id}" onclick="game.selectSortItem('${item.id}', '${item.type}')">
+                    <div class="chemical-formula">${item.form}</div>
+                </div>`;
+            });
+            html += `</div>
+            <div class="bins-container">
+                <div class="bin" onclick="game.trySort('acid')">
+                    <div style="font-size:2rem;">🧪</div>
+                    <div class="bin-label">Tanque Ácido</div>
+                </div>
+                <div class="bin" onclick="game.trySort('salt')">
+                    <div style="font-size:2rem;">🧂</div>
+                    <div class="bin-label">Almacén Sales</div>
+                </div>
+            </div>`;
+        } 
+        else if (m.type === "choice") {
+            html += `<div style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center;">`;
+            m.options.forEach(opt => {
+                html += `<div class="card" onclick="game.handleChoice(${opt.correct}, '${opt.feedback}')">
+                    <div class="chemical-formula" style="margin-bottom:10px;">${opt.label}</div>
+                </div>`;
+            });
+            html += `</div>`;
+        }
+        else if (m.type === "builder") {
+            html += `<div class="sentence-builder" id="sentence-zone"></div>`;
+            html += `<div class="word-bank">`;
+            m.pool.forEach(word => {
+                html += `<button class="action-btn" style="margin:5px; background:#7f8c8d;" onclick="game.addToSentence('${word}')">${word}</button>`;
+            });
+            html += `</div>
+            <button class="action-btn" style="background:var(--accent); width:100%; margin-top:30px;" onclick="game.checkSentence()">Verificar Acta</button>
+            <button class="action-btn" style="background:var(--danger); width:100%;" onclick="game.resetSentence()">Borrar</button>`;
+            this.tempBuilder = [];
+        }
+        else if (m.type === "stamp") {
+            html += `<div class="document-scan">
+                <h4 style="text-decoration:underline; text-align:center;">CERTIFICADO DE CALIDAD</h4>
+                <p><b>Producto:</b> ${m.docName}</p>
+                <p><b>Fórmula Química:</b> ${m.docForm}</p>
+                <p><b>Pureza:</b> 99.9%</p>
+                <hr>
+                <p style="font-size:0.8rem;">Solicito aprobación notarial para distribución en Pueblo Rico.</p>
+                <div style="position:absolute; bottom:20px; width:80%; display:flex; justify-content:space-around;">
+                    <button class="stamp-btn approve" onclick="game.handleStamp(true)">APROBAR</button>
+                    <button class="stamp-btn reject" onclick="game.handleStamp(false)">RECHAZAR</button>
+                </div>
+            </div>`;
+        }
+
+        stage.innerHTML = html;
+        this.updateProgress();
+    },
+
+    // --- LÓGICA MISIÓN 1: SORT ---
+    selectSortItem: function(id, type) {
+        // Deseleccionar previos
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+        // Seleccionar nuevo
+        const el = document.getElementById(id);
+        el.classList.add('selected');
+        this.selectedItem = { id: id, type: type, element: el };
+    },
+    trySort: function(binType) {
+        if (!this.selectedItem) return;
+        
+        if (this.selectedItem.type === binType) {
+            // Correcto
+            this.selectedItem.element.style.visibility = 'hidden'; // Ocultar
+            this.addScore(2.5); // 4 items * 2.5 = 10 pts
+            fireConfetti(10);
+            
+            // Verificar si quedan items visibles
+            const visible = Array.from(document.querySelectorAll('#items-area .card')).filter(c => c.style.visibility !== 'hidden');
+            if (visible.length === 0) {
+                setTimeout(() => this.showFeedback("Inventario Organizado", "Excelente trabajo clasificando.", true), 500);
+            }
+        } else {
+            this.penalize("Clasificación incorrecta. Revisa la fórmula.");
+        }
+        this.selectedItem = null;
+    },
+
+    // --- LÓGICA MISIÓN 2 & 3: CHOICE ---
+    handleChoice: function(isCorrect, feedback) {
+        if (isCorrect) {
+            this.addScore(10);
+            fireConfetti(50);
+            this.showFeedback("¡Decisión Correcta!", feedback, true);
+        } else {
+            this.penalize(feedback);
+        }
+    },
+
+    // --- LÓGICA MISIÓN 4: BUILDER ---
+    addToSentence: function(word) {
+        this.tempBuilder.push(word);
+        document.getElementById('sentence-zone').innerText = this.tempBuilder.join(" ");
+    },
+    resetSentence: function() {
+        this.tempBuilder = [];
+        document.getElementById('sentence-zone').innerText = " ";
+    },
+    checkSentence: function() {
+        const target = missions[this.level].targetName.join(" ");
+        const current = this.tempBuilder.join(" ");
+        if (current === target) {
+            this.addScore(10);
+            fireConfetti(50);
+            this.showFeedback("Acta Correcta", "Has aplicado correctamente la nomenclatura IUPAC.", true);
+        } else {
+            this.penalize("El nombre no cumple las normas IUPAC. Revisa el orden o las valencias.");
+            this.resetSentence();
+        }
+    },
+
+    // --- LÓGICA MISIÓN 5: STAMP ---
+    handleStamp: function(approved) {
+        const m = missions[this.level];
+        // Si approved es true, el usuario dice que es VERDADERO.
+        // Si approved es false, el usuario dice que es FALSO (Fraude).
+        // m.isCorrect es la verdad absoluta del documento.
+        
+        const userIsRight = (approved === m.isCorrect);
+
+        if (userIsRight) {
+            this.addScore(10);
+            fireConfetti(100);
+            this.showFeedback("Auditoría Completada", m.feedbackCorrect, true);
+        } else {
+            this.penalize(m.feedbackWrong);
+        }
+    },
+
+    // --- SISTEMA GENERAL ---
+    addScore: function(amount) {
+        this.score += amount;
+        this.updateHUD();
+    },
+    penalize: function(msg) {
+        // Animación de error
+        const stage = document.getElementById('game-stage');
+        stage.style.animation = "shake 0.3s";
+        setTimeout(() => stage.style.animation = "", 300);
+        
+        this.score = Math.max(0, this.score - 2);
+        this.updateHUD();
+        alert("⚠️ " + msg); // Feedback inmediato simple para error
+    },
+    updateHUD: function() {
+        document.getElementById('score').innerText = Math.floor(this.score);
+        let grade = (this.score / this.maxScore) * 5.0;
+        if(grade > 5.0) grade = 5.0;
+        document.getElementById('grade').innerText = grade.toFixed(1);
+    },
+    updateProgress: function() {
+        const pct = ((this.level) / missions.length) * 100;
+        document.getElementById('progress-fill').style.width = pct + "%";
+    },
+    showFeedback: function(title, msg, isNext) {
+        const modal = document.getElementById('feedback-modal');
+        document.getElementById('fb-title').innerText = title;
+        document.getElementById('fb-msg').innerHTML = msg;
+        modal.style.display = 'block';
+        
+        const btn = modal.querySelector('button');
+        btn.onclick = () => {
+            modal.style.display = 'none';
+            if(isNext) game.startLevel(game.level + 1);
+        };
+    },
+    endGame: function() {
+        document.getElementById('end-screen').classList.remove('hidden');
+        document.getElementById('progress-fill').style.width = "100%";
+        const grade = (this.score / this.maxScore) * 5.0;
+        document.getElementById('final-grade').innerText = grade.toFixed(1);
+        
+        let verdict = "Certificado Denegado";
+        if(grade >= 4.0) verdict = "Notario Experto";
+        else if(grade >= 3.0) verdict = "Notario Junior";
+        document.getElementById('final-verdict').innerText = verdict;
+    }
+};
+
+// --- ANIMACIÓN ---
+const canvas = document.getElementById("confetti-canvas");
+const ctx = canvas.getContext("2d");
+let particles = [];
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function fireConfetti(amount) {
+    for (let i = 0; i < amount; i++) {
+        particles.push({
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2,
+            vx: (Math.random() - 0.5) * 10,
+            vy: (Math.random() - 0.5) * 10,
+            life: 100,
+            color: `hsl(${Math.random() * 360}, 70%, 50%)`
+        });
+    }
+    animateConfetti();
+}
+
+function animateConfetti() {
+    if (particles.length === 0) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < particles.length; i++) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.2; // Gravedad
+        p.life--;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        if (p.life <= 0) { particles.splice(i, 1); i--; }
+    }
+    requestAnimationFrame(animateConfetti);
+}
+
+// Estilo shake para error
+const styleSheet = document.createElement("style");
+styleSheet.innerText = `@keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } 100% { transform: translateX(0); } }`;
+document.head.appendChild(styleSheet);
+
+</script>
+</body>
+</html>

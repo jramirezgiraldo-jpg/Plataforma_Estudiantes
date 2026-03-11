@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: El Laboratorio Orgánico Clandestino</title>
+    <style>
+        /* =========================================================
+           VARIABLES Y DISEÑO BASE (TEMÁTICA QUÍMICA AVANZADA)
+           ========================================================= */
+        :root {
+            --bg-color: #0a0a0a;
+            --panel-bg: #111827;
+            --text-main: #f3f4f6;
+            --accent-green: #10b981;  /* Verde químico */
+            --accent-purple: #8b5cf6; /* Púrpura reactivo */
+            --accent-red: #ef4444;    /* Rojo alerta */
+            --border-color: #374151;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* Patrón de hexágonos químicos sutil mediante CSS */
+            background-image: 
+                linear-gradient(30deg, #111827 12%, transparent 12.5%, transparent 87%, #111827 87.5%, #111827),
+                linear-gradient(150deg, #111827 12%, transparent 12.5%, transparent 87%, #111827 87.5%, #111827),
+                linear-gradient(30deg, #111827 12%, transparent 12.5%, transparent 87%, #111827 87.5%, #111827),
+                linear-gradient(150deg, #111827 12%, transparent 12.5%, transparent 87%, #111827 87.5%, #111827),
+                linear-gradient(60deg, #1f2937 25%, transparent 25.5%, transparent 75%, #1f2937 75%, #1f2937), 
+                linear-gradient(60deg, #1f2937 25%, transparent 25.5%, transparent 75%, #1f2937 75%, #1f2937);
+            background-size: 40px 70px;
+            background-position: 0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 95%;
+            max-width: 1100px;
+            height: 90vh;
+            background-color: rgba(17, 24, 39, 0.95);
+            border: 2px solid var(--accent-purple);
+            border-radius: 12px;
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.3), inset 0 0 20px rgba(0,0,0,0.8);
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(90deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-purple);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--accent-purple);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+            flex: 1;
+        }
+
+        .progress-badge {
+            background-color: rgba(139, 92, 246, 0.2);
+            border: 1px solid var(--accent-purple);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-family: var(--font-mono);
+            font-weight: bold;
+        }
+
+        /* LAYOUT PRINCIPAL */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column; }
+            .inventory-panel { border-left: none !important; border-top: 2px solid var(--accent-purple); height: 200px; }
+            .game-area { overflow-y: auto; }
+        }
+
+        /* ÁREA DE JUEGO (Izquierda) */
+        .game-area {
+            flex: 3;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .phase-title {
+            color: var(--accent-green);
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+        }
+        
+        .puzzle-counter {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: #d1d5db;
+        }
+
+        .clue-box {
+            background-color: rgba(16, 185, 129, 0.05);
+            border-left: 4px solid var(--accent-green);
+            padding: 20px;
+            margin-bottom: 25px;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            border-radius: 0 8px 8px 0;
+            line-height: 1.5;
+        }
+
+        /* ESTILOS PARA LAS IMÁGENES GENERADAS POR IA */
+        .ai-image-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 15px auto;
+            border: 2px dashed var(--accent-purple);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: rgba(139, 92, 246, 0.05);
+            text-align: center;
+            position: relative;
+        }
+
+        .ai-image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Fallback si la imagen no se ha generado/cargado aún */
+        .ai-image-container::before {
+            content: attr(data-placeholder);
+            display: block;
+            padding: 40px 20px;
+            color: #8b5cf6;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* CONTROLES DE ENTRADA */
+        .input-section {
+            background-color: var(--panel-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: auto;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3);
+        }
+
+        .input-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            background-color: #030712;
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-family: var(--font-mono);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: var(--accent-purple);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #a78bfa;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.6);
+        }
+
+        button:disabled {
+            background-color: #374151;
+            color: #6b7280;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .message.error {
+            display: block;
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .message.success {
+            display: block;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        /* PANEL DE INVENTARIO (Derecha) */
+        .inventory-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            border-left: 2px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .inventory-title {
+            text-align: center;
+            color: var(--accent-purple);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .inventory-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        .item {
+            background-color: #1f2937;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            border-color: var(--accent-purple);
+        }
+
+        .item-icon {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .item-hint {
+            font-size: 0.8rem;
+            color: var(--accent-green);
+            margin-top: 4px;
+        }
+
+        /* MODAL PARA LEER OBJETOS DEL INVENTARIO */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--accent-purple);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 650px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.4);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.8rem;
+            color: #9ca3af;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover { color: var(--accent-red); }
+
+        .modal-title {
+            color: var(--accent-green);
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            font-size: 1.6rem;
+            text-transform: uppercase;
+        }
+
+        .modal-body {
+            font-family: var(--font-main);
+            line-height: 1.6;
+            color: #e5e7eb;
+            margin-top: 20px;
+        }
+
+        .modal-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: #1f2937;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+        
+        .modal-body th, .modal-body td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .modal-body th { 
+            background-color: rgba(139, 92, 246, 0.2); 
+            color: var(--accent-purple); 
+        }
+
+        /* Pantalla final */
+        .victory-screen {
+            text-align: center;
+            padding: 40px 20px;
+            animation: fadeIn 1s ease-in;
+        }
+        .victory-icon {
+            font-size: 6rem;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>⚗️ Escape Room: Clandestino Químico</h1>
+            <div class="progress-badge" id="progress-badge">Reto: 1 / 13</div>
+        </header>
+
+        <div class="main-layout">
+            <!-- Zona Izquierda: Historia y Puzle -->
+            <div class="game-area" id="game-area">
+                <div id="phase-content">
+                    <!-- El contenido se inyecta por JS -->
+                </div>
+
+                <div class="input-section" id="input-section">
+                    <label id="input-label" for="answer">Introduce tu respuesta:</label>
+                    <div class="input-group">
+                        <input type="text" id="answer" placeholder="Escribe aquí tu deducción..." autocomplete="off">
+                        <button id="submit-btn" onclick="checkAnswer()">Sintetizar</button>
+                    </div>
+                    <div id="message-box" class="message"></div>
+                </div>
+            </div>
+
+            <!-- Zona Derecha: Inventario -->
+            <div class="inventory-panel">
+                <h3 class="inventory-title">💼 Protocolos (Inventario)</h3>
+                <div class="inventory-items" id="inventory-list">
+                    <!-- Los objetos se inyectan por JS -->
+                    <div style="text-align: center; color: #6b7280; font-size: 0.95rem; margin-top: 30px; font-style: italic;" id="empty-inventory">
+                        Bata de laboratorio vacía.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para leer pistas (Diarios, tablas, manuales) -->
+    <div class="modal-overlay" id="item-modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">✖</button>
+            <h2 class="modal-title" id="modal-title">Título</h2>
+            <div class="modal-body" id="modal-body">
+                Contenido del objeto.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =========================================================
+           ESTRUCTURA DE LOS 13 ACERTIJOS EN 5 FASES
+           Tema: Química Orgánica Grado 11
+           ========================================================= */
+        const gameData = [
+            // FASE 1: Nomenclatura IUPAC (Acertijos 1 al 3)
+            {
+                id: 1,
+                phase: "Fase 1: El Archivo del Alquimista",
+                puzzleNum: "Acertijo 1 de 13 (Nomenclatura IUPAC)",
+                story: "Has sido encerrado en un laboratorio clandestino donde se diseñaban moléculas experimentales. La única salida requiere probar tus conocimientos en química orgánica avanzada. Frente a ti hay una caja fuerte digital oxidada y un manuscrito encriptado.",
+                clue: "La primera página del manuscrito detalla la síntesis de un combustible de alto octanaje. El texto subraya la importancia de la estructura base:\n\n'La molécula principal es el <strong>2,2,4-trimetilpentano</strong>.'\n\nPara encender el panel de la caja fuerte, debes demostrar que comprendes su estructura fundamental. Piensa detenidamente en la cadena principal y sus ramificaciones.",
+                visual: null,
+                question: "¿Cuántos átomos de CARBONO en total posee una sola molécula de 2,2,4-trimetilpentano?",
+                answer: "8", // pentano(5) + 3 metiles(3) = 8
+                reward: null
+            },
+            {
+                id: 2,
+                phase: "Fase 1: El Archivo del Alquimista",
+                puzzleNum: "Acertijo 2 de 13 (Corrección IUPAC)",
+                story: "El panel numérico se enciende con un zumbido. La pantalla parpadea y muestra un holograma molecular erróneo.",
+                clue: "La IA del laboratorio intentó nombrar una molécula, pero cometió un error grave de nomenclatura según las reglas de la IUPAC. La IA la llamó: <strong>3-etil-2,4-dimetilhexano</strong>.\n\nPara desbloquear el siguiente teclado, debes corregir mentalmente la numeración de la cadena principal de acuerdo con las reglas de menor localizador posible. Una vez que tengas el nombre correcto en tu cabeza (y en tu papel), suma todos los números localizadores de ese nombre correcto.",
+                // AQUÍ VA LA PRIMERA IMAGEN GENERADA POR IA (Marcador de posición)
+                visual: `<div class="ai-image-container" data-placeholder="[Imagen IA 1: Estructura topológica en zig-zag de un alcano ramificado, mostrando claramente una cadena de 6 carbonos con un grupo etil y dos grupos metil, similar a lo que describiría el nombre erróneo pero forzando al estudiante a re-numerar desde el extremo correcto.]">
+                            <img src="acertijo_visual_1.jpg" alt="Acertijo visual 1: Estructura topológica errónea" onerror="this.style.display='none'">
+                         </div>`,
+                question: "Asumiendo el nombre CORRECTO IUPAC, ¿cuál es el resultado de SUMAR matemáticamente todos los números localizadores (los números en el nombre)?",
+                answer: "9", // El nombre es 3-etil-2,4-dimetilhexano o 4-etil-3,5-dimetilhexano? Wait. Let's draw it.
+                             // Hexane: C1-C2(Me)-C3(Et)-C4(Me)-C5-C6. 
+                             // L to R: 3-ethyl-2,4-dimethylhexane. Locants: 2,3,4. Sum = 9. 
+                             // R to L: 4-ethyl-3,5-dimethylhexane. Locants: 3,4,5. 
+                             // Lower locant set is 2,3,4. So 3-etil-2,4-dimetilhexano IS correct structurally but let's assume it IS the correct one and the puzzle is just summing them. 
+                             // Wait, if it's "wrong", let's use: "4-etil-3,5-dimetilhexano". 
+                             // Let me change the clue slightly via code so the answer "9" makes sense.
+                             // Clue updated in script directly to "4-etil-3,5-dimetilhexano". Correct name: "3-etil-2,4-dimetilhexano". Sum: 3+2+4=9.
+                reward: null
+            },
+            {
+                id: 3,
+                phase: "Fase 1: El Archivo del Alquimista",
+                puzzleNum: "Acertijo 3 de 13 (Código de Acceso)",
+                story: "La pantalla principal de la caja fuerte requiere un código maestro de dos dígitos para abrirse. Escuchas el gas de seguridad empezar a filtrarse en la habitación...",
+                clue: "Un post-it amarillo pegado al monitor dice:\n'El código es el producto de tu investigación. Multiplica los carbonos totales obtenidos en el Reto 1 por la suma matemática de los localizadores correctos del Reto 2.'",
+                visual: null,
+                question: "Introduce el código numérico de 2 dígitos:",
+                answer: "72", // 8 (carbonos) * 9 (suma) = 72
+                reward: {
+                    id: "tabla_enlaces",
+                    name: "Tabla Termodinámica",
+                    icon: "📊",
+                    hint: "Energías de disociación de enlace (kJ/mol)",
+                    content: `
+                        <p><strong>Clasificado: Tabla de Energías de Disociación Homolítica</strong></p>
+                        <p>Valores estándar para cálculos de ruptura de enlaces (\u0394H):</p>
+                        <table>
+                            <tr><th>Enlace</th><th>Energía (kJ/mol)</th></tr>
+                            <tr><td>C - H</td><td>413</td></tr>
+                            <tr><td>C - C</td><td>348</td></tr>
+                            <tr><td>C - Br</td><td>276</td></tr>
+                            <tr><td>C - Cl</td><td>328</td></tr>
+                            <tr><td>Br - Br</td><td>193</td></tr>
+                        </table>
+                        <p><em>Nota: Romper un enlace requiere energía (proceso endotérmico, +). Formar un enlace libera energía (proceso exotérmico, -).</em></p>
+                    `
+                }
+            },
+            // FASE 2: Ruptura de Enlaces (Acertijos 4 al 6)
+            {
+                id: 4,
+                phase: "Fase 2: La Cámara de Escisión",
+                puzzleNum: "Acertijo 4 de 13 (Mecanismos de Ruptura)",
+                story: "La caja fuerte se abre revelando una pesada puerta de acero que da a la 'Cámara de Escisión'. Aquí, potentes láseres separan moléculas a la fuerza. Has obtenido la 'Tabla Termodinámica' (revisa tu inventario).",
+                clue: "En el centro de la sala, un proyector holográfico muestra una molécula de <strong>2-bromo-2-metilpropano</strong> (un haluro de alquilo terciario) reaccionando en un disolvente altamente polar.\n\nDebido a la diferencia de electronegatividad y al entorno, el enlace C-Br se rompe llevándose el bromo ambos electrones del enlace (ruptura heterolítica).\n\nIdentifica el tipo de intermedio de reacción orgánico que se forma en el átomo de carbono central.",
+                visual: null,
+                question: "Escribe el nombre del intermedio orgánico formado (una sola palabra):",
+                answer: "carbocation", // aceptaremos carbocatión o carbocation
+                reward: null
+            },
+            {
+                id: 5,
+                phase: "Fase 2: La Cámara de Escisión",
+                puzzleNum: "Acertijo 5 de 13 (Termodinámica)",
+                story: "El sistema confirma tu respuesta. Ahora un láser térmico gigante apunta a un tubo de ensayo. Debes calibrar la energía exacta para iniciar la reacción.",
+                clue: "Para desmantelar una molécula de bromometano (CH3Br) en sus átomos individuales mediante ruptura homolítica, debes romper enlaces específicos. Revisa tu 'Tabla Termodinámica'.\n\nEl láser necesita saber exactamente cuánta energía térmica (en kJ/mol) debe inyectar para romper UN enlace C-H y UN enlace C-Br simultáneamente.",
+                // AQUÍ VA LA SEGUNDA IMAGEN GENERADA POR IA
+                visual: `<div class="ai-image-container" data-placeholder="[Imagen IA 2: Un diagrama abstracto mostrando la molécula de bromometano bajo un láser. Debe mostrar un enlace C-H resaltado en rojo y un enlace C-Br resaltado en azul, con símbolos de energía fluyendo hacia ellos.]">
+                            <img src="acertijo_visual_2.jpg" alt="Acertijo visual 2: Láser térmico apuntando a enlaces" onerror="this.style.display='none'">
+                         </div>`,
+                question: "¿Cuál es la energía total requerida (en kJ/mol) para romper ambos enlaces? (Solo el número)",
+                answer: "689", // 413 (C-H) + 276 (C-Br) = 689
+                reward: null
+            },
+            {
+                id: 6,
+                phase: "Fase 2: La Cámara de Escisión",
+                puzzleNum: "Acertijo 6 de 13 (El Radical Radical)",
+                story: "El láser dispara con precisión de cirujano. Los enlaces se rompen y la sala se llena de un gas de radicales libres altamente reactivo. Debes activar el purificador.",
+                clue: "La terminal del purificador hace una pregunta de seguridad sobre los radicales generados por rupturas homolíticas.\n\nAnaliza el radical metilo (CH3•) recién formado en la cámara. Su extrema reactividad se debe a una anomalía electrónica.",
+                visual: null,
+                question: "¿Cuántos electrones desapareados posee el átomo de carbono en un radical metilo neutro?",
+                answer: "1", 
+                reward: {
+                    id: "manual_redox",
+                    name: "Manual de Oxidación",
+                    icon: "🔥",
+                    hint: "Reglas para calcular estados de oxidación orgánicos",
+                    content: `
+                        <p><strong>Manual de Reacciones REDOX Orgánicas</strong></p>
+                        <p>Para calcular el Estado de Oxidación (E.O.) de un carbono específico, evalúa los enlaces de ESE carbono:</p>
+                        <ul>
+                            <li>Enlace a un átomo MÁS electronegativo (ej. Oxígeno, Nitrógeno, Halógenos): <strong>+1 por cada enlace</strong> (un enlace doble al O cuenta como +2).</li>
+                            <li>Enlace a un átomo MENOS electronegativo (ej. Hidrógeno): <strong>-1 por cada enlace</strong>.</li>
+                            <li>Enlace a otro átomo de CARBONO: <strong>0</strong>.</li>
+                        </ul>
+                        <p><em>Suma estos valores para obtener el Estado de Oxidación del carbono en ese grupo funcional.</em></p>
+                    `
+                }
+            },
+            // FASE 3: REDOX Orgánico (Acertijos 7 al 9)
+            {
+                id: 7,
+                phase: "Fase 3: El Horno REDOX",
+                puzzleNum: "Acertijo 7 de 13 (Estados de Oxidación)",
+                story: "La compuerta del purificador te da acceso al 'Horno REDOX'. Las paredes están forradas de permanganato de potasio sólido. Acabas de recibir el 'Manual de Oxidación'.",
+                clue: "En el monitor del horno se muestra la oxidación vigorosa de etanol a ácido etanoico (ácido acético) usando dicromato de potasio en medio ácido.\n\nPara estabilizar la presión del horno, debes calcular el Estado de Oxidación (E.O.) del carbono del grupo funcional (el carbono carbonílico) en el producto final: el <strong>ácido etanoico (CH3COOH)</strong>.\n\nUsa las reglas de tu manual.",
+                visual: null,
+                question: "¿Cuál es el Estado de Oxidación de dicho carbono? (Usa el signo + si es positivo, ej: +5, o solo el número)",
+                answer: "3", // Aceptaremos 3 o +3. Lo manejaremos en el JS haciendo un replace de "+".
+                reward: null
+            },
+            {
+                id: 8,
+                phase: "Fase 3: El Horno REDOX",
+                puzzleNum: "Acertijo 8 de 13 (Transferencia Electrónica)",
+                story: "El horno se estabiliza. Ahora debes evaluar la transferencia total de energía (electrones) en el proceso de oxidación que acaba de ocurrir.",
+                clue: "Vuelve a observar la transformación del etanol (CH3CH2OH) a ácido etanoico (CH3COOH).\n\nCalcula primero el Estado de Oxidación del carbono alfa en el etanol original. Luego, compáralo con el estado de oxidación que calculaste en el paso anterior (producto).\n\nLa diferencia entre ambos estados representa la cantidad de electrones transferidos (perdidos por el carbono) en esta semirreacción de oxidación.",
+                visual: null,
+                question: "¿Cuántos electrones (e-) pierde el átomo de carbono durante esta oxidación completa?",
+                answer: "4", // Etanol (C1: enlazado a 1 C (0), 1 O (+1), 2 H (-2) = -1. Ácido (+3). Diferencia = 4 e-
+                reward: null
+            },
+            {
+                id: 9,
+                phase: "Fase 3: El Horno REDOX",
+                puzzleNum: "Acertijo 9 de 13 (Combinación REDOX)",
+                story: "La puerta hacia la siguiente fase está bloqueada por un candado electrónico antiguo de tambores.",
+                clue: "El candado requiere un código de dos dígitos basado en la estequiometría REDOX que acabas de resolver.\n\nIngresa el Estado de Oxidación del ácido acético (Reto 7) seguido inmediatamente por el número de electrones perdidos (Reto 8).",
+                visual: null,
+                question: "Introduce el código numérico de 2 dígitos:",
+                answer: "34", // 3 (del +3) y 4 (electrones)
+                reward: {
+                    id: "reglas_wh",
+                    name: "Notas de Woodward-Hoffmann",
+                    icon: "🌀",
+                    hint: "Reglas de selección para reacciones pericíclicas",
+                    content: `
+                        <p><strong>Apuntes de Laboratorio: Reacciones Pericíclicas</strong></p>
+                        <table style="font-size: 0.85rem;">
+                            <tr><th>Sistema de Electrones π</th><th>Condición Térmica (\u0394)</th><th>Condición Fotoquímica (h\u03BD)</th></tr>
+                            <tr><td><strong>4n</strong> (ej: 4, 8...)</td><td>Conrotatoria</td><td>Disrotatoria</td></tr>
+                            <tr><td><strong>4n + 2</strong> (ej: 2, 6...)</td><td>Disrotatoria</td><td>Conrotatoria</td></tr>
+                        </table>
+                        <p><em>* En reacciones de Diels-Alder, los electrones \u03C0 del dieno y el dienófilo se suman para analizar el estado de transición cíclico.</em></p>
+                    `
+                }
+            },
+            // FASE 4: Reacciones Pericíclicas (Acertijos 10 al 11)
+            {
+                id: 10,
+                phase: "Fase 4: El Vórtice Pericíclico",
+                puzzleNum: "Acertijo 10 de 13 (Cicloadición Diels-Alder)",
+                story: "Has entrado a una sala donde el tiempo parece curvarse. Anillos moleculares se forman y destruyen en el aire en un solo paso concertado. Acabas de hallar las 'Notas de Woodward-Hoffmann'.",
+                clue: "Un holograma proyecta una cicloadición [4+2]. Se observa el buta-1,3-dieno acercándose al eteno. Un mensaje flota en la sala:\n\n'Para navegar el vórtice, debes comprender el flujo de electrones en el estado de transición.'",
+                // AQUÍ VA LA TERCERA IMAGEN GENERADA POR IA
+                visual: `<div class="ai-image-container" data-placeholder="[Imagen IA 3: Un estado de transición cíclico de una reacción de Diels-Alder entre buta-1,3-dieno y eteno. Las nubes de electrones pi (π) deben verse superponiéndose, formando un hexágono punteado brillante.]">
+                            <img src="acertijo_visual_3.jpg" alt="Acertijo visual 3: Estado de transición Diels-Alder" onerror="this.style.display='none'">
+                         </div>`,
+                question: "¿Cuántos electrones pi (π) participan EN TOTAL en este estado de transición concertado?",
+                answer: "6", // 4 del dieno + 2 del dienófilo = 6.
+                reward: null
+            },
+            {
+                id: 11,
+                phase: "Fase 4: El Vórtice Pericíclico",
+                puzzleNum: "Acertijo 11 de 13 (Estereoquímica Electrocríclica)",
+                story: "El vórtice se estabiliza temporalmente, pero una molécula de ciclobuteno amenaza con abrir su anillo de forma explosiva debido al intenso calor de la sala.",
+                clue: "Consulta tus Notas de Woodward-Hoffmann urgentemente.\n\nLa apertura del anillo del ciclobuteno implica un sistema de 4 electrones pi. Debido al inmenso calor de la sala, la reacción ocurre bajo <strong>condiciones térmicas (Δ)</strong>.\n\nPara activar el escudo de contención, debes indicarle al sistema cómo van a rotar los orbitales en los extremos del sistema pi durante esta apertura térmica.",
+                visual: null,
+                question: "¿Cómo será la rotación? (Escribe: conrotatoria o disrotatoria)",
+                answer: "conrotatoria", // Sistema 4n bajo calor es conrotatorio.
+                reward: {
+                    id: "lente_fischer",
+                    name: "Polarímetro de Fischer",
+                    icon: "🍭",
+                    hint: "Visor para analizar la estereoquímica de azúcares",
+                    content: `
+                        <p><strong>Configuración de Carbohidratos:</strong></p>
+                        <p>En una Proyección de Fischer para carbohidratos lineales:</p>
+                        <ul>
+                            <li>Las líneas horizontales salen hacia ti (cuñas).</li>
+                            <li>Las líneas verticales van hacia atrás (trazos).</li>
+                            <li><strong>Carbono Quiral:</strong> Un átomo de carbono unido a 4 grupos estructuralmente diferentes.</li>
+                        </ul>
+                        <p>Deduce sabiamente contando desde el C2 hasta el penúltimo carbono en las aldohexosas.</p>
+                    `
+                }
+            },
+            // FASE 5: Carbohidratos y Código Final (Acertijos 12 al 13)
+            {
+                id: 12,
+                phase: "Fase 5: El Cristal de Carbohidratos",
+                puzzleNum: "Acertijo 12 de 13 (Quiralidad de Azúcares)",
+                story: "Has escapado del vórtice. Entras a la última sala: 'El Cristal'. Las paredes están recubiertas de cristales de glucosa gigantes que polarizan la luz. Has obtenido el 'Polarímetro de Fischer'.",
+                clue: "Una enorme Proyección de Fischer de la forma lineal de la D-Glucosa (una aldohexosa de 6 carbonos) está grabada en el cristal central.\n\nEl carbono 1 es un aldehído (CHO) y el carbono 6 es un alcohol primario (CH2OH). Usa tu polarímetro (conocimientos) para analizar los carbonos intermedios.",
+                // AQUÍ VA LA CUARTA IMAGEN GENERADA POR IA
+                visual: `<div class="ai-image-container" data-placeholder="[Imagen IA 4: Una proyección de Fischer clásica de la D-Glucosa lineal. Arriba el grupo CHO, abajo el grupo CH2OH. En el medio, 4 carbonos con grupos OH ubicados (de arriba a abajo) a la Derecha, Izquierda, Derecha, Derecha.]">
+                            <img src="acertijo_visual_4.jpg" alt="Acertijo visual 4: Proyección de Fischer de la D-Glucosa" onerror="this.style.display='none'">
+                         </div>`,
+                question: "¿Cuántos carbonos quirales (asimétricos) exactos posee esta molécula de aldohexosa en su cadena abierta?",
+                answer: "4", // Los carbonos 2, 3, 4 y 5 son quirales.
+                reward: null
+            },
+            {
+                id: 13,
+                phase: "Fase 5: El Cristal de Carbohidratos",
+                puzzleNum: "Acertijo 13 de 13 (La Llave Maestra)",
+                story: "El cristal de glucosa se desplaza, revelando la salida del laboratorio. Sin embargo, el último terminal maestro requiere una secuencia que demuestre que has asimilado todo el conocimiento del laboratorio.",
+                clue: "Toma tu lápiz y papel. Recupera de tu memoria y de las pruebas anteriores los siguientes valores para formar un PIN de 4 dígitos. Únelos en este orden exacto sin espacios:\n\n1er Dígito: El número de carbonos quirales de la D-glucosa (Reto 12).\n2do Dígito: La cantidad de electrones pi en la reacción de Diels-Alder (Reto 10).\n3er Dígito: La suma matemática de los localizadores IUPAC corregidos en el Reto 2.\n4to Dígito: El estado de oxidación del carbono del ácido acético (Reto 7).",
+                visual: null,
+                question: "Introduce el PIN Maestro de 4 dígitos para escapar:",
+                answer: "4693", // Quirales(4) + Diels(6) + Localizadores(9) + Oxidacion(3) = 4693
+                reward: null
+            }
+        ];
+
+        /* =========================================================
+           LÓGICA DEL MOTOR DEL JUEGO (JAVASCRIPT)
+           ========================================================= */
+        let currentPuzzleIndex = 0;
+        let inventory = [];
+
+        // Referencias al DOM
+        const progressBadge = document.getElementById("progress-badge");
+        const phaseContentDiv = document.getElementById("phase-content");
+        const answerInput = document.getElementById("answer");
+        const submitBtn = document.getElementById("submit-btn");
+        const messageBox = document.getElementById("message-box");
+        const inventoryList = document.getElementById("inventory-list");
+        const emptyInventoryMsg = document.getElementById("empty-inventory");
+        const inputLabel = document.getElementById("input-label");
+        
+        // Modal referencias
+        const modalOverlay = document.getElementById("item-modal");
+        const modalTitle = document.getElementById("modal-title");
+        const modalBody = document.getElementById("modal-body");
+
+        // Inicializar el juego
+        function initGame() {
+            // Corrección en la pista del acertijo 2 para coincidir la suma = 9
+            gameData[1].clue = gameData[1].clue.replace("3-etil-2,4-dimetilhexano", "<strong>4-etil-3,5-dimetilhexano</strong>");
+            
+            renderPuzzle();
+            // Permitir enviar con la tecla Enter
+            answerInput.addEventListener("keypress", function(event) {
+                if (event.key === "Enter" && !submitBtn.disabled) {
+                    event.preventDefault();
+                    checkAnswer();
+                }
+            });
+        }
+
+        // Renderizar el acertijo actual
+        function renderPuzzle() {
+            if (currentPuzzleIndex >= gameData.length) {
+                showVictory();
+                return;
+            }
+
+            const puzzle = gameData[currentPuzzleIndex];
+            
+            // Actualizar header
+            progressBadge.innerText = `Reto: ${currentPuzzleIndex + 1} / 13`;
+
+            // Construir el HTML de la fase
+            let visualHTML = puzzle.visual ? puzzle.visual : "";
+            
+            let html = `
+                <h2 class="phase-title">${puzzle.phase}</h2>
+                <div class="puzzle-counter">${puzzle.puzzleNum}</div>
+                <div class="story-text">${puzzle.story.replace(/\n/g, '<br>')}</div>
+                ${visualHTML}
+                <div class="clue-box">${puzzle.clue.replace(/\n/g, '<br>')}</div>
+            `;
+            
+            phaseContentDiv.innerHTML = html;
+            inputLabel.innerText = puzzle.question;
+            answerInput.value = "";
+            answerInput.focus();
+            hideMessage();
+        }
+
+        // Limpieza de inputs (remover acentos, espacios, signos especiales como +)
+        function sanitizeInput(str) {
+            let s = str.trim().toLowerCase();
+            // Quitar acentos
+            s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            // Si la respuesta es un número y el usuario le puso '+', lo quitamos (ej. "+3" -> "3")
+            s = s.replace(/^\+/, '');
+            return s;
+        }
+
+        // Comprobar la respuesta introducida
+        function checkAnswer() {
+            const puzzle = gameData[currentPuzzleIndex];
+            
+            const userAnswer = sanitizeInput(answerInput.value);
+            const correctAnswer = sanitizeInput(puzzle.answer);
+
+            if (userAnswer === correctAnswer) {
+                // RESPUESTA CORRECTA
+                showMessage(`¡Síntesis Correcta! Procesando...`, "success");
+                submitBtn.disabled = true;
+                answerInput.disabled = true;
+
+                // Añadir objeto al inventario si este acertijo otorga uno
+                if (puzzle.reward) {
+                    addToInventory(puzzle.reward);
+                }
+
+                // Pasar al siguiente acertijo después de 2 segundos (tiempo para leer el mensaje de éxito)
+                setTimeout(() => {
+                    currentPuzzleIndex++;
+                    submitBtn.disabled = false;
+                    answerInput.disabled = false;
+                    renderPuzzle();
+                }, 2000);
+
+            } else {
+                // RESPUESTA INCORRECTA - PENALIZACIÓN CONTRA FUERZA BRUTA
+                applyPenalty();
+            }
+        }
+
+        // Aplicar penalización de 5 segundos
+        function applyPenalty() {
+            let timeLeft = 5;
+            submitBtn.disabled = true;
+            answerInput.disabled = true;
+            
+            showMessage(`Error en el cálculo. Gases tóxicos detectados. Purga en ${timeLeft}s...`, "error");
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    showMessage(`Error en el cálculo. Gases tóxicos detectados. Purga en ${timeLeft}s...`, "error");
+                } else {
+                    clearInterval(timer);
+                    submitBtn.disabled = false;
+                    answerInput.disabled = false;
+                    answerInput.value = "";
+                    answerInput.focus();
+                    hideMessage();
+                }
+            }, 1000);
+        }
+
+        // Mostrar mensajes (éxito o error)
+        function showMessage(text, type) {
+            messageBox.innerHTML = text;
+            messageBox.className = `message ${type}`;
+        }
+
+        function hideMessage() {
+            messageBox.className = "message";
+            messageBox.innerHTML = "";
+            messageBox.style.display = "none";
+        }
+
+        // Lógica del Inventario
+        function addToInventory(item) {
+            // Evitar duplicados si por error la lógica recarga
+            if (inventory.some(i => i.id === item.id)) return;
+            
+            inventory.push(item);
+            emptyInventoryMsg.style.display = "none";
+
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "item";
+            itemDiv.onclick = () => openModal(item);
+
+            itemDiv.innerHTML = `
+                <div class="item-icon">${item.icon}</div>
+                <div class="item-info">
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-hint">${item.hint}</span>
+                </div>
+            `;
+            
+            // Animación de entrada fluida
+            itemDiv.style.opacity = "0";
+            itemDiv.style.transform = "translateX(20px)";
+            inventoryList.appendChild(itemDiv);
+            
+            setTimeout(() => {
+                itemDiv.style.transition = "all 0.5s ease-out";
+                itemDiv.style.opacity = "1";
+                itemDiv.style.transform = "translateX(0)";
+            }, 50);
+        }
+
+        // Manejo del Modal (Pantalla emergente para leer protocolos)
+        function openModal(item) {
+            modalTitle.innerText = item.name;
+            modalBody.innerHTML = item.content;
+            modalOverlay.classList.add("active");
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove("active");
+        }
+
+        // Cerrar modal al hacer clic fuera de la caja o apretar Escape
+        modalOverlay.addEventListener("click", function(e) {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+        
+        document.addEventListener('keydown', function(event){
+            if(event.key === "Escape" && modalOverlay.classList.contains("active")){
+                closeModal();
+            }
+        });
+
+        // Pantalla Final de Victoria
+        function showVictory() {
+            const inputSection = document.getElementById("input-section");
+            inputSection.style.display = "none"; // Ocultar controles
+            progressBadge.innerText = "¡COMPLETADO!";
+            progressBadge.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+            progressBadge.style.borderColor = "var(--accent-green)";
+            progressBadge.style.color = "var(--accent-green)";
+
+            phaseContentDiv.innerHTML = `
+                <div class="victory-screen">
+                    <div class="victory-icon">🎓🧪</div>
+                    <h2 style="color: var(--accent-green); font-size: 2.5rem; text-shadow: 0 0 15px rgba(16,185,129,0.5);">¡LABORATORIO DESBLOQUEADO!</h2>
+                    <p class="story-text" style="text-align: center; margin-top: 25px; font-size: 1.2rem;">
+                        Las gruesas puertas del laboratorio se abren, permitiendo que la luz del día y el aire fresco entren a la sala.
+                        <br><br>
+                        Has demostrado ser un experto en química orgánica avanzada. Tu dominio sobre la <strong>Nomenclatura IUPAC, Rupturas de Enlaces, REDOX, Reacciones Pericíclicas y la estereoquímica de los Carbohidratos</strong> es excepcional.
+                        <br><br>
+                        <strong style="color: var(--accent-purple);">¡Felicidades, lograste escapar!</strong>
+                    </p>
+                </div>
+            `;
+        }
+
+        // Arrancar el juego al cargar la página
+        window.onload = initGame;
+
+    </script>
+</body>
+</html>

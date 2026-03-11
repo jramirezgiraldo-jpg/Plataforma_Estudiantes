@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Reactor de la Empatía: Brönsted & Lewis</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --panel-color: #16213e;
+            --accent-color: #0f3460;
+            --highlight: #e94560;
+            --text-main: #ffffff;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* UI General */
+        #game-container {
+            width: 100%;
+            max-width: 800px;
+            height: 95vh;
+            background-color: var(--panel-color);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--accent-color);
+        }
+
+        header {
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--accent-color);
+        }
+
+        .hud-item { font-weight: bold; font-size: 1.1rem; }
+        #progress-bar-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: #000;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--highlight);
+            transition: width 0.5s ease;
+        }
+
+        /* Escenario de Juego */
+        #game-stage {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Elementos Interactivos */
+        .molecule-container {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .molecule {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            position: relative;
+        }
+
+        .molecule:hover { border-color: var(--highlight); transform: scale(1.05); }
+        .molecule.selected { border-color: var(--success); box-shadow: 0 0 15px var(--success); }
+        
+        .atom {
+            font-size: 2rem;
+            display: inline-block;
+        }
+
+        .particle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--warning);
+            position: absolute;
+            display: none;
+            z-index: 10;
+            box-shadow: 0 0 10px var(--warning);
+        }
+
+        .instruction-box {
+            background: rgba(15, 52, 96, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+            border-left: 4px solid var(--highlight);
+            animation: fadeIn 0.5s;
+        }
+
+        .theory-tooltip {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* Botones y Controles */
+        button {
+            background: var(--highlight);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 20px;
+        }
+        button:hover { background: #ff6b81; }
+        button:disabled { background: #555; cursor: not-allowed; }
+
+        /* Pantallas de Estado */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(22, 33, 62, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+        }
+        .hidden { display: none !important; }
+
+        h1 { color: var(--highlight); margin-bottom: 10px; }
+        h2 { color: var(--success); }
+        
+        /* Animaciones */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } 100% { transform: translateX(0); } }
+        .shake { animation: shake 0.3s; }
+
+        /* Canvas para Confeti */
+        #confetti-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            pointer-events: none;
+            width: 100%; height: 100%;
+            z-index: 90;
+        }
+
+        /* Estilos específicos para misiones */
+        .pair-slot {
+            border: 2px dashed #666;
+            padding: 15px;
+            margin: 10px;
+            min-width: 120px;
+            display: inline-block;
+        }
+        .lewis-dots { color: var(--warning); font-weight: bold; }
+        
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <div class="hud-item">Puntos: <span id="score">0</span></div>
+        <div class="hud-item">Nota: <span id="grade">0.0</span></div>
+    </header>
+
+    <div id="game-stage">
+        </div>
+
+    <div id="progress-bar-container">
+        <div id="progress-bar"></div>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div id="start-screen" class="overlay">
+        <h1>El Reactor de la Empatía</h1>
+        <p style="max-width: 600px; margin-bottom: 20px;">
+            Bienvenido al laboratorio, joven alquimista. Las moléculas, como las personas, buscan estabilidad.
+            A veces necesitan <b>dar</b> (ácidos) y otras veces <b>recibir</b> (bases) para estar en equilibrio.
+        </p>
+        <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <p>🧪 <b>Misión:</b> Completar 5 desafíos de enlace químico.</p>
+            <p>⚡ <b>Mecánica:</b> Haz clic para transferir protones o electrones.</p>
+            <p>❤️ <b>Valor:</b> Aprende cómo el apoyo mutuo crea nuevos compuestos.</p>
+        </div>
+        <button onclick="game.startLevel(0)">Iniciar Experimento</button>
+    </div>
+
+    <div id="end-screen" class="overlay hidden">
+        <h1>¡Experimento Finalizado!</h1>
+        <h2 id="final-verdict">Excelente</h2>
+        <p>Tu Nota Final: <span id="final-grade" style="font-size: 2rem; font-weight: bold;">0.0</span> / 5.0</p>
+        <p id="final-message" style="margin-top: 20px;">Has dominado el arte del intercambio químico.</p>
+        <button onclick="location.reload()">Reiniciar Laboratorio</button>
+    </div>
+</div>
+
+<script>
+// --- MOTOR DEL JUEGO ---
+
+const gameData = [
+    {
+        title: "Misión 1: El Donante Generoso (Brönsted-Lowry)",
+        instruction: "El HCl quiere estabilizarse donando su exceso. Haz clic en el Ácido (quien da) y luego en la Base (quien recibe).",
+        theory: "Teoría Brönsted-Lowry: Ácido es quien cede un protón (H<sup>+</sup>). Base es quien lo acepta.",
+        type: "transfer",
+        molecules: [
+            { id: "m1", formula: "HCl", type: "acid", content: "H-Cl" },
+            { id: "m2", formula: "NH<sub>3</sub>", type: "base", content: "NH<sub>3</sub>" }
+        ],
+        correctSequence: ["m1", "m2"], // De ácido a base
+        result: "Cl<sup>-</sup> + NH<sub>4</sub><sup>+</sup>"
+    },
+    {
+        title: "Misión 2: El Agua Anfótera (Brönsted-Lowry)",
+        instruction: "El amoníaco (NH<sub>3</sub>) necesita apoyo. Haz que el agua actúe como Ácido y le done un protón.",
+        theory: "Empatía Química: El agua es 'anfótera', puede actuar como ácido o base según quien la necesite.",
+        type: "transfer",
+        molecules: [
+            { id: "m1", formula: "NH<sub>3</sub>", type: "base", content: "NH<sub>3</sub>" },
+            { id: "m2", formula: "H<sub>2</sub>O", type: "acid", content: "H<sub>2</sub>O" }
+        ],
+        correctSequence: ["m2", "m1"], // Agua dona a Amoniaco
+        result: "NH<sub>4</sub><sup>+</sup> + OH<sup>-</sup>"
+    },
+    {
+        title: "Misión 3: Parejas Conjugadas",
+        instruction: "Cada acción tiene una reacción. Identifica cuál es la Base Conjugada que queda después de que el Ácido HF pierde su protón.",
+        theory: "Par Conjugado: Cuando un ácido pierde un H<sup>+</sup>, se convierte en su base conjugada.",
+        type: "selection",
+        question: "Si el Ácido es <b>HF</b>, selecciona su Base Conjugada:",
+        options: [
+            { id: "opt1", text: "H<sub>2</sub>F<sup>+</sup>", valid: false },
+            { id: "opt2", text: "F<sup>-</sup>", valid: true },
+            { id: "opt3", text: "F<sub>2</sub>", valid: false }
+        ]
+    },
+    {
+        title: "Misión 4: La Perspectiva de Lewis",
+        instruction: "Brönsted no lo explica todo. Aquí no hay protones H<sup>+</sup>. El BF<sub>3</sub> tiene hambre de electrones. Haz clic en el par de electrones del NH<sub>3</sub> para atacar.",
+        theory: "Teoría de Lewis: Una Base dona un PAR DE ELECTRONES (:), un Ácido lo acepta. Es un cambio de perspectiva.",
+        type: "lewis",
+        molecules: [
+            { id: "lew1", formula: "BF<sub>3</sub>", role: "target", content: "F<sub>3</sub>B" },
+            { id: "lew2", formula: "NH<sub>3</sub>", role: "source", content: ":NH<sub>3</sub>" } // Los dos puntos son clave
+        ]
+    },
+    {
+        title: "Misión 5: Desafío Final (Integración)",
+        instruction: "Analiza la reacción: H<sup>+</sup> + OH<sup>-</sup> &rarr; H<sub>2</sub>O. ¿Qué representa mejor esta unión?",
+        theory: "Respeto por las perspectivas: Múltiples teorías pueden explicar el mismo fenómeno.",
+        type: "selection",
+        question: "Selecciona la afirmación correcta:",
+        options: [
+            { id: "f1", text: "Solo es válida para Arrhenius.", valid: false },
+            { id: "f2", text: "El OH<sup>-</sup> es la base de Lewis porque dona el par electrónico al H<sup>+</sup>.", valid: true },
+            { id: "f3", text: "El H<sup>+</sup> es la base porque recibe carga positiva.", valid: false }
+        ]
+    }
+];
+
+const game = {
+    score: 0,
+    levelIndex: 0,
+    maxScore: 50, // 10 puntos por nivel
+    selectedMolecule: null,
+    
+    init: function() {
+        this.score = 0;
+        this.levelIndex = 0;
+        this.updateHUD();
+    },
+
+    startLevel: function(index) {
+        document.getElementById('start-screen').classList.add('hidden');
+        if(index >= gameData.length) {
+            this.endGame();
+            return;
+        }
+        
+        this.levelIndex = index;
+        const level = gameData[index];
+        const stage = document.getElementById('game-stage');
+        
+        // Renderizado basado en tipo de nivel
+        let contentHTML = `
+            <div class="instruction-box">
+                <p><b>${level.title}</b></p>
+                ${level.instruction}
+                <div class="theory-tooltip">${level.theory}</div>
+            </div>
+        `;
+
+        if (level.type === "transfer") {
+            contentHTML += `<div class="molecule-container">`;
+            level.molecules.forEach(m => {
+                contentHTML += `<div class="molecule" id="${m.id}" onclick="game.handleTransferClick('${m.id}')">
+                    <div class="atom">${m.content}</div>
+                    <div style="font-size:0.8rem; margin-top:5px; color:#aaa;">${m.formula}</div>
+                </div>`;
+            });
+            contentHTML += `</div><p id="feedback-text" style="height:20px; color:var(--warning)"></p>`;
+        } 
+        else if (level.type === "selection") {
+            contentHTML += `<p style="font-size:1.2rem; margin-bottom:20px;">${level.question}</p>`;
+            contentHTML += `<div style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center;">`;
+            level.options.forEach(opt => {
+                contentHTML += `<button onclick="game.handleSelection('${opt.id}', ${opt.valid})">${opt.text}</button>`;
+            });
+            contentHTML += `</div>`;
+        }
+        else if (level.type === "lewis") {
+             contentHTML += `<div class="molecule-container">`;
+             // Invertimos orden visual para que el ataque se vea lógico
+             contentHTML += `<div class="molecule" id="${level.molecules[0].id}" onclick="game.handleLewisClick('${level.molecules[0].id}')">
+                    <div class="atom">${level.molecules[0].content}</div>
+                </div>`;
+             contentHTML += `<div style="font-size:2rem;">+</div>`;
+             contentHTML += `<div class="molecule" id="${level.molecules[1].id}" onclick="game.handleLewisClick('${level.molecules[1].id}')">
+                    <div class="atom" style="color:var(--warning)">${level.molecules[1].content}</div>
+                </div>`;
+             contentHTML += `</div><p id="feedback-text">Haz clic en quien TIENE los electrones (:)</p>`;
+        }
+
+        stage.innerHTML = contentHTML;
+        this.updateProgressBar();
+        this.selectedMolecule = null;
+    },
+
+    handleTransferClick: function(id) {
+        const level = gameData[this.levelIndex];
+        const feedback = document.getElementById('feedback-text');
+
+        // Selección del Ácido (Origen)
+        if (!this.selectedMolecule) {
+            if (id === level.correctSequence[0]) {
+                this.selectedMolecule = id;
+                document.getElementById(id).classList.add('selected');
+                feedback.innerText = "Origen seleccionado. ¿Quién recibe el protón?";
+            } else {
+                this.penalize("Ese no es el ácido (donante) correcto.");
+            }
+        } 
+        // Selección de la Base (Destino)
+        else {
+            if (id === level.correctSequence[1] && id !== this.selectedMolecule) {
+                this.successAction(`¡Reacción Exitosa! Se formó: ${level.result}`);
+            } else if (id === this.selectedMolecule) {
+                this.selectedMolecule = null;
+                document.getElementById(id).classList.remove('selected');
+                feedback.innerText = "Selección cancelada.";
+            } else {
+                this.penalize("Esa molécula no puede aceptar el protón aquí.");
+                this.selectedMolecule = null;
+                document.querySelectorAll('.molecule').forEach(el => el.classList.remove('selected'));
+            }
+        }
+    },
+
+    handleSelection: function(optId, isValid) {
+        if (isValid) {
+            this.successAction("¡Correcto! Entendiste el concepto.");
+        } else {
+            this.penalize("Incorrecto. Revisa la carga y los átomos.");
+        }
+    },
+
+    handleLewisClick: function(id) {
+        const level = gameData[this.levelIndex];
+        // En Lewis buscamos el 'source' que tiene los puntos (:)
+        const targetObj = level.molecules.find(m => m.id === id);
+        
+        if (targetObj.role === "source") {
+            this.successAction("¡Exacto! El NH3 dona su par al BF3.");
+        } else {
+            this.penalize("Este no tiene electrones libres para donar.");
+        }
+    },
+
+    successAction: function(msg) {
+        const feedback = document.getElementById('feedback-text') || document.createElement('p');
+        if(!document.getElementById('feedback-text')) document.getElementById('game-stage').appendChild(feedback);
+        
+        feedback.style.color = "var(--success)";
+        feedback.innerHTML = msg;
+        
+        this.score += 10;
+        fireConfetti();
+        
+        setTimeout(() => {
+            this.startLevel(this.levelIndex + 1);
+        }, 2000);
+        this.updateHUD();
+    },
+
+    penalize: function(msg) {
+        const feedback = document.getElementById('feedback-text') || document.createElement('p');
+        if(!document.getElementById('feedback-text')) document.getElementById('game-stage').appendChild(feedback);
+        
+        feedback.style.color = "var(--highlight)";
+        feedback.innerText = msg;
+        
+        // Animación de error
+        const stage = document.getElementById('game-stage');
+        stage.classList.add('shake');
+        setTimeout(() => stage.classList.remove('shake'), 300);
+
+        this.score = Math.max(0, this.score - 2); // Penalización
+        this.updateHUD();
+    },
+
+    updateHUD: function() {
+        document.getElementById('score').innerText = this.score;
+        // Cálculo de nota: (Puntaje / Max) * 5.0
+        // Max score teórico si no falla nunca = 50.
+        // Se permite recuperar, pero la nota baja si falla mucho.
+        let grade = (this.score / this.maxScore) * 5.0;
+        if(grade > 5.0) grade = 5.0; // Cap
+        document.getElementById('grade').innerText = grade.toFixed(1);
+    },
+
+    updateProgressBar: function() {
+        const pct = ((this.levelIndex) / gameData.length) * 100;
+        document.getElementById('progress-bar').style.width = pct + "%";
+    },
+
+    endGame: function() {
+        const finalGrade = (this.score / this.maxScore) * 5.0;
+        document.getElementById('end-screen').classList.remove('hidden');
+        document.getElementById('final-grade').innerText = finalGrade.toFixed(1);
+        
+        let msg = "";
+        if(finalGrade >= 4.5) msg = "¡Maestro Alquimista! Dominas el equilibrio.";
+        else if(finalGrade >= 3.0) msg = "Buen trabajo. Sigue practicando los enlaces.";
+        else msg = "La alquimia requiere paciencia. Inténtalo de nuevo.";
+        
+        document.getElementById('final-message').innerText = msg;
+        document.getElementById('progress-bar').style.width = "100%";
+    }
+};
+
+// --- SISTEMA DE PARTÍCULAS (Confeti) ---
+const canvas = document.getElementById("confetti-canvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let particles = [];
+
+function fireConfetti() {
+    for (let i = 0; i < 100; i++) {
+        particles.push({
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2,
+            vx: (Math.random() - 0.5) * 15,
+            vy: (Math.random() - 0.5) * 15,
+            life: 100,
+            color: `hsl(${Math.random() * 360}, 100%, 50%)`
+        });
+    }
+    animateConfetti();
+}
+
+function animateConfetti() {
+    if (particles.length === 0) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    for (let i = 0; i < particles.length; i++) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+        p.vy += 0.2; // Gravedad
+        
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        if (p.life <= 0) {
+            particles.splice(i, 1);
+            i--;
+        }
+    }
+    requestAnimationFrame(animateConfetti);
+}
+
+// Ajuste de canvas al redimensionar
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
+// Iniciar objeto juego
+game.init();
+
+</script>
+</body>
+</html>

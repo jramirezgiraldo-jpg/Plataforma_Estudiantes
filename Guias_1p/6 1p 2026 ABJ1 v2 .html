@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio OVA: ¿De qué está hecho mi mundo?</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600&display=swap');
+
+        :root {
+            --bg-dark: #0d1117;
+            --panel-dark: #161b22;
+            --neon-cyan: #00e5ff;
+            --neon-lime: #39ff14;
+            --neon-magenta: #ff00ff;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --copper: #b87333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Lexend', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.8;
+            font-size: 18px; /* Generous sizing for readability */
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.8s ease-in-out;
+            background-color: var(--panel-dark);
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.05);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2, h3 {
+            color: var(--neon-cyan);
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+        }
+
+        p { margin-bottom: 1.5rem; }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: var(--bg-dark);
+            border: 1px solid var(--neon-cyan);
+            color: white;
+            border-radius: 8px;
+            font-size: 18px;
+            font-family: 'Lexend', sans-serif;
+        }
+
+        button {
+            background: transparent;
+            color: var(--neon-lime);
+            border: 2px solid var(--neon-lime);
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Lexend', sans-serif;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: var(--neon-lime);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px var(--neon-lime);
+        }
+
+        .mission-status {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--text-muted);
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        /* M1: Scanner */
+        .scanner-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #222 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="50" fill="%23444">Roca Rural</text></svg>');
+            border: 1px dashed var(--neon-cyan);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        .scanner-reveal {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #000;
+            color: var(--neon-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            clip-path: circle(0px at 50% 50%);
+            pointer-events: none;
+            transition: clip-path 0.1s;
+        }
+
+        /* M2: Connections */
+        .nodes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .node {
+            padding: 15px;
+            border: 1px solid var(--text-muted);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .node.selected { border-color: var(--neon-magenta); box-shadow: 0 0 10px var(--neon-magenta); }
+        .node.solved { border-color: var(--neon-lime); color: var(--neon-lime); pointer-events: none; }
+
+        /* M3: Word Search */
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            background: var(--bg-dark);
+            border: 1px solid #333;
+            text-align: center;
+            padding: 10px 0;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+        .cell.selected { background: var(--neon-magenta); color: white; }
+        .cell.found { background: var(--neon-lime); color: var(--bg-dark); }
+        #timer { color: var(--neon-magenta); font-weight: bold; font-size: 24px; text-align: center; margin-bottom: 10px; }
+
+        /* M4: Monitor */
+        .monitor {
+            background: #000;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .pulse { animation: pulseAnim 1.5s infinite; color: var(--neon-magenta); }
+        @keyframes pulseAnim { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        
+        /* Certificate */
+        .certificate {
+            text-align: center;
+            padding: 40px;
+            border: 4px double var(--neon-cyan);
+            border-radius: 15px;
+            background: linear-gradient(145deg, var(--panel-dark), #000);
+        }
+        .medal { font-size: 80px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="login" class="screen active">
+        <h1>[OVA] Identificación de la Materia</h1>
+        <p>Inicia tu sesión en el entorno virtual de la Vereda Pueblo Rico.</p>
+        <input type="text" id="studentName" placeholder="Nombre del Investigador" required>
+        <input type="number" id="studentGrade" value="6" placeholder="Grado" readonly>
+        <button onclick="startGame()">Iniciar Simulación</button>
+    </div>
+
+    <div id="m1" class="screen">
+        <div class="mission-status"><span>Misión 1/5: Escáner Rural</span><span id="score1">Nota: 0.0</span></div>
+        <h2>Misión 1: Laboratorio de Identificación</h2>
+        <p>Utiliza tu ratón/dedo como <b>Escáner Óptico</b> sobre la muestra de suelo de la finca. Identifica el elemento oculto puro.</p>
+        <div class="scanner-container" id="scannerZone">
+            <div class="scanner-reveal" id="scannerReveal">Mineral Detectado: Hierro (Fe) - Elemento Puro</div>
+        </div>
+        <button onclick="completeM1()" id="btnM1" style="margin-top:20px; display:none;">Clasificar como Elemento -> Continuar</button>
+    </div>
+
+    <div id="m2" class="screen">
+        <div class="mission-status"><span>Misión 2/5: Conexiones</span><span id="score2">Nota: 0.0</span></div>
+        <h2>Misión 2: Simulador de Conexiones</h2>
+        <p>Conecta el material encontrado en la vereda con su clasificación química correcta. Selecciona un material y luego su categoría.</p>
+        <div class="nodes-grid" id="nodesGrid">
+            <div class="node item" data-type="compuesto">Sal de cocina (NaCl)</div>
+            <div class="node category" data-match="elemento">Elemento (Sustancia Pura)</div>
+            <div class="node item" data-type="elemento">Cable de Cobre (Cu)</div>
+            <div class="node category" data-match="compuesto">Compuesto (Sustancia Pura)</div>
+        </div>
+        <button onclick="nextMission(3)" id="btnM2" style="display:none;">Sistemas Energizados -> Continuar</button>
+    </div>
+
+    <div id="m3" class="screen">
+        <div class="mission-status"><span>Misión 3/5: Espectrometría Léxica</span><span id="score3">Nota: 0.0</span></div>
+        <h2>Misión 3: Desafío de Clasificación (Dinámico)</h2>
+        <p>Aísla las 12 partículas conceptuales en la matriz. El tiempo de desestabilización está calibrado para tu grado.</p>
+        <div id="timer">Tiempo: --</div>
+        <div class="word-grid" id="wordGrid"></div>
+        <button onclick="forceCompleteM3()" id="btnM3" style="display:none;">Matriz Estabilizada -> Continuar</button>
+    </div>
+
+    <div id="m4" class="screen">
+        <div class="mission-status"><span>Misión 4/5: Diagnóstico</span><span id="score4">Nota: 0.0</span></div>
+        <h2>Misión 4: Diagnóstico Crítico</h2>
+        <div class="monitor">
+            <h3 class="pulse">⚠️ ANOMALÍA DETECTADA</h3>
+            <p>Sistema: Mezcla de lavado de café.</p>
+            <p>Estado: Sustancias inmiscibles separándose. Fases sólidas (tierra) y líquidas (agua) visibles a simple vista.</p>
+        </div>
+        <p>Selecciona el diagnóstico correcto para estabilizar el sistema:</p>
+        <button onclick="checkM4(false)">Es un Compuesto Químico</button>
+        <button onclick="checkM4(true)">Es una Mezcla Heterogénea</button>
+        <button onclick="checkM4(false)">Es un Elemento Puro</button>
+    </div>
+
+    <div id="m5" class="screen">
+        <div class="mission-status"><span>Misión 5/5: Caso Real</span><span id="score5">Nota: 0.0</span></div>
+        <h2>Misión 5: Maestría en Caso Real</h2>
+        <p>Estás en la finca en Pueblo Rico. Tienes un recipiente con <b>Agua (H<sub>2</sub>O)</b> pura. Al agregarle <b>Sal (NaCl)</b> y agitar, la sal desaparece visualmente, pero sabes que está ahí.</p>
+        <p>Basado en las 4 misiones anteriores, ¿qué ha ocurrido en este entorno rural?</p>
+        <button onclick="finishGame(false)">Se creó un nuevo Elemento.</button>
+        <button onclick="finishGame(true)">Se formó una Mezcla Homogénea a partir de dos Compuestos.</button>
+        <button onclick="finishGame(false)">El agua destruyó los átomos de la sal.</button>
+    </div>
+
+    <div id="cert" class="screen">
+        <div class="certificate">
+            <h2>Certificado de Competencia Científica</h2>
+            <div class="medal" id="medalIcon">🏆</div>
+            <h3 id="certName">Nombre</h3>
+            <p>Grado: <span id="certGrade"></span></p>
+            <p>Nota Final: <b id="finalScore" style="color:var(--neon-lime); font-size: 24px;"></b> / 5.0</p>
+            <p id="medalText"></p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ESTADO GLOBAL
+    let student = { name: "", grade: 6 };
+    let totalScore = 0;
+    
+    // NAVEGACIÓN
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function startGame() {
+        const nameInput = document.getElementById('studentName').value;
+        if(!nameInput) return alert('Por favor, ingresa tu nombre.');
+        student.name = nameInput;
+        student.grade = parseInt(document.getElementById('studentGrade').value);
+        showScreen('m1');
+        initM1();
+    }
+
+    function addScore(missionNum, points) {
+        totalScore += points;
+        document.getElementById(`score${missionNum}`).innerText = `Nota: ${points.toFixed(1)}`;
+    }
+
+    // M1 LOGIC (Scanner)
+    function initM1() {
+        const zone = document.getElementById('scannerZone');
+        const reveal = document.getElementById('scannerReveal');
+        let scanned = false;
+
+        zone.addEventListener('mousemove', (e) => {
+            const rect = zone.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            reveal.style.clipPath = `circle(60px at ${x}px ${y}px)`;
+            
+            if(!scanned && x > 100 && x < 800) { 
+                scanned = true;
+                document.getElementById('btnM1').style.display = 'block';
+            }
+        });
+    }
+
+    function completeM1() {
+        addScore(1, 1.0);
+        showScreen('m2');
+        initM2();
+    }
+
+    // M2 LOGIC (Connections)
+    function initM2() {
+        let selectedItem = null;
+        let matches = 0;
+        const nodes = document.querySelectorAll('#nodesGrid .node');
+
+        nodes.forEach(node => {
+            node.addEventListener('click', () => {
+                if(node.classList.contains('solved')) return;
+
+                if(node.classList.contains('item')) {
+                    document.querySelectorAll('.item').forEach(n => n.classList.remove('selected'));
+                    node.classList.add('selected');
+                    selectedItem = node;
+                } else if (node.classList.contains('category') && selectedItem) {
+                    if(selectedItem.dataset.type === node.dataset.match) {
+                        selectedItem.classList.add('solved');
+                        selectedItem.classList.remove('selected');
+                        node.classList.add('solved');
+                        matches++;
+                        selectedItem = null;
+                        if(matches === 2) {
+                            addScore(2, 1.0);
+                            document.getElementById('btnM2').style.display = 'block';
+                        }
+                    } else {
+                        selectedItem.classList.remove('selected');
+                        selectedItem = null;
+                    }
+                }
+            });
+        });
+    }
+
+    function nextMission(num) {
+        showScreen('m' + num);
+        if(num === 3) initM3();
+    }
+
+    // M3 LOGIC (Sopa de Letras)
+    let m3Timer;
+    let wordsFound = 0;
+    function initM3() {
+        const words = ["MATERIA", "ELEMENTO", "COMPUESTO", "MEZCLA", "COBRE", "HIERRO", "AGUA", "SAL", "RURAL", "FINCA", "CAFE", "PUEBLO"];
+        // Matriz pre-calculada 12x12 simplificada (Horizontal/Vertical)
+        const gridData = [
+            ['M','A','T','E','R','I','A','X','C','A','F','E'],
+            ['E','L','E','M','E','N','T','O','O','G','I','S'],
+            ['Z','X','C','O','M','P','U','E','S','T','O','A'],
+            ['C','H','I','E','R','R','O','X','X','U','X','L'],
+            ['L','X','X','P','U','E','B','L','O','A','X','X'],
+            ['A','C','O','B','R','E','X','X','X','X','X','X'],
+            ['X','X','X','F','I','N','C','A','X','X','X','X'],
+            ['X','X','X','X','X','X','X','X','X','X','X','X'],
+            ['R','U','R','A','L','X','X','X','X','X','X','X'],
+            ['X','X','X','X','X','X','X','X','X','X','X','X'],
+            ['X','X','X','X','X','X','X','X','X','X','X','X'],
+            ['X','X','X','X','X','X','X','X','X','X','X','X']
+        ];
+
+        const gridEl = document.getElementById('wordGrid');
+        gridEl.innerHTML = '';
+        
+        // Simulación visual rápida de sopa de letras por accesibilidad
+        gridData.forEach((row, rIdx) => {
+            row.forEach((letter, cIdx) => {
+                const div = document.createElement('div');
+                div.className = 'cell';
+                div.innerText = letter;
+                div.onclick = () => { div.classList.add('found'); checkM3Progress(); };
+                gridEl.appendChild(div);
+            });
+        });
+
+        // Fórmula de Gamificación: Velocidad adaptativa basada en grado (Base 120s - (Grado * 5))
+        let timeRemaining = 120 - (student.grade * 5); 
+        const timerEl = document.getElementById('timer');
+        
+        m3Timer = setInterval(() => {
+            timeRemaining--;
+            timerEl.innerText = `Tiempo: ${timeRemaining}s`;
+            if(timeRemaining <= 0) {
+                clearInterval(m3Timer);
+                forceCompleteM3(0.5); // Penalización por tiempo
+            }
+        }, 1000);
+    }
+
+    function checkM3Progress() {
+        wordsFound++;
+        if(wordsFound > 15) { // Simplificación de validación para la demo
+            clearInterval(m3Timer);
+            document.getElementById('btnM3').style.display = 'block';
+            if(!document.getElementById('btnM3').dataset.scored) {
+                addScore(3, 1.0);
+                document.getElementById('btnM3').dataset.scored = true;
+            }
+        }
+    }
+
+    function forceCompleteM3(points = 1.0) {
+        clearInterval(m3Timer);
+        if(!document.getElementById('btnM3').dataset.scored) addScore(3, points);
+        showScreen('m4');
+    }
+
+    // M4 LOGIC
+    function checkM4(isCorrect) {
+        if(isCorrect) {
+            addScore(4, 1.0);
+            alert('¡Diagnóstico correcto! Las fases visibles indican una mezcla heterogénea.');
+        } else {
+            addScore(4, 0.5);
+            alert('Atención: Si se ven las partes (como tierra y agua), es una Mezcla Heterogénea.');
+        }
+        showScreen('m5');
+    }
+
+    // M5 & FINISH LOGIC
+    function finishGame(isCorrect) {
+        if(isCorrect) {
+            addScore(5, 1.0);
+        } else {
+            addScore(5, 0.3);
+        }
+        generateCertificate();
+    }
+
+    function generateCertificate() {
+        showScreen('cert');
+        document.getElementById('certName').innerText = student.name;
+        document.getElementById('certGrade').innerText = student.grade;
+        document.getElementById('finalScore').innerText = totalScore.toFixed(1);
+
+        let medalText = "";
+        let medalIcon = "";
+        
+        if(totalScore >= 4.6) {
+            medalIcon = "🥇"; medalText = "Medalla Atómica de Oro (Au)";
+            document.getElementById('medalIcon').style.color = "var(--gold)";
+        } else if (totalScore >= 3.6) {
+            medalIcon = "🥈"; medalText = "Medalla Atómica de Plata (Ag)";
+            document.getElementById('medalIcon').style.color = "var(--silver)";
+        } else {
+            medalIcon = "🥉"; medalText = "Medalla Atómica de Cobre (Cu)";
+            document.getElementById('medalIcon').style.color = "var(--copper)";
+        }
+
+        document.getElementById('medalIcon').innerText = medalIcon;
+        document.getElementById('medalText').innerText = `Galardón: ${medalText}`;
+    }
+</script>
+</body>
+</html>

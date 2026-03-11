@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Química del Suelo - Ácidos y Sales</title>
+    <style>
+        :root {
+            --earth: #5d4037;
+            --leaf: #2e7d32;
+            --sky: #0288d1;
+            --sand: #f5f5f5;
+            --paper: #fffdeb;
+            --alert: #c62828;
+        }
+
+        body {
+            font-family: 'Verdana', sans-serif;
+            background-color: #e0e0e0;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* UI Elements */
+        .header-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--leaf);
+            color: white;
+            padding: 10px 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-wrapper {
+            width: 60%;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            margin-left: 20px;
+            height: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #a5d6a7;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+
+        .score-badge {
+            margin-right: 20px;
+            font-weight: bold;
+            background: white;
+            color: var(--leaf);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* Contenedores */
+        .main-container {
+            max-width: 950px;
+            margin: 80px auto 40px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .hidden { display: none; }
+        
+        h1, h2 { color: var(--earth); border-bottom: 2px solid var(--leaf); padding-bottom: 10px; }
+        h3 { color: var(--sky); margin-top: 30px; }
+
+        /* Actividades de Cuaderno */
+        .notebook-task {
+            background-color: var(--paper);
+            border-left: 6px solid var(--earth);
+            padding: 20px;
+            margin: 30px 0;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
+            font-family: 'Courier New', monospace;
+        }
+        .notebook-task::before {
+            content: "📝 TAREA PARA EL CUADERNO";
+            display: block;
+            font-weight: bold;
+            color: var(--earth);
+            margin-bottom: 10px;
+        }
+
+        /* Botones */
+        .btn {
+            background: var(--leaf);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.3s;
+            margin-top: 15px;
+        }
+        .btn:hover { background: #1b5e20; }
+        .btn:disabled { background: #bdbdbd; cursor: not-allowed; }
+
+        /* Gráficos y Tablas */
+        .graphic-box {
+            border: 2px dashed #90a4ae;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            background: #eceff1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: var(--earth); color: white; }
+
+        /* ICFES */
+        .icfes-card {
+            border: 2px solid var(--sky);
+            background: #e1f5fe;
+            padding: 25px;
+            border-radius: 8px;
+        }
+        .option-label {
+            display: block;
+            padding: 10px;
+            background: white;
+            margin: 5px 0;
+            cursor: pointer;
+            border: 1px solid #b3e5fc;
+        }
+        .option-label:hover { background: #b3e5fc; }
+        
+        .feedback-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct { background: #c8e6c9; color: #1b5e20; }
+        .incorrect { background: #ffcdd2; color: #b71c1c; }
+
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box; }
+
+    </style>
+</head>
+<body>
+
+<div class="header-bar">
+    <div class="progress-wrapper"><div class="progress-fill" id="progressBar"></div></div>
+    <div class="score-badge">Nota: <span id="scoreVal">0.0</span>/5.0</div>
+</div>
+
+<div class="main-container" id="sec-login">
+    <h1>Química Agrícola: Ácidos y Sales</h1>
+    <p>Bienvenido. Vamos a explorar cómo la química determina si una cosecha es abundante o si la tierra se enferma. Ingresa tus datos para comenzar.</p>
+    <label>Nombres y Apellidos:</label>
+    <input type="text" id="studentName" placeholder="Tu nombre completo aquí...">
+    <button class="btn" onclick="startCourse()">Ingresar al Campo</button>
+</div>
+
+<div class="main-container hidden" id="sec-intro">
+    <h2>Objetivo de Aprendizaje</h2>
+    <p>Diferenciar y nombrar ácidos y sales inorgánicas mediante el análisis de etiquetas de fertilizantes y el estudio de la salud del suelo, para aplicar estos conocimientos en la corrección de problemas agrícolas y la conservación ambiental.</p>
+    
+    <h3>Diagnóstico de Pre-saberes</h3>
+    <div id="quiz-pre">
+        <p><strong>1. ¿Qué significan las siglas N-P-K en un bulto de abono?</strong></p>
+        <select id="pre1">
+            <option value="0">Seleccionar...</option>
+            <option value="a">Natural, Potente, Kilo.</option>
+            <option value="b">Nitrógeno, Fósforo, Potasio.</option>
+            <option value="c">Neutro, Positivo, Kation.</option>
+        </select>
+
+        <p><strong>2. El sabor agrio del limón se debe a la presencia de:</strong></p>
+        <select id="pre2">
+            <option value="0">Seleccionar...</option>
+            <option value="a">Un ácido.</option>
+            <option value="b">Una sal.</option>
+            <option value="c">Un óxido básico.</option>
+        </select>
+
+        <p><strong>3. Si un suelo es muy "ácido", los agricultores suelen agregar cal. ¿Qué función cumple la cal?</strong></p>
+        <select id="pre3">
+            <option value="0">Seleccionar...</option>
+            <option value="a">Acidificar más el suelo.</option>
+            <option value="b">Neutralizar la acidez.</option>
+            <option value="c">Matar las plagas.</option>
+        </select>
+        <button class="btn" onclick="checkPre()">Verificar Pre-saberes</button>
+    </div>
+</div>
+
+<div class="main-container hidden" id="sec-inductive">
+    <h2>Parte I: El Hambre de la Tierra (Inducción)</h2>
+    
+    <p>Imagina que estás caminando por una finca en la vereda Pueblo Rico. Ves dos cultivos de maíz uno al lado del otro. El de la izquierda tiene plantas pequeñas, amarillentas y débiles. El de la derecha tiene tallos gruesos, hojas verde oscuro y mazorcas grandes. ¿Es suerte? No. Es química.</p>
+    
+    <p>La tierra es un organismo vivo que necesita "comer". Pero no come hamburguesas, come iones. Durante siglos, la agricultura ha extraído nutrientes del suelo. Cada vez que cosechamos un plátano o recogemos café, nos estamos llevando átomos de la tierra que no regresan solos. Aquí entran los protagonistas de nuestra historia: Los <strong>Ácidos</strong> y las <strong>Sales</strong>.</p>
+    
+    <p>Muchos de los fertilizantes que ves en los almacenes agrícolas son, químicamente hablando, sales inorgánicas. El famoso "Triple 15" es una mezcla de sales que aportan tres elementos vitales:</p>
+    <ul>
+        <li><strong>Nitrógeno (N):</strong> Es el motor del crecimiento. Da el color verde. Sin él, la planta es raquítica. A menudo se aplica como Nitrato de Amonio ($NH_4NO_3$).</li>
+        <li><strong>Fósforo (P):</strong> Es la energía y la raíz. Ayuda a la planta a madurar. Se encuentra en fosfatos derivadas del Ácido Fosfórico ($H_3PO_4$).</li>
+        <li><strong>Potasio (K):</strong> Es el sistema inmune y la calidad del fruto. Ayuda a resistir sequías. Se usa como Cloruro de Potasio ($KCl$) o Sulfato de Potasio ($K_2SO_4$).</li>
+    </ul>
+
+    <div class="notebook-task">
+        <h4>Actividad 1: El Diagnóstico Visual</h4>
+        <p>Dibuja en tu cuaderno una planta de maíz "sana" y una "enferma" por falta de Nitrógeno (hojas amarillas). Debajo de cada dibujo, escribe qué elemento químico crees que le falta o le sobra. Investiga: ¿Qué le pasa a una planta si le falta Fósforo?</p>
+        <button class="btn" onclick="verifyActivity(1)">¡Dibujo realizado!</button>
+    </div>
+
+    <p>Pero, ¿de dónde salen estas sales? La mayoría nacen de la reacción violenta o controlada de un ácido. Por ejemplo, para hacer fertilizantes fosfatados, necesitamos minar roca fosfórica y tratarla con Ácido Sulfúrico ($H_2SO_4$). ¡Sí, ácido sulfúrico! El mismo que quema la piel puede, si se transforma correctamente, dar vida a las plantas.</p>
+    
+    <div class="graphic-box">
+        [GRÁFICO SIMULADO]<br>
+        Roca Fosfórica + Ácido Sulfúrico --> Superfosfato (Fertilizante) + Yeso<br>
+        (La transformación de algo peligroso en alimento)
+    </div>
+
+    <p>Aquí es donde debemos tener "Conciencia sobre la salud de la tierra". El uso excesivo de fertilizantes sintéticos (sales) puede "quemar" el suelo o salinizarlo, matando los microorganismos benéficos. Además, si usamos fertilizantes que dejan residuos ácidos, el pH del suelo baja. Un suelo muy ácido (pH menor a 5.5) es como un estómago con gastritis: aunque le des comida (nutrientes), no puede absorberla. El Aluminio en el suelo se vuelve tóxico y quema las raíces.</p>
+
+    <div class="notebook-task">
+        <h4>Actividad 2: Tabla de Nutrientes</h4>
+        <p>Crea una tabla con 3 columnas: Elemento (N, P, K), Función en la planta, y Nombre de un fertilizante que lo contenga (búscalo en internet o pregunta en casa, ej: Urea, DAP).</p>
+        <button class="btn" onclick="verifyActivity(2)">¡Tabla completada!</button>
+    </div>
+
+    <p>Para curar un suelo ácido, usamos una sustancia que sea lo contrario al ácido. Usamos una "Base". Generalmente, usamos Cal Agrícola (Carbonato de Calcio o Hidróxido de Calcio). Al mezclar la Cal (Base) con el suelo ácido, ocurre una reacción de <strong>Neutralización</strong>. El resultado es agua y una sal más neutra.</p>
+
+    <div class="notebook-task">
+        <h4>Actividad 3: Mapa Mental "Salud del Suelo"</h4>
+        <p>Elabora un mapa mental donde el centro sea "SUELO SANO". Ramas principales: pH (Acidez/Basicidad), Nutrientes (Macro y Micro), Materia Orgánica, y Microorganismos. Conecta cómo los ácidos (lluvia ácida o fertilizantes ácidos) pueden dañar este equilibrio.</p>
+        <button class="btn" onclick="verifyActivity(3)">¡Mapa mental listo!</button>
+    </div>
+
+    <p>Las etiquetas de los fertilizantes son el "DNI" del producto. Un bulto que dice "10-30-10" nos está hablando en porcentajes. 10% de Nitrógeno, 30% de Fósforo, 10% de Potasio. Identificar esto es vital para no gastar dinero en un nutriente que la planta no necesita. Saber leer estas etiquetas diferencia a un agricultor empírico de uno técnico.</p>
+
+    <div class="notebook-task">
+        <h4>Actividad 4: Lectura de Etiquetas</h4>
+        <p>Dibuja un bulto de fertilizante en tu cuaderno con los números "15-15-15". Calcula: Si el bulto pesa 50 Kilos, ¿Cuántos kilos de Nitrógeno puro hay adentro? (Pista: es el 15% de 50). Escribe la operación.</p>
+        <button class="btn" onclick="verifyActivity(4)">¡Cálculo hecho!</button>
+    </div>
+    
+    <p>Finalmente, reflexiona: Los ácidos no son solo líquidos en frascos de laboratorio. El ADN en tus células es un ácido (Ácido Desoxirribonucleico). La vitamina C es Ácido Ascórbico. Las sales no son solo la de cocina ($NaCl$). Tus huesos son una sal de fosfato de calcio. La vida es un equilibrio entre ácidos y bases.</p>
+
+    <div class="notebook-task">
+        <h4>Actividad 5: Reflexión Salud vs. Tierra</h4>
+        <p>Escribe un párrafo comparando el cuerpo humano con el suelo. ¿Qué pasa si tienes mucha acidez estomacal? ¿Qué tomas? (¿Leche de magnesia? Eso es una base). Compara eso con encalar un cultivo.</p>
+        <button class="btn" onclick="verifyActivity(5)">¡Reflexión escrita!</button>
+    </div>
+
+    <button class="btn" onclick="showSection('sec-icfes')">Ir al Reto de Indagación (ICFES)</button>
+</div>
+
+<div class="main-container hidden" id="sec-icfes">
+    <h2>Reto de Competencia: Indagar</h2>
+    
+    <div class="icfes-card">
+        <p><strong>Contexto:</strong> Un agricultor de la zona cafetera nota que sus cafetales no están absorbiendo bien los nutrientes, a pesar de que él aplica fertilizante regularmente. Solicita un análisis de suelo y obtiene el siguiente gráfico que muestra la disponibilidad de nutrientes según el pH.</p>
+        
+        <div class="graphic-box" style="background:white; border:1px solid #333;">
+            <strong>DISPONIBILIDAD DE NUTRIENTES VS pH</strong><br><br>
+            pH 4.0 (Muy Ácido): Nitrógeno [BAJO], Fósforo [BLOQUEADO], Aluminio [TÓXICO]<br>
+            pH 5.5 (Ácido): Nitrógeno [MEDIO], Fósforo [MEDIO], Aluminio [BAJO]<br>
+            pH 6.5 (Ideal): Nitrógeno [ALTO], Fósforo [ALTO], Aluminio [NULO]<br>
+            pH 8.0 (Alcalino): Nitrógeno [ALTO], Fósforo [BAJO], Hierro [BLOQUEADO]
+        </div>
+
+        <p>El reporte indica que el suelo de la finca tiene actualmente un <strong>pH de 4.2</strong>.</p>
+        
+        <p><strong>Pregunta:</strong> Basándose en la información anterior, ¿cuál es la acción más adecuada que debe tomar el agricultor para corregir el problema antes de volver a fertilizar?</p>
+
+        <label class="option-label"><input type="radio" name="icfes" value="A"> <strong>A.</strong> Aplicar abundante Sulfato de Amonio ($NH_4)_2SO_4$, ya que es una sal rica en azufre y nitrógeno que nutrirá la planta inmediatamente.</label>
+        <label class="option-label"><input type="radio" name="icfes" value="B"> <strong>B.</strong> Aplicar Cal Agrícola ($Ca(OH)_2$ y $CaCO_3$), porque al ser sustancias básicas reaccionarán neutralizando el exceso de acidez y desbloquearán el fósforo.</label>
+        <label class="option-label"><input type="radio" name="icfes" value="C"> <strong>C.</strong> Agregar Ácido Fosfórico ($H_3PO_4$) directamente al suelo, ya que el gráfico muestra que el Fósforo está bloqueado y se necesita inyectar más cantidad.</label>
+        <label class="option-label"><input type="radio" name="icfes" value="D"> <strong>D.</strong> Regar abundantemente con agua pura, ya que el agua lavará el Aluminio tóxico y subirá el pH automáticamente a 7.0.</label>
+
+        <button class="btn" onclick="checkICFES()">Enviar Análisis</button>
+        <div id="icfes-feedback" class="feedback-box"></div>
+        <button id="btn-post-icfes" class="btn hidden" onclick="showSection('sec-deductive')">Continuar a Teoría Formal</button>
+    </div>
+</div>
+
+<div class="main-container hidden" id="sec-deductive">
+    <h2>Parte II: El Código Secreto (Nomenclatura)</h2>
+    
+    <p>Ya entendemos el "por qué" y el "para qué". Ahora, como científicos, debemos aprender a escribir y leer los nombres correctos. La química tiene su propio idioma, regulado por la IUPAC.</p>
+    
+    <h3>1. Función ÁCIDO</h3>
+    <p>Un ácido inorgánico generalmente se identifica porque empieza con Hidrógeno ($H$). Se dividen en dos familias:</p>
+    
+    <ul>
+        <li><strong>Hidrácidos (Binarios):</strong> H + No Metal (Grupo 6A o 7A). No tienen oxígeno.
+            <br><em>Nomenclatura:</em> Ácido _______hídrico.
+            <br>Ej: $HCl$ (Ácido Clorhídrico), $H_2S$ (Ácido Sulfhídrico).
+        </li>
+        <li><strong>Oxácidos (Ternarios):</strong> H + No Metal + Oxígeno. Vienen de sumar agua a un óxido ácido.
+            <br><em>Nomenclatura:</em> Depende de los estados de oxidación (Hipo-oso, -oso, -ico, Per-ico).
+            <br>Ej: $H_2SO_4$. El Azufre trabaja con +6 (su mayor estado). Terminación "ico". -> Ácido Sulfúrico.
+        </li>
+    </ul>
+
+    <div class="notebook-task">
+        <h4>Actividad 6: Cazadores de Ácidos</h4>
+        <p>Identifica si son Hidrácidos u Oxácidos: A) $HNO_3$, B) $HBr$, C) $H_3PO_4$. Escribe sus nombres tradicionales en el cuaderno. (Pista: N en +5, Br en -1, P en +5).</p>
+        <button class="btn" onclick="verifyActivity(6)">¡Clasificación hecha!</button>
+    </div>
+
+    <h3>2. Función SAL</h3>
+    <p>Las sales son el producto de un "amor químico" entre un Ácido y una Base (Hidróxido). El Hidrógeno del ácido sale y entra un Metal.</p>
+    <p style="text-align:center; font-weight:bold;">ÁCIDO + BASE $\rightarrow$ SAL + AGUA</p>
+    
+    <p>Para nombrarlas, cambiamos el "apellido" del ácido original según esta clave nemotécnica:</p>
+    <div class="graphic-box" style="background:#fff3e0; border-color:orange;">
+        "Cuando el <strong>OSO</strong> toca el p<strong>ITO</strong>, el per<strong>ICO</strong> toca el silb<strong>ATO</strong>"<br>
+        --------------------------------------------------<br>
+        Ácido terminado en <strong>-OSO</strong> $\rightarrow$ Sal termina en <strong>-ITO</strong><br>
+        Ácido terminado en <strong>-ICO</strong> $\rightarrow$ Sal termina en <strong>-ATO</strong><br>
+        Ácido terminado en <strong>-HÍDRICO</strong> $\rightarrow$ Sal termina en <strong>-URO</strong>
+    </div>
+
+    <p><strong>Ejemplo 1 (Sin oxígeno):</strong><br>
+    Ácido Clor<strong>hídrico</strong> ($HCl$) + Hidróxido de Sodio ($NaOH$) $\rightarrow$ Clor<strong>uro</strong> de Sodio ($NaCl$) + Agua.<br>
+    (Esta es la sal de mesa).</p>
+
+    <p><strong>Ejemplo 2 (Con oxígeno - Fertilizante):</strong><br>
+    Ácido Sulfúr<strong>ico</strong> ($H_2SO_4$) + Hidróxido de Calcio $\rightarrow$ Sulf<strong>ato</strong> de Calcio ($CaSO_4$) + Agua.<br>
+    (El Sulfato es clave para corregir suelos).</p>
+
+    <div class="notebook-task">
+        <h4>Actividad 7: El Juego del Nombre</h4>
+        <p>Completa la frase en tu cuaderno:<br>
+        "Si el ácido se llama Ácido Nítr<strong>ico</strong>, su sal se llamará Nitr____."<br>
+        "Si el ácido se llama Ácido Fosfor<strong>oso</strong>, su sal se llamará Fosf____."<br>
+        "Si el ácido es Ácido Sulf<strong>hídrico</strong>, su sal es Sulf____."</p>
+        <button class="btn" onclick="verifyActivity(7)">¡Frases completadas!</button>
+    </div>
+
+    <div class="notebook-task">
+        <h4>Actividad 8: Reacción de Neutralización</h4>
+        <p>Copia y completa la siguiente ecuación en tu cuaderno (Balanceo por tanteo):<br>
+        $HCl + KOH \rightarrow$ ____ + $H_2O$.<br>
+        ¿Cómo se llama la sal formada? (Pista: K es Potasio).</p>
+        <button class="btn" onclick="verifyActivity(8)">¡Ecuación resuelta!</button>
+    </div>
+
+    <h3>Tabla Comparativa Final</h3>
+    <table>
+        <tr>
+            <th>Función</th>
+            <th>Grupo Funcional</th>
+            <th>Ejemplo Fórmula</th>
+            <th>Ejemplo Nombre</th>
+        </tr>
+        <tr>
+            <td>Óxido Ácido</td>
+            <td>No Metal + O</td>
+            <td>$SO_3$</td>
+            <td>Trióxido de Azufre</td>
+        </tr>
+        <tr>
+            <td>Ácido Oxácido</td>
+            <td>H + No Metal + O</td>
+            <td>$H_2SO_4$</td>
+            <td>Ácido Sulfúrico</td>
+        </tr>
+        <tr>
+            <td>Hidróxido (Base)</td>
+            <td>Metal + OH</td>
+            <td>$Ca(OH)_2$</td>
+            <td>Hidróxido de Calcio</td>
+        </tr>
+        <tr>
+            <td>Oxisal</td>
+            <td>Metal + No Metal + O</td>
+            <td>$CaSO_4$</td>
+            <td>Sulfato de Calcio</td>
+        </tr>
+    </table>
+
+    <div class="notebook-task">
+        <h4>Actividad 9: Mapa Conceptual Jerárquico</h4>
+        <p>Crea un mapa conceptual que muestre la ruta de formación: Elemento No Metal $\rightarrow$ Óxido Ácido $\rightarrow$ Ácido Oxácido $\rightarrow$ Sal Oxisal. Pon ejemplos en cada paso.</p>
+        <button class="btn" onclick="verifyActivity(9)">¡Ruta trazada!</button>
+    </div>
+
+    <div class="notebook-task">
+        <h4>Actividad 10: Diseño de Fertilizante</h4>
+        <p>Imagina que eres un ingeniero químico. Tu misión es crear un fertilizante para un cultivo que necesita mucho Potasio y Nitrógeno. Elige un ácido y una base para reaccionar y crear "Nitrato de Potasio". Escribe la ecuación teórica.</p>
+        <button class="btn" onclick="verifyActivity(10)">¡Ingeniería lista!</button>
+    </div>
+
+    <button class="btn" onclick="showSection('sec-final')">Ir al Taller Final</button>
+</div>
+
+<div class="main-container hidden" id="sec-final">
+    <h2>Evaluación de Cierre</h2>
+    <p>Demuestra tu experticia. El sistema analizará tus respuestas abiertas.</p>
+    
+    <h3>Selección Múltiple</h3>
+    <div id="final-mc">
+        <p>1. Un ácido hidrácido se caracteriza por:</p>
+        <label><input type="radio" name="q1" value="A"> A. Tener mucho oxígeno.</label><br>
+        <label><input type="radio" name="q1" value="B"> B. No tener oxígeno en su estructura.</label><br>
+        <label><input type="radio" name="q1" value="C"> C. Ser siempre sólido.</label><br>
+        
+        <p>2. Según la nomenclatura, la terminación -ICO del ácido pasa a ser _____ en la sal.</p>
+        <label><input type="radio" name="q2" value="A"> A. -OSO</label><br>
+        <label><input type="radio" name="q2" value="B"> B. -ITO</label><br>
+        <label><input type="radio" name="q2" value="C"> C. -ATO</label><br>
+
+        <p>3. ¿Cuál de los siguientes es una Sal?</p>
+        <label><input type="radio" name="q3" value="A"> A. $HCl$</label><br>
+        <label><input type="radio" name="q3" value="B"> B. $NaOH$</label><br>
+        <label><input type="radio" name="q3" value="C"> C. $NaCl$</label><br>
+
+        <p>4. El elemento químico esencial para el color verde y crecimiento de hojas es:</p>
+        <label><input type="radio" name="q4" value="A"> A. Nitrógeno (N)</label><br>
+        <label><input type="radio" name="q4" value="B"> B. Calcio (Ca)</label><br>
+        <label><input type="radio" name="q4" value="C"> C. Oro (Au)</label><br>
+
+        <p>5. Una reacción de neutralización produce:</p>
+        <label><input type="radio" name="q5" value="A"> A. Dos ácidos más fuertes.</label><br>
+        <label><input type="radio" name="q5" value="B"> B. Sal y Agua.</label><br>
+        <label><input type="radio" name="q5" value="C"> C. Solo gases tóxicos.</label><br>
+    </div>
+
+    <h3>Preguntas Abiertas</h3>
+    <p><em>Responde con tus propias palabras (mínimo 15 palabras por respuesta).</em></p>
+    
+    <p>6. Explica la diferencia entre un Ácido y una Sal usando un ejemplo de la cocina.</p>
+    <textarea id="open6" rows="3"></textarea>
+    
+    <p>7. ¿Por qué es peligroso aplicar fertilizantes sin hacer un análisis de suelo primero?</p>
+    <textarea id="open7" rows="3"></textarea>
+
+    <p>8. Describe el proceso "Oso-Ito, Ico-Ato" con tus propias palabras.</p>
+    <textarea id="open8" rows="3"></textarea>
+
+    <p>9. ¿Qué importancia tienen el Fósforo y el Potasio en un cultivo de plátano o café?</p>
+    <textarea id="open9" rows="3"></textarea>
+
+    <p>10. Si fueras el alcalde de tu municipio, ¿qué campaña harías para cuidar la "salud del suelo" de las fincas?</p>
+    <textarea id="open10" rows="3"></textarea>
+
+    <button class="btn" onclick="finishCourse()">Finalizar y Descargar</button>
+</div>
+
+<script>
+    /* LÓGICA DEL OVA */
+    let studentData = { name: "", score: 0.0, progress: 0 };
+    const TOTAL_STEPS = 10; // 10 actividades notebook
+    const STEP_VALUE = 0.5; // Cada una vale 0.5
+
+    function showSection(id) {
+        document.querySelectorAll('.main-container').forEach(d => d.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+        window.scrollTo(0,0);
+    }
+
+    function startCourse() {
+        const name = document.getElementById('studentName').value;
+        if(name.length < 5) { alert("Por favor ingresa nombre y apellido completos."); return; }
+        studentData.name = name;
+        showSection('sec-intro');
+    }
+
+    function checkPre() {
+        const p1 = document.getElementById('pre1').value;
+        const p2 = document.getElementById('pre2').value;
+        const p3 = document.getElementById('pre3').value;
+        
+        if(p1 === '0' || p2 === '0' || p3 === '0') { alert("Responde todas las preguntas."); return; }
+        
+        // Feedback simple
+        let msg = "Resultados Pre-saberes:\n";
+        msg += (p1 === 'b') ? "1. Correcto (N-P-K).\n" : "1. Incorrecto (Es Nitrógeno, Fósforo, Potasio).\n";
+        msg += (p2 === 'a') ? "2. Correcto (Ácido).\n" : "2. Incorrecto (Lo agrio suele ser ácido).\n";
+        msg += (p3 === 'b') ? "3. Correcto (Neutralizar).\n" : "3. Incorrecto (La cal es básica, neutraliza ácidos).\n";
+        
+        alert(msg);
+        showSection('sec-inductive');
+    }
+
+    function verifyActivity(n) {
+        const btn = event.target;
+        if(!btn.disabled) {
+            btn.disabled = true;
+            btn.innerText = "¡Verificado! (+0.5)";
+            btn.style.background = "#2e7d32";
+            studentData.score += STEP_VALUE;
+            studentData.progress++;
+            updateUI();
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('scoreVal').innerText = studentData.score.toFixed(1);
+        document.getElementById('progressBar').style.width = (studentData.progress * 10) + "%";
+    }
+
+    function checkICFES() {
+        const opts = document.getElementsByName('icfes');
+        let selected = null;
+        for(let o of opts) if(o.checked) selected = o.value;
+        
+        if(!selected) { alert("Selecciona una opción."); return; }
+
+        const fb = document.getElementById('icfes-feedback');
+        fb.style.display = 'block';
+        fb.className = 'feedback-box'; // reset
+
+        if(selected === 'B') {
+            fb.classList.add('correct');
+            fb.innerHTML = "<strong>¡EXCELENTE! Respuesta Correcta.</strong><br>Análisis: El problema es un pH bajo (4.2, ácido). Para subir el pH y neutralizar la acidez (que desbloquea el fósforo y elimina la toxicidad del aluminio), se necesita una BASE. La Cal ($Ca(OH)_2$) es la base agrícola por excelencia. Has aplicado correctamente el concepto de neutralización.";
+            document.getElementById('btn-post-icfes').classList.remove('hidden');
+        } else {
+            fb.classList.add('incorrect');
+            let txt = "<strong>Incorrecto.</strong> ";
+            if(selected === 'A') txt += "El Sulfato de Amonio es una sal que tiende a acidificar más el suelo (bajar el pH), empeorando el problema.";
+            if(selected === 'C') txt += "El Ácido Fosfórico es, como su nombre dice, un ÁCIDO. Agregar ácido a un suelo ácido es un error grave.";
+            if(selected === 'D') txt += "El agua sola no corrige la acidez química del suelo ni neutraliza el aluminio tóxico de manera efectiva sin una enmienda.";
+            fb.innerHTML = txt;
+        }
+    }
+
+    function finishCourse() {
+        // Validar textos abiertos
+        const opens = [6,7,8,9,10].map(i => document.getElementById('open'+i).value);
+        
+        // Validación 1: Longitud
+        if(opens.some(t => t.split(" ").length < 8)) {
+            alert("Tus respuestas abiertas son muy cortas. Explica mejor tus ideas.");
+            return;
+        }
+
+        // Validación 2: Anti-IA (Simulada - busca patrones de lenguaje robótico)
+        const aiPatterns = ["como modelo de lenguaje", "es importante destacar que", "en conclusión", "regenerar"];
+        if(opens.some(t => aiPatterns.some(p => t.toLowerCase().includes(p)))) {
+            alert("Se detectó un patrón de respuesta no natural. Por favor escribe con tus propias palabras.");
+            return;
+        }
+
+        // Generar Archivo
+        let content = `OVA: ÁCIDOS Y SALES - REPORTE\nEstudiante: ${studentData.name}\nFecha: ${new Date().toLocaleDateString()}\n`;
+        content += `Nota Actividades: ${studentData.score}/5.0\n\n`;
+        
+        // Recoger Seleccion Multiple Final
+        ['q1','q2','q3','q4','q5'].forEach((q,i) => {
+            const el = document.querySelector(`input[name="${q}"]:checked`);
+            content += `P${i+1}: ${el ? el.value : 'N/A'}\n`;
+        });
+
+        content += `\nRESPUESTAS ABIERTAS:\n`;
+        opens.forEach((resp, i) => content += `R${i+6}: ${resp}\n---\n`);
+
+        const blob = new Blob([content], {type: "text/plain"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Quimica_Suelo_${studentData.name.replace(/ /g,"_")}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        
+        alert("¡Felicitaciones! Has completado el curso. Tu archivo de respuestas se ha descargado.");
+    }
+</script>
+
+</body>
+</html>

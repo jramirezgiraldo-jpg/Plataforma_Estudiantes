@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>OVA - ¿De qué está hecho mi mundo? (Grado 6)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    :root{
+        --bg:#020617;
+        --card:#ffffff;
+        --accent:#16a34a;
+        --accent2:#22c55e;
+        --accent3:#0ea5e9;
+        --danger:#dc2626;
+        --text:#111827;
+        --muted:#6b7280;
+    }
+    *{box-sizing:border-box;}
+    body{
+        margin:0;
+        font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+        background: radial-gradient(circle at top,#1d4ed8 0,#020617 45%,#000 100%);
+        color:var(--text);
+        display:flex;
+        justify-content:center;
+    }
+    .shell{
+        max-width:1000px;
+        width:100%;
+        padding:20px;
+    }
+    .ova{
+        background:linear-gradient(135deg,#f9fafb 0,#e0f2fe 35%,#dcfce7 100%);
+        border-radius:20px;
+        padding:24px 18px 30px;
+        box-shadow:0 20px 50px rgba(0,0,0,0.5);
+        position:relative;
+        overflow:hidden;
+    }
+    h1,h2,h3{
+        color:#0f172a;
+        margin-top:0;
+    }
+    h1{
+        font-size:1.9rem;
+        display:flex;
+        flex-wrap:wrap;
+        align-items:center;
+        gap:10px;
+    }
+    h1 span.badge{
+        background:#0f172a;
+        color:white;
+        font-size:0.8rem;
+        padding:4px 10px;
+        border-radius:999px;
+    }
+    p{
+        line-height:1.6;
+        color:#111827;
+        margin:0 0 8px;
+        font-size:0.96rem;
+    }
+    .context{
+        background:rgba(255,255,255,0.9);
+        border-radius:14px;
+        padding:12px 14px;
+        border:1px solid #d1d5db;
+        margin-bottom:14px;
+        font-size:0.9rem;
+    }
+    .context strong{color:#16a34a;}
+    .progress-bar{
+        margin-bottom:14px;
+    }
+    .progress-label{
+        display:flex;
+        justify-content:space-between;
+        font-size:0.9rem;
+        color:#0f172a;
+        margin-bottom:4px;
+    }
+    .progress-track{
+        width:100%;
+        height:10px;
+        border-radius:999px;
+        background:#e5e7eb;
+        position:relative;
+        overflow:hidden;
+    }
+    .progress-fill{
+        height:100%;
+        width:0%;
+        border-radius:999px;
+        background:linear-gradient(90deg,#22c55e,#4ade80,#bef264);
+        transition:width 0.35s ease-out;
+    }
+    .points-display{
+        font-size:0.9rem;
+        color:#0f172a;
+        margin-top:4px;
+    }
+    .points-display span.animal{
+        font-weight:bold;
+        margin-left:6px;
+    }
+    .section{
+        background:rgba(255,255,255,0.97);
+        border-radius:16px;
+        padding:14px 14px 16px;
+        border:1px solid #d4d4d8;
+        margin-top:14px;
+    }
+    .section-title{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        font-weight:600;
+        color:#111827;
+        margin-bottom:8px;
+        font-size:1rem;
+    }
+    .section-title span.icon{font-size:1.2rem;}
+    .question-block{
+        background:#f1f5f9;
+        border-radius:14px;
+        padding:10px 12px;
+        margin:8px 0;
+        border:1px solid #cbd5f5;
+    }
+    .question-block h3{
+        margin:0 0 4px;
+        font-size:0.98rem;
+    }
+    .question-block p{
+        margin:4px 0 6px;
+        font-size:0.94rem;
+    }
+    .options{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        margin-top:4px;
+    }
+    .options label{
+        background:white;
+        border-radius:999px;
+        padding:6px 10px;
+        border:1px solid #e5e7eb;
+        display:flex;
+        align-items:center;
+        gap:6px;
+        cursor:pointer;
+        font-size:0.93rem;
+    }
+    .options input[type="radio"]{
+        accent-color:#22c55e;
+    }
+    .btn{
+        border:none;
+        border-radius:999px;
+        padding:6px 12px;
+        font-size:0.9rem;
+        cursor:pointer;
+        margin-top:6px;
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        background:linear-gradient(135deg,#16a34a,#22c55e);
+        color:white;
+    }
+    .btn.secondary{background:#0ea5e9;}
+    .btn.verify{background:#4f46e5;}
+    .btn.small{padding:4px 10px;font-size:0.8rem;}
+    .feedback{
+        margin-top:5px;
+        font-size:0.9rem;
+    }
+    .feedback.correct{color:#16a34a;}
+    .feedback.incorrect{color:#b91c1c;}
+    textarea, input[type="text"]{
+        width:100%;
+        box-sizing:border-box;
+        border-radius:10px;
+        border:1px solid #cbd5e1;
+        padding:7px;
+        font-size:0.9rem;
+        resize:vertical;
+        margin-top:4px;
+    }
+    .note{
+        font-size:0.83rem;
+        color:#6b7280;
+        margin-top:3px;
+    }
+    .verify-status{
+        font-size:0.85rem;
+        margin-top:4px;
+    }
+    .verify-status.ok{color:#16a34a;}
+    .verify-status.bad{color:#b91c1c;}
+    .reward-flash{
+        animation:pop 0.5s forwards;
+        display:inline-block;
+        margin-left:6px;
+    }
+    @keyframes pop{
+        0%{transform:scale(0.5);opacity:0;}
+        60%{transform:scale(1.2);opacity:1;}
+        100%{transform:scale(1);opacity:1;}
+    }
+    .icfes-intro{
+        background:#fef9c3;
+        border:1px solid #facc15;
+        border-radius:12px;
+        padding:9px 11px;
+        font-size:0.9rem;
+        margin-bottom:6px;
+    }
+    .icfes-graphic{
+        margin:8px 0;
+        padding:8px;
+        background:#e0f2fe;
+        border-radius:10px;
+        font-size:0.86rem;
+    }
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin:8px 0;
+        font-size:0.9rem;
+    }
+    th,td{
+        border:1px solid #cbd5e1;
+        padding:5px;
+        text-align:center;
+    }
+    th{background:#f1f5f9;}
+    .svg-graph{
+        width:100%;
+        max-width:420px;
+        display:block;
+        margin:8px auto 2px;
+        background:white;
+        border-radius:8px;
+        border:1px solid #e5e7eb;
+    }
+    .drag-area{
+        background:#eff6ff;
+        border-radius:12px;
+        padding:8px;
+        margin-top:8px;
+        border:1px dashed #60a5fa;
+        font-size:0.9rem;
+    }
+    .drag-list,.drop-list{
+        display:flex;
+        flex-wrap:wrap;
+        gap:6px;
+        margin-top:6px;
+    }
+    .drag-item,.drop-slot{
+        padding:5px 8px;
+        border-radius:999px;
+        background:white;
+        border:1px solid #93c5fd;
+        cursor:pointer;
+        min-width:60px;
+        text-align:center;
+        font-size:0.85rem;
+    }
+    .drop-slot{
+        background:#e5e7eb;
+        border-style:dashed;
+    }
+    .drop-slot.filled{
+        background:#dcfce7;
+        border-style:solid;
+        border-color:#22c55e;
+    }
+    .hidden{display:none;}
+    .animal-banner{
+        margin-top:8px;
+        padding:9px;
+        border-radius:12px;
+        background:#ecfdf5;
+        border:1px solid #4ade80;
+        font-size:0.93rem;
+        display:flex;
+        align-items:center;
+        gap:8px;
+    }
+    .animal-banner span.icon{font-size:1.4rem;}
+    .exp-block{
+        background:#fefce8;
+        border-radius:14px;
+        padding:11px 12px;
+        border:1px solid #facc15;
+        font-size:0.9rem;
+    }
+    ul{margin:4px 0 4px 18px;padding:0;}
+    li{margin-bottom:3px;}
+    @media(max-width:700px){
+        .ova{padding:18px 12px 24px;}
+    }
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="ova">
+    <h1>
+        OVA – ¿De qué está hecho mi mundo?
+        <span class="badge">Grado 6 · Vereda Pueblo Rico</span>
+    </h1>
+
+    <div class="context">
+        En la vereda <strong>Pueblo Rico</strong>, en Quimbaya, el día empieza entre cafetales, praderas con ganado, cultivos de cítricos y visitantes que llegan por el turismo rural. 
+        Todo lo que ves y tocas allí –la tierra, el agua del río, las tablas de las casas, los paquetes de abono, la ropa de los turistas– está hecho de <strong>materia</strong>. 
+        En esta OVA explorarás de qué está hecho tu mundo, cuáles son los estados de la materia en tu entorno rural, y cómo esa comprensión se conecta con tu <strong>identidad</strong> y tu <strong>territorio</strong>.
+    </div>
+
+    <!-- Barra de progreso y puntos -->
+    <div class="progress-bar">
+        <div class="progress-label">
+            <span>Progreso de la OVA</span>
+            <span id="progressText">0 %</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="points-display">
+            Puntos: <span id="pointsValue">0</span> / 50 · Animal:
+            <span id="animalValue" class="animal">🐢 Tortuga pensativa (0–10)</span>
+        </div>
+    </div>
+
+    <!-- Objetivo -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">🎯</span>Objetivo de aprendizaje
+        </div>
+        <p>
+            Al finalizar esta OVA identificarás la <strong>materia</strong> y sus estados (sólido, líquido, gas) en el entorno rural de la vereda Pueblo Rico, 
+            reconociendo materiales naturales y artificiales, y podrás explicar cómo estos se relacionan con tu vida cotidiana, tu identidad y el territorio que habitas.
+        </p>
+    </div>
+
+    <!-- Saberes previos -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">🧪</span>Saberes previos
+        </div>
+        <p>Responde estas tres preguntas de selección múltiple para explorar lo que ya sabes sobre materia y sus estados.</p>
+
+        <div class="question-block" data-question="prev1">
+            <h3>Pregunta 1</h3>
+            <p>En la finca de café, observas sacos llenos de café pergamino, agua en los tanques y aire que se mueve entre las hojas. ¿Cuál afirmación es correcta?</p>
+            <div class="options">
+                <label><input type="radio" name="prev1" value="a"> a) Solo el café es materia; el agua y el aire no lo son.</label>
+                <label><input type="radio" name="prev1" value="b"> b) El café, el agua y el aire son materia porque tienen masa y ocupan un lugar en el espacio.</label>
+                <label><input type="radio" name="prev1" value="c"> c) El aire no es materia porque no se puede ver.</label>
+            </div>
+            <button class="btn small" onclick="checkSingle('prev1','b')">Comprobar</button>
+            <div id="feedback-prev1" class="feedback"></div>
+        </div>
+
+        <div class="question-block" data-question="prev2">
+            <h3>Pregunta 2</h3>
+            <p>Cuando hierve el agua para preparar café o chocolate, aparecen burbujas y vapor. ¿Qué cambio de estado observas principalmente?</p>
+            <div class="options">
+                <label><input type="radio" name="prev2" value="a"> a) De sólido a gas.</label>
+                <label><input type="radio" name="prev2" value="b"> b) De líquido a gas.</label>
+                <label><input type="radio" name="prev2" value="c"> c) De gas a sólido.</label>
+            </div>
+            <button class="btn small" onclick="checkSingle('prev2','b')">Comprobar</button>
+            <div id="feedback-prev2" class="feedback"></div>
+        </div>
+
+        <div class="question-block" data-question="prev3">
+            <h3>Pregunta 3</h3>
+            <p>En un día caluroso, guardas un helado en la nevera de la tienda de la vereda. ¿En qué estado de la materia está principalmente ese helado?</p>
+            <div class="options">
+                <label><input type="radio" name="prev3" value="a"> a) Sólido.</label>
+                <label><input type="radio" name="prev3" value="b"> b) Líquido.</label>
+                <label><input type="radio" name="prev3" value="c"> c) Gas.</label>
+            </div>
+            <button class="btn small" onclick="checkSingle('prev3','a')">Comprobar</button>
+            <div id="feedback-prev3" class="feedback"></div>
+        </div>
+
+        <button class="btn" onclick="retroPrevios()">Ver retroalimentación general</button>
+        <div id="retroPreviosText" class="feedback"></div>
+    </div>
+
+    <!-- Texto inductivo (con 5 actividades en cuaderno + 1 en HTML) -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">🌱</span>Texto inductivo: descubriendo la materia en Pueblo Rico
+        </div>
+        <p>
+            Imagina que sales de tu casa muy temprano, cuando el sol apenas empieza a asomarse por encima de las montañas que rodean la vereda Pueblo Rico. 
+            El aire es fresco y tal vez hay una ligera neblina que se queda atrapada entre los cafetales. 
+            Caminas por un sendero de tierra y sientes bajo tus botas el suelo húmedo, mezclado con pequeñas piedras y raíces. 
+            A lo lejos escuchas el sonido del agua que corre por una quebrada, mientras algunas vacas pastan tranquilamente en un potrero y los árboles de cítricos comienzan a iluminarse con la luz del nuevo día.
+        </p>
+        <p>
+            En este recorrido, sin darte cuenta, estás rodeado de <strong>materia</strong> por todas partes. 
+            La materia es todo aquello que tiene masa y ocupa un lugar en el espacio. 
+            El tronco de un limonero, la taza de metal en la que tomas café, el humo que sale de una cocina de leña, la bicicleta con la que algunos niños bajan al colegio y hasta tu propio cuerpo: todo es materia. 
+            A veces pensamos que solo lo que vemos claramente es materia, pero el aire, aunque no lo veas, también lo es. 
+            En Pueblo Rico, reconocer la materia y sus estados es una forma de mirar con nuevos ojos aquello que a diario da forma a tu mundo.
+        </p>
+
+        <!-- Actividad cuaderno 1 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 1 (cuaderno – lista de observación)</h3>
+            <p>En tu cuaderno, haz una lista de 10 objetos o materiales que veas en tu entorno cercano (casa, finca, escuela, camino a la vereda). Señala si corresponden a materia sólida, líquida o gaseosa.</p>
+            <textarea id="actC1" placeholder="Escribe aquí un ejemplo de tu lista (al menos 2 sólidos, 1 líquido y 1 gas) para verificar."></textarea>
+            <div class="note">Usa tus propias palabras. No copies de internet ni menciones IA.</div>
+            <button class="btn verify small" onclick="verifyAntiIA('actC1','verifC1')">Verificar actividad</button>
+            <div id="verifC1" class="verify-status"></div>
+        </div>
+
+        <p>
+            Cuando estás en la cocina de la casa o en el comedor escolar, también te rodea la materia. 
+            El fogón de gas, el agua que hierve, la olla metálica, el humo que sale de una leña mal encendida, las verduras frescas o las frutas de los árboles de la vereda: todo forma parte de la misma realidad material. 
+            Pero para entender mejor este mundo, los científicos han clasificado la materia en diferentes estados, principalmente sólido, líquido y gas. 
+            En un sólido, como un ladrillo o un grano de café seco, las partículas están muy juntas y con poca libertad de movimiento. 
+            En un líquido, como el agua de la quebrada o el jugo de naranja, las partículas están más separadas y pueden deslizarse unas sobre otras. 
+            En un gas, como el vapor que sale de una olla, las partículas están muy separadas y se mueven libremente.
+        </p>
+
+        <!-- Actividad cuaderno 2 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 2 (cuaderno – dibujo de estados)</h3>
+            <p>En tu cuaderno, dibuja tres situaciones de tu vereda donde veas: un sólido, un líquido y un gas. Debajo de cada dibujo, escribe qué estás representando y por qué lo clasificas así.</p>
+            <textarea id="actC2" placeholder="Describe brevemente uno de tus dibujos (qué es y qué estado de la materia representa)."></textarea>
+            <button class="btn verify small" onclick="verifyAntiIA('actC2','verifC2')">Verificar actividad</button>
+            <div id="verifC2" class="verify-status"></div>
+        </div>
+
+        <p>
+            Ahora piensa en los materiales naturales y los materiales artificiales que ves en tu territorio. 
+            Los materiales naturales son aquellos que provienen directamente de la naturaleza, como la madera de los árboles, la piedra de los caminos, el agua de la quebrada o el aire que respiras. 
+            Los materiales artificiales son aquellos que han sido transformados por las personas, como el plástico de una botella, el cemento de una carretera o el metal de una bicicleta. 
+            En Pueblo Rico, conviven ambos tipos de materiales: una casa puede tener paredes de bloque (material artificial), techo de tejas de zinc (material artificial) y vigas de madera (material natural).
+        </p>
+
+        <!-- Actividad cuaderno 3 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 3 (cuaderno – mapa conceptual)</h3>
+            <p>En tu cuaderno, crea un mapa conceptual con el título “Materia en mi vereda”. Incluye las palabras: sólido, líquido, gas, natural, artificial, café, cítricos, ganado, turismo.</p>
+            <textarea id="actC3" placeholder="Describe cómo organizaste dos o tres de las conexiones en tu mapa conceptual."></textarea>
+            <button class="btn verify small" onclick="verifyAntiIA('actC3','verifC3')">Verificar actividad</button>
+            <div id="verifC3" class="verify-status"></div>
+        </div>
+
+        <p>
+            Observa la siguiente tabla que relaciona algunas situaciones típicas de la vereda con los estados de la materia y el tipo de material:
+        </p>
+        <table>
+            <tr>
+                <th>Situación</th>
+                <th>Estado de la materia principal</th>
+                <th>¿Material natural o artificial?</th>
+            </tr>
+            <tr>
+                <td>Sacos de café pergamino apilados</td>
+                <td>Sólido</td>
+                <td>Mayormente natural (granos de café); saco de fibra artificial o natural</td>
+            </tr>
+            <tr>
+                <td>Agua en la quebrada</td>
+                <td>Líquido</td>
+                <td>Natural</td>
+            </tr>
+            <tr>
+                <td>Humo de una cocina de leña</td>
+                <td>Gas</td>
+                <td>Resultado de quemar materia natural</td>
+            </tr>
+            <tr>
+                <td>Botella plástica de bebida</td>
+                <td>Sólido</td>
+                <td>Artificial</td>
+            </tr>
+        </table>
+
+        <!-- Actividad cuaderno 4 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 4 (cuaderno – análisis de tabla)</h3>
+            <p>En tu cuaderno, escribe dos conclusiones sobre cómo los materiales naturales y artificiales conviven en tu vereda. Usa ejemplos de la tabla y agrega uno propio.</p>
+            <textarea id="actC4" placeholder="Escribe una de tus conclusiones de forma resumida."></textarea>
+            <button class="btn verify small" onclick="verifyAntiIA('actC4','verifC4')">Verificar actividad</button>
+            <div id="verifC4" class="verify-status"></div>
+        </div>
+
+        <p>
+            La materia también está relacionada con tu identidad y tu territorio. 
+            Los caminos de tierra, los árboles de café, los corrales del ganado y las casas de la vereda no son solo cosas: son parte de la historia y la cultura de quienes viven allí. 
+            Un turista que llega a Pueblo Rico puede ver una taza de café caliente como un simple objeto, pero para ti puede representar el trabajo de tu familia, la abundancia de la tierra y las tradiciones que pasan de generación en generación. 
+            La materia con la que se construyen los espacios (madera, tierra, metal, ladrillo) influye en cómo te sientes en ellos y en cómo te reconoces como habitante de ese lugar.
+        </p>
+
+        <!-- Actividad cuaderno 5 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 5 (cuaderno – reflexión identidad)</h3>
+            <p>En tu cuaderno, escribe una reflexión de media página donde respondas: ¿cómo los objetos y materiales de tu entorno (casa, finca, escuela) te ayudan a sentirte parte de Pueblo Rico?</p>
+            <textarea id="actC5" placeholder="Escribe aquí una frase clave de tu reflexión para verificar la actividad."></textarea>
+            <button class="btn verify small" onclick="verifyAntiIA('actC5','verifC5')">Verificar actividad</button>
+            <div id="verifC5" class="verify-status"></div>
+        </div>
+
+        <!-- Actividad en HTML (inductiva) -->
+        <div class="question-block">
+            <h3>💻 Actividad interactiva (texto inductivo)</h3>
+            <p>Escribe una frase donde relaciones un material de tu vereda (por ejemplo: madera, agua, metal, plástico) con tu identidad o la de tu familia.</p>
+            <textarea id="actHTMLI1" placeholder="Ejemplo: La madera de la casa de mi abuela me hace sentir..."></textarea>
+            <div class="note">Usa tu forma de hablar. Si la respuesta es muy corta o muy genérica, el sistema te pedirá mejorarla.</div>
+            <button class="btn verify small" onclick="verifyAntiIA('actHTMLI1','verifHTMLI1',true)">Verificar frase</button>
+            <div id="verifHTMLI1" class="verify-status"></div>
+        </div>
+    </div>
+
+    <!-- Pregunta tipo ICFES (indagar) -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">🔎</span>Pregunta tipo ICFES – Competencia: indagar
+        </div>
+        <div class="icfes-intro">
+            Un grupo de estudiantes de grado 6 de la vereda Pueblo Rico realiza un recorrido por diferentes puntos: 
+            el cafetal, el potrero con ganado, la quebrada y el kiosco turístico donde se venden artesanías y bebidas. 
+            Durante el recorrido, registran si observan más materiales naturales o artificiales en cada lugar.
+        </div>
+        <div class="icfes-graphic">
+            <strong>Gráfica 1. Observación de materiales en la vereda</strong>
+            <svg class="svg-graph" viewBox="0 0 260 160">
+                <rect x="0" y="0" width="260" height="160" fill="#ffffff"/>
+                <!-- Ejes -->
+                <line x1="40" y1="130" x2="240" y2="130" stroke="#0f172a" stroke-width="2"/>
+                <line x1="40" y1="20" x2="40" y2="130" stroke="#0f172a" stroke-width="2"/>
+                <text x="32" y="15" font-size="9" fill="#111827">Cantidad</text>
+                <text x="110" y="148" font-size="9" fill="#111827">Lugares</text>
+                <!-- Escala -->
+                <text x="25" y="130" font-size="8">0</text>
+                <text x="25" y="105" font-size="8">2</text>
+                <text x="25" y="80" font-size="8">4</text>
+                <text x="25" y="55" font-size="8">6</text>
+                <text x="25" y="30" font-size="8">8</text>
+                <!-- Cafetal -->
+                <rect x="55" y="60" width="18" height="70" fill="#22c55e"/>
+                <rect x="77" y="90" width="18" height="40" fill="#0ea5e9"/>
+                <text x="60" y="145" font-size="8">Cafetal</text>
+                <!-- Potrero -->
+                <rect x="110" y="65" width="18" height="65" fill="#22c55e"/>
+                <rect x="132" y="95" width="18" height="35" fill="#0ea5e9"/>
+                <text x="108" y="145" font-size="8">Potrero</text>
+                <!-- Quebrada -->
+                <rect x="165" y="50" width="18" height="80" fill="#22c55e"/>
+                <rect x="187" y="100" width="18" height="30" fill="#0ea5e9"/>
+                <text x="160" y="145" font-size="8">Quebrada</text>
+                <!-- Kiosco -->
+                <rect x="220" y="85" width="18" height="45" fill="#22c55e"/>
+                <rect x="242" y="55" width="18" height="75" fill="#0ea5e9"/>
+                <text x="214" y="145" font-size="8">Kiosco</text>
+                <!-- Leyenda -->
+                <rect x="50" y="20" width="8" height="8" fill="#22c55e"/>
+                <text x="63" y="28" font-size="8">Materiales naturales</text>
+                <rect x="150" y="20" width="8" height="8" fill="#0ea5e9"/>
+                <text x="163" y="28" font-size="8">Materiales artificiales</text>
+            </svg>
+            <p style="font-size:0.85rem;">
+                En el cafetal, potrero y quebrada predominan los materiales naturales. En el kiosco turístico se observa mayor cantidad de materiales artificiales (plástico, metal, vidrio procesado).
+            </p>
+        </div>
+        <div class="question-block" data-question="icfes1">
+            <h3>Pregunta ICFES – Indagar</h3>
+            <p>
+                Si los estudiantes quieren responder a la pregunta: “¿En qué parte de la vereda se observan más materiales artificiales y qué puede indicar esto sobre el uso del territorio?”, 
+                ¿cuál conclusión es la más adecuada a partir de la gráfica?
+            </p>
+            <div class="options">
+                <label><input type="radio" name="icfes1" value="a">
+                    a) En el cafetal se observan más materiales artificiales, lo que indica que allí se concentra el turismo y las construcciones modernas.
+                </label>
+                <label><input type="radio" name="icfes1" value="b">
+                    b) En el kiosco turístico se observan más materiales artificiales, lo que indica que en ese lugar se concentran las actividades de comercio y atención a visitantes.
+                </label>
+                <label><input type="radio" name="icfes1" value="c">
+                    c) En la quebrada se observan más materiales artificiales, lo que indica que es el lugar más intervenido por las personas.
+                </label>
+            </div>
+            <button class="btn small" onclick="checkSingleICFES()">Responder y ver explicación</button>
+            <div id="feedback-icfes1" class="feedback"></div>
+        </div>
+    </div>
+
+    <!-- Texto deductivo + actividades + SM + juegos -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">📚</span>Texto deductivo: organizando lo que sabemos sobre la materia
+        </div>
+        <p>
+            Ahora vamos a mirar la materia desde una perspectiva más <strong>deductiva</strong>: partiremos de ideas generales para llegar a ejemplos concretos en tu vereda. 
+            Primero, recuerda la definición básica: la materia es todo lo que tiene masa y ocupa un lugar en el espacio. 
+            Esto incluye tanto los materiales naturales como los artificiales. 
+            La materia puede encontrarse, principalmente, en tres estados: sólido, líquido y gaseoso, cada uno con características particulares sobre cómo se organizan sus partículas.
+        </p>
+        <p>
+            En el estado sólido, las partículas están muy próximas entre sí y tienen poca libertad de movimiento. 
+            Por eso, los sólidos mantienen una forma y un volumen definidos. 
+            Piensa en un ladrillo de una casa de la vereda, en una piedra del camino o en un grano de maíz almacenado en un costal. 
+            Aunque pueda haber pequeños cambios (se rompe, se parte, se desgasta), su forma no depende del recipiente donde lo pongas. 
+            Si colocas un ladrillo en el patio o dentro de un cuarto, sigue teniendo la misma forma sólida.
+        </p>
+
+        <!-- Actividad cuaderno 6 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 6 (cuaderno – sólidos)</h3>
+            <p>En tu cuaderno, dibuja tres sólidos de tu entorno (uno natural y dos artificiales). Escribe al lado de cada dibujo qué tipo de material es y dónde se encuentra.</p>
+            <textarea id="actC6" placeholder="Describe uno de los sólidos que dibujaste y su ubicación."></textarea>
+            <button class="btn verify small" onclick="verifyAntiIA('actC6','verifC6')">Verificar actividad</button>
+            <div id="verifC6" class="verify-status"></div>
+        </div>
+
+        <p>
+            En el estado líquido, las partículas están un poco más separadas y pueden moverse unas respecto a otras. 
+            Por eso, los líquidos no tienen forma propia, sino que adoptan la forma del recipiente que los contiene, aunque conservan su volumen. 
+            El agua que se almacena en un tanque en la finca, el jugo de naranja servido en un vaso o la leche en una jarra cambian de forma según el recipiente, 
+            pero la cantidad sigue siendo la misma si no se derrama ni se evapora.
+        </p>
+
+        <!-- Actividad HTML 2 -->
+        <div class="question-block">
+            <h3>💻 Actividad interactiva 2</h3>
+            <p>Escribe un ejemplo de líquido en tu vereda y explica brevemente qué pasaría con su forma si lo cambias a otro recipiente.</p>
+            <textarea id="actHTMLD1" placeholder="Ejemplo: La leche en un tarro de la finca..."></textarea>
+            <button class="btn verify small" onclick="verifyAntiIA('actHTMLD1','verifHTMLD1',true)">Verificar respuesta</button>
+            <div id="verifHTMLD1" class="verify-status"></div>
+        </div>
+
+        <p>
+            En el estado gaseoso, las partículas están muy separadas y se mueven libremente, llenando todo el espacio disponible. 
+            El gas del cilindro utilizado para cocinar, el vapor que sale de una olla hirviendo o el aire que sientes en la cara cuando vas en moto por la vereda son ejemplos de gases. 
+            No puedes “tomar” el gas con las manos, pero puedes sentir sus efectos y medirlo con instrumentos especiales (por ejemplo, un medidor de gas o un termómetro que registra la temperatura del aire).
+        </p>
+
+        <!-- Actividad cuaderno 7 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 7 (cuaderno – gases)</h3>
+            <p>En tu cuaderno, escribe dos ejemplos de gases presentes en tu vereda y explica cómo sabes que están allí aunque no los veas directamente.</p>
+            <textarea id="actC7" placeholder="Resume uno de tus ejemplos de gases."></textarea>
+            <button class="btn verify small" onclick="verifyAntiIA('actC7','verifC7')">Verificar actividad</button>
+            <div id="verifC7" class="verify-status"></div>
+        </div>
+
+        <p>
+            Observa la siguiente tabla que resume los estados de la materia con ejemplos del entorno rural:
+        </p>
+        <table>
+            <tr>
+                <th>Estado</th>
+                <th>Descripción de partículas</th>
+                <th>Ejemplo en la vereda</th>
+            </tr>
+            <tr>
+                <td>Sólido</td>
+                <td>Muy juntas, casi sin moverse.</td>
+                <td>Postes de madera, piedras del camino, granos de café secos.</td>
+            </tr>
+            <tr>
+                <td>Líquido</td>
+                <td>Más separadas, fluyen y se adaptan al recipiente.</td>
+                <td>Agua de la quebrada, leche en un balde, jugos naturales.</td>
+            </tr>
+            <tr>
+                <td>Gas</td>
+                <td>Muy separadas, se mueven libremente y ocupan todo el espacio.</td>
+                <td>Vapor de ollas, gas de cocina, aire entre los cafetales.</td>
+            </tr>
+        </table>
+
+        <!-- Actividad cuaderno 8 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 8 (cuaderno – esquema resumen)</h3>
+            <p>En tu cuaderno, realiza un esquema resumen (tipo cuadro) con los tres estados de la materia y al menos dos ejemplos de la vereda para cada uno.</p>
+            <textarea id="actC8" placeholder="Escribe uno de los ejemplos que agregaste a tu esquema."></textarea>
+            <button class="btn verify small" onclick="verifyAntiIA('actC8','verifC8')">Verificar actividad</button>
+            <div id="verifC8" class="verify-status"></div>
+        </div>
+
+        <p>
+            Además de los estados de la materia, es importante diferenciar entre materiales naturales y artificiales. 
+            Para ello, mira la siguiente figura que representa, de forma sencilla, esta clasificación:
+        </p>
+        <div class="icfes-graphic">
+            <strong>Figura 2. Clasificación general de materiales</strong>
+            <svg class="svg-graph" viewBox="0 0 260 150">
+                <rect x="0" y="0" width="260" height="150" fill="#ffffff"/>
+                <!-- Materia -->
+                <rect x="100" y="10" width="60" height="20" rx="6" fill="#0ea5e9"/>
+                <text x="130" y="24" text-anchor="middle" font-size="9" fill="#ffffff">Materia</text>
+                <!-- Naturales -->
+                <rect x="40" y="55" width="70" height="20" rx="6" fill="#22c55e"/>
+                <text x="75" y="69" text-anchor="middle" font-size="8" fill="#ffffff">Naturales</text>
+                <!-- Artificiales -->
+                <rect x="150" y="55" width="70" height="20" rx="6" fill="#f97316"/>
+                <text x="185" y="69" text-anchor="middle" font-size="8" fill="#ffffff">Artificiales</text>
+                <!-- Ejemplos naturales -->
+                <text x="75" y="95" text-anchor="middle" font-size="7">Madera</text>
+                <text x="75" y="110" text-anchor="middle" font-size="7">Agua</text>
+                <text x="75" y="125" text-anchor="middle" font-size="7">Piedra</text>
+                <!-- Ejemplos artificiales -->
+                <text x="185" y="95" text-anchor="middle" font-size="7">Plástico</text>
+                <text x="185" y="110" text-anchor="middle" font-size="7">Metal</text>
+                <text x="185" y="125" text-anchor="middle" font-size="7">Vidrio</text>
+                <!-- Flechas -->
+                <line x1="130" y1="30" x2="75" y2="55" stroke="#6b7280" stroke-width="1.5"/>
+                <line x1="130" y1="30" x2="185" y2="55" stroke="#6b7280" stroke-width="1.5"/>
+            </svg>
+            <p style="font-size:0.85rem;">
+                La materia se puede clasificar en materiales naturales (como madera, agua y piedra) y materiales artificiales (como plástico, metal y vidrio procesado).
+            </p>
+        </div>
+
+        <!-- Actividad HTML 3 -->
+        <div class="question-block">
+            <h3>💻 Actividad interactiva 3</h3>
+            <p>Escribe un material natural y uno artificial que consideres importantes en tu vereda y explica, en una frase, por qué cada uno es significativo.</p>
+            <textarea id="actHTMLD2" placeholder="Ejemplo: La madera de los cafetales... / El plástico de las botellas..."></textarea>
+            <button class="btn verify small" onclick="verifyAntiIA('actHTMLD2','verifHTMLD2',true)">Verificar respuesta</button>
+            <div id="verifHTMLD2" class="verify-status"></div>
+        </div>
+
+        <!-- Actividad cuaderno 9 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 9 (cuaderno – mapa mental)</h3>
+            <p>En tu cuaderno, crea un mapa mental titulado “Mi mundo material”. Incluye ramas para: casa, finca, escuela y vereda. En cada rama agrega ejemplos de materiales naturales y artificiales.</p>
+            <textarea id="actC9" placeholder="Describe una de las ramas de tu mapa mental (por ejemplo, casa)."></textarea>
+            <button class="btn verify small" onclick="verifyAntiIA('actC9','verifC9')">Verificar actividad</button>
+            <div id="verifC9" class="verify-status"></div>
+        </div>
+
+        <!-- Preguntas de selección múltiple (3) -->
+        <div class="question-block" data-question="sm1">
+            <h3>Pregunta 2 de selección múltiple</h3>
+            <p>¿Cuál de los siguientes ejemplos corresponde a materia en estado líquido presente en la vereda?</p>
+            <div class="options">
+                <label><input type="radio" name="sm1" value="a"> a) Las piedras del camino.</label>
+                <label><input type="radio" name="sm1" value="b"> b) El agua de la quebrada.</label>
+                <label><input type="radio" name="sm1" value="c"> c) El humo de la cocina.</label>
+            </div>
+            <button class="btn small" onclick="checkSingle('sm1','b')">Comprobar</button>
+            <div id="feedback-sm1" class="feedback"></div>
+        </div>
+
+        <div class="question-block" data-question="sm2">
+            <h3>Pregunta 3 de selección múltiple</h3>
+            <p>Un turista observa una mesa de madera y una botella plástica sobre ella. ¿Cuál afirmación es correcta?</p>
+            <div class="options">
+                <label><input type="radio" name="sm2" value="a"> a) La mesa es artificial y la botella es natural.</label>
+                <label><input type="radio" name="sm2" value="b"> b) Ambos objetos son artificiales.</label>
+                <label><input type="radio" name="sm2" value="c"> c) La mesa está hecha de un material natural (madera) y la botella de un material artificial (plástico).</label>
+            </div>
+            <button class="btn small" onclick="checkSingle('sm2','c')">Comprobar</button>
+            <div id="feedback-sm2" class="feedback"></div>
+        </div>
+
+        <div class="question-block" data-question="sm3">
+            <h3>Pregunta 4 de selección múltiple</h3>
+            <p>¿Cuál opción describe mejor el estado gaseoso de la materia en la vereda?</p>
+            <div class="options">
+                <label><input type="radio" name="sm3" value="a"> a) El agua almacenada en un tanque.</label>
+                <label><input type="radio" name="sm3" value="b"> b) El aire que sientes cuando sopla el viento entre los cafetales.</label>
+                <label><input type="radio" name="sm3" value="c"> c) La leche recién ordeñada.</label>
+            </div>
+            <button class="btn small" onclick="checkSingle('sm3','b')">Comprobar</button>
+            <div id="feedback-sm3" class="feedback"></div>
+        </div>
+
+        <!-- Juegos ordenar letras (4) SIN mostrar la palabra correcta -->
+        <div class="drag-area" id="ordLetras1">
+            <strong>Juego 1 – Ordena las letras</strong>
+            <p>Haz clic en las letras y colócalas en los espacios hasta formar una palabra relacionada con la materia.</p>
+            <div class="drag-list" id="letters1"></div>
+            <div class="drop-list" id="slots1"></div>
+            <button class="btn small" onclick="checkOrderLetters('1','SOLIDO')">Verificar intento</button>
+            <div id="feedback-ordLetras1" class="feedback"></div>
+        </div>
+
+        <div class="drag-area" id="ordLetras2">
+            <strong>Juego 2 – Ordena las letras</strong>
+            <p>Otra palabra clave sobre cómo fluye la materia.</p>
+            <div class="drag-list" id="letters2"></div>
+            <div class="drop-list" id="slots2"></div>
+            <button class="btn small" onclick="checkOrderLetters('2','LIQUIDO')">Verificar intento</button>
+            <div id="feedback-ordLetras2" class="feedback"></div>
+        </div>
+
+        <div class="drag-area" id="ordLetras3">
+            <strong>Juego 3 – Ordena las letras</strong>
+            <p>Piensa en lo que respiras y en el vapor.</p>
+            <div class="drag-list" id="letters3"></div>
+            <div class="drop-list" id="slots3"></div>
+            <button class="btn small" onclick="checkOrderLetters('3','GASES')">Verificar intento</button>
+            <div id="feedback-ordLetras3" class="feedback"></div>
+        </div>
+
+        <div class="drag-area" id="ordLetras4">
+            <strong>Juego 4 – Ordena las letras</strong>
+            <p>Palabra clave para aquello que proviene directamente de la naturaleza.</p>
+            <div class="drag-list" id="letters4"></div>
+            <div class="drop-list" id="slots4"></div>
+            <button class="btn small" onclick="checkOrderLetters('4','NATURAL')">Verificar intento</button>
+            <div id="feedback-ordLetras4" class="feedback"></div>
+        </div>
+
+        <!-- Juegos ordenar palabras (3) SIN mostrar la frase correcta -->
+        <div class="drag-area" id="ordPalabras1">
+            <strong>Juego 5 – Ordena las palabras</strong>
+            <p>Arma una frase que defina la materia.</p>
+            <div class="drag-list" id="words1"></div>
+            <div class="drop-list" id="wslots1"></div>
+            <button class="btn small" onclick="checkOrderWords('1',['La','materia','es','todo','lo','que','tiene','masa'])">Verificar intento</button>
+            <div id="feedback-ordPal1" class="feedback"></div>
+        </div>
+
+        <div class="drag-area" id="ordPalabras2">
+            <strong>Juego 6 – Ordena las palabras</strong>
+            <p>Frase sobre los estados de la materia.</p>
+            <div class="drag-list" id="words2"></div>
+            <div class="drop-list" id="wslots2"></div>
+            <button class="btn small" onclick="checkOrderWords('2',['El','agua','puede','ser','solida','liquida','o','gaseosa'])">Verificar intento</button>
+            <div id="feedback-ordPal2" class="feedback"></div>
+        </div>
+
+        <div class="drag-area" id="ordPalabras3">
+            <strong>Juego 7 – Ordena las palabras</strong>
+            <p>Frase que relaciona materiales naturales y artificiales.</p>
+            <div class="drag-list" id="words3"></div>
+            <div class="drop-list" id="wslots3"></div>
+            <button class="btn small" onclick="checkOrderWords('3',['En','la','vereda','conviven','materiales','naturales','y','artificiales'])">Verificar intento</button>
+            <div id="feedback-ordPal3" class="feedback"></div>
+        </div>
+    </div>
+
+    <!-- Recompensa final -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">🏅</span>Recompensa final según tu animal
+        </div>
+        <p>Cuando termines, haz clic en el botón para ver tu recompensa según los puntos alcanzados (0 a 50).</p>
+        <button class="btn secondary" onclick="showFinalReward()">Ver recompensa</button>
+        <div id="finalReward" class="animal-banner hidden">
+            <span class="icon" id="finalAnimalIcon">🐢</span>
+            <div>
+                <div id="finalAnimalTitle"><strong>Tortuga pensativa</strong></div>
+                <div id="finalAnimalText">Has comenzado a explorar de qué está hecho tu mundo. Sigue observando tu vereda con ojos curiosos.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Experimento casero -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">🔬</span>Experimento casero: “¿En qué estado está?”
+        </div>
+        <div class="exp-block">
+            <p>
+                Para cerrar este OVA, realizarás un experimento sencillo y seguro en casa o en la finca para identificar estados de la materia usando materiales de fácil acceso. 
+                Luego presentarás un informe final en un video de máximo 2 minutos.
+            </p>
+            <h3>1. Materiales</h3>
+            <ul>
+                <li>1 vaso con agua.</li>
+                <li>1 piedra pequeña o trozo de madera.</li>
+                <li>1 vela pequeña o una olla con agua caliente (bajo supervisión de un adulto) para observar vapor.</li>
+                <li>Hoja y lápiz para anotar.</li>
+            </ul>
+            <h3>2. Procedimiento</h3>
+            <ol>
+                <li>Coloca la piedra o trozo de madera sobre una mesa. Observa su forma y volumen.</li>
+                <li>Llena un vaso con agua. Observa cómo el agua toma la forma del vaso.</li>
+                <li>Con ayuda de un adulto, enciende una vela o calienta un poco de agua hasta que veas vapor. Observa cómo el gas se dispersa en el aire.</li>
+                <li>Anota tus observaciones en una tabla como la siguiente.</li>
+            </ol>
+            <h3>3. Tabla resumen de resultados</h3>
+            <table>
+                <tr>
+                    <th>Material</th>
+                    <th>Estado de la materia</th>
+                    <th>¿Tiene forma propia?</th>
+                    <th>¿Tiene volumen definido?</th>
+                    <th>Observaciones</th>
+                </tr>
+                <tr>
+                    <td>Piedra/madera</td>
+                    <td>__________</td>
+                    <td>__________</td>
+                    <td>__________</td>
+                    <td>__________</td>
+                </tr>
+                <tr>
+                    <td>Agua en el vaso</td>
+                    <td>__________</td>
+                    <td>__________</td>
+                    <td>__________</td>
+                    <td>__________</td>
+                </tr>
+                <tr>
+                    <td>Vapor/aire caliente</td>
+                    <td>__________</td>
+                    <td>__________</td>
+                    <td>__________</td>
+                    <td>__________</td>
+                </tr>
+            </table>
+            <h3>4. Informe en video (máx. 2 minutos)</h3>
+            <p>Tu video debe incluir:</p>
+            <ul>
+                <li>Presentación breve (nombre, grado, vereda Pueblo Rico).</li>
+                <li>Mención de los materiales usados y por qué son fáciles de conseguir en tu entorno.</li>
+                <li>Explicación rápida de lo que observaste en cada caso (sólido, líquido, gas).</li>
+                <li>Muestra de la tabla que dibujaste en tu cuaderno.</li>
+                <li>Conclusión: explica qué aprendiste sobre los estados de la materia y cómo eso te ayuda a entender mejor tu mundo en la vereda.</li>
+            </ul>
+            <p>Recuerda hablar con tus propias palabras, como si le explicaras el experimento a un turista que visita tu casa o tu finca.</p>
+        </div>
+    </div>
+
+    <!-- Recursos bibliográficos (sin citas numéricas en el texto) -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">📖</span>Recursos bibliográficos consultados
+        </div>
+        <ul>
+            <li>Textos de ciencias naturales para educación básica sobre materia y estados de la materia.</li>
+            <li>Materiales pedagógicos sobre identidad y territorio en contextos rurales de Colombia.</li>
+            <li>Guías didácticas para la observación del entorno en la escuela rural.</li>
+        </ul>
+    </div>
+</div>
+</div>
+
+<script>
+    // ---- Sistema de puntos y progreso ----
+    let totalPoints = 0;
+    const maxPoints = 50;
+    let completedItems = {};
+    const totalItems = 30; // conteo aproximado de tareas/preguntas/juegos
+
+    function updateProgress(itemId, gainedPoints){
+        if(!completedItems[itemId]){
+            completedItems[itemId] = true;
+            if(gainedPoints){
+                totalPoints += gainedPoints;
+                if(totalPoints > maxPoints) totalPoints = maxPoints;
+            }
+        }
+        const completedCount = Object.keys(completedItems).length;
+        let progress = Math.round((completedCount / totalItems) * 100);
+        if(progress > 100) progress = 100;
+        document.getElementById('progressFill').style.width = progress + '%';
+        document.getElementById('progressText').textContent = progress + ' %';
+        document.getElementById('pointsValue').textContent = totalPoints;
+        updateAnimal();
+        showRewardFlash();
+    }
+
+    function updateAnimal(){
+        const animalSpan = document.getElementById('animalValue');
+        if(totalPoints <= 10){
+            animalSpan.textContent = '🐢 Tortuga pensativa (0–10)';
+        }else if(totalPoints <= 20){
+            animalSpan.textContent = '🐔 Gallina curiosa (11–20)';
+        }else if(totalPoints <= 30){
+            animalSpan.textContent = '🐕 Perro trabajador (21–30)';
+        }else if(totalPoints <= 40){
+            animalSpan.textContent = '🐴 Caballo de cafetal (31–40)';
+        }else{
+            animalSpan.textContent = '🦅 Águila científica (41–50)';
+        }
+    }
+
+    function showRewardFlash(){
+        const span = document.createElement('span');
+        span.className = 'reward-flash';
+        span.textContent = '⭐';
+        const bar = document.querySelector('.points-display');
+        bar.appendChild(span);
+        setTimeout(()=>{span.remove();},600);
+    }
+
+    // ---- Preguntas selección múltiple ----
+    function checkSingle(qId, correctOption){
+        const radios = document.querySelectorAll('input[name="'+qId+'"]');
+        let selected = null;
+        radios.forEach(r => { if(r.checked) selected = r.value; });
+        const fb = document.getElementById('feedback-'+qId);
+        if(!selected){
+            fb.textContent = 'Selecciona una respuesta antes de comprobar.';
+            fb.className = 'feedback incorrect';
+            return;
+        }
+        if(selected === correctOption){
+            fb.textContent = '✔ Respuesta correcta.';
+            fb.className = 'feedback correct';
+            updateProgress(qId,2);
+        }else{
+            fb.textContent = '✖ Respuesta incorrecta. Relee el texto y vuelve a intentarlo.';
+            fb.className = 'feedback incorrect';
+        }
+    }
+
+    // ICFES con explicación detallada
+    function checkSingleICFES(){
+        const name = 'icfes1';
+        const radios = document.querySelectorAll('input[name="'+name+'"]');
+        let selected = null;
+        radios.forEach(r => { if(r.checked) selected = r.value; });
+        const fb = document.getElementById('feedback-icfes1');
+        if(!selected){
+            fb.textContent = 'Selecciona una respuesta antes de comprobar.';
+            fb.className = 'feedback incorrect';
+            return;
+        }
+        if(selected === 'b'){
+            fb.className = 'feedback correct';
+            fb.innerHTML =
+                '✔ Respuesta correcta. En la gráfica se ve que el kiosco turístico tiene la barra más alta de materiales artificiales, ' +
+                'lo que indica que allí se concentran objetos como botellas, envases, mesas metálicas y otros elementos transformados por las personas. ' +
+                'Esto sugiere que es un lugar de comercio y atención a visitantes, donde se usan muchos productos manufacturados.' +
+                '<br><br><strong>Por qué los distractores son incorrectos:</strong> ' +
+                'La opción a) es incorrecta porque en el cafetal predominan los materiales naturales (plantas, suelo) y la barra de artificiales es menor que en el kiosco. ' +
+                'La opción c) es incorrecta porque en la quebrada se observan principalmente materiales naturales, y la barra de artificiales es baja; ' +
+                'aunque pueda haber algunos residuos, no es el lugar con mayor presencia de materiales artificiales según la gráfica.';
+            updateProgress('icfes1',3);
+        }else{
+            fb.className = 'feedback incorrect';
+            fb.innerHTML =
+                '✖ Respuesta incorrecta. Observa cuál barra de materiales artificiales es más alta y piensa qué actividades se realizan en ese lugar.';
+        }
+    }
+
+    function retroPrevios(){
+        const retro = document.getElementById('retroPreviosText');
+        retro.className = 'feedback';
+        retro.innerHTML =
+            'Si reconociste que el café, el agua y el aire son materia; que el agua hirviendo pasa de líquido a gas; ' +
+            'y que un helado está en estado sólido, tienes una buena base para seguir aprendiendo sobre la materia. ' +
+            'Si te equivocaste en alguna, no te preocupes: en el resto de la OVA encontrarás explicaciones y ejemplos para fortalecer estas ideas.';
+        updateProgress('retroPrevios',1);
+    }
+
+    // ---- Verificador anti copy–paste / IA ----
+    function verifyAntiIA(textId, statusId, givePoints){
+        const txt = document.getElementById(textId).value.trim();
+        const status = document.getElementById(statusId);
+        if(txt.length < 25){
+            status.textContent = 'Tu respuesta es muy corta. Explica mejor con tus propias palabras.';
+            status.className = 'verify-status bad';
+            return;
+        }
+        const patterns = ['chatgpt','inteligencia artificial','como modelo de ia','copiado de internet','según wikipedia'];
+        const lower = txt.toLowerCase();
+        for(const p of patterns){
+            if(lower.includes(p)){
+                status.textContent = 'Parece que mencionas IA o copias de internet. Usa tu propia forma de hablar.';
+                status.className = 'verify-status bad';
+                return;
+            }
+        }
+        status.textContent = '✔ Tu respuesta parece escrita con tus propias palabras. Bien hecho.';
+        status.className = 'verify-status ok';
+        updateProgress(textId, givePoints ? 2 : 1);
+    }
+
+    // ---- Juegos ordenar letras (sin decir la palabra correcta en el texto) ----
+    let letterGames = {};
+
+    function createLetterGame(id, word){
+        const letters = word.split('');
+        const shuffled = letters.slice().sort(()=>Math.random()-0.5);
+        const list = document.getElementById('letters'+id);
+        const slots = document.getElementById('slots'+id);
+        list.innerHTML = '';
+        slots.innerHTML = '';
+        shuffled.forEach(ch=>{
+            const el = document.createElement('div');
+            el.className = 'drag-item';
+            el.textContent = ch;
+            el.dataset.letter = ch;
+            el.onclick = ()=>pickLetter(id,el);
+            list.appendChild(el);
+        });
+        for(let i=0;i<letters.length;i++){
+            const s = document.createElement('div');
+            s.className = 'drop-slot';
+            s.onclick = ()=>placeLetter(id,s);
+            slots.appendChild(s);
+        }
+        letterGames[id] = {picked:null};
+    }
+
+    function pickLetter(id, el){
+        letterGames[id].picked = el;
+    }
+
+    function placeLetter(id, slot){
+        const game = letterGames[id];
+        if(!game.picked) return;
+        if(slot.textContent && slot.textContent.trim() !== '') return;
+        slot.textContent = game.picked.dataset.letter;
+        slot.classList.add('filled');
+        game.picked.style.opacity = 0.4;
+        game.picked.style.pointerEvents = 'none';
+        game.picked = null;
+    }
+
+    function checkOrderLetters(id, correctWord){
+        const slots = document.querySelectorAll('#slots'+id+' .drop-slot');
+        let result = '';
+        slots.forEach(s=>{ result += (s.textContent||''); });
+        const fb = document.getElementById('feedback-ordLetras'+id);
+        if(result === correctWord){
+            fb.textContent = '✔ Muy bien, la palabra es correcta.';
+            fb.className = 'feedback correct';
+            updateProgress('ordLetras'+id,2);
+        }else{
+            fb.textContent = '✖ La palabra aún no está bien ordenada. Intenta de nuevo, puedes mover las letras las veces que sea necesario.';
+            fb.className = 'feedback incorrect';
+        }
+    }
+
+    // ---- Juegos ordenar palabras (sin decir la frase correcta) ----
+    let wordGames = {};
+
+    function createWordGame(id, words){
+        const list = document.getElementById('words'+id);
+        const slots = document.getElementById('wslots'+id);
+        list.innerHTML = '';
+        slots.innerHTML = '';
+        const shuffled = words.slice().sort(()=>Math.random()-0.5);
+        shuffled.forEach(w=>{
+            const el = document.createElement('div');
+            el.className = 'drag-item';
+            el.textContent = w;
+            el.dataset.word = w;
+            el.onclick = ()=>pickWord(id,el);
+            list.appendChild(el);
+        });
+        for(let i=0;i<words.length;i++){
+            const s = document.createElement('div');
+            s.className = 'drop-slot';
+            s.onclick = ()=>placeWord(id,s);
+            slots.appendChild(s);
+        }
+        wordGames[id] = {picked:null};
+    }
+
+    function pickWord(id, el){
+        wordGames[id].picked = el;
+    }
+
+    function placeWord(id, slot){
+        const game = wordGames[id];
+        if(!game.picked) return;
+        if(slot.textContent && slot.textContent.trim() !== '') return;
+        slot.textContent = game.picked.dataset.word;
+        slot.classList.add('filled');
+        game.picked.style.opacity = 0.4;
+        game.picked.style.pointerEvents = 'none';
+        game.picked = null;
+    }
+
+    function checkOrderWords(id, correctArray){
+        const slots = document.querySelectorAll('#wslots'+id+' .drop-slot');
+        let result = [];
+        slots.forEach(s=>{ result.push((s.textContent||'').trim()); });
+        const fb = document.getElementById('feedback-ordPal'+id);
+        if(result.join(' ') === correctArray.join(' ')){
+            fb.textContent = '✔ La frase es coherente y está bien ordenada.';
+            fb.className = 'feedback correct';
+            updateProgress('ordPalabras'+id,2);
+        }else{
+            fb.textContent = '✖ Aún hay palabras desordenadas. Intenta nuevamente, puedes hacer todos los intentos que necesites.';
+            fb.className = 'feedback incorrect';
+        }
+    }
+
+    // ---- Recompensa final ----
+    function showFinalReward(){
+        const banner = document.getElementById('finalReward');
+        const icon = document.getElementById('finalAnimalIcon');
+        const title = document.getElementById('finalAnimalTitle');
+        const text = document.getElementById('finalAnimalText');
+        banner.classList.remove('hidden');
+
+        if(totalPoints <= 10){
+            icon.textContent = '🐢';
+            title.innerHTML = '<strong>Tortuga pensativa</strong>';
+            text.textContent = 'Has comenzado a reconocer de qué está hecho tu mundo. Sigue avanzando paso a paso.';
+        }else if(totalPoints <= 20){
+            icon.textContent = '🐔';
+            title.innerHTML = '<strong>Gallina curiosa</strong>';
+            text.textContent = 'Exploras tu entorno picoteando ideas y ejemplos de materia en la vereda. Tu curiosidad te llevará lejos.';
+        }else if(totalPoints <= 30){
+            icon.textContent = '🐕';
+            title.innerHTML = '<strong>Perro trabajador</strong>';
+            text.textContent = 'Acompañas el proceso con constancia y esfuerzo. Tu comprensión de la materia ya es un apoyo en la finca y la escuela.';
+        }else if(totalPoints <= 40){
+            icon.textContent = '🐴';
+            title.innerHTML = '<strong>Caballo de cafetal</strong>';
+            text.textContent = 'Llevas sobre tus hombros un buen conocimiento sobre los estados y materiales de tu entorno rural.';
+        }else{
+            icon.textContent = '🦅';
+            title.innerHTML = '<strong>Águila científica</strong>';
+            text.textContent = 'Observas tu territorio desde lo alto, distinguiendo materiales, estados de la materia e identidad rural con mirada crítica y curiosa.';
+        }
+    }
+
+    // ---- Inicialización ----
+    window.onload = function(){
+        createLetterGame('1','SOLIDO');
+        createLetterGame('2','LIQUIDO');
+        createLetterGame('3','GASES');
+        createLetterGame('4','NATURAL');
+
+        createWordGame('1',['La','materia','es','todo','lo','que','tiene','masa']);
+        createWordGame('2',['El','agua','puede','ser','solida','liquida','o','gaseosa']);
+        createWordGame('3',['En','la','vereda','conviven','materiales','naturales','y','artificiales']);
+    };
+</script>
+</body>
+</html>

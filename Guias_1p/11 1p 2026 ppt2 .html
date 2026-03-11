@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>REDOX Orgánico - Prof. Juan Felipe Ramírez Giraldo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root{
+            --c1:#0f172a;
+            --c2:#020617;
+            --c3:#facc15;
+            --c4:#fb7185;
+            --c5:#22c55e;
+            --c6:#38bdf8;
+        }
+        *{box-sizing:border-box;}
+        body{
+            margin:0;
+            font-family:'Segoe UI', Arial, sans-serif;
+            background:radial-gradient(circle at top,var(--c1),var(--c2));
+            color:#fff;
+            overflow:hidden;
+        }
+        h1,h2,h3{margin:0 0 10px;}
+        .container{
+            width:100vw;
+            height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            position:relative;
+        }
+        .slide{
+            width:90%;
+            max-width:1000px;
+            height:85vh;
+            background:linear-gradient(135deg,rgba(15,23,42,0.96),rgba(15,23,42,0.9));
+            border-radius:20px;
+            box-shadow:0 0 25px rgba(0,0,0,0.8);
+            padding:20px 30px 70px;
+            display:none;
+            position:relative;
+            overflow:hidden;
+        }
+        .slide.active{
+            display:block;
+            animation:fadeIn 0.6s ease;
+        }
+        @keyframes fadeIn{
+            from{opacity:0; transform:scale(0.96) translateY(10px);}
+            to{opacity:1; transform:scale(1) translateY(0);}
+        }
+
+        .top-bar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:10px;
+        }
+        .tag{
+            font-size:0.85rem;
+            padding:4px 10px;
+            border-radius:20px;
+            background:rgba(255,255,255,0.1);
+        }
+        .progress{
+            width:180px;
+            height:8px;
+            background:rgba(255,255,255,0.15);
+            border-radius:10px;
+            overflow:hidden;
+        }
+        .progress-inner{
+            height:100%;
+            width:0%;
+            background:linear-gradient(90deg,var(--c5),var(--c3));
+            transition:width 0.3s;
+        }
+        .points{
+            font-size:0.9rem;
+            padding:4px 12px;
+            border-radius:20px;
+            background:rgba(0,0,0,0.4);
+            border:1px solid rgba(255,255,255,0.2);
+        }
+
+        .nav-buttons{
+            position:absolute;
+            bottom:15px;
+            left:0;
+            width:100%;
+            display:flex;
+            justify-content:space-between;
+            padding:0 25px;
+            align-items:center;
+        }
+        button{
+            padding:8px 16px;
+            border:none;
+            border-radius:20px;
+            cursor:pointer;
+            font-weight:bold;
+            transition:transform 0.2s, box-shadow 0.2s, background 0.3s;
+        }
+        .btn-prev{background:#4b5563; color:#fff;}
+        .btn-next{background:linear-gradient(135deg,var(--c3),var(--c4)); color:#000;}
+        button:hover{transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,0.4);}
+        button:disabled{opacity:0.3; cursor:not-allowed; box-shadow:none; transform:none;}
+
+        .points-pop{
+            position:absolute;
+            top:10px;
+            right:210px;
+            font-size:0.9rem;
+            padding:4px 8px;
+            border-radius:10px;
+            background:rgba(0,0,0,0.7);
+            border:1px solid rgba(255,255,255,0.5);
+            display:none;
+            animation:pop 0.8s ease-out forwards;
+        }
+        @keyframes pop{
+            from{opacity:0; transform:translateY(-10px) scale(0.8);}
+            to{opacity:1; transform:translateY(0) scale(1);}
+        }
+
+        .columns{
+            display:grid;
+            grid-template-columns:1.3fr 1fr;
+            gap:20px;
+            height:calc(100% - 70px);
+        }
+        .full{
+            height:calc(100% - 70px);
+            overflow-y:auto;
+        }
+        .card{
+            background:rgba(148,163,184,0.12);
+            border-radius:15px;
+            padding:12px 15px;
+            margin-bottom:10px;
+            border:1px solid rgba(148,163,184,0.4);
+        }
+        ul{padding-left:18px; margin-top:5px;}
+        li{margin-bottom:4px;}
+
+        .badge{
+            display:inline-block;
+            background:linear-gradient(135deg,var(--c3),var(--c4));
+            color:#000;
+            padding:4px 10px;
+            border-radius:15px;
+            font-size:0.8rem;
+            font-weight:bold;
+            margin-bottom:8px;
+        }
+        .highlight{color:var(--c3); font-weight:bold;}
+        .pill{
+            display:inline-block;
+            padding:4px 10px;
+            border-radius:999px;
+            background:rgba(15,23,42,0.9);
+            margin-right:6px;
+            font-size:0.8rem;
+        }
+
+        .question-box{
+            margin-top:10px;
+            padding:10px;
+            background:rgba(15,23,42,0.95);
+            border-radius:10px;
+            border:1px solid rgba(148,163,184,0.5);
+        }
+        .question-box p{margin-bottom:8px;}
+        .question-box label{display:block; margin-bottom:4px; cursor:pointer;}
+        .feedback{
+            margin-top:6px;
+            padding:6px 8px;
+            border-radius:8px;
+            font-size:0.85rem;
+            display:none;
+        }
+        .feedback.ok{background:rgba(34,197,94,0.25); border:1px solid var(--c5);}
+        .feedback.bad{background:rgba(248,113,113,0.25); border:1px solid var(--c4);}
+
+        .full::-webkit-scrollbar{width:6px;}
+        .full::-webkit-scrollbar-thumb{
+            background:rgba(148,163,184,0.6);
+            border-radius:10px;
+        }
+        .full::-webkit-scrollbar-track{background:transparent;}
+
+        .molecule-scene{
+            position:relative;
+            width:100%;
+            height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .orbit{
+            position:absolute;
+            width:150px;
+            height:150px;
+            border-radius:50%;
+            border:1px dashed rgba(148,163,184,0.5);
+            animation:spin 16s linear infinite;
+        }
+        .e-dot{
+            width:10px;
+            height:10px;
+            border-radius:50%;
+            background:var(--c5);
+            position:absolute;
+            top:-5px;
+            left:50%;
+            transform:translateX(-50%);
+            box-shadow:0 0 8px rgba(34,197,94,0.8);
+        }
+        .mol-core{
+            width:80px;
+            height:80px;
+            border-radius:50%;
+            background:radial-gradient(circle,var(--c6),#0f172a);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:0.8rem;
+            text-align:center;
+            box-shadow:0 0 20px rgba(56,189,248,0.8);
+        }
+        @keyframes spin{
+            from{transform:rotate(0deg);}
+            to{transform:rotate(360deg);}
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            font-size:0.9rem;
+        }
+        th,td{
+            border:1px solid rgba(148,163,184,0.5);
+            padding:4px 6px;
+            text-align:center;
+        }
+
+        .emoji-big{
+            font-size:3rem;
+            text-align:center;
+        }
+
+        @media (max-width:800px){
+            .columns{grid-template-columns:1fr;}
+            .slide{height:90vh;padding:15px 15px 75px;}
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="pointsPop" class="points-pop">+10 pts</div>
+
+    <!-- Diapositiva 1: Presentación -->
+    <div class="slide active" data-index="0">
+        <div class="top-bar">
+            <div class="tag">Grado 10° – Química Orgánica</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner" id="progressBar"></div></div>
+                <div class="points" id="pointsBox">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <span class="badge">REDOX Orgánico</span>
+                <h1>Redox en moléculas de carbono<br>y el camino del vinagre</h1>
+                <p>
+                    Docente: <span class="highlight">Juan Felipe Ramírez Giraldo</span><br>
+                    Licenciado en Biología y Educación Ambiental.<br>
+                    Magíster en Recursos Digitales aplicados a la Educación.<br>
+                    Estudiante de Doctorado en Ciencias Biomédicas.
+                </p>
+                <div class="card">
+                    <h3>Objetivo de aprendizaje</h3>
+                    <ul>
+                        <li>Comprender qué es una reacción REDOX y cómo implica transferencia de electrones.</li>
+                        <li>Identificar oxidación y reducción en moléculas orgánicas, especialmente en alcoholes.</li>
+                        <li>Esquematizar el proceso de obtención de vinagre: oxidación del etanol hasta ácido acético.</li>
+                        <li>Relacionar el concepto de cambio químico con la propia evolución y cambio personal.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Evidencias de aprendizaje</h3>
+                    <ul>
+                        <li>Esquemas de oxidación de alcoholes (alcohol → aldehído → ácido carboxílico).</li>
+                        <li>Identificación de quién se oxida y quién se reduce en ejemplos sencillos de REDOX orgánico.</li>
+                        <li>Mapa conceptual o línea de flujo del “camino del vinagre”.</li>
+                        <li>Texto reflexivo sobre el cambio y la evolución personal a partir de la metáfora REDOX.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="molecule-scene">
+                <div class="orbit">
+                    <div class="e-dot"></div>
+                </div>
+                <div class="mol-core">
+                    C–H / C–O<br>
+                    (electrones en movimiento)
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev" disabled>&larr; Anterior</button>
+            <span>Diapositiva 1 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 2: ¿Qué es una reacción REDOX? -->
+    <div class="slide" data-index="1">
+        <div class="top-bar">
+            <div class="tag">Definición de REDOX</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Reacciones REDOX: la danza de los electrones</h2>
+            <div class="card">
+                <p>
+                    Una reacción REDOX es un proceso químico en el que hay transferencia de electrones entre especies.
+                </p>
+                <ul>
+                    <li><span class="highlight">Oxidación</span>: pérdida de electrones (o aumento del número de oxidación).</li>
+                    <li><span class="highlight">Reducción</span>: ganancia de electrones (o disminución del número de oxidación).</li>
+                    <li>Siempre que algo se oxida, otra cosa se reduce al mismo tiempo.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Truco de memoria</h3>
+                <ul>
+                    <li>OIL RIG (en inglés): Oxidation Is Loss, Reduction Is Gain.</li>
+                    <li>En español: “Oxidarse es perder, reducirse es ganar” (electrones).</li>
+                </ul>
+            </div>
+            <div class="question-box" data-question="q1">
+                <p><strong>Pregunta 1:</strong> En una reacción REDOX, cuando una especie gana electrones decimos que se…</p>
+                <label><input type="radio" name="q1" value="a"> oxida</label>
+                <label><input type="radio" name="q1" value="b"> reduce</label>
+                <label><input type="radio" name="q1" value="c"> neutraliza</label>
+                <button onclick="checkQuestion('q1','b')">Comprobar</button>
+                <div class="feedback" id="fb-q1"></div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 2 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 3: REDOX en compuestos orgánicos -->
+    <div class="slide" data-index="2">
+        <div class="top-bar">
+            <div class="tag">REDOX orgánico: idea básica</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>Transferencia de electrones en moléculas de carbono</h2>
+                <div class="card">
+                    <p>
+                        En química orgánica, muchas reacciones REDOX implican cambios en los enlaces del carbono con hidrógeno y oxígeno.
+                    </p>
+                    <ul>
+                        <li>Oxidar un carbono suele significar que gana más enlaces a oxígeno o pierde enlaces a hidrógeno.</li>
+                        <li>Reducir un carbono suele significar que gana enlaces a hidrógeno o pierde enlaces a oxígeno.</li>
+                        <li>Detrás de estos cambios hay un traslado de densidad electrónica (electrones) alrededor del carbono.</li>
+                    </ul>
+                </div>
+                <div class="question-box" data-question="q2">
+                    <p><strong>Pregunta 2:</strong> En términos sencillos, oxidar un carbono implica que se…</p>
+                    <label><input type="radio" name="q2" value="a"> une a más oxígeno</label>
+                    <label><input type="radio" name="q2" value="b"> une a más hidrógeno</label>
+                    <label><input type="radio" name="q2" value="c"> vuelve neutro</label>
+                    <button onclick="checkQuestion('q2','a')">Comprobar</button>
+                    <div class="feedback" id="fb-q2"></div>
+                </div>
+            </div>
+            <div class="molecule-scene">
+                <div class="orbit" style="width:130px;height:130px;">
+                    <div class="e-dot" style="background:var(--c3); box-shadow:0 0 8px rgba(250,204,21,0.8);"></div>
+                </div>
+                <div class="mol-core">
+                    C<br>menos H / más O<br>(más oxidado)
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 3 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 4: Oxidación de alcoholes (esquema general) -->
+    <div class="slide" data-index="3">
+        <div class="top-bar">
+            <div class="tag">Oxidación de alcoholes</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>De alcohol a ácido: la escalera de oxidación</h2>
+            <div class="card">
+                <p>
+                    Los alcoholes primarios pueden oxidarse siguiendo una especie de “escalera”:
+                </p>
+                <ul>
+                    <li>Alcohol primario → Aldehído → Ácido carboxílico.</li>
+                </ul>
+                <p>
+                    El carbono central va ganando oxígeno (y perdiendo hidrógeno), por lo que se considera que se oxida.
+                </p>
+            </div>
+            <div class="card">
+                <h3>Ejemplo general</h3>
+                <ul>
+                    <li>R–CH₂OH (alcohol) → R–CHO (aldehído) → R–COOH (ácido carboxílico).</li>
+                    <li>En cada paso hay una transferencia de electrones hacia el oxígeno, que es más electronegativo.</li>
+                </ul>
+            </div>
+            <p>
+                ✏️ En tu cuaderno: dibuja la “escalera de oxidación” de un alcohol primario y marca en qué paso hay más oxígeno unido al carbono.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 4 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 5: El caso del etanol y el vinagre -->
+    <div class="slide" data-index="4">
+        <div class="top-bar">
+            <div class="tag">Del alcohol al vinagre</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>Camino del etanol al ácido acético</h2>
+                <div class="card">
+                    <p>
+                        En la producción de vinagre, el etanol (alcohol) se oxida hasta ácido acético gracias a la acción de microorganismos y oxígeno.
+                    </p>
+                    <ul>
+                        <li>Etanol: CH₃–CH₂–OH (alcohol).</li>
+                        <li>Acetaldehído: CH₃–CHO (aldehído intermedio).</li>
+                        <li>Ácido acético: CH₃–COOH (ácido carboxílico, componente principal del vinagre).</li>
+                    </ul>
+                </div>
+                <div class="question-box" data-question="q3">
+                    <p><strong>Pregunta 3:</strong> ¿Cuál de estas especies está más oxidada?</p>
+                    <label><input type="radio" name="q3" value="a"> CH₃–CH₂–OH (etanol)</label>
+                    <label><input type="radio" name="q3" value="b"> CH₃–CHO (acetaldehído)</label>
+                    <label><input type="radio" name="q3" value="c"> CH₃–COOH (ácido acético)</label>
+                    <button onclick="checkQuestion('q3','c')">Comprobar</button>
+                    <div class="feedback" id="fb-q3"></div>
+                </div>
+            </div>
+            <div class="emoji-big">
+                🥤 ➜ 🍷 ➜ 🍶<br>
+                <span style="font-size:1.1rem;">(azúcares → alcohol → vinagre)</span>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 5 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 6: Esquematización del proceso (fermentación + oxidación) -->
+    <div class="slide" data-index="5">
+        <div class="top-bar">
+            <div class="tag">Esquema del vinagre</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Del azúcar al vinagre: dos etapas clave</h2>
+            <div class="card">
+                <h3>1. Fermentación alcohólica (levaduras)</h3>
+                <ul>
+                    <li>Azúcares (glucosa) → Etanol + CO₂.</li>
+                    <li>No entraremos en detalles bioquímicos, pero aquí se genera el alcohol.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>2. Fermentación acética / oxidación (bacterias acéticas)</h3>
+                <ul>
+                    <li>Etanol + O₂ → Ácido acético + H₂O.</li>
+                    <li>Bacterias específicas usan el etanol como “combustible” y lo oxidan.</li>
+                    <li>El carbono del etanol termina más unido al oxígeno (forma ácido acético).</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Esquema para el cuaderno</h3>
+                <p>Dibuja una línea de tiempo con tres recuadros:</p>
+                <ol>
+                    <li>Azúcar en frutas o cereales.</li>
+                    <li>Fermentación alcohólica → etanol.</li>
+                    <li>Fermentación acética / oxidación → vinagre (ácido acético).</li>
+                </ol>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 6 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 7: Identificando quién se oxida y quién se reduce -->
+    <div class="slide" data-index="6">
+        <div class="top-bar">
+            <div class="tag">¿Quién se oxida? ¿Quién se reduce?</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>Mirando la transferencia de electrones</h2>
+                <div class="card">
+                    <p>
+                        En oxidaciones orgánicas como la del etanol, lo importante es ver quién pierde “control” de los electrones.
+                    </p>
+                    <ul>
+                        <li>El carbono del etanol se oxida porque queda más ligado a un elemento más electronegativo (oxígeno).</li>
+                        <li>El agente oxidante (oxígeno o cofactores como NAD⁺ en sistemas biológicos) se reduce al ganar electrones.</li>
+                        <li>Lo que para una especie es pérdida de electrones, para otra es ganancia.</li>
+                    </ul>
+                </div>
+                <div class="question-box" data-question="q4">
+                    <p><strong>Pregunta 4:</strong> En la oxidación del etanol a ácido acético, el carbono central del etanol se…</p>
+                    <label><input type="radio" name="q4" value="a"> oxida</label>
+                    <label><input type="radio" name="q4" value="b"> reduce</label>
+                    <label><input type="radio" name="q4" value="c"> mantiene igual</label>
+                    <button onclick="checkQuestion('q4','a')">Comprobar</button>
+                    <div class="feedback" id="fb-q4"></div>
+                </div>
+            </div>
+            <div class="molecule-scene">
+                <div class="mol-core">
+                    C del etanol<br>
+                    (pierde e⁻ → oxidación)
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 7 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 8: Taller de identificación REDOX -->
+    <div class="slide" data-index="7">
+        <div class="top-bar">
+            <div class="tag">Taller: identifica la oxidación</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Ejercicios rápidos</h2>
+            <div class="card">
+                <p>En tu cuaderno marca quién está más oxidado en cada par:</p>
+                <ol>
+                    <li>CH₄ vs CO₂.</li>
+                    <li>CH₃–CH₂–OH vs CH₃–CHO.</li>
+                    <li>CH₃–CHO vs CH₃–COOH.</li>
+                </ol>
+            </div>
+            <div class="question-box" data-question="q5">
+                <p><strong>Pregunta 5:</strong> Entre CH₄ y CO₂, ¿cuál está más oxidado?</p>
+                <label><input type="radio" name="q5" value="a"> CH₄</label>
+                <label><input type="radio" name="q5" value="b"> CO₂</label>
+                <label><input type="radio" name="q5" value="c"> Están igual</label>
+                <button onclick="checkQuestion('q5','b')">Comprobar</button>
+                <div class="feedback" id="fb-q5"></div>
+            </div>
+            <p style="margin-top:10px;">
+                💡 Pista: fíjate quién tiene más oxígenos unidos al carbono y menos hidrógenos.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 8 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 9: Reflexión sobre cambio y evolución personal -->
+    <div class="slide" data-index="8">
+        <div class="top-bar">
+            <div class="tag">Reflexión personal</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>Del “alcohol” al “vinagre” de nuestra vida</h2>
+                <div class="card">
+                    <p>
+                        Así como un alcohol puede transformarse en ácido acético mediante una serie de cambios, nuestras vidas también atraviesan procesos de transformación.
+                    </p>
+                    <ul>
+                        <li>Hay momentos donde “perdemos” cosas (comodidad, hábitos, relaciones) y otros donde “ganamos” nuevas perspectivas.</li>
+                        <li>El cambio puede incomodar, pero también nos vuelve más complejos y maduros, como la uva que termina en vinagre o vino.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Actividad de reflexión</h3>
+                    <p>En tu cuaderno escribe un breve texto titulado <span class="highlight">“Mi propia reacción REDOX”</span>:</p>
+                    <ul>
+                        <li>Describe un cambio importante que hayas vivido.</li>
+                        <li>Qué sentiste que “perdiste” y qué “ganaste”.</li>
+                        <li>Cómo ese cambio te ha hecho evolucionar hasta hoy.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="emoji-big">
+                🔁<br>
+                <span style="font-size:1.3rem;">Cambiar también es madurar</span>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 9 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 10: Autoevaluación -->
+    <div class="slide" data-index="9">
+        <div class="top-bar">
+            <div class="tag">Autoevaluación final</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>¿Qué tanto aprendí?</h2>
+            <div class="card">
+                <p>En tu cuaderno responde:</p>
+                <ol>
+                    <li>Define con tus palabras qué es una reacción REDOX.</li>
+                    <li>Explica cómo puedes saber si un carbono está más oxidado o más reducido.</li>
+                    <li>Esquematiza el proceso etanol → ácido acético indicando las etapas.</li>
+                    <li>Escribe una frase sobre un cambio personal que te haya hecho crecer.</li>
+                </ol>
+            </div>
+            <div class="card">
+                <h3>Checklist personal</h3>
+                <p>Marca con ✔️ en tu cuaderno si:</p>
+                <ul>
+                    <li>Puedo identificar quién se oxida y quién se reduce en un ejemplo sencillo.</li>
+                    <li>Entiendo la “escalera” alcohol → aldehído → ácido carboxílico.</li>
+                    <li>Puedo describir, al menos de forma general, cómo se produce el vinagre.</li>
+                    <li>Reconozco que el cambio personal puede ser difícil, pero también valioso.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 10 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 11: Bibliografía -->
+    <div class="slide" data-index="10">
+        <div class="top-bar">
+            <div class="tag">Citas bibliográficas</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Bibliografía y recursos consultados</h2>
+            <div class="card">
+                <ul>
+                    <li>Textos de química orgánica básica sobre oxidación de alcoholes y reacciones REDOX.</li>
+                    <li>Recursos de divulgación sobre fermentación alcohólica y acética en la producción de vinagre.</li>
+                    <li>Materiales didácticos que explican el concepto de número de oxidación y transferencia de electrones.</li>
+                    <li>Guías educativas sobre reacciones REDOX en sistemas biológicos y alimentos.</li>
+                </ul>
+            </div>
+            <p>
+                Puedes complementar esta presentación con esquemas propios y ejemplos de alimentos fermentados de tu entorno.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 11 / 11</span>
+            <button class="btn-next" disabled>Fin</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+    let points = 0;
+
+    function updateSlide(index){
+        slides.forEach((s,i)=>{
+            s.classList.toggle('active', i === index);
+            const pBar = s.querySelector('.progress-inner');
+            const pBox = s.querySelector('.points');
+            if(pBar){
+                const progress = ((index+1)/totalSlides)*100;
+                pBar.style.width = progress + '%';
+            }
+            if(pBox){
+                pBox.textContent = 'Puntos: ' + points;
+            }
+            const label = s.querySelector('.nav-buttons span');
+            if(label){
+                label.textContent = 'Diapositiva ' + (index+1) + ' / ' + totalSlides;
+            }
+            const prevBtn = s.querySelector('.btn-prev');
+            const nextBtn = s.querySelector('.btn-next');
+            if(prevBtn){
+                prevBtn.onclick = ()=>changeSlide(-1);
+                prevBtn.disabled = (index===0);
+            }
+            if(nextBtn){
+                nextBtn.onclick = ()=>changeSlide(1);
+                if(index===totalSlides-1){
+                    nextBtn.disabled = true;
+                }
+            }
+        });
+    }
+
+    function changeSlide(direction){
+        const newIndex = currentSlide + direction;
+        if(newIndex>=0 && newIndex<totalSlides){
+            currentSlide = newIndex;
+            updateSlide(currentSlide);
+        }
+    }
+
+    function showPointsPop(){
+        const pop = document.getElementById('pointsPop');
+        pop.style.display='block';
+        pop.style.animation='none';
+        void pop.offsetWidth;
+        pop.style.animation='pop 0.8s ease-out forwards';
+        setTimeout(()=>{ pop.style.display='none'; },800);
+    }
+
+    function checkQuestion(qId, correct){
+        const selected = document.querySelector('input[name="'+qId+'"]:checked');
+        const fb = document.getElementById('fb-'+qId);
+        if(!fb) return;
+        if(!selected){
+            fb.textContent = 'Primero selecciona una respuesta.';
+            fb.className = 'feedback bad';
+            fb.style.display='block';
+            return;
+        }
+        if(selected.value === correct){
+            fb.textContent = '¡Muy bien! Respuesta correcta.';
+            fb.className = 'feedback ok';
+            if(!fb.dataset.counted){
+                points += 10;
+                fb.dataset.counted = 'true';
+                showPointsPop();
+                updateSlide(currentSlide);
+            }
+        }else{
+            fb.textContent = 'No es correcto. Revisa la explicación de la diapositiva.';
+            fb.className = 'feedback bad';
+        }
+        fb.style.display='block';
+    }
+
+    updateSlide(currentSlide);
+</script>
+</body>
+</html>

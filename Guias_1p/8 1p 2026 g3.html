@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: La Magia de la Recombinación - Grado 8</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --success: #27ae60;
+            --light: #ecf0f1;
+            --paper: #fff9c4;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f7;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        h1, h2, h3 { color: var(--primary); }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .btn:hover { background-color: var(--accent); }
+        .hidden { display: none; }
+        
+        /* Barra de Progreso */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: #ddd;
+            z-index: 1000;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .score-board {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: white;
+            padding: 10px;
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        /* Estilos de Actividades de Cuaderno */
+        .notebook-activity {
+            background-color: var(--paper);
+            border-left: 5px solid var(--accent);
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+        .notebook-activity h4 { margin-top: 0; text-transform: uppercase; color: #d35400; }
+        
+        /* Tablas y Gráficos */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th { background-color: var(--primary); color: white; }
+        .graphic-box {
+            border: 2px dashed #bdc3c7;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            background: #fdfdfd;
+        }
+
+        /* ICFES Styles */
+        .icfes-box {
+            border: 2px solid #3498db;
+            padding: 25px;
+            border-radius: 8px;
+            background: #eaf2f8;
+        }
+        .option {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .option:hover { background: #d6eaf8; }
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct { background-color: #d4edda; color: #155724; }
+        .incorrect { background-color: #f8d7da; color: #721c24; }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+</div>
+<div class="score-board">Puntos: <span id="scoreDisplay">0</span>/5.0</div>
+
+<div class="container" id="sec-login">
+    <h1>Bienvenido al OVA: La Magia de la Recombinación</h1>
+    <p>Por favor, ingresa tus datos para comenzar tu viaje de aprendizaje.</p>
+    <label>Nombres y Apellidos:</label>
+    <input type="text" id="studentName" placeholder="Ej: Juan Pérez">
+    <button class="btn" onclick="startCourse()">Iniciar Aventura</button>
+</div>
+
+<div class="container hidden" id="sec-intro">
+    <h2>Objetivo de Aprendizaje</h2>
+    <p>Comprender cómo los átomos se reordenan en una reacción química para formar nuevas sustancias, utilizando la analogía de la construcción y la reinvención personal, para aplicar la Ley de Conservación de la Materia en situaciones cotidianas y académicas.</p>
+    
+    <hr>
+    
+    <h3>Actividad de Pre-saberes</h3>
+    <p>Responde las siguientes preguntas para desbloquear el contenido.</p>
+    
+    <div id="pretest">
+        <p><strong>1. ¿Qué es un átomo?</strong></p>
+        <select id="pre1">
+            <option value="0">Selecciona...</option>
+            <option value="a">Una mezcla de líquidos.</option>
+            <option value="b">La unidad básica de la materia.</option>
+            <option value="c">Una célula viva.</option>
+        </select>
+        
+        <p><strong>2. Si quemas un papel, ¿la ceniza pesa lo mismo que el papel original?</strong></p>
+        <select id="pre2">
+            <option value="0">Selecciona...</option>
+            <option value="a">Sí, siempre.</option>
+            <option value="b">No, porque parte de la materia se convirtió en gas.</option>
+            <option value="c">No, la materia desapareció mágicamente.</option>
+        </select>
+
+        <p><strong>3. En un cambio químico (como oxidar un clavo):</strong></p>
+        <select id="pre3">
+            <option value="0">Selecciona...</option>
+            <option value="a">Se forman nuevas sustancias.</option>
+            <option value="b">El clavo solo cambia de forma.</option>
+            <option value="c">Los átomos se destruyen.</option>
+        </select>
+        <br>
+        <button class="btn" onclick="checkPretest()">Verificar Pre-saberes</button>
+    </div>
+</div>
+
+<div class="container hidden" id="sec-inductive">
+    <h2>Parte 1: El Arte de Armar y Desarmar (Texto Inductivo)</h2>
+    
+    <p>Imagina por un momento que el universo es una inmensa caja de fichas de construcción, como un set de LEGO infinito. Estas fichas son los <strong>átomos</strong>. Desde el principio de los tiempos, estas fichas han estado aquí. Las fichas que forman el aire que respiras hoy, alguna vez fueron parte de un dinosaurio, de una roca volcánica o de una estrella lejana. Nada se crea de la nada, y nada se destruye realmente; solo se transforma. A esto le llamamos "La Magia de la Recombinación".</p>
+    
+    <div class="graphic-box">
+        [Gráfico: Imagina una casa hecha de fichas rojas y azules. Al lado, un barco hecho con LAS MISMAS fichas rojas y azules. Los materiales son los mismos, la estructura es diferente.]
+    </div>
+
+    <p>En la vida, al igual que en la química, a veces sentimos que todo se derrumba. Una amistad cambia, nos mudamos de casa, o pasamos de grado y todo es nuevo. Pero, ¿hemos dejado de ser nosotros? No. Simplemente nos estamos recombinando. Nuestros valores, recuerdos y esencia (nuestros átomos) se reordenan para formar una nueva versión de nosotros mismos. En química, este proceso de "derrumbar la casa vieja para hacer un barco nuevo" se llama <strong>Reacción Química</strong>.</p>
+
+    <div class="notebook-activity">
+        <h4>Actividad 1: El Dibujo de la Reinvención</h4>
+        <p>En tu cuaderno, dibuja una estructura hecha con "fichas" (puede ser una casa). Luego, dibuja esas mismas fichas desarmadas y finalmente, dibuja una nueva estructura (como un robot) usando exactamente la misma cantidad de fichas. Titula el dibujo: "Mis átomos se transforman".</p>
+        <button class="btn" onclick="verifyActivity(1)">¡Ya lo dibujé!</button>
+    </div>
+
+    <p>Cuando observamos un cambio químico, como la madera ardiendo en una fogata, vemos luz y sentimos calor. La madera deja de ser madera y se convierte en ceniza y humo. A simple vista, parece que la madera "desapareció". Pero si tuviéramos unas gafas mágicas para ver los átomos, veríamos que los átomos de Carbono de la madera no murieron; se soltaron de sus compañeros y se agarraron de la mano con los átomos de Oxígeno del aire, yéndose volando en forma de Dióxido de Carbono ($CO_2$).</p>
+
+    <h3>Tabla: Lo que vemos vs. Lo que sucede realmente</h3>
+    <table>
+        <tr>
+            <th>Evento Cotidiano</th>
+            <th>Lo que ven tus ojos (Macroscópico)</th>
+            <th>Lo que hacen los átomos (Microscópico)</th>
+        </tr>
+        <tr>
+            <td>Quemar madera</td>
+            <td>La madera se vuelve polvo gris y humo.</td>
+            <td>Los átomos de C y H se separan y se unen al O del aire.</td>
+        </tr>
+        <tr>
+            <td>Oxidar una reja</td>
+            <td>El hierro se vuelve naranja y quebradizo.</td>
+            <td>Los átomos de Fe se unen al O y al $H_2O$ del ambiente.</td>
+        </tr>
+        <tr>
+            <td>Cocinar un huevo</td>
+            <td>La clara se vuelve blanca y sólida.</td>
+            <td>Las proteínas (cadenas de átomos) cambian su forma (desnaturalización).</td>
+        </tr>
+    </table>
+
+    <div class="notebook-activity">
+        <h4>Actividad 2: Tabla Comparativa</h4>
+        <p>Copia la tabla anterior en tu cuaderno. Agrega una cuarta fila con un ejemplo propio de tu vida diaria (ej: hacer un jugo, digerir comida) y explica qué crees que pasa con los "ingredientes".</p>
+        <button class="btn" onclick="verifyActivity(2)">¡Tabla completada!</button>
+    </div>
+
+    <p>Esta idea de que las piezas se conservan nos lleva a pensar en los <strong>Reactivos</strong> y los <strong>Productos</strong>. Los reactivos son los ingredientes iniciales (la casa vieja, la madera, o tu "yo" del pasado). Los productos son el resultado final (el barco nuevo, la ceniza, o tu "yo" actual). La flecha en una ecuación química ($\rightarrow$) no significa "es igual a", significa "se transforma en". Es el puente del cambio. Es el momento en que decides dejar de jugar con la casa y empezar a armar el barco.</p>
+    
+    <p>El científico John Dalton, hace más de 200 años, propuso que los átomos son esferas indivisibles. Aunque hoy sabemos que tienen partes internas (protones, etc.), para entender las reacciones, el modelo de Dalton es muy útil. Él imaginaba los átomos como bolas de billar que chocan y se reacomodan. Para que haya una reacción, debe haber choques. Si las fichas no se tocan, no se pueden conectar. En la vida es igual: si no interactuamos, si no chocamos con nuevas ideas o personas, no cambiamos, no crecemos.</p>
+
+    <div class="notebook-activity">
+        <h4>Actividad 3: Mapa Mental</h4>
+        <p>Crea un mapa mental en tu cuaderno con la palabra central "REACCIÓN". Saca ramas para: Reactivos, Productos, Átomos, Choques y Transformación. Usa colores distintos para cada rama.</p>
+        <button class="btn" onclick="verifyActivity(3)">¡Mapa listo!</button>
+    </div>
+
+    <p>Pero, ¿siempre es fácil cambiar? A veces los átomos necesitan un empujón, una chispa de energía para separarse de su estructura anterior. A esto le llamamos <strong>Energía de Activación</strong>. Es como el esfuerzo que te cuesta levantarte temprano para entrenar o estudiar. Una vez rompes la inercia, la reacción fluye. Algunas reacciones liberan energía (exotérmicas, como el fuego o cuando te sientes feliz al lograr algo) y otras absorben energía (endotérmicas, como cocinar o cuando necesitas mucho estudio para aprender).</p>
+    
+    <div class="notebook-activity">
+        <h4>Actividad 4: Contestar</h4>
+        <p>Escribe en tu cuaderno: ¿Cuál ha sido tu "Energía de Activación" más grande este año? ¿Qué te costó mucho empezar pero luego te trajo un buen resultado (producto)?</p>
+        <button class="btn" onclick="verifyActivity(4)">¡Respuesta escrita!</button>
+    </div>
+
+    <p>Finalmente, recordemos que en este gran juego de construcción, el orden importa. No es lo mismo tener átomos de Hidrógeno y Oxígeno separados ($H_2$ y $O_2$) que tenerlos unidos como agua ($H_2O$) o como agua oxigenada ($H_2O_2$). Una te quita la sed, la otra te limpia heridas pero no se debe beber. La forma en que nos organizamos define quiénes somos y cómo funcionamos.</p>
+
+    <div class="notebook-activity">
+        <h4>Actividad 5: Dibujar Moléculas</h4>
+        <p>Dibuja en tu cuaderno: 1 molécula de agua ($H_2O$: una bola grande roja y dos pequeñas azules pegadas) y 1 molécula de oxígeno ($O_2$: dos bolas rojas pegadas). Diferéncialas bien.</p>
+        <button class="btn" onclick="verifyActivity(5)">¡Dibujos hechos!</button>
+    </div>
+    
+    <button class="btn" onclick="showSection('sec-icfes')">Continuar al Reto ICFES</button>
+</div>
+
+<div class="container hidden" id="sec-icfes">
+    <h2>Reto de Competencia: Indagar</h2>
+    
+    <div class="icfes-box">
+        <p><strong>Contexto:</strong> Un estudiante de grado 8 realiza el siguiente experimento para comprobar cómo se comportan los átomos.</p>
+        <p>Pone vinagre en una botella y bicarbonato de sodio dentro de un globo desinflado. Coloca el globo en la boca de la botella con cuidado de que no caiga el bicarbonato, y pesa todo el montaje en una balanza digital. La balanza marca <strong>150 gramos</strong>.</p>
+        <p>Luego, levanta el globo, dejando caer el bicarbonato en el vinagre. Se produce una reacción con burbujas y el globo se infla. El estudiante observa que la balanza sigue marcando <strong>150 gramos</strong>.</p>
+        
+        <div class="graphic-box">
+            [Imagen: Balanza con botella y globo desinflado (150g) -> Flecha -> Balanza con botella y globo INFLADO (150g)]
+        </div>
+
+        <p><strong>Pregunta:</strong> Teniendo en cuenta que el globo se infló debido a la producción de un gas, ¿por qué la masa registrada en la balanza NO cambió?</p>
+
+        <label class="option"><input type="radio" name="icfes" value="A"> A. Porque el gas que infló el globo no pesa nada, ya que el aire es liviano.</label>
+        <label class="option"><input type="radio" name="icfes" value="B"> B. Porque los átomos del bicarbonato desaparecieron y fueron reemplazados por aire exterior.</label>
+        <label class="option"><input type="radio" name="icfes" value="C"> C. Porque el sistema estaba cerrado y los átomos solo se reorganizaron, conservando la masa total.</label>
+        <label class="option"><input type="radio" name="icfes" value="D"> D. Porque la balanza está dañada, ya que al inflarse el globo debería pesar más.</label>
+
+        <button class="btn" onclick="checkICFES()">Enviar Respuesta</button>
+
+        <div id="icfes-feedback" class="feedback"></div>
+    </div>
+    
+    <button id="btn-post-icfes" class="btn hidden" onclick="showSection('sec-deductive')">Continuar con la Teoría</button>
+</div>
+
+<div class="container hidden" id="sec-deductive">
+    <h2>Parte 2: Las Reglas del Juego (Texto Deductivo)</h2>
+    
+    <p>Lo que acabas de analizar en la pregunta anterior es la base fundamental de la química moderna: <strong>La Ley de la Conservación de la Materia</strong>, postulada por Antoine Lavoisier. Esta ley establece que: <em>"La masa no se crea ni se destruye, solo se transforma"</em>. En nuestro juego de construcción, esto significa que si empiezas con 50 fichas rojas y 20 azules, al final, sin importar qué monstruo o casa construyas, debes tener exactamente 50 fichas rojas y 20 azules.</p>
+
+    <h3>Formalización Matemática: El Balanceo</h3>
+    <p>Para representar esto en papel, usamos <strong>Ecuaciones Químicas</strong>. Una ecuación es como una receta de cocina.</p>
+    <p style="text-align:center; font-size: 1.2em;"><strong>Reactivos $\rightarrow$ Productos</strong></p>
+    
+    <p>Analicemos la formación del agua:</p>
+    <p style="text-align:center;">$H_2 + O_2 \rightarrow H_2O$</p>
+    
+    <p>¿Está balanceada esta ecuación? Contemos los átomos:
+    <br><strong>Izquierda (Reactivos):</strong> 2 Hidrógenos, 2 Oxígenos.
+    <br><strong>Derecha (Productos):</strong> 2 Hidrógenos, 1 Oxígeno.</p>
+    
+    <p>¡Falta un Oxígeno a la derecha! No podemos "crear" materia, ni podemos cambiar la fórmula del agua ($H_2O$) porque dejaría de ser agua. Lo que hacemos es cambiar los <strong>Coeficientes</strong> (los números grandes antes de la molécula). Son como decir "necesito dos paquetes de fichas".</p>
+    
+    <div class="notebook-activity">
+        <h4>Actividad 6: Conteo de Átomos</h4>
+        <p>Observa la ecuación: $N_2 + 3H_2 \rightarrow 2NH_3$. Dibuja en tu cuaderno cuántas bolas de Nitrógeno (N) y cuántas de Hidrógeno (H) hay a la izquierda y a la derecha. ¿Son iguales?</p>
+        <button class="btn" onclick="verifyActivity(6)">¡Conteo realizado!</button>
+    </div>
+
+    <p>Para balancear el agua, ponemos un 2 frente al $H_2O$ y un 2 frente al $H_2$:</p>
+    <p style="text-align:center; font-weight:bold; color:var(--primary);">$2H_2 + O_2 \rightarrow 2H_2O$</p>
+    <p>Ahora verifiquemos:
+    <br>Reactivos: 4 H, 2 O.
+    <br>Productos: 4 H (2x2), 2 O (2x1).
+    <br>¡La magia está completa! La masa se conserva.</p>
+
+    <h3>Tipos de Recombinación (Tipos de Reacciones)</h3>
+    <p>Los átomos se pueden mover de diferentes formas, igual que las relaciones humanas:</p>
+    
+    <table>
+        <tr>
+            <th>Tipo</th>
+            <th>Esquema General</th>
+            <th>Analogía de la Vida</th>
+        </tr>
+        <tr>
+            <td><strong>Síntesis</strong></td>
+            <td>$A + B \rightarrow AB$</td>
+            <td><strong>El Matrimonio:</strong> Dos personas solteras se unen para formar una pareja.</td>
+        </tr>
+        <tr>
+            <td><strong>Descomposición</strong></td>
+            <td>$AB \rightarrow A + B$</td>
+            <td><strong>La Ruptura:</strong> Una pareja se separa y cada uno sigue su camino.</td>
+        </tr>
+        <tr>
+            <td><strong>Desplazamiento Simple</strong></td>
+            <td>$A + BC \rightarrow AC + B$</td>
+            <td><strong>El "Tercero en Discordia":</strong> Alguien nuevo llega y reemplaza a uno de los miembros de la pareja.</td>
+        </tr>
+        <tr>
+            <td><strong>Doble Desplazamiento</strong></td>
+            <td>$AB + CD \rightarrow AD + CB$</td>
+            <td><strong>Intercambio de Parejas:</strong> Dos parejas bailan y cambian de compañero al mismo tiempo.</td>
+        </tr>
+    </table>
+
+    <div class="notebook-activity">
+        <h4>Actividad 7: Tabla de Tipos</h4>
+        <p>Copia la tabla de tipos de reacciones en tu cuaderno. Intenta inventar una analogía diferente para cada una (ejemplo: equipos de fútbol, ingredientes de cocina).</p>
+        <button class="btn" onclick="verifyActivity(7)">¡Tabla copiada!</button>
+    </div>
+
+    <p>Es fascinante pensar que todo lo que ves a tu alrededor es resultado de estos bailes atómicos constante. La respiración celular que te da energía ahora mismo es una reacción de combustión (similar a quemar madera, pero controlada). $Glucosa + Oxígeno \rightarrow CO_2 + Agua + Energía$. Tu cuerpo está constantemente desarmando moléculas de comida para armar moléculas de "tú". Literalmente, eres lo que comes.</p>
+
+    <div class="notebook-activity">
+        <h4>Actividad 8: Mapa Conceptual</h4>
+        <p>Elabora un mapa conceptual que conecte los siguientes conceptos: Ley de Conservación, Lavoisier, Balanceo, Coeficientes y Subíndices.</p>
+        <button class="btn" onclick="verifyActivity(8)">¡Mapa terminado!</button>
+    </div>
+
+    <p><strong>El Valor de los Nuevos Comienzos:</strong><br>
+    Volviendo a nuestra reflexión inicial. En química, para crear un producto nuevo y valioso (como un medicamento o un material resistente), a menudo necesitamos romper enlaces fuertes de los reactivos. Requiere energía, requiere caos momentáneo. En tu vida, cuando sientes que algo "se rompe" o termina, recuerda que estás en una fase de reacción. Tus átomos no se han perdido. Simplemente se están preparando para formar una estructura nueva, tal vez más fuerte, más compleja y más interesante que la anterior. La resiliencia (capacidad de adaptarse) es, en el fondo, pura química de recombinación.</p>
+
+    <div class="notebook-activity">
+        <h4>Actividad 9: Reflexión Escrita</h4>
+        <p>Escribe un párrafo de 5 líneas respondiendo: ¿Cómo se relaciona la frase "Nada se pierde, todo se transforma" con tus errores o fracasos? ¿Cómo puedes transformar un "error" en un "aprendizaje"?</p>
+        <button class="btn" onclick="verifyActivity(9)">¡Reflexión lista!</button>
+    </div>
+
+    <p>Para finalizar, recuerda que el balanceo no es solo números. Es la garantía de que el universo es justo. Lo que pones, obtienes. Si pones esfuerzo (reactivo), obtendrás resultados (producto). No puedes obtener resultados de la nada.</p>
+
+    <div class="notebook-activity">
+        <h4>Actividad 10: El Dibujo Final</h4>
+        <p>Dibuja una balanza equilibrada. En un platillo escribe "Esfuerzo y Dedicación" y en el otro "Logros y Sueños". Decóralo creativamente.</p>
+        <button class="btn" onclick="verifyActivity(10)">¡Dibujo final!</button>
+    </div>
+
+    <button class="btn" onclick="showSection('sec-final')">Ir al Taller Final</button>
+</div>
+
+<div class="container hidden" id="sec-final">
+    <h2>Taller de Evaluación</h2>
+    <p>Responde con honestidad. El sistema detectará patrones inusuales de texto.</p>
+    
+    <h3>Selección Múltiple</h3>
+    <div id="quiz-mc">
+        <p>1. ¿Quién postuló la Ley de Conservación de la Materia?</p>
+        <label><input type="radio" name="q1" value="A"> A. Newton</label><br>
+        <label><input type="radio" name="q1" value="B"> B. Einstein</label><br>
+        <label><input type="radio" name="q1" value="C"> C. Lavoisier</label><br>
+        
+        <p>2. En la ecuación $2H_2 + O_2 \rightarrow 2H_2O$, el número "2" grande es un:</p>
+        <label><input type="radio" name="q2" value="A"> A. Subíndice</label><br>
+        <label><input type="radio" name="q2" value="B"> B. Coeficiente</label><br>
+        <label><input type="radio" name="q2" value="C"> C. Exponente</label><br>
+
+        <p>3. Una reacción de síntesis se parece a:</p>
+        <label><input type="radio" name="q3" value="A"> A. Una pareja separándose.</label><br>
+        <label><input type="radio" name="q3" value="B"> B. Dos personas uniéndose.</label><br>
+        <label><input type="radio" name="q3" value="C"> C. Un intercambio de parejas.</label><br>
+
+        <p>4. ¿Qué representan los Reactivos?</p>
+        <label><input type="radio" name="q4" value="A"> A. El resultado final.</label><br>
+        <label><input type="radio" name="q4" value="B"> B. Los ingredientes iniciales.</label><br>
+        <label><input type="radio" name="q4" value="C"> C. La energía liberada.</label><br>
+
+        <p>5. Si una ecuación no está balanceada:</p>
+        <label><input type="radio" name="q5" value="A"> A. Viola la ley de conservación.</label><br>
+        <label><input type="radio" name="q5" value="B"> B. Es una reacción nuclear.</label><br>
+        <label><input type="radio" name="q5" value="C"> C. No importa, se deja así.</label><br>
+    </div>
+
+    <h3>Preguntas Abiertas</h3>
+    <p><em>Nota: Escribe con tus propias palabras. No uses IA ni copies de internet.</em></p>
+    
+    <p>6. Explica con tus palabras qué pasa con los átomos cuando se quema un trozo de papel.</p>
+    <textarea id="open6" rows="3"></textarea>
+    
+    <p>7. ¿Por qué es importante balancear una ecuación química?</p>
+    <textarea id="open7" rows="3"></textarea>
+
+    <p>8. Describe la diferencia entre un cambio físico y uno químico usando un ejemplo de tu cocina.</p>
+    <textarea id="open8" rows="3"></textarea>
+
+    <p>9. Si tu vida fuera una reacción química, ¿qué "reactivos" necesitas para lograr tu meta de graduarte?</p>
+    <textarea id="open9" rows="3"></textarea>
+
+    <p>10. Define "Energía de Activación" usando un ejemplo de deportes o estudio.</p>
+    <textarea id="open10" rows="3"></textarea>
+
+    <button class="btn" onclick="finishCourse()">Finalizar y Descargar Resultados</button>
+</div>
+
+<script>
+    // Variables de Estado
+    let studentData = {
+        name: "",
+        score: 0.0,
+        answers: {},
+        activitiesDone: 0
+    };
+    
+    const TOTAL_ACTIVITIES = 10;
+    const SCORE_STEP = 5.0 / TOTAL_ACTIVITIES; // Cada actividad suma 0.5
+
+    // Funciones de Navegación
+    function showSection(id) {
+        document.querySelectorAll('.container').forEach(div => div.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+        window.scrollTo(0,0);
+    }
+
+    function startCourse() {
+        const name = document.getElementById('studentName').value;
+        if(name.trim() === "") {
+            alert("Por favor escribe tu nombre.");
+            return;
+        }
+        studentData.name = name;
+        showSection('sec-intro');
+    }
+
+    // Lógica Pre-saberes
+    function checkPretest() {
+        const p1 = document.getElementById('pre1').value;
+        const p2 = document.getElementById('pre2').value;
+        const p3 = document.getElementById('pre3').value;
+
+        if(p1 === '0' || p2 === '0' || p3 === '0') {
+            alert("Responde todas las preguntas de pre-saberes.");
+            return;
+        }
+        
+        // No calificamos pre-saberes, solo damos feedback visual y avanzamos
+        alert("Gracias por tus respuestas. ¡Vamos a descubrir si acertaste!");
+        showSection('sec-inductive');
+    }
+
+    // Lógica de Actividades (Gamificación)
+    function verifyActivity(num) {
+        const btn = event.target;
+        if(!btn.disabled) {
+            studentData.score += SCORE_STEP;
+            studentData.activitiesDone++;
+            updateUI();
+            btn.textContent = "¡Verificado! (+0.5 pts)";
+            btn.disabled = true;
+            btn.style.backgroundColor = "#27ae60";
+            
+            // Simulación de guardado de estado
+            studentData.answers[`activity_${num}`] = "Completada en cuaderno";
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('scoreDisplay').textContent = studentData.score.toFixed(1);
+        let progress = (studentData.activitiesDone / TOTAL_ACTIVITIES) * 100;
+        document.getElementById('progressBar').style.width = progress + "%";
+    }
+
+    // Lógica ICFES
+    function checkICFES() {
+        const options = document.getElementsByName('icfes');
+        let selected = null;
+        for(let opt of options) {
+            if(opt.checked) selected = opt.value;
+        }
+
+        if(!selected) {
+            alert("Selecciona una opción.");
+            return;
+        }
+
+        const feedback = document.getElementById('icfes-feedback');
+        feedback.style.display = "block";
+        feedback.className = "feedback"; // reset class
+
+        if(selected === 'C') {
+            feedback.innerHTML = "<strong>¡Correcto!</strong> <br>La Ley de Conservación de la Materia indica que en un sistema cerrado (el globo sella la botella), la masa no cambia aunque la forma física sí lo haga. Los átomos solo se reorganizaron.";
+            feedback.classList.add('correct');
+            document.getElementById('btn-post-icfes').classList.remove('hidden');
+        } else {
+            feedback.classList.add('incorrect');
+            if(selected === 'A') feedback.innerHTML = "<strong>Incorrecto.</strong> El gas SÍ tiene masa. Aunque sea poca, los átomos de gas pesan. Recuerda que la materia no se vuelve 'nada'.";
+            if(selected === 'B') feedback.innerHTML = "<strong>Incorrecto.</strong> Los átomos no desaparecen. Si desaparecieran, la masa disminuiría. Además, el aire exterior no puede entrar porque el globo sella la botella.";
+            if(selected === 'D') feedback.innerHTML = "<strong>Incorrecto.</strong> La balanza funciona bien. El hecho de que el volumen aumente (el globo se infle) no significa que la masa aumente si no ha entrado materia nueva.";
+        }
+    }
+
+    // Finalización y Descarga
+    function finishCourse() {
+        // Recopilar respuestas del taller final
+        const q1 = document.querySelector('input[name="q1"]:checked')?.value || "Sin respuesta";
+        const q2 = document.querySelector('input[name="q2"]:checked')?.value || "Sin respuesta";
+        const q3 = document.querySelector('input[name="q3"]:checked')?.value || "Sin respuesta";
+        const q4 = document.querySelector('input[name="q4"]:checked')?.value || "Sin respuesta";
+        const q5 = document.querySelector('input[name="q5"]:checked')?.value || "Sin respuesta";
+
+        const open6 = document.getElementById('open6').value;
+        const open7 = document.getElementById('open7').value;
+        const open8 = document.getElementById('open8').value;
+        const open9 = document.getElementById('open9').value;
+        const open10 = document.getElementById('open10').value;
+
+        // Anti-IA check simple (Longitud y patrones)
+        if(open6.length < 10 || open7.length < 10) {
+            alert("Por favor responde las preguntas abiertas con más detalle.");
+            return;
+        }
+
+        // Generar archivo de texto
+        let content = `RESULTADOS DEL OVA: LA MAGIA DE LA RECOMBINACIÓN\n`;
+        content += `Estudiante: ${studentData.name}\n`;
+        content += `Fecha: ${new Date().toLocaleString()}\n`;
+        content += `Puntaje Acumulado Actividades: ${studentData.score.toFixed(1)} / 5.0\n\n`;
+        content += `--- RESPUESTAS TALLER FINAL ---\n`;
+        content += `1. Lavoisier: ${q1}\n`;
+        content += `2. Coeficiente: ${q2}\n`;
+        content += `3. Unión: ${q3}\n`;
+        content += `4. Ingredientes: ${q4}\n`;
+        content += `5. Viola ley: ${q5}\n\n`;
+        content += `6. Papel quemado: ${open6}\n`;
+        content += `7. Importancia balanceo: ${open7}\n`;
+        content += `8. Físico vs Químico: ${open8}\n`;
+        content += `9. Metas y Reactivos: ${open9}\n`;
+        content += `10. Energía Activación: ${open10}\n`;
+        content += `\nCertifico que estas respuestas son de mi autoría.\n`;
+
+        // Crear Blob y descargar
+        const blob = new Blob([content], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Respuestas_${studentData.name.replace(/ /g, "_")}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        alert("¡Felicitaciones! Has completado el OVA. Tu archivo de respuestas se ha descargado. Envíalo a tu profesor.");
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Brönsted-Lowry y el Valor de la Empatía</title>
+    <style>
+        :root {
+            --primary: #4a148c; /* Morado: Sabiduría y Empatía */
+            --secondary: #7b1fa2;
+            --accent: #ff6f00; /* Naranja: Energía del protón */
+            --light: #f3e5f5;
+            --text: #212121;
+            --white: #ffffff;
+            --success: #2e7d32;
+            --error: #c62828;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #fafafa;
+            color: var(--text);
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Barra de Progreso y Puntaje */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--white);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 10px 0;
+        }
+
+        .progress-container {
+            width: 90%;
+            margin: 0 auto;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--success);
+            transition: width 0.5s ease-in-out;
+        }
+
+        .score-display {
+            position: absolute;
+            right: 20px;
+            top: 5px;
+            font-weight: bold;
+            color: var(--primary);
+            background: var(--light);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--primary);
+        }
+
+        /* Contenedor Principal */
+        .container {
+            max-width: 900px;
+            margin: 80px auto 40px auto;
+            background: var(--white);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        /* Tipografía */
+        h1, h2, h3 { color: var(--primary); }
+        h1 { text-align: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+        .highlight { color: var(--accent); font-weight: bold; }
+
+        /* Componentes de Interfaz */
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: inline-block;
+            margin-top: 15px;
+        }
+        .btn:hover { background-color: var(--secondary); }
+        .btn:disabled { background-color: #bdbdbd; cursor: not-allowed; }
+
+        .hidden { display: none; }
+        
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        /* Cajas de Actividad (Cuaderno) */
+        .notebook-activity {
+            background-color: #fff8e1; /* Color papel antiguo */
+            border-left: 6px solid var(--accent);
+            padding: 20px;
+            margin: 30px 0;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .notebook-activity::before {
+            content: "📓 ACTIVIDAD EN EL CUADERNO";
+            position: absolute;
+            top: -12px;
+            left: 10px;
+            background: var(--accent);
+            color: white;
+            padding: 2px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* Tablas y Gráficos */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th { background-color: var(--primary); color: white; }
+        
+        .diagram-box {
+            border: 2px dashed var(--secondary);
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            background: #f3e5f5;
+            border-radius: 8px;
+            font-style: italic;
+        }
+
+        /* ICFES Styles */
+        .icfes-container {
+            border: 2px solid #0288d1;
+            background-color: #e1f5fe;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        .icfes-option {
+            display: block;
+            margin: 10px 0;
+            padding: 15px;
+            background: white;
+            border: 1px solid #b3e5fc;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.2s;
+        }
+        .icfes-option:hover { background: #b3e5fc; }
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct-fb { background-color: #c8e6c9; color: #1b5e20; border: 1px solid #1b5e20; }
+        .incorrect-fb { background-color: #ffcdd2; color: #b71c1c; border: 1px solid #b71c1c; }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="score-display">Puntos: <span id="scoreVal">0.0</span>/5.0</div>
+    </div>
+
+    <div class="container" id="step-login">
+        <h1>Bienvenido al Laboratorio de Empatía Química</h1>
+        <p>Exploraremos cómo los átomos, al igual que las personas, necesitan dar y recibir para encontrar estabilidad. El tema de hoy: <strong>Teoría de Brönsted-Lowry</strong>.</p>
+        <label>Ingresa tu Nombre y Apellido:</label>
+        <input type="text" id="studentName" placeholder="Ej: Juan Felipe Ramírez">
+        <button class="btn" onclick="login()">Iniciar Sesión</button>
+    </div>
+
+    <div class="container hidden" id="step-intro">
+        <h2>Objetivo de Aprendizaje</h2>
+        <p>Comprender el intercambio de protones ($H^+$) como el mecanismo fundamental de las reacciones ácido-base según Brönsted-Lowry, identificando pares conjugados y relacionando este proceso químico con el valor humano de la empatía y el apoyo mutuo.</p>
+        
+        <hr>
+        
+        <h3>Diagnóstico de Pre-saberes</h3>
+        <p>Selecciona la única respuesta correcta.</p>
+
+        <div class="quiz-block">
+            <p><strong>1. Según el modelo antiguo de Arrhenius, un ácido es una sustancia que en agua libera:</strong></p>
+            <select id="pre1"><option value="0">Seleccionar...</option><option value="a">Electrones</option><option value="b">Iones Hidrógeno (H+)</option><option value="c">Iones Hidroxilo (OH-)</option></select>
+            
+            <p><strong>2. ¿Cuál es la carga eléctrica de un protón?</strong></p>
+            <select id="pre2"><option value="0">Seleccionar...</option><option value="a">Positiva (+)</option><option value="b">Negativa (-)</option><option value="c">Neutra (0)</option></select>
+
+            <p><strong>3. El amoníaco ($NH_3$) es conocido en los productos de limpieza por ser:</strong></p>
+            <select id="pre3"><option value="0">Seleccionar...</option><option value="a">Un Ácido fuerte</option><option value="b">Una Base</option><option value="c">Una sal neutra</option></select>
+            
+            <br>
+            <button class="btn" onclick="checkPretest()">Verificar Diagnóstico</button>
+        </div>
+    </div>
+
+    <div class="container hidden" id="step-inductive">
+        <h2>Parte I: El Dilema del Amoníaco y el Don de Dar (Texto Inductivo)</h2>
+        
+        <p>Imagina que estás en una comunidad donde la moneda de cambio no es el dinero, sino el "apoyo". En este pueblo, hay personas que tienen mucho apoyo para dar (digamos, tienen mucha energía, consejos o recursos) y sienten la necesidad imperiosa de compartirlo para sentirse aliviados. Por otro lado, hay personas que, en ese momento específico, tienen un vacío, una necesidad, y requieren recibir ese apoyo para sentirse completas. Si nadie da y nadie recibe, la comunidad se estanca.</p>
+
+        <p>En el mundo de la química, antes de 1923, vivíamos bajo una regla un poco estricta impuesta por un científico llamado Svante Arrhenius. Él decía: "Un ácido es el que tiene Hidrógeno y lo suelta en agua, y una base es la que tiene $OH$ (Hidroxilo) y lo suelta en agua". Era una regla simple, como decir "solo puedes comprar con monedas de oro".</p>
+
+        <p>Pero entonces, surgió un problema. Un "crimen" sin resolver en el laboratorio. Existía una sustancia llamada <strong>Amoníaco ($NH_3$)</strong>. Cuando probaban el amoníaco con papel tornasol rojo, este se volvía azul, lo que gritaba ¡SOY UNA BASE! ¡SOY ALCALINO! Sin embargo, si miras la fórmula $NH_3$, ¿ves algún oxígeno o algún grupo $OH$? No. No hay ninguno. Según Arrhenius, el amoníaco no debería comportarse como base porque no tiene $OH$ para regalar. Pero lo hacía. Era como alguien comprando cosas sin tener monedas de oro.</p>
+
+        <div class="notebook-activity">
+            <h4>Actividad 1: El Dibujo del Sospechoso</h4>
+            <p>En tu cuaderno, dibuja la estructura de Lewis del Amoníaco ($NH_3$). Recuerda que el Nitrógeno está en el grupo 15 (tiene 5 electrones de valencia) y cada Hidrógeno tiene 1. <strong>Pregunta clave:</strong> ¿Cuántos electrones libres le quedan al Nitrógeno arriba? Dibújalos bien grandes. Esos dos puntos son la clave del misterio.</p>
+            <button class="btn" onclick="verifyAct(1)">¡Ya lo dibujé y contesté!</button>
+        </div>
+
+        <p>Aquí es donde entran dos científicos, Johannes Brönsted (danés) y Thomas Lowry (inglés), quienes, sin conocerse, llegaron a la misma conclusión el mismo año. Ellos propusieron cambiar la moneda. Dijeron: "No se trata del grupo $OH$. Se trata del <strong>Protón ($H^+$)</strong>".</p>
+        
+        <p>Pensemos en el protón ($H^+$) como un "paquete de ayuda" o un abrazo reconfortante.
+        <br><strong>ÁCIDO:</strong> Es aquel que tiene un abrazo para dar. Es el "Donante" de protones. Es empático porque se desprende de algo suyo ($H^+$) para dárselo a otro.
+        <br><strong>BASE:</strong> Es aquel que recibe el abrazo. Es el "Aceptor" de protones. Tiene la humildad y el espacio (el par de electrones libres que dibujaste en la actividad 1) para recibir.</p>
+
+        <p>Volvamos al Amoníaco ($NH_3$). Él no tiene $OH$, pero tiene ese par de electrones libres en su "cabeza" (el Nitrógeno). Esos electrones son como brazos abiertos esperando recibir algo. Cuando el amoníaco se encuentra con el agua ($H_2O$), sucede la magia de la empatía. El agua, aunque usualmente es neutra, ve la necesidad del amoníaco y decide actuar como amiga (como ácido). El agua dice: "Toma, te doy uno de mis Hidrógenos ($H^+$)".</p>
+
+        <div class="diagram-box">
+            [Diagrama Mental]<br>
+            $NH_3$ (Brazos abiertos) + $H_2O$ (Generosa) $\rightarrow$ $NH_4^+$ (Lleno y satisfecho) + $OH^-$ (Lo que quedó del agua)
+        </div>
+
+        <div class="notebook-activity">
+            <h4>Actividad 2: Tabla Comparativa de Modelos</h4>
+            <p>Construye en tu cuaderno una tabla con dos columnas. Columna A: "Modelo Arrhenius", Columna B: "Modelo Brönsted-Lowry". Compara sus definiciones de Ácido y Base. ¿Cuál es más completa? ¿Cuál explica el caso del amoníaco?</p>
+            <button class="btn" onclick="verifyAct(2)">¡Tabla terminada!</button>
+        </div>
+
+        <p>Este intercambio es fascinante porque cambia la identidad de las moléculas. El Amoníaco ($NH_3$), al recibir el protón, se convierte en Amonio ($NH_4^+$). Ha "crecido", se ha transformado gracias al apoyo recibido. Y el agua ($H_2O$), al dar una parte de sí misma, se convierte en Hidróxido ($OH^-$). No desaparece, se transforma.</p>
+        
+        <p>Esto nos lleva a una reflexión profunda sobre nuestras relaciones humanas. A veces pensamos que al dar apoyo "perdemos" tiempo o energía. Pero en realidad, nos transformamos en algo nuevo. Y quien recibe el apoyo también cambia. En el salón de clases, cuando explicas un tema a un compañero, tú eres el "ácido" (das conocimiento/apoyo) y él es la "base" (recibe). Ambos salen de esa interacción siendo diferentes a como entraron.</p>
+
+        <div class="notebook-activity">
+            <h4>Actividad 3: Mapa Mental de la Empatía Química</h4>
+            <p>Crea un mapa mental donde el concepto central sea "TRANSFERENCIA". Una rama debe ser "Química" (protón, ácido, base) y la otra rama debe ser "Vida Cotidiana" (apoyo, consejo, ayuda). Conecta las ideas: ¿Quién es el protón en un abrazo?</p>
+            <button class="btn" onclick="verifyAct(3)">¡Mapa Mental Listo!</button>
+        </div>
+
+        <p>La teoría de Brönsted-Lowry nos enseña que nada es absoluto. El agua puede actuar como ácido frente al amoníaco, pero si la juntas con vinagre (ácido acético), el agua actuará como base y recibirá el protón. Esto se llama ser <strong>ANFÓTERO</strong>. Significa tener la capacidad de adaptarse. En la vida, a veces nos toca ser fuertes y dar apoyo (ácidos), y otras veces nos toca ser vulnerables y pedir ayuda (bases). La salud mental y química depende de saber cuándo jugar cada rol.</p>
+
+        <div class="notebook-activity">
+            <h4>Actividad 4: Reflexión Personal (Empatía)</h4>
+            <p>Escribe un párrafo en tu cuaderno: Recuerda una situación reciente donde fuiste una "Base" (necesitaste ayuda y la aceptaste) y otra donde fuiste un "Ácido" (diste ayuda). ¿Cómo te sentiste en cada rol? ¿Qué "protón" se intercambió (palabras, dinero, tiempo)?</p>
+            <button class="btn" onclick="verifyAct(4)">¡Reflexión Escrita!</button>
+        </div>
+
+        <p>Finalmente, para cerrar esta introducción, debemos entender que este juego de pasar la pelota (el protón) ocurre en todas partes: en tu sangre para mantener el pH estable, en las baterías de los autos, y en la digestión de tu estómago. La vida es un flujo constante de protones yendo y viniendo.</p>
+
+        <div class="notebook-activity">
+            <h4>Actividad 5: Dibujo de la Escena</h4>
+            <p>Dibuja una historieta de 3 viñetas. Viñeta 1: El Amoníaco triste porque le falta algo. Viñeta 2: El Agua generosa le regala un Protón (dibújalo como un regalo o un balón). Viñeta 3: El Amoníaco ahora es Amonio y está feliz, y el Agua ahora es Hidróxido y saluda. Ponle diálogos.</p>
+            <button class="btn" onclick="verifyAct(5)">¡Historieta creada!</button>
+        </div>
+
+        <button class="btn" onclick="showSection('step-icfes')">Ir al Reto de Indagación (ICFES)</button>
+    </div>
+
+    <div class="container hidden" id="step-icfes">
+        <h2>Reto de Competencia: Indagar</h2>
+        <div class="icfes-container">
+            <p><strong>Contexto:</strong> En una clase de química, un estudiante realiza un experimento demostrativo clásico llamado "La difusión de gases".</p>
+            <p>Coloca un algodón empapado en Ácido Clorhídrico ($HCl$) en un extremo de un tubo de vidrio, y otro algodón empapado en Amoníaco ($NH_3$) en el otro extremo. Tapa ambos extremos. Los gases comienzan a viajar por el tubo. Donde se encuentran los dos gases, se forma un anillo de humo blanco sólido, tal como se muestra en la figura.</p>
+            
+            <div class="diagram-box">
+                [IMAGEN SIMULADA]<br>
+                (Algodón HCl) --->  .... (Anillo Blanco) .... <--- (Algodón NH3)<br>
+                El anillo se forma más cerca del HCl porque el NH3 es más ligero y viaja más rápido.
+            </div>
+
+            <p>La reacción química que ocurre es: $HCl_{(g)} + NH_{3(g)} \rightarrow NH_4Cl_{(s)}$</p>
+
+            <p><strong>Pregunta:</strong> Un estudiante afirma que esta reacción demuestra que el modelo de Arrhenius es insuficiente (incompleto) y que se necesita el modelo de Brönsted-Lowry para explicarla. ¿Cuál de los siguientes argumentos basados en la <strong>evidencia observada</strong> soporta mejor esta afirmación?</p>
+
+            <label class="icfes-option"><input type="radio" name="icfes" value="A"> <strong>A.</strong> Porque se formó una sustancia sólida blanca a partir de dos gases incoloros, lo cual es imposible según Arrhenius.</label>
+            <label class="icfes-option"><input type="radio" name="icfes" value="B"> <strong>B.</strong> Porque la reacción ocurrió en fase gaseosa y sin presencia de agua líquida como disolvente, condición necesaria para el modelo de Arrhenius.</label>
+            <label class="icfes-option"><input type="radio" name="icfes" value="C"> <strong>C.</strong> Porque el pH del anillo blanco es neutro, mientras que Arrhenius solo explica sustancias ácidas o básicas extremas.</label>
+            <label class="icfes-option"><input type="radio" name="icfes" value="D"> <strong>D.</strong> Porque el Ácido Clorhídrico es un ácido fuerte y el Amoníaco es una base débil, y Arrhenius no distingue fuerzas.</label>
+
+            <button class="btn" onclick="checkICFES()">Enviar Respuesta</button>
+            <div id="icfes-feedback" class="feedback"></div>
+        </div>
+        <button id="btn-post-icfes" class="btn hidden" onclick="showSection('step-deductive')">Continuar con la Teoría</button>
+    </div>
+
+    <div class="container hidden" id="step-deductive">
+        <h2>Parte II: Formalización y Pares Conjugados (Texto Deductivo)</h2>
+        
+        <p>Hemos observado el fenómeno y hemos indagado sobre las limitaciones de los modelos antiguos. Ahora, es momento de formalizar nuestro conocimiento utilizando el lenguaje científico preciso de la teoría Brönsted-Lowry. Como científicos, necesitamos ecuaciones que describan esta "danza de la empatía".</p>
+
+        <h3>La Ecuación General</h3>
+        <p>Cualquier reacción ácido-base bajo este modelo se puede escribir así:</p>
+        <div class="diagram-box" style="background: #e8eaf6; font-family: 'Courier New', monospace; font-weight: bold;">
+            Ácido_1 + Base_2  &#8652;  Base_1 (Conjugada) + Ácido_2 (Conjugado)
+        </div>
+        
+        <p>Analicemos esto. Cuando el "Ácido 1" regala su protón, se queda con un vacío. Ya no es un ácido, ahora tiene la capacidad de <em>recibir</em> de vuelta ese protón si la reacción se invierte. Por lo tanto, se convierte en una <strong>Base Conjugada</strong>.</p>
+        <p>Es como si tú (Ácido) le prestas dinero a un amigo. Antes tenías dinero (protón). Ahora tienes un "derecho de cobro" o un espacio vacío en tu billetera. Te has convertido en la "Base Conjugada" de tu propio ser anterior.</p>
+
+        <div class="notebook-activity">
+            <h4>Actividad 6: Identificación de Parejas</h4>
+            <p>Copia la siguiente reacción en tu cuaderno: $HF + H_2O \rightleftharpoons F^- + H_3O^+$.<br>
+            Usa colores para conectar las parejas. Conecta el $HF$ con el $F^-$. Conecta el $H_2O$ con el $H_3O^+$. Escribe debajo de cada uno quién es el Ácido, la Base, la Base Conjugada y el Ácido Conjugado.</p>
+            <button class="btn" onclick="verifyAct(6)">¡Parejas identificadas!</button>
+        </div>
+
+        <h3>La Fuerza de los Ácidos y Bases</h3>
+        <p>No todos tienen la misma voluntad para dar o recibir.
+        <br><strong>Ácidos Fuertes:</strong> Son extremadamente generosos (o desesperados). Entregan su protón casi al 100%. Ejemplo: El Ácido Clorhídrico ($HCl$) en tu estómago. Se disocia completamente.
+        <br><strong>Ácidos Débiles:</strong> Son tacaños. Sueltan el protón con dificultad. La mayoría de las moléculas se quedan con el protón abrazado. Ejemplo: El Ácido Acético (Vinagre).</p>
+
+        <p>Aquí hay una regla de oro deductiva: <em>"Si un Ácido es Fuerte, su Base Conjugada es Débil"</em>.
+        <br>Si alguien te regala algo con mucha facilidad (Ácido Fuerte), es muy probable que NO quiera que se lo devuelvas (Base Conjugada Débil). El $Cl^-$ (cloruro) es una base terrible, no quiere aceptar protones de vuelta.</p>
+
+        <div class="notebook-activity">
+            <h4>Actividad 7: Tabla de Análisis de Fuerza</h4>
+            <p>Dibuja una tabla. Fila 1: "HCl (Ácido Fuerte) -> Cl- (Base Conjugada Débil)". Fila 2: "NH3 (Base Débil) -> NH4+ (Ácido Conjugado Fuerte)". Investiga y agrega un tercer ejemplo de la vida real (ej: jugo de limón o bicarbonato).</p>
+            <button class="btn" onclick="verifyAct(7)">¡Análisis completado!</button>
+        </div>
+
+        <h3>El Agua: El Gran Mediador (Anfoterismo)</h3>
+        <p>Como mencionamos antes, el agua es anfótera. Esto se deduce de su estructura molecular. El oxígeno tiene dos pares de electrones libres (listos para recibir $H^+$) y también tiene hidrógenos unidos polarmente (listos para salir como $H^+$). Esta dualidad es vital para la vida. Sin el anfoterismo del agua, las reacciones biológicas serían imposibles.</p>
+
+        <div class="notebook-activity">
+            <h4>Actividad 8: El Agua Camaleón (Dibujo)</h4>
+            <p>Dibuja al agua ($H_2O$) con una cara dividida. Mitad cara feliz regalando un protón (actuando como ácido), mitad cara seria recibiendo un protón (actuando como base). Escribe al lado: "ANFÓTERO".</p>
+            <button class="btn" onclick="verifyAct(8)">¡Dibujo del camaleón listo!</button>
+        </div>
+
+        <h3>Impacto en el pH</h3>
+        <p>La concentración de estos protones libres ($H^+$) o, más exactamente, iones hidronio ($H_3O^+$), es lo que medimos como pH.
+        <br>Muchos protones donados = pH bajo (Ácido).
+        <br>Pocos protones (o muchos aceptados por bases) = pH alto (Básico/Alcalino).</p>
+
+        <div class="notebook-activity">
+            <h4>Actividad 9: Mapa Conceptual Final</h4>
+            <p>Elabora un mapa conceptual jerárquico. Título: TEORÍA BRÖNSTED-LOWRY. Conceptos a incluir: Transferencia de Protones, Ácido (Donador), Base (Aceptor), Par Conjugado, Anfótero, pH. Usa flechas con conectores lógicos (ej: "se transforma en", "se mide con").</p>
+            <button class="btn" onclick="verifyAct(9)">¡Mapa conceptual finalizado!</button>
+        </div>
+
+        <p><strong>Conclusión Deductiva:</strong>
+        Podemos concluir que la teoría de Brönsted-Lowry es una generalización superior a la de Arrhenius. Nos permite predecir reacciones en ausencia de agua y entender el comportamiento de sustancias como el bicarbonato de sodio en la cocina o los medicamentos en nuestro cuerpo. La química es un constante flujo de energía y materia, un dar y recibir eterno que busca el equilibrio. Al igual que en nuestra sociedad, el equilibrio se logra cuando quienes pueden dar, dan, y quienes necesitan recibir, reciben.</p>
+
+        <div class="notebook-activity">
+            <h4>Actividad 10: Carta de Empatía</h4>
+            <p>Imagina que eres un Protón ($H^+$). Escribe una carta corta de despedida a tu Ácido original y de saludo a tu nueva Base. "Querido Ácido Clorhídrico, me voy porque..." "Hola Amoniaco, llego a ti para..."</p>
+            <button class="btn" onclick="verifyAct(10)">¡Carta escrita!</button>
+        </div>
+
+        <button class="btn" onclick="showSection('step-final')">Ir a Evaluación Final</button>
+    </div>
+
+    <div class="container hidden" id="step-final">
+        <h2>Taller de Evaluación Final</h2>
+        <p>Demuestra lo que has aprendido. Las preguntas abiertas serán verificadas para asegurar que son tu creación original.</p>
+        
+        <h3>Parte A: Selección Múltiple</h3>
+        <div id="quiz-mc">
+            <p>1. Según Brönsted-Lowry, una base es:</p>
+            <label><input type="radio" name="q1" value="A"> A. Un donador de protones.</label><br>
+            <label><input type="radio" name="q1" value="B"> B. Un aceptor de protones.</label><br>
+            <label><input type="radio" name="q1" value="C"> C. Una sustancia que libera OH-.</label><br>
+            
+            <p>2. ¿Cuál es la base conjugada del ácido $HCl$?</p>
+            <label><input type="radio" name="q2" value="A"> A. $H^+$</label><br>
+            <label><input type="radio" name="q2" value="B"> B. $Cl^-$</label><br>
+            <label><input type="radio" name="q2" value="C"> C. $H_2Cl$</label><br>
+
+            <p>3. Una sustancia anfótera es aquella que:</p>
+            <label><input type="radio" name="q3" value="A"> A. Siempre es ácida.</label><br>
+            <label><input type="radio" name="q3" value="B"> B. No reacciona con nada.</label><br>
+            <label><input type="radio" name="q3" value="C"> C. Puede actuar como ácido o como base.</label><br>
+
+            <p>4. En la reacción $NH_3 + H_2O \rightarrow NH_4^+ + OH^-$, el agua actúa como:</p>
+            <label><input type="radio" name="q4" value="A"> A. Ácido</label><br>
+            <label><input type="radio" name="q4" value="B"> B. Base</label><br>
+            <label><input type="radio" name="q4" value="C"> C. Sal</label><br>
+
+            <p>5. ¿Qué partícula se transfiere en estas reacciones?</p>
+            <label><input type="radio" name="q5" value="A"> A. Un electrón</label><br>
+            <label><input type="radio" name="q5" value="B"> B. Un neutrón</label><br>
+            <label><input type="radio" name="q5" value="C"> C. Un ión Hidrógeno ($H^+$)</label><br>
+        </div>
+
+        <h3>Parte B: Preguntas Abiertas</h3>
+        <p><em>Responde con tus propias palabras (Mínimo 20 palabras por respuesta).</em></p>
+        
+        <p>6. Explica con tus palabras por qué el modelo de Arrhenius fallaba con el amoníaco.</p>
+        <textarea id="open6" rows="3"></textarea>
+        
+        <p>7. Define qué es un "Par Conjugado" usando un ejemplo de la vida diaria (metáfora).</p>
+        <textarea id="open7" rows="3"></textarea>
+
+        <p>8. ¿Por qué decimos que el agua es "generosa" en unas reacciones y "receptiva" en otras?</p>
+        <textarea id="open8" rows="3"></textarea>
+
+        <p>9. ¿Cómo relacionas el concepto de "Base" (aceptar protones) con la empatía y humildad?</p>
+        <textarea id="open9" rows="3"></textarea>
+
+        <p>10. Describe qué sucede a nivel microscópico cuando mezclas vinagre y bicarbonato.</p>
+        <textarea id="open10" rows="3"></textarea>
+
+        <button class="btn" onclick="finishCourse()">Finalizar y Descargar Resultados</button>
+    </div>
+
+<script>
+    // Variables Globales
+    let studentInfo = { name: "", score: 0, activitiesDone: 0 };
+    const TOTAL_STEPS = 10; // 10 Actividades de cuaderno
+    const SCORE_INCREMENT = 0.5; // 5.0 / 10 = 0.5
+
+    function showSection(id) {
+        document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+        window.scrollTo(0, 0);
+    }
+
+    function login() {
+        const name = document.getElementById('studentName').value;
+        if(name.length < 3) { alert("Por favor escribe tu nombre completo."); return; }
+        studentInfo.name = name;
+        showSection('step-intro');
+    }
+
+    function checkPretest() {
+        const p1 = document.getElementById('pre1').value;
+        const p2 = document.getElementById('pre2').value;
+        const p3 = document.getElementById('pre3').value;
+
+        if(p1 === '0' || p2 === '0' || p3 === '0') {
+            alert("Responde todas las preguntas.");
+            return;
+        }
+
+        let msg = "Resultados Pre-saberes:\n";
+        // Respuestas correctas: 1:b, 2:a, 3:b
+        if(p1 === 'b') msg += "1. Correcto. Los ácidos liberan H+.\n";
+        else msg += "1. Incorrecto. Arrhenius asociaba ácidos con H+.\n";
+        
+        if(p2 === 'a') msg += "2. Correcto. El protón es positivo.\n";
+        else msg += "2. Incorrecto. El protón es positivo (+).\n";
+
+        if(p3 === 'b') msg += "3. Correcto. El amoníaco es una base.\n";
+        else msg += "3. Incorrecto. El amoníaco actúa como base (limpiador).\n";
+
+        alert(msg);
+        showSection('step-inductive');
+    }
+
+    function verifyAct(num) {
+        const btn = event.target;
+        if(!btn.disabled) {
+            btn.disabled = true;
+            btn.textContent = "¡Verificado! (+0.5)";
+            btn.style.backgroundColor = "#2e7d32";
+            
+            studentInfo.score += SCORE_INCREMENT;
+            studentInfo.activitiesDone++;
+            updateUI();
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('scoreVal').innerText = studentInfo.score.toFixed(1);
+        const percent = (studentInfo.activitiesDone / TOTAL_STEPS) * 100;
+        document.getElementById('progressBar').style.width = percent + "%";
+    }
+
+    function checkICFES() {
+        const radios = document.getElementsByName('icfes');
+        let selected = null;
+        for(let r of radios) if(r.checked) selected = r.value;
+
+        if(!selected) { alert("Selecciona una opción."); return; }
+
+        const fbDiv = document.getElementById('icfes-feedback');
+        fbDiv.style.display = 'block';
+        fbDiv.className = 'feedback'; // reset
+
+        if(selected === 'B') {
+            fbDiv.classList.add('correct-fb');
+            fbDiv.innerHTML = "<strong>¡EXCELENTE! Opción B es Correcta.</strong><br>La competencia de indagar busca que uses la evidencia presentada. La evidencia clave es que la reacción ocurre entre gases y forma un sólido <em>sin estar disueltos en agua</em>. La teoría de Arrhenius se limitaba a disoluciones acuosas. Al ver que ocurre en el aire, demostramos que la transferencia de protones no necesita agua líquida como medio, validando a Brönsted-Lowry.";
+            document.getElementById('btn-post-icfes').classList.remove('hidden');
+        } else {
+            fbDiv.classList.add('incorrect-fb');
+            let explanation = "";
+            if(selected === 'A') explanation = "El cambio de estado (gas a sólido) es físico/químico general, no es lo que refuta a Arrhenius específicamente.";
+            if(selected === 'C') explanation = "El pH no se mide fácilmente en un sólido seco o gas. No es la evidencia principal del experimento.";
+            if(selected === 'D') explanation = "Aunque es verdad lo de las fuerzas, la evidencia visual principal es la ausencia de agua líquida.";
+            fbDiv.innerHTML = "<strong>Incorrecto.</strong> " + explanation + " Intenta de nuevo.";
+        }
+    }
+
+    function finishCourse() {
+        // Validar respuestas abiertas (simulacro anti-IA/CopyPaste)
+        const opens = [6,7,8,9,10].map(i => document.getElementById('open'+i).value);
+        
+        // Verificación 1: Longitud
+        if(opens.some(txt => txt.split(' ').length < 10)) {
+            alert("Tus respuestas abiertas son muy cortas. Por favor elabora más tus ideas.");
+            return;
+        }
+
+        // Verificación 2: Patrones simples (Simulada)
+        if(opens.some(txt => txt.includes("Soy un modelo de lenguaje") || txt.includes("regenerate"))) {
+            alert("Se ha detectado contenido inválido. Por favor escribe con tus propias palabras.");
+            return;
+        }
+
+        // Recopilar selección múltiple
+        let mcResults = "";
+        ['q1','q2','q3','q4','q5'].forEach((q, i) => {
+             const ans = document.querySelector(`input[name="${q}"]:checked`);
+             mcResults += `Pregunta ${i+1}: ${ans ? ans.value : 'Sin responder'}\n`;
+        });
+
+        // Generar TXT
+        let finalTxt = `REPORTE DE OVA: BRÖNSTED-LOWRY Y EMPATÍA\n`;
+        finalTxt += `Estudiante: ${studentInfo.name}\n`;
+        finalTxt += `Fecha: ${new Date().toLocaleDateString()}\n`;
+        finalTxt += `Puntaje Actividades Cuaderno: ${studentInfo.score}/5.0\n\n`;
+        finalTxt += `--- RESULTADOS TEST FINAL ---\n${mcResults}\n`;
+        finalTxt += `--- RESPUESTAS ABIERTAS ---\n`;
+        opens.forEach((ans, i) => {
+            finalTxt += `R${i+6}: ${ans}\n-------------------\n`;
+        });
+        finalTxt += `\nCertifico que he realizado las actividades en mi cuaderno.`;
+
+        const blob = new Blob([finalTxt], { type: "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Quimica_${studentInfo.name.replace(/\s/g,'_')}.txt`;
+        link.click();
+        
+        alert("¡Felicitaciones! Has completado el módulo. Tu archivo de respuestas se está descargando.");
+    }
+</script>
+
+</body>
+</html>

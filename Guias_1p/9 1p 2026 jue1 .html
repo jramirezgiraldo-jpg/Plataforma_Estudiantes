@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>El Enigma de los Colores - Juego pH</title>
+    <style>
+        :root { --acid: #ff5252; --base: #448aff; --neutral: #4caf50; --repollo: #6a1b9a; }
+        body { font-family: 'Segoe UI', sans-serif; background: #eceff1; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        #game-container { background: white; width: 950px; height: 650px; border-radius: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; border: 6px solid var(--repollo); position: relative; }
+        .hud { padding: 15px; background: var(--repollo); color: white; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        .canvas { flex: 1; position: relative; background: #fdfdfd; display: flex; justify-content: center; align-items: center; transition: 0.5s; }
+        .tube { width: 60px; height: 180px; border: 3px solid #ccc; border-top: none; border-radius: 0 0 30px 30px; position: relative; background: rgba(255,255,255,0.5); overflow: hidden; margin: 10px; }
+        .liquid { position: absolute; bottom: 0; width: 100%; height: 60%; background: #eee; transition: background-color 1s, height 0.5s; }
+        .controls { height: 120px; padding: 15px; background: #f5f5f5; border-top: 4px solid var(--repollo); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .btn { padding: 10px 25px; background: var(--repollo); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 5px; }
+        .modal { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.96); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:100; text-align: center; padding: 20px; }
+        .ph-scale { width: 80%; height: 30px; background: linear-gradient(to right, #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff); margin: 20px; border-radius: 15px; position: relative; }
+        input[type="number"] { padding: 10px; width: 80px; font-size: 18px; border: 2px solid var(--repollo); border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="hud">
+        <span id="m-name">Misión 1: Extracción de Antocianina</span>
+        <span id="score">Puntos: 0</span>
+    </div>
+
+    <div class="canvas" id="canvas">
+        </div>
+
+    <div class="controls">
+        <p id="instruction">Haz clic repetidamente en el mortero para extraer el indicador del repollo.</p>
+        <div id="action-btns"></div>
+    </div>
+
+    <div id="modal" class="modal">
+        <h2 id="m-title"></h2>
+        <p id="m-text"></p>
+        <button class="btn" onclick="loadNextMission()">Siguiente Desafío</button>
+    </div>
+</div>
+
+<script>
+    let mission = 1;
+    let clicks = 0;
+    let score = 0;
+
+    const substances = [
+        { name: "Limón", ph: 2.3, color: "#ff5252", type: "Ácido" },
+        { name: "Café de la Finca", ph: 5.0, color: "#ffab40", type: "Ácido Débil" },
+        { name: "Agua de Quebrada", ph: 7.0, color: "#4caf50", type: "Neutro" },
+        { name: "Jabón de Loza", ph: 9.5, color: "#448aff", type: "Base" },
+        { name: "Cal Hidratada", ph: 12.4, color: "#6a1b9a", type: "Base Fuerte" }
+    ];
+
+    function loadNextMission() {
+        document.getElementById('modal').style.display = "none";
+        const canvas = document.getElementById('canvas');
+        const instruction = document.getElementById('instruction');
+        const btns = document.getElementById('action-btns');
+        btns.innerHTML = "";
+
+        if(mission === 1) {
+            canvas.innerHTML = `<div id='mortero' onclick='extract()' style='font-size:80px; cursor:pointer;'>🥣</div>`;
+        } else if(mission === 2) {
+            instruction.innerText = "Prueba el indicador en las sustancias de la finca. ¿Qué color aparece?";
+            canvas.innerHTML = substances.map((s, i) => `
+                <div style='text-align:center'>
+                    <div class='tube'><div id='liq-${i}' class='liquid'></div></div>
+                    <button onclick='test(${i})'>Ver ${s.name}</button>
+                </div>
+            `).join('');
+        } else if(mission === 3) {
+            instruction.innerText = "Matemáticas del pH: Si [H+] = 1x10^-5, ¿cuál es el pH?";
+            canvas.innerHTML = `<div><input type='number' id='ph-ans' placeholder='?'> <button class='btn' onclick='checkMath()'>Calcular</button></div>`;
+        } else if(mission === 4) {
+             instruction.innerText = "¡Misión Final! Ubica el pH 2.3 (Limón) en la escala.";
+             canvas.innerHTML = `<div class='ph-scale' onclick='finish()'><div style='position:absolute; left:16%; top:-10px;'>📍</div></div>`;
+        }
+    }
+
+    function extract() {
+        clicks++;
+        document.getElementById('mortero').style.transform = `scale(${1 + clicks/20})`;
+        if(clicks >= 15) {
+            showModal("¡Asombro Químico!", "Has extraído las antocianinas. Estas moléculas cambian de color según el pH. ¡Es la biodiversidad en tu cocina!");
+            mission = 2;
+        }
+    }
+
+    function test(idx) {
+        document.getElementById(`liq-${idx}`).style.backgroundColor = substances[idx].color;
+        score += 10;
+        document.getElementById('score').innerText = `Puntos: ${score}`;
+        if(score >= 50) {
+            setTimeout(() => {
+                showModal("Escala Cualitativa", "El repollo nos dice la verdad: rojos para ácidos, morados para bases. ¡La persistencia da resultados!");
+                mission = 3;
+            }, 1000);
+        }
+    }
+
+    function checkMath() {
+        const val = document.getElementById('ph-ans').value;
+        if(val == 5) {
+            showModal("Reto Matemático", "¡Correcto! pH = -log[1x10^-5] = 5. El número en el jabón no es azar, es ciencia cuantitativa.");
+            mission = 4;
+        } else {
+            alert("Intenta de nuevo. Recuerda el exponente negativo.");
+        }
+    }
+
+    function finish() {
+        showModal("¡Guardianes del Territorio!", "Has dominado la escala de pH. Ahora puedes cuidar el suelo de Pueblo Rico con precisión científica.");
+        mission = 5;
+    }
+
+    function showModal(title, text) {
+        document.getElementById('m-title').innerText = title;
+        document.getElementById('m-text').innerText = text;
+        document.getElementById('modal').style.display = "flex";
+    }
+
+    loadNextMission();
+</script>
+</body>
+</html>

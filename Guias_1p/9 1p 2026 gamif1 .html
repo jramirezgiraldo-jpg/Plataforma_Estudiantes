@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA Química: Brønsted-Lowry & Lewis</title>
+    <style>
+        :root {
+            --acid: #e74c3c;
+            --base: #3498db;
+            --neutral: #95a5a6;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --success: #27ae60;
+            --gold: #f1c40f;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f7;
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Header & Login */
+        header {
+            text-align: center;
+            border-bottom: 3px solid var(--base);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .login-section {
+            background: #eaf2f8;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+            border: 1px solid var(--base);
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            width: 200px;
+        }
+
+        /* Grid de Juegos */
+        .games-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .games-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .section-header {
+            grid-column: 1 / -1;
+            background-color: var(--dark);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        /* Tarjetas de Juego */
+        .game-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            background: white;
+            transition: transform 0.2s;
+        }
+        
+        .game-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+
+        .hint-text {
+            font-size: 0.9em;
+            color: var(--neutral);
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        /* Zonas de Fichas */
+        .drop-zone {
+            min-height: 45px;
+            background-color: #f9f9f9;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .drop-zone.filled { background-color: #e8f8f5; border-color: var(--success); }
+
+        /* Fichas */
+        .tile {
+            padding: 5px 10px;
+            background: white;
+            border: 1px solid var(--dark);
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 2px 2px 0 #ccc;
+            font-weight: bold;
+        }
+        
+        .tile:hover { background-color: var(--base); color: white; }
+        .word-tile { background-color: #fff3e0; border-color: var(--acid); }
+        .word-tile:hover { background-color: var(--acid); color: white; }
+
+        /* Controles */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85em;
+        }
+
+        button {
+            padding: 6px 12px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .btn-check { background-color: var(--success); }
+        .btn-reset { background-color: var(--neutral); }
+        .btn-check:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .feedback { margin-left: 10px; font-weight: bold; }
+        .txt-success { color: var(--success); }
+        .txt-error { color: var(--acid); }
+
+        /* Panel Final */
+        #final-panel {
+            display: none;
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px;
+            background: #fff8e1;
+            border: 2px solid var(--gold);
+            border-radius: 10px;
+        }
+
+        .element-badge {
+            width: 140px;
+            height: 140px;
+            border: 5px solid #333;
+            margin: 20px auto;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Times New Roman', serif;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .atomic-num { align-self: flex-start; margin-left: 10px; font-size: 0.8em; }
+        .symbol { font-size: 3.5em; font-weight: bold; color: var(--dark); }
+        .name { font-size: 0.9em; margin-top: -5px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🧪 Ácidos y Bases: Perspectivas y Empatía</h1>
+        <p>Brønsted-Lowry (Protones) vs. Lewis (Electrones) - Grado 9</p>
+    </header>
+
+    <div class="login-section">
+        <div>
+            <label>Nombre:</label>
+            <input type="text" id="fname" placeholder="Tu nombre">
+        </div>
+        <div>
+            <label>Apellido:</label>
+            <input type="text" id="lname" placeholder="Tu apellido">
+        </div>
+    </div>
+
+    <div class="games-grid">
+        
+        <div class="section-header">I. CONCEPTOS CLAVE (Ordenar Letras)</div>
+        <div id="letters-container" style="display: contents;"></div>
+
+        <div class="section-header">II. LÓGICA Y EMPATÍA (Ordenar Palabras)</div>
+        <div id="words-container" style="display: contents;"></div>
+
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+        <button onclick="calculateFinalScore()" style="padding: 15px 30px; font-size: 1.2em; background-color: var(--dark);">📊 FINALIZAR Y CALIFICAR</button>
+    </div>
+
+    <div id="final-panel">
+        <h2 id="student-display"></h2>
+        <h3>Nota Final: <span id="score-display">0.0</span> / 5.0</h3>
+        <p id="feedback-msg"></p>
+        <div id="reward-badge"></div>
+    </div>
+
+</div>
+
+<script>
+    /* --- DATA: JUEGOS DE LETRAS --- */
+    const letterGamesData = [
+        { id: 'L1', word: 'PROTON', hint: 'Brønsted: Partícula H+ que se dona o acepta.' },
+        { id: 'L2', word: 'DONADOR', hint: 'El rol del Ácido en Brønsted-Lowry.' },
+        { id: 'L3', word: 'ACEPTOR', hint: 'El rol de la Base (recibe protones).' },
+        { id: 'L4', word: 'LEWIS', hint: 'Científico que se enfocó en los electrones.' },
+        { id: 'L5', word: 'ELECTRON', hint: 'Partícula clave en la teoría de Lewis.' },
+        { id: 'L6', word: 'CONJUGADO', hint: 'Par ácido-base que difiere en un protón.' },
+        { id: 'L7', word: 'AMONIACO', hint: 'NH3: Base clásica que acepta un protón.' },
+        { id: 'L8', word: 'ENLACE', hint: 'Lo que se forma al compartir pares electrónicos.' },
+        { id: 'L9', word: 'EMPATIA', hint: 'Valor humano: Entender lo que el otro necesita (dar/recibir).' },
+        { id: 'L10', word: 'TEORIA', hint: 'Modelo que explica fenómenos químicos.' }
+    ];
+
+    /* --- DATA: JUEGOS DE PALABRAS --- */
+    const wordGamesData = [
+        { id: 'W1', text: 'EL ACIDO DE BRONSTED CEDE PROTONES', hint: 'Definición fundamental de Brønsted.' },
+        { id: 'W2', text: 'LA BASE ACEPTA EL APOYO DEL PROTON', hint: 'Analogía de recibir ayuda.' },
+        { id: 'W3', text: 'LEWIS ESTUDIA EL INTERCAMBIO DE ELECTRONES', hint: 'Diferencia principal entre teorías.' },
+        { id: 'W4', text: 'DAR Y RECIBIR MANTIENE EL EQUILIBRIO', hint: 'Conexión química y emocional.' },
+        { id: 'W5', text: 'EL AGUA PUEDE ACTUAR COMO ACIDO O BASE', hint: 'Sustancia anfótera.' },
+        { id: 'W6', text: 'RESPETAMOS LAS DIFERENTES PERSPECTIVAS CIENTIFICAS', hint: 'Valor del debate académico.' },
+        { id: 'W7', text: 'LOS PARES CONJUGADOS SE AYUDAN MUTUAMENTE', hint: 'Relación reversible.' },
+        { id: 'W8', text: 'UN ACIDO DE LEWIS ACEPTA PARES DE ELECTRONES', hint: 'Definición técnica de Lewis.' },
+        { id: 'W9', text: 'LA QUIMICA ES EL ARTE DE LA TRANSFORMACION', hint: 'Reflexión general.' },
+        { id: 'W10', text: 'COMPRENDER AL OTRO ES COMO FORMAR UN ENLACE', hint: 'Metáfora socioemocional.' }
+    ];
+
+    // Estado global
+    let gameState = {};
+    const MAX_ATTEMPTS = 3;
+
+    function init() {
+        // Renderizar juegos
+        const lContainer = document.getElementById('letters-container');
+        const wContainer = document.getElementById('words-container');
+
+        letterGamesData.forEach(g => createGameHTML(lContainer, g, 'letter'));
+        wordGamesData.forEach(g => createGameHTML(wContainer, g, 'word'));
+    }
+
+    function createGameHTML(container, data, type) {
+        // Inicializar estado
+        gameState[data.id] = { 
+            attempts: 0, 
+            solved: false, 
+            score: 0,
+            target: type === 'letter' ? data.word : data.text 
+        };
+
+        const div = document.createElement('div');
+        div.className = 'game-card';
+        div.innerHTML = `
+            <strong>${type === 'letter' ? 'Concepto' : 'Frase'} ${data.id.substring(1)}:</strong>
+            <div class="hint-text">${data.hint}</div>
+            
+            <div class="drop-zone" id="src-${data.id}"></div>
+            
+            <div class="drop-zone filled" id="dest-${data.id}"></div>
+
+            <div class="controls">
+                <span id="att-${data.id}">Intentos: 0/3</span>
+                <div>
+                    <span id="msg-${data.id}" class="feedback"></span>
+                    <button class="btn-check" id="btn-${data.id}" onclick="checkAnswer('${data.id}', '${type}')">✔</button>
+                    <button class="btn-reset" onclick="resetGame('${data.id}', '${type}')">↺</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+        resetGame(data.id, type);
+    }
+
+    function resetGame(id, type) {
+        if (gameState[id].solved) return;
+
+        const src = document.getElementById(`src-${id}`);
+        const dest = document.getElementById(`dest-${id}`);
+        const msg = document.getElementById(`msg-${id}`);
+        
+        src.innerHTML = '';
+        dest.innerHTML = '';
+        msg.textContent = '';
+
+        // Preparar partes
+        let parts = type === 'letter' 
+            ? gameState[id].target.split('') 
+            : gameState[id].target.split(' ');
+
+        // Shuffle
+        parts.sort(() => Math.random() - 0.5);
+
+        // Crear fichas
+        parts.forEach(part => {
+            const span = document.createElement('span');
+            span.className = type === 'letter' ? 'tile' : 'tile word-tile';
+            span.textContent = part;
+            span.onclick = function() {
+                if (gameState[id].solved) return;
+                // Mover al otro contenedor
+                if (this.parentNode === src) dest.appendChild(this);
+                else src.appendChild(this);
+            };
+            src.appendChild(span);
+        });
+    }
+
+    function checkAnswer(id, type) {
+        if (gameState[id].solved) return;
+
+        const dest = document.getElementById(`dest-${id}`);
+        // Reconstruir string del usuario
+        const userStr = Array.from(dest.children)
+            .map(c => c.textContent)
+            .join(type === 'letter' ? '' : ' ');
+
+        const msg = document.getElementById(`msg-${id}`);
+        const attSpan = document.getElementById(`att-${id}`);
+        const btn = document.getElementById(`btn-${id}`);
+
+        gameState[id].attempts++;
+        attSpan.textContent = `Intentos: ${gameState[id].attempts}/3`;
+
+        if (userStr === gameState[id].target) {
+            // Correcto
+            msg.textContent = "¡Correcto!";
+            msg.className = "feedback txt-success";
+            gameState[id].solved = true;
+            gameState[id].score = getPoints(gameState[id].attempts);
+            btn.disabled = true;
+            // Bloquear fichas visualmente
+            Array.from(dest.children).forEach(c => {
+                c.style.backgroundColor = "#27ae60"; 
+                c.style.color = "white";
+                c.style.cursor = "default";
+            });
+        } else {
+            // Incorrecto
+            if (gameState[id].attempts >= MAX_ATTEMPTS) {
+                msg.textContent = "Fallaste. Resp: " + gameState[id].target;
+                msg.className = "feedback txt-error";
+                gameState[id].solved = true; // Cerrar juego
+                gameState[id].score = 0;
+                btn.disabled = true;
+            } else {
+                msg.textContent = "Incorrecto";
+                msg.className = "feedback txt-error";
+            }
+        }
+    }
+
+    function getPoints(attempts) {
+        // Cada juego vale 0.25 puntos base (5.0 / 20 juegos)
+        // Multiplicador por intentos
+        const base = 0.25;
+        if (attempts === 1) return base * 1.0;
+        if (attempts === 2) return base * 0.7;
+        if (attempts === 3) return base * 0.4;
+        return 0;
+    }
+
+    function calculateFinalScore() {
+        const f = document.getElementById('fname').value;
+        const l = document.getElementById('lname').value;
+
+        if (!f || !l) {
+            alert("Por favor ingresa Nombre y Apellido arriba.");
+            window.scrollTo(0,0);
+            return;
+        }
+
+        let total = 0;
+        Object.values(gameState).forEach(st => total += st.score);
+        
+        // Renderizar resultado
+        const panel = document.getElementById('final-panel');
+        panel.style.display = 'block';
+        
+        document.getElementById('student-display').textContent = `Estudiante: ${f} ${l}`;
+        document.getElementById('score-display').textContent = total.toFixed(2);
+        
+        // Asignar recompensa
+        const badge = document.getElementById('reward-badge');
+        const feedback = document.getElementById('feedback-msg');
+        
+        let elem = {};
+
+        // Escala de premios
+        if (total >= 4.5) {
+            elem = { n: 79, s: 'Au', name: 'Oro', desc: '¡Brillante! Eres noble, valioso e incorruptible como el Oro.' };
+        } else if (total >= 4.0) {
+            elem = { n: 78, s: 'Pt', name: 'Platino', desc: '¡Excelente! Un catalizador potente y muy resistente.' };
+        } else if (total >= 3.0) {
+            elem = { n: 26, s: 'Fe', name: 'Hierro', desc: 'Fuerte y esencial. Eres el núcleo de la estructura.' };
+        } else if (total >= 2.0) {
+            elem = { n: 13, s: 'Al', name: 'Aluminio', desc: 'Ligero y útil, pero necesitas pulir tu capa externa.' };
+        } else {
+            elem = { n: 2, s: 'He', name: 'Helio', desc: 'Estás flotando. Necesitas más peso e interacción (estudio).' };
+        }
+
+        feedback.textContent = elem.desc;
+        badge.innerHTML = `
+            <div class="element-badge">
+                <span class="atomic-num">${elem.n}</span>
+                <span class="symbol">${elem.s}</span>
+                <span class="name">${elem.name}</span>
+            </div>
+        `;
+
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    // Iniciar
+    init();
+
+</script>
+
+</body>
+</html>

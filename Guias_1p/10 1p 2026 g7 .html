@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: REDOX y Resiliencia - Grado 10</title>
+    <style>
+        :root {
+            --primary: #C0392B; /* Rojo Óxido */
+            --secondary: #2C3E50; /* Gris Acero */
+            --accent: #E67E22; /* Naranja Energía/Electrón */
+            --bg: #ECF0F1; /* Gris Claro Lab */
+            --text: #212F3C;
+            --success: #27AE60;
+            --error: #922B21;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding-bottom: 80px;
+            line-height: 1.6;
+        }
+
+        /* --- UI: Barra Superior y Login --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--secondary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
+            color: white;
+            transition: opacity 0.5s;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            color: var(--text);
+            border-top: 5px solid var(--primary);
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            width: 280px;
+            border: 2px solid #BDC3C7;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        input[type="text"]:focus { border-color: var(--primary); }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(192, 57, 43, 0.4); }
+
+        /* --- Barra de Progreso --- */
+        #top-bar {
+            position: sticky;
+            top: 0;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 10px 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--secondary);
+        }
+
+        .gamification-panel {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-grow: 1;
+            max-width: 600px;
+            margin-left: 20px;
+        }
+
+        .progress-track {
+            flex-grow: 1;
+            height: 14px;
+            background: #D7DBDD;
+            border-radius: 7px;
+            overflow: hidden;
+            border: 1px solid #BDC3C7;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: repeating-linear-gradient(45deg, var(--primary), var(--primary) 10px, #E74C3C 10px, #E74C3C 20px);
+            transition: width 0.5s ease;
+        }
+
+        .element-badge {
+            width: 55px;
+            height: 55px;
+            border: 3px solid var(--secondary);
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            font-weight: bold;
+            box-shadow: 3px 3px 0 rgba(44, 62, 80, 0.3);
+        }
+
+        /* --- Contenido --- */
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: none;
+        }
+
+        section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary);
+        }
+
+        h2 { color: var(--secondary); border-bottom: 2px solid #ECF0F1; padding-bottom: 10px; }
+        h3 { color: var(--primary); margin-top: 25px; }
+
+        /* --- Actividades --- */
+        .activity-box {
+            background: #FDF2E9; /* Tono óxido muy claro */
+            border: 1px dashed var(--primary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+        .correct { background: #D5F5E3; color: #145A32; border-color: var(--success); }
+        .incorrect { background: #FADBD8; color: #7B241C; border-color: var(--error); }
+
+        .mcq-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 8px;
+            background: #F4F6F7;
+            color: var(--text);
+            border: 1px solid #BDC3C7;
+            padding: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .mcq-option:hover { background: #D6DBDF; }
+
+        textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        /* --- Gráficos SVG y Tablas --- */
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+        th, td { border: 1px solid #BDC3C7; padding: 10px; text-align: center; }
+        th { background-color: var(--secondary); color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h1>⚙️ Química y Resiliencia</h1>
+            <p>Módulo: Reacciones REDOX (Grado 10)</p>
+            <p><em>"Lo que no te mata, te oxida... o te hace más fuerte."</em></p>
+            <input type="text" id="username" placeholder="Nombres y Apellidos">
+            <br>
+            <button onclick="login()">Ingresar al Taller</button>
+        </div>
+    </div>
+
+    <div id="top-bar">
+        <div style="font-weight: bold; color: var(--secondary);">
+            👨‍🔬 <span id="display-name">Estudiante</span>
+        </div>
+        <div class="gamification-panel">
+            <span>Nivel:</span>
+            <div class="element-badge" id="badge">
+                <span style="font-size: 0.8em;" id="badge-num">1</span>
+                <span style="font-size: 1.4em; color: var(--secondary);" id="badge-sym">H</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="main-content">
+
+        <section id="inicio">
+            <h2>🎯 Objetivo de Aprendizaje</h2>
+            <p>Identificar la transferencia de electrones en reacciones de oxidación-reducción (REDOX), analizar el fenómeno de la corrosión en herramientas cotidianas y aplicar el balanceo por número de oxidación, reflexionando paralelamente sobre nuestra propia "oxidación" emocional.</p>
+            
+            <h3>🧠 Pre-saberes: ¿Qué sabes sobre el óxido?</h3>
+
+            <div class="activity-box">
+                <p>1. Si dejas una bicicleta bajo la lluvia por meses, ¿qué cambio químico sufre?</p>
+                <button class="mcq-option" onclick="checkMCQ('pre1', 'b', true)">Se oxida (corrosión).</button>
+                <button class="mcq-option" onclick="checkMCQ('pre1', 'a', false)">Se evapora el metal.</button>
+                <button class="mcq-option" onclick="checkMCQ('pre1', 'c', false)">Se convierte en plástico.</button>
+                <div id="fb-pre1" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>2. ¿Cuál es la carga eléctrica de un electrón?</p>
+                <button class="mcq-option" onclick="checkMCQ('pre2', 'a', false)">Positiva (+)</button>
+                <button class="mcq-option" onclick="checkMCQ('pre2', 'b', true)">Negativa (-)</button>
+                <button class="mcq-option" onclick="checkMCQ('pre2', 'c', false)">Neutra (0)</button>
+                <div id="fb-pre2" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>3. En química, ¿la materia se destruye?</p>
+                <button class="mcq-option" onclick="checkMCQ('pre3', 'a', false)">Sí, cuando algo se quema desaparece.</button>
+                <button class="mcq-option" onclick="checkMCQ('pre3', 'b', true)">No, solo se transforma (Ley de Lavoisier).</button>
+                <button class="mcq-option" onclick="checkMCQ('pre3', 'c', false)">Depende de la temperatura.</button>
+                <div id="fb-pre3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>🔧 Parte 1: El Ladrón de Electrones</h2>
+            
+            <p>Imagina que entras al viejo taller de tu abuelo. Encuentras unas pinzas brillantes y otras totalmente cubiertas de un polvo rojizo y áspero: el óxido. ¿Qué pasó ahí?</p>
+            <p>Ocurrió un "robo" a nivel atómico. El Hierro (Fe) de la herramienta es generoso y tiende a regalar sus electrones. El Oxígeno (O) del aire y la humedad es un ladrón experto (muy electronegativo) y se los roba.</p>
+            
+            <p><strong>La Regla de Oro (Mnemotecnia):</strong></p>
+            <ul>
+                <li><strong>OXIDACIÓN:</strong> Es PÉRDIDA de electrones (El átomo se vuelve más positivo).</li>
+                <li><strong>REDUCCIÓN:</strong> Es GANANCIA de electrones (El átomo se vuelve más negativo).</li>
+            </ul>
+
+            <div class="svg-container">
+                <svg width="500" height="200" viewBox="0 0 500 200">
+                    <circle cx="100" cy="100" r="40" fill="#BDC3C7" stroke="#2C3E50" stroke-width="3"/>
+                    <text x="100" y="105" text-anchor="middle" font-weight="bold" fill="#2C3E50">Fe</text>
+                    <text x="100" y="160" text-anchor="middle" font-size="12">Pierde e- (Se Oxida)</text>
+                    
+                    <circle cx="400" cy="100" r="30" fill="#E74C3C" stroke="#C0392B" stroke-width="3"/>
+                    <text x="400" y="105" text-anchor="middle" font-weight="bold" fill="white">O</text>
+                    <text x="400" y="160" text-anchor="middle" font-size="12">Gana e- (Se Reduce)</text>
+
+                    <circle cx="250" cy="100" r="10" fill="#F39C12">
+                        <animate attributeName="cx" values="140;360" dur="2s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="1;0" dur="2s" repeatCount="indefinite" />
+                    </circle>
+                    <text x="250" y="80" text-anchor="middle" fill="#F39C12" font-weight="bold">e-</text>
+                    
+                    <line x1="150" y1="100" x2="350" y2="100" stroke="#2C3E50" stroke-width="2" marker-end="url(#arrow)"/>
+                </svg>
+            </div>
+
+            <p><strong>Reflexión sobre Resiliencia:</strong><br>
+            Al igual que el metal, nosotros estamos expuestos a un ambiente difícil (estrés, problemas, críticas) que intenta "oxidarnos" y quitarnos nuestra energía (electrones). La <strong>resiliencia</strong> es nuestro recubrimiento anticorrosivo; no evita que llueva, pero evita que el agua nos dañe por dentro.</p>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 1: Observación</h3>
+                <p>Busca en tu casa un objeto metálico oxidado (una reja, un clavo, una moneda vieja). Describe cómo se ve y cómo se siente al tacto. Escribe "Listo".</p>
+                <textarea id="act1" rows="1"></textarea>
+                <button onclick="verifyNotebook('act1')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 2: Dibujo Esquemático</h3>
+                <p>Dibuja en tu cuaderno el proceso REDOX: Un átomo entregando una moneda (electrón) a otro. El que da se pone triste (oxidado) y el que recibe se pone feliz (reducido). Escribe "Dibujado".</p>
+                <textarea id="act2" rows="1"></textarea>
+                <button onclick="verifyNotebook('act2')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 3: Tabla Comparativa</h3>
+                <p>Haz una tabla con dos columnas: "Oxidación" y "Reducción". Clasifica estas frases: "Gana electrones", "Pierde electrones", "Aumenta número de oxidación", "Disminuye número de oxidación". Escribe "Tabla hecha".</p>
+                <textarea id="act3" rows="1"></textarea>
+                <button onclick="verifyNotebook('act3')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 4: Mapa Mental</h3>
+                <p>Concepto central: REDOX. Ramas: Agente Oxidante, Agente Reductor, Transferencia de e-, Ejemplos vida diaria. Escribe "Mapa listo".</p>
+                <textarea id="act4" rows="1"></textarea>
+                <button onclick="verifyNotebook('act4')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 5: Introspección (Resiliencia)</h3>
+                <p>¿Qué situación sientes que te está "oxidando" o desgastando emocionalmente hoy? (Responde para ti en el cuaderno, aquí escribe solo una palabra clave).</p>
+                <textarea id="act5" rows="1"></textarea>
+                <button onclick="verifyNotebook('act5')">Verificar</button>
+            </div>
+        </section>
+
+        <section id="icfes">
+            <h2>🕵️ Competencia: Indagar</h2>
+            <div style="background: #F4F6F6; padding: 20px; border-radius: 8px; border: 1px solid #BDC3C7;">
+                <h3>El Caso del Barco y el Zinc</h3>
+                <p>Los cascos de los barcos son de acero (Hierro). Para evitar que se oxiden en el mar, los ingenieros pegan bloques de Zinc (Zn) al casco. Observa el gráfico:</p>
+                
+                <div class="svg-container">
+                    <svg width="400" height="200" viewBox="0 0 400 200">
+                        <rect x="0" y="50" width="400" height="150" fill="#AED6F1" opacity="0.5"/>
+                        <rect x="50" y="80" width="300" height="40" fill="#5D6D7E" stroke="#2C3E50"/>
+                        <text x="200" y="105" text-anchor="middle" fill="white">Casco de Acero (Fe)</text>
+                        <rect x="180" y="120" width="40" height="30" fill="#D7DBDD" stroke="#333"/>
+                        <text x="200" y="140" text-anchor="middle" font-size="12">Zinc</text>
+                        
+                        <path d="M 200,150 L 200,180" stroke="#E74C3C" stroke-width="2" stroke-dasharray="4"/>
+                        <text x="200" y="190" text-anchor="middle" font-size="10" fill="#E74C3C">El Zinc se deshace</text>
+                    </svg>
+                </div>
+
+                <p>Con el tiempo, el bloque de Zinc desaparece y debe cambiarse, pero el casco de acero queda intacto. A esto se le llama "Ánodo de Sacrificio".</p>
+                <p><strong>Pregunta:</strong> ¿Cuál es la explicación científica de por qué el Zinc protege al Hierro?</p>
+
+                <button class="mcq-option" onclick="checkICFES('a')">A. El Zinc crea un escudo físico impermeable, como una pintura, que no deja pasar el agua al hierro.</button>
+                <button class="mcq-option" onclick="checkICFES('b')">B. El Zinc se oxida más fácilmente que el Hierro, cediendo sus electrones al Hierro para mantenerlo "satisfecho" y sin oxidar.</button>
+                <button class="mcq-option" onclick="checkICFES('c')">C. El Zinc transforma el agua salada en agua dulce, eliminando el agente corrosivo.</button>
+                <button class="mcq-option" onclick="checkICFES('d')">D. El Hierro absorbe el Zinc y se convierte en una aleación de oro indestructible.</button>
+
+                <div id="fb-icfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>🧮 Parte 2: Balanceo y Números de Oxidación</h2>
+            
+            <p>Para entender quién gana y quién pierde, asignamos un <strong>Número de Oxidación</strong> a cada elemento. Es como la "contabilidad" de los electrones.</p>
+            
+            <p><strong>Reglas Básicas:</strong></p>
+            <ol>
+                <li>Elementos solos (sin combinar) = 0 (Ej: Fe, O<sub>2</sub>, Na).</li>
+                <li>Hidrógeno (H) casi siempre es +1.</li>
+                <li>Oxígeno (O) casi siempre es -2.</li>
+                <li>La suma de todos los números en una molécula neutra debe ser 0.</li>
+            </ol>
+
+            <div style="background: #2C3E50; color: white; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                <strong>Ejemplo:</strong> H<sub>2</sub>O<br>
+                H = +1 (hay 2 átomos) -> Total +2<br>
+                O = -2 (hay 1 átomo) -> Total -2<br>
+                Suma: (+2) + (-2) = 0. ¡Correcto!
+            </div>
+
+            <p><strong>El Agente Invertido:</strong><br>
+            Ojo a esto, que confunde a muchos:
+            <br>Si un elemento <strong>Se Oxida</strong> (pierde e-), él es el <strong>Agente Reductor</strong> (porque le regala e- al otro, ayudándolo a reducirse).
+            <br>Si un elemento <strong>Se Reduce</strong> (gana e-), él es el <strong>Agente Oxidante</strong> (porque le roba e- al otro).</p>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 6: Calculadora de Oxidación</h3>
+                <p>En la molécula CO<sub>2</sub>, si el O vale -2, ¿cuánto debe valer el Carbono (C) para que la suma sea 0? Escribe el número (ej: +2, +4).</p>
+                <textarea id="act6" rows="1"></textarea>
+                <button onclick="verifyNotebook('act6')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 7: Identificar Agentes</h3>
+                <p>En la reacción Zn + Cu<sup>+2</sup> -> Zn<sup>+2</sup> + Cu. El Zinc pasó de 0 a +2 (se oxidó). ¿Qué agente es el Zinc? (Oxidante o Reductor).</p>
+                <textarea id="act7" rows="1"></textarea>
+                <button onclick="verifyNotebook('act7')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 8: La Recta Numérica</h3>
+                <p>Dibuja una recta numérica del -5 al +5. Dibuja una flecha hacia la derecha (-->) y escribe "Oxidación". Dibuja una hacia la izquierda (<--) y escribe "Reducción". Escribe "Hecho".</p>
+                <textarea id="act8" rows="1"></textarea>
+                <button onclick="verifyNotebook('act8')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 9: Balanceo Mental</h3>
+                <p>Tenemos Fe + O<sub>2</sub> -> Fe<sub>2</sub>O<sub>3</sub>. No está balanceada (entra 1 Fe, salen 2). Intenta balancearla por tanteo en tu cuaderno. Escribe los coeficientes (ej: 4,3,2).</p>
+                <textarea id="act9" rows="1"></textarea>
+                <button onclick="verifyNotebook('act9')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 10: Sacrificio Emocional</h3>
+                <p>Vimos que el Zinc se sacrifica por el Hierro. En tu vida, ¿quién actúa como tu "ánodo de sacrificio" protegiéndote (padres, amigos)? Escribe su nombre/rol.</p>
+                <textarea id="act10" rows="1"></textarea>
+                <button onclick="verifyNotebook('act10')">Verificar</button>
+            </div>
+        </section>
+
+        <section id="final">
+            <h2>🏆 Taller Final: Maestro del REDOX</h2>
+            
+            <h3>Parte A: Selección Múltiple</h3>
+            
+            <div class="activity-box">
+                <p>1. Si un átomo pasa de estado de oxidación 0 a +3, significa que:</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'a', false)">Ganó 3 electrones.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'b', true)">Perdió 3 electrones (Se oxidó).</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'c', false)">Ganó 3 protones.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'd', false)">Se volvió radiactivo.</button>
+            </div>
+
+            <div class="activity-box">
+                <p>2. El Agente Oxidante es aquel que:</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'a', true)">Gana electrones y se reduce.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'b', false)">Pierde electrones y se oxida.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'c', false)">No participa en la reacción.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'd', false)">Libera oxígeno.</button>
+            </div>
+
+            <div class="activity-box">
+                <p>3. ¿Cuál es el número de oxidación del Oxígeno generalmente?</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'a', false)">+1</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'b', false)">0</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'c', true)">-2</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'd', false)">+2</button>
+            </div>
+
+            <div class="activity-box">
+                <p>4. La corrosión es un ejemplo de una reacción:</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'a', false)">Nuclear</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'b', false)">De neutralización (Ácido-Base)</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'c', true)">REDOX</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'd', false)">De precipitación</button>
+            </div>
+
+             <div class="activity-box">
+                <p>5. ¿Qué significa LEO en la mnemotecnia química?</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'a', false)">La Energía Oscila</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'b', true)">Lose Electrons Oxidation (Perder Electrones es Oxidación)</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'c', false)">Los Electrones Orbitan</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'd', false)">Ninguna de las anteriores</button>
+            </div>
+
+            <h3>Parte B: Preguntas Abiertas (Responder entre 10 y 15 palabras)</h3>
+            <p><em>El sistema validará que tu respuesta tenga la extensión exacta para asegurar que analizaste la pregunta.</em></p>
+
+            <div class="activity-box">
+                <p>6. Define con tus propias palabras qué es una reacción REDOX.</p>
+                <textarea id="open1"></textarea>
+                <button onclick="validateOpen('open1')">Validar Respuesta</button>
+                <div id="fb-open1" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>7. Explica por qué pintamos las rejas de hierro de las casas.</p>
+                <textarea id="open2"></textarea>
+                <button onclick="validateOpen('open2')">Validar Respuesta</button>
+                <div id="fb-open2" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>8. ¿Qué es un "ánodo de sacrificio" en términos sencillos?</p>
+                <textarea id="open3"></textarea>
+                <button onclick="validateOpen('open3')">Validar Respuesta</button>
+                <div id="fb-open3" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>9. ¿Cómo se relaciona la oxidación con el estrés emocional?</p>
+                <textarea id="open4"></textarea>
+                <button onclick="validateOpen('open4')">Validar Respuesta</button>
+                <div id="fb-open4" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>10. ¿Por qué la suma de números de oxidación debe ser cero?</p>
+                <textarea id="open5"></textarea>
+                <button onclick="validateOpen('open5')">Validar Respuesta</button>
+                <div id="fb-open5" class="feedback"></div>
+            </div>
+        </section>
+
+        <section style="text-align: center;">
+            <h2>🎉 ¡Misión Cumplida!</h2>
+            <p>Has equilibrado tus ecuaciones y fortalecido tu resiliencia.</p>
+            <button onclick="downloadResults()" style="background-color: var(--secondary); padding: 15px 30px;">📥 Descargar Reporte (.txt)</button>
+        </section>
+
+    </div>
+
+    <script>
+        // --- ESTADO Y GAMIFICACIÓN ---
+        const gameState = {
+            user: "",
+            score: 0,
+            answers: {},
+            progress: 0,
+            totalItems: 21 // 3 Pre + 10 Act + 1 Icfes + 5 MCQ + 5 Open
+        };
+
+        // Niveles Gamificación: H, He, Li, Be, B
+        const levels = [
+            {min:0, s:"H", n:1}, 
+            {min:20, s:"He", n:2}, 
+            {min:40, s:"Li", n:3}, 
+            {min:60, s:"Be", n:4}, 
+            {min:80, s:"B", n:5}
+        ];
+
+        // 1. Inicialización
+        window.onload = function() {
+            const saved = localStorage.getItem('OVA_Redox_G10');
+            if(saved) {
+                const parsed = JSON.parse(saved);
+                gameState.user = parsed.user;
+                gameState.score = parsed.score;
+                gameState.answers = parsed.answers;
+                gameState.progress = Object.keys(gameState.answers).length;
+                if(gameState.user) showApp();
+            }
+        };
+
+        function login() {
+            const name = document.getElementById('username').value.trim();
+            if(name.length > 2) {
+                gameState.user = name;
+                saveGame();
+                showApp();
+            } else {
+                alert("Por favor ingresa un nombre válido.");
+            }
+        }
+
+        function showApp() {
+            document.getElementById('login-overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-overlay').style.display = 'none';
+            }, 500);
+            document.getElementById('top-bar').style.display = 'flex';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('display-name').textContent = gameState.user;
+            updateUI();
+        }
+
+        function saveGame() {
+            localStorage.setItem('OVA_Redox_G10', JSON.stringify(gameState));
+            updateUI();
+        }
+
+        function updateUI() {
+            // Progreso
+            let pct = (gameState.progress / gameState.totalItems) * 100;
+            if(pct > 100) pct = 100;
+            document.getElementById('progress-bar').style.width = pct + "%";
+
+            // Nivel
+            let lvl = levels[0];
+            for(let l of levels) {
+                if(pct >= l.min) lvl = l;
+            }
+            document.getElementById('badge-sym').textContent = lvl.s;
+            document.getElementById('badge-num').textContent = lvl.n;
+        }
+
+        // --- LÓGICA PREGUNTAS ---
+
+        // MCQ Pre-saberes
+        window.checkMCQ = function(id, option, isCorrect) {
+            if(gameState.answers[id]) return;
+
+            const fb = document.getElementById('fb-' + id);
+            fb.style.display = 'block';
+            if(isCorrect) {
+                fb.className = 'feedback correct';
+                fb.innerHTML = "<strong>¡Correcto!</strong> Tienes buena base.";
+                gameState.score += 2;
+            } else {
+                fb.className = 'feedback incorrect';
+                fb.innerHTML = "<strong>Incorrecto.</strong> No te preocupes, lo aprenderemos hoy.";
+            }
+            gameState.answers[id] = option;
+            gameState.progress++;
+            saveGame();
+        }
+
+        // Actividades Cuaderno
+        window.verifyNotebook = function(id) {
+            const txt = document.getElementById(id).value.trim();
+            if(txt.length < 2) {
+                alert("Escribe algo válido antes de verificar.");
+                return;
+            }
+            if(!gameState.answers[id]) {
+                gameState.answers[id] = txt;
+                gameState.progress++;
+                gameState.score += 1;
+                alert("Actividad registrada. ¡Buen trabajo!");
+                saveGame();
+            } else {
+                alert("Ya registraste esta actividad.");
+            }
+        }
+
+        // ICFES
+        window.checkICFES = function(option) {
+            if(gameState.answers['icfes']) return;
+            const fb = document.getElementById('fb-icfes');
+            fb.style.display = 'block';
+
+            if(option === 'b') {
+                fb.className = 'feedback correct';
+                fb.innerHTML = "<strong>¡Excelente! (Indagar)</strong><br>Entendiste el concepto de 'Ánodo de Sacrificio'. El Zinc se ofrece voluntariamente (es más reactivo) para oxidarse primero, salvando al hierro.";
+                gameState.score += 5;
+            } else {
+                fb.className = 'feedback incorrect';
+                let reason = "";
+                if(option === 'a') reason = "No es solo una barrera física; es una protección química activa.";
+                if(option === 'c') reason = "La salinidad no desaparece.";
+                if(option === 'd') reason = "La transmutación de elementos no ocurre así.";
+                fb.innerHTML = "<strong>Incorrecto.</strong> " + reason;
+            }
+            gameState.answers['icfes'] = option;
+            gameState.progress++;
+            saveGame();
+        }
+
+        // Final MCQ
+        window.checkFinalMCQ = function(id, option, isCorrect) {
+            if(gameState.answers[id]) return;
+            const btn = event.target;
+            if(isCorrect) {
+                btn.style.backgroundColor = "var(--success)";
+                btn.style.color = "white";
+                gameState.score += 3;
+            } else {
+                btn.style.backgroundColor = "var(--error)";
+                btn.style.color = "white";
+            }
+            gameState.answers[id] = option;
+            gameState.progress++;
+            saveGame();
+        }
+
+        // Open Questions (10-15 Words)
+        window.validateOpen = function(id) {
+            const txt = document.getElementById(id).value.trim();
+            const words = txt.split(/\s+/).filter(w => w.length > 0).length;
+            const fb = document.getElementById('fb-' + id);
+            fb.style.display = 'block';
+
+            if(words >= 10 && words <= 15) {
+                fb.className = 'feedback correct';
+                fb.innerHTML = `<strong>Perfecto.</strong> ${words} palabras. Respuesta válida.`;
+                if(!gameState.answers[id]) {
+                    gameState.answers[id] = txt;
+                    gameState.progress++;
+                    gameState.score += 3;
+                    saveGame();
+                }
+            } else {
+                fb.className = 'feedback incorrect';
+                fb.innerHTML = `Tienes <strong>${words}</strong> palabras. Debes usar entre 10 y 15 palabras exactas.`;
+            }
+        }
+
+        // Download
+        window.downloadResults = function() {
+            let t = `REPORTE: REDOX G10\nEstudiante: ${gameState.user}\nPuntaje: ${gameState.score}\n\nRESPUESTAS:\n`;
+            for(let [k,v] of Object.entries(gameState.answers)) t += `[${k}]: ${v}\n`;
+            
+            const b = new Blob([t],{type:'text/plain'});
+            const u = window.URL.createObjectURL(b);
+            const a = document.createElement('a');
+            a.href = u;
+            a.download = `Redox_${gameState.user.replace(/\s+/g,'_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+</html>

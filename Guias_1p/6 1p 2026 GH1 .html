@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ritmo Rural: La Materia (6°)</title>
+    <style>
+        /* --- CORE VISUALS (NEON SCIENCE) --- */
+        :root {
+            --bg-color: #050510;
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --neon-yellow: #f3f315;
+            --glass: rgba(255, 255, 255, 0.05);
+            --text: #ffffff;
+        }
+
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', sans-serif; }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        #game-app {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            border-left: 1px solid #333;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HUD */
+        .hud {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: linear-gradient(to bottom, #000 0%, transparent 100%);
+            z-index: 20;
+        }
+
+        /* --- ARQUITECTURA DE CARRILES (FLEXBOX STRICT) --- */
+        #lanes-container {
+            flex: 1; /* Ocupa todo el espacio vertical disponible */
+            display: flex; /* Divide en columnas */
+            width: 100%;
+            position: relative;
+        }
+
+        .lane {
+            flex: 1; /* 33.33% exacto */
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative; /* Contexto para las notas absolutas */
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .lane:last-child { border-right: none; }
+
+        /* META (Target Line) */
+        #target-line {
+            position: absolute;
+            bottom: 15%; /* Zona de impacto ideal */
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--neon-blue);
+            box-shadow: 0 0 15px var(--neon-blue);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* --- NOTAS (OPCIONES) --- */
+        .note {
+            position: absolute;
+            width: 90%; /* Margen respirable */
+            left: 5%;   /* Centrado matemático en el carril */
+            height: 70px;
+            background: rgba(20, 20, 30, 0.95);
+            border: 2px solid var(--neon-blue);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.85rem;
+            padding: 5px;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+            z-index: 10;
+            font-weight: bold;
+        }
+
+        /* --- PANTALLAS (ESTADOS) --- */
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            text-align: center;
+            padding: 20px;
+        }
+        .active { display: flex; }
+
+        /* LOADING & READING */
+        .screen h1 { color: var(--neon-blue); margin-bottom: 10px; }
+        .screen h2 { color: var(--text); font-weight: normal; font-size: 1.2rem; line-height: 1.5; }
+        .countdown { font-size: 5rem; color: var(--neon-green); margin-top: 30px; font-weight: 800; }
+        
+        .btn-start {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: transparent;
+            border: 2px solid var(--neon-pink);
+            color: var(--neon-pink);
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
+
+        /* ZONA TÁCTIL (CONTROLES) */
+        #touch-controls {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 15%;
+            display: flex;
+            z-index: 40;
+        }
+        .touch-pad {
+            flex: 1;
+            border-right: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.02);
+        }
+        .touch-pad:active { background: rgba(0, 243, 255, 0.2); }
+
+        /* MODAL FEEDBACK */
+        #feedback-modal {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #151525;
+            border: 2px solid var(--neon-pink);
+            padding: 30px;
+            border-radius: 20px;
+            width: 85%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-app">
+    <div class="hud">
+        <span id="score">Puntos: 0.0</span>
+        <span id="level">1 / 10</span>
+    </div>
+
+    <div id="screen-loading" class="screen active">
+        <h1>RITMO RURAL</h1>
+        <p style="color: #aaa;">Grado 6° - ¿De qué está hecho mi mundo?</p>
+        <p style="margin-top: 20px; font-size: 0.9rem;">
+            Toca el carril correcto cuando la respuesta<br>pase por la línea azul.
+        </p>
+        <button class="btn-start" onclick="Game.init()">INICIAR RECORRIDO</button>
+    </div>
+
+    <div id="screen-reading" class="screen">
+        <h2 id="question-text">Pregunta...</h2>
+        <div class="countdown" id="reading-timer">12</div>
+        <p style="color:#666; margin-top:10px;">Lee atentamente...</p>
+    </div>
+
+    <div id="screen-ended" class="screen">
+        <h1>RESULTADO</h1>
+        <div id="final-score" style="font-size: 4rem; color: var(--neon-blue);">0.0</div>
+        <h3 id="final-rank" style="color: var(--neon-green); font-size: 1.5rem;">Rango</h3>
+        <button class="btn-start" onclick="location.reload()">VOLVER A JUGAR</button>
+    </div>
+
+    <div id="lanes-container">
+        <div class="lane" id="lane-0"></div>
+        <div class="lane" id="lane-1"></div>
+        <div class="lane" id="lane-2"></div>
+        
+        <div id="target-line"></div>
+    </div>
+
+    <div id="touch-controls">
+        <div class="touch-pad" onclick="Game.checkHit(0)"></div>
+        <div class="touch-pad" onclick="Game.checkHit(1)"></div>
+        <div class="touch-pad" onclick="Game.checkHit(2)"></div>
+    </div>
+
+    <div id="feedback-modal">
+        <div class="modal-content">
+            <h2 style="color: var(--neon-pink);">¡OJO!</h2>
+            <p id="feedback-msg" style="margin: 20px 0; line-height: 1.5;">Explicación...</p>
+            <button class="btn-start" style="padding: 10px 30px; margin-top: 10px;" onclick="Game.resume()">ENTENDIDO</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * ARQUITECTURA: SINGLETON GAME MANAGER
+ * LÓGICA: Grado 6 (Tiempos largos, velocidad baja)
+ */
+
+const CONFIG = {
+    GRADO: 6,
+    READING_TIME: 12, // Segundos para leer
+    FALL_SPEED: 60,   // Píxeles por segundo (Lento)
+    TARGET_Y_PERCENT: 85 // Porcentaje de altura donde está la meta
+};
+
+// --- CONTENIDO: QUÍMICA RURAL ---
+const QUESTIONS = [
+    {
+        q: "En la vereda Pueblo Rico, don Pedro usa una barra de HIERRO para sembrar. ¿Qué es el hierro?",
+        opts: ["Elemento (Sustancia Pura)", "Mezcla Heterogénea", "Compuesto"],
+        correct: 0,
+        fb: "El Hierro (Fe) es un elemento puro de la tabla periódica. No está mezclado con nada."
+    },
+    {
+        q: "La SAL (NaCl) que le echamos al aguacate está formada por Sodio y Cloro unidos. Es un:",
+        opts: ["Elemento", "Compuesto", "Mezcla"],
+        correct: 1,
+        fb: "Es un COMPUESTO porque une químicamente dos elementos diferentes (Sodio + Cloro)."
+    },
+    {
+        q: "Al lavar el café, la pulpa flota y el grano se hunde en el agua sucia. Vemos todas las partes. Es una:",
+        opts: ["Sustancia Pura", "Mezcla Homogénea", "Mezcla Heterogénea"],
+        correct: 2,
+        fb: "Heterogénea: Puedes ver las fases (pulpa, agua, tierra) a simple vista."
+    },
+    {
+        q: "El cable de luz de la finca tiene COBRE por dentro. Su símbolo químico es:",
+        opts: ["Co", "Cu", "Cr"],
+        correct: 1,
+        fb: "El símbolo del Cobre es Cu (viene del latín Cuprum)."
+    },
+    {
+        q: "El AGUA ($H_2O$) de la quebrada está formada por Hidrógeno y Oxígeno. Es un:",
+        opts: ["Compuesto", "Elemento", "Mezcla"],
+        correct: 0,
+        fb: "Es un Compuesto. Dos átomos de hidrógeno y uno de oxígeno unidos."
+    },
+    {
+        q: "Si mezclas agua y aceite del tractor, se forman dos capas separadas. Esto es:",
+        opts: ["Homogéneo", "Heterogéneo", "Elemento"],
+        correct: 1,
+        fb: "Heterogéneo. Las sustancias no se unen y se ven claramente separadas."
+    },
+    {
+        q: "El OXÍGENO que respiras en el campo es vital. Es un:",
+        opts: ["Compuesto", "Mezcla", "Elemento"],
+        correct: 2,
+        fb: "El Oxígeno (O) es un elemento fundamental."
+    },
+    {
+        q: "Don Luis encontró una pepita de ORO en el río. El oro puro es un:",
+        opts: ["Elemento", "Compuesto", "Plástico"],
+        correct: 0,
+        fb: "El Oro (Au) es un elemento metálico puro."
+    },
+    {
+        q: "El aire puro de la montaña tiene varios gases mezclados pero se ve transparente y uniforme. Es:",
+        opts: ["Mezcla Heterogénea", "Mezcla Homogénea", "Sólido"],
+        correct: 1,
+        fb: "Homogénea (o Solución). Aunque hay varios gases, se ve todo igual."
+    },
+    {
+        q: "Para hacer panela, hervimos jugo de caña. El vapor que sale es AGUA ($H_2O$). El agua es:",
+        opts: ["Elemento", "Compuesto", "Mezcla"],
+        correct: 1,
+        fb: "El agua es un compuesto químico ($H_2O$)."
+    }
+];
+
+const STATE = { LOADING: 0, READING: 1, PLAYING: 2, PAUSED: 3, ENDED: 4 };
+
+const Game = {
+    state: STATE.LOADING,
+    qIndex: 0,
+    score: 0,
+    notes: [], // Array de objetos {el, y, lane, active, isCorrect}
+    lastTime: 0,
+    animId: null,
+
+    init() {
+        this.qIndex = 0;
+        this.score = 0;
+        this.startReading();
+    },
+
+    startReading() {
+        if (this.qIndex >= QUESTIONS.length) {
+            this.endGame();
+            return;
+        }
+
+        this.state = STATE.READING;
+        // UI Update
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-reading').classList.add('active');
+        
+        // Cargar Pregunta
+        const q = QUESTIONS[this.qIndex];
+        document.getElementById('question-text').innerText = q.q;
+        document.getElementById('level').innerText = `${this.qIndex + 1} / 10`;
+        
+        // Limpiar carriles visualmente
+        document.querySelectorAll('.lane').forEach(l => l.innerHTML = '');
+
+        // Timer
+        let time = CONFIG.READING_TIME;
+        const timerEl = document.getElementById('reading-timer');
+        timerEl.innerText = time;
+        
+        const interval = setInterval(() => {
+            if (this.state !== STATE.READING) { clearInterval(interval); return; }
+            time--;
+            timerEl.innerText = time;
+            if (time <= 0) {
+                clearInterval(interval);
+                this.startPlaying();
+            }
+        }, 1000);
+    },
+
+    startPlaying() {
+        this.state = STATE.PLAYING;
+        document.getElementById('screen-reading').classList.remove('active');
+        this.createNotes();
+        this.lastTime = performance.now();
+        this.loop();
+    },
+
+    createNotes() {
+        this.notes = [];
+        const q = QUESTIONS[this.qIndex];
+        
+        q.opts.forEach((optText, laneIdx) => {
+            // Crear elemento DOM
+            const el = document.createElement('div');
+            el.className = 'note';
+            el.innerText = optText;
+            
+            // Inyectar en el carril correspondiente (ANTI-DESFASE)
+            document.getElementById(`lane-${laneIdx}`).appendChild(el);
+            
+            // Estado lógico
+            this.notes.push({
+                el: el,
+                lane: laneIdx,
+                y: -100, // Empieza arriba fuera de vista
+                isCorrect: laneIdx === q.correct,
+                active: true
+            });
+        });
+    },
+
+    loop(timestamp) {
+        if (this.state !== STATE.PLAYING) return;
+        if (!timestamp) timestamp = performance.now();
+        
+        const deltaTime = (timestamp - this.lastTime) / 1000;
+        this.lastTime = timestamp;
+
+        // Actualizar posiciones
+        const laneHeight = document.getElementById('lanes-container').clientHeight;
+        const targetY = laneHeight * (CONFIG.TARGET_Y_PERCENT / 100);
+
+        let activeNotesCount = 0;
+
+        this.notes.forEach(note => {
+            if (note.active) {
+                activeNotesCount++;
+                note.y += CONFIG.FALL_SPEED * deltaTime;
+                note.el.style.top = `${note.y}px`;
+
+                // Detectar si se pasó de largo (Miss)
+                if (note.y > laneHeight) {
+                    note.active = false;
+                    note.el.style.opacity = 0.5;
+                    if (note.isCorrect) {
+                        this.triggerFeedback("¡Se escapó la respuesta correcta! Debes ser más rápido.");
+                    }
+                }
+            }
+        });
+
+        // Si todas las notas pasaron y no perdimos, pasar siguiente (fallback)
+        if (activeNotesCount === 0 && this.state === STATE.PLAYING) {
+            this.qIndex++;
+            this.startReading();
+            return;
+        }
+
+        this.animId = requestAnimationFrame((t) => this.loop(t));
+    },
+
+    checkHit(laneIdx) {
+        if (this.state !== STATE.PLAYING) return;
+
+        // Buscar nota activa en ese carril
+        const laneHeight = document.getElementById('lanes-container').clientHeight;
+        const targetY = laneHeight * (CONFIG.TARGET_Y_PERCENT / 100);
+        const tolerance = 80; // Píxeles de margen
+
+        const note = this.notes.find(n => n.lane === laneIdx && n.active);
+
+        if (note) {
+            // Verificar si está cerca de la línea
+            if (Math.abs(note.y - targetY) < tolerance || (note.y > targetY - 100 && note.y < targetY + 50)) {
+                if (note.isCorrect) {
+                    // ACIERTO
+                    this.score += 0.5;
+                    document.getElementById('score').innerText = `Puntos: ${this.score.toFixed(1)}`;
+                    // Feedback visual rápido
+                    note.el.style.background = 'var(--neon-green)';
+                    note.el.style.boxShadow = '0 0 20px var(--neon-green)';
+                    setTimeout(() => {
+                        this.qIndex++;
+                        this.startReading();
+                    }, 200);
+                } else {
+                    // ERROR
+                    this.triggerFeedback(QUESTIONS[this.qIndex].fb);
+                }
+            }
+        }
+    },
+
+    triggerFeedback(msg) {
+        this.state = STATE.PAUSED;
+        cancelAnimationFrame(this.animId);
+        document.getElementById('feedback-modal').style.display = 'flex';
+        document.getElementById('feedback-msg').innerText = msg;
+    },
+
+    resume() {
+        document.getElementById('feedback-modal').style.display = 'none';
+        this.qIndex++; // Pasar a la siguiente aunque falle (para no frustrar)
+        this.startReading();
+    },
+
+    endGame() {
+        this.state = STATE.ENDED;
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-ended').classList.add('active');
+        document.getElementById('final-score').innerText = this.score.toFixed(1);
+        
+        let rank = "";
+        if (this.score < 3.0) rank = "Aprendiz (Necesita Práctica)";
+        else if (this.score < 4.0) rank = "Capataz (Sólido)";
+        else if (this.score < 4.6) rank = "Ingeniero (Muy bueno)";
+        else rank = "Maestro Rural (Excelencia)";
+        
+        document.getElementById('final-rank').innerText = rank;
+    }
+};
+
+// --- PRELOAD & SAFETY ---
+window.addEventListener('load', () => {
+    console.log("Sistema cargado. Grado 6. Modo Rural.");
+});
+
+</script>
+</body>
+</html>

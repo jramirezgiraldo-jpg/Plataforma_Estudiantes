@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Nomenclatura Integral - El Notario Químico</title>
+    <style>
+        :root {
+            --primary: #0d47a1;
+            --secondary: #1976d2;
+            --accent: #ff6f00;
+            --bg: #f0f2f5;
+            --text: #263238;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.7; margin: 0; padding: 0;
+        }
+
+        /* Login */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--primary), #000);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 40px; border-radius: 12px;
+            text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        /* Header */
+        header {
+            background: var(--white);
+            padding: 15px 30px;
+            position: sticky; top: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 900; display: none;
+        }
+
+        .header-content {
+            max-width: 1100px; margin: auto;
+            display: grid; grid-template-columns: 1.5fr 3fr 1fr;
+            align-items: center; gap: 20px;
+        }
+
+        .progress-container {
+            height: 14px; background: #e0e0e0; border-radius: 7px; overflow: hidden;
+        }
+
+        #progress-bar {
+            height: 100%; background: var(--secondary); width: 0%; transition: 0.6s;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1100px; margin: 30px auto; padding: 50px;
+            background: var(--white); border-radius: 8px; display: none;
+        }
+
+        .activity-card {
+            background: #e3f2fd; border-left: 8px solid var(--primary);
+            padding: 25px; margin: 35px 0; border-radius: 4px;
+        }
+
+        .table-chem {
+            width: 100%; border-collapse: collapse; margin: 25px 0;
+        }
+
+        .table-chem th, .table-chem td {
+            border: 1px solid #cfd8dc; padding: 14px; text-align: left;
+        }
+
+        .table-chem th { background: var(--primary); color: white; }
+
+        .btn {
+            background: var(--primary); color: white; border: none;
+            padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: 600;
+        }
+
+        .btn:hover { background: var(--secondary); }
+
+        .icfes-box {
+            background: #fff8e1; padding: 35px; border-radius: 10px; border: 2px solid var(--accent);
+        }
+
+        .feedback { display: none; margin-top: 20px; padding: 20px; border-radius: 8px; }
+
+        textarea { width: 100%; min-height: 80px; margin-top: 10px; border-radius: 6px; padding: 12px; border: 1px solid #b0bec5; }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>Oficina del Notario Químico</h2>
+            <p>Identifícate con tus nombres y apellidos:</p>
+            <input type="text" id="user-fullname" placeholder="Nombre completo" style="padding: 12px; width: 300px;"><br><br>
+            <button class="btn" onclick="initOVA()">Iniciar Trámites</button>
+        </div>
+    </div>
+
+    <header id="top-nav">
+        <div class="header-content">
+            <div><b>Notario:</b> <span id="nav-user"></span></div>
+            <div class="progress-container"><div id="progress-bar"></div></div>
+            <div id="status-pts">Rango: <span id="pts-display">0</span> (<span id="el-tag">H</span>)</div>
+        </div>
+    </header>
+
+    <div class="container" id="main-view">
+        <section>
+            <h1>Nomenclatura Integral: El Lenguaje de la Verdad</h1>
+            <h3>Objetivo de Aprendizaje</h3>
+            <p>Aplicar las normas internacionales de la IUPAC para nombrar y formular sistemas químicos complejos (ácidos, bases, sales y óxidos), reconociendo la importancia de la precisión y el respeto por las normas en la comunicación científica.</p>
+        </section>
+
+        <section class="activity-card">
+            <h3>Examen de Idoneidad (Pre-saberes)</h3>
+            <div id="pre-quiz">
+                <p>1. ¿Cuál es el estado de oxidación más común del Oxígeno en la mayoría de compuestos?</p>
+                <input type="radio" name="pq1" value="0"> +1 | <input type="radio" name="pq1" value="1"> -2 | <input type="radio" name="pq1" value="0"> 0
+                <p>2. Un compuesto formado por un metal y oxígeno se denomina:</p>
+                <input type="radio" name="pq2" value="1"> Óxido básico | <input type="radio" name="pq2" value="0"> Hidrácido | <input type="radio" name="pq2" value="0"> Sal binaria
+                <p>3. ¿Qué significan las siglas IUPAC?</p>
+                <input type="radio" name="pq3" value="0"> Instituto de Unificación de Pesos y Átomos | <input type="radio" name="pq3" value="1"> Unión Internacional de Química Pura y Aplicada | <input type="radio" name="pq3" value="0"> Institución de Universidades para el Progreso Académico
+            </div>
+            <button class="btn" style="margin-top:20px;" onclick="checkPre()">Validar Inicio</button>
+            <div id="pre-fb" class="feedback"></div>
+        </section>
+
+        <section>
+            <h2>Inducción: El Peso de un Nombre</h2>
+            <p>
+                Imagina que entras a una farmacia y pides una sustancia para aliviar un dolor de estómago, pero el farmacéutico te entrega un frasco que dice simplemente "Polvo Blanco". ¿Lo tomarías? Seguramente no. En el mundo de la química, el nombre de una sustancia es su acta de nacimiento, su identidad y su garantía de seguridad. La nomenclatura no es solo un conjunto de reglas caprichosas para memorizar; es el lenguaje universal que permite que un científico en Colombia, uno en Francia (como los de la Universidad de Reims que mencionamos antes) y uno en Japón entiendan exactamente de qué están hablando.
+            </p>
+            <p>
+                La IUPAC es el organismo encargado de legislar este lenguaje. Actúa como una notaría global. Cuando un químico descubre o sintetiza una fórmula, debe pasar por el proceso de "notariado": asignar un nombre que describa con exactitud cuántos átomos hay y cómo están conectados. Si un notario comete un error en una escritura, alguien puede perder una casa; si un químico comete un error en la nomenclatura, se pueden perder vidas. Por ejemplo, confundir el Hipoclorito de Sodio (blanqueador) con el Cloruro de Sodio (sal de mesa) sería un error fatal nacido de la falta de respeto por las normas.
+            </p>
+
+            
+
+            <p>
+                Al convertirte en un "Notario Químico", asumes la responsabilidad de la verdad. Cada prefijo (mono-, di-, tri-) y cada sufijo (-ico, -oso, -ato, -ito) es una pieza de evidencia. En esta unidad, aprenderemos que los sistemas complejos, como las sales oxisales y los ácidos polipróticos, requieren una atención al detalle minuciosa. Respetar estas normas es una forma de respeto por la vida y por la verdad científica. La honestidad en el reporte de una fórmula es lo que permite que la ciencia sea confiable y que el progreso humano sea seguro.
+            </p>
+
+            <div class="activity-card">
+                <h4>Actividad 1 (Cuaderno):</h4>
+                <p>Contesta: ¿Por qué crees que la IUPAC prefiere nombres sistemáticos sobre los nombres comunes (como "cal viva" o "vitriolo")?</p>
+                <button class="btn" onclick="saveActivity(1, 0.5)">Registrar en Bitácora</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 2 (Cuaderno):</h4>
+                <p>Dibuja un esquema que represente la "Notaría Química", donde entren fórmulas y salgan nombres oficiales IUPAC.</p>
+                <button class="btn" onclick="saveActivity(2, 0.5)">Registrar en Bitácora</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 3 (Cuaderno):</h4>
+                <p>Realiza una tabla comparativa en tu cuaderno entre la Nomenclatura Tradicional, la Stock y la Sistemática. Pon un ejemplo de un mismo óxido nombrado de las tres formas.</p>
+                <button class="btn" onclick="saveActivity(3, 1.0)">Registrar en Bitácora</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 4 (Cuaderno):</h4>
+                <p>Mapa Mental: Los peligros de la mala comunicación en química. Incluye ramas sobre salud, industria y medio ambiente.</p>
+                <button class="btn" onclick="saveActivity(4, 0.5)">Registrar en Bitácora</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 5 (Cuaderno):</h4>
+                <p>Escribe un compromiso ético de 5 renglones sobre la importancia de decir la verdad y seguir las normas en tus informes de laboratorio.</p>
+                <button class="btn" onclick="saveActivity(5, 0.5)">Registrar en Bitácora</button>
+            </div>
+        </section>
+
+        <section class="icfes-box">
+            <h3>Pregunta de Selección Múltiple - Competencia: Indagar</h3>
+            <p>Un analista recibe una muestra de un ácido cuya fórmula es H2SO4. Al realizar una prueba de laboratorio, descubre que al reaccionar con Hidróxido de Sodio (NaOH), el ácido puede entregar uno o sus dos hidrógenos, formando dos sales distintas: NaHSO4 y Na2SO4.</p>
+            
+            
+
+            <p><b>Pregunta:</b> Si el analista debe registrar en el libro de actas el nombre correcto de la sal NaHSO4 siguiendo la norma para sales ácidas, ¿cuál de las siguientes opciones representa la indagación correcta?</p>
+            
+            <input type="radio" name="icfes" value="a"> A) Sulfuro de sodio hidratado, porque tiene hidrógeno en su estructura.<br>
+            <input type="radio" name="icfes" value="b"> B) Sulfato ácido de sodio, porque proviene de la sustitución parcial de los hidrógenos del ácido sulfúrico.<br>
+            <input type="radio" name="icfes" value="c"> C) Óxido de azufre y sodio, ya que contiene oxígeno en su composición química.<br>
+            <input type="radio" name="icfes" value="d"> D) Hidruro de sulfato sódico, porque el hidrógeno actúa como un metal en esta reacción.<br>
+            
+            <button class="btn" style="margin-top:20px;" onclick="checkIcfes()">Sellar Acta</button>
+            <div id="icfes-fb" class="feedback"></div>
+        </section>
+
+        <section>
+            <h2>Deducción: De la Regla al Compuesto Complejo</h2>
+            <p>
+                A partir de las reglas básicas que hemos estudiado, podemos deducir el nombre de compuestos mucho más intrincados. Si sabemos que un ácido oxácido termina en "-ico" cuando el elemento central usa su mayor estado de oxidación, podemos deducir con seguridad que el H2SO4 es el ácido sulfúrico (Azufre con +6). De esta misma lógica, se deduce que al perder sus hidrógenos, el sufijo cambia de "-ico" a "-ato". Por lo tanto, cualquier sal que provenga de este ácido será un "Sulfato". Esta coherencia deductiva es lo que hace que la química sea una ciencia exacta.
+            </p>
+            <p>
+                Esta capacidad deductiva es vital para el "Juego de Roles: El Notario Químico". Cuando te enfrentas a una fórmula como el Fe2(SO4)3, no necesitas adivinar. Aplicas la deducción: el grupo sulfato (SO4) tiene carga -2, hay tres de ellos (total -6), por lo tanto, los dos hierros deben sumar +6, lo que significa que cada Hierro actúa con +3. Siguiendo la norma Stock, deduces el nombre: Sulfato de hierro (III). La verdad del nombre emerge de la aplicación rigurosa de la lógica matemática aplicada a la materia.
+            </p>
+
+            <table class="table-chem">
+                <caption>Tabla 1: Guía Deductiva para Oxisales y Ácidos</caption>
+                <tr><th>Ácido de Origen</th><th>Nombre del Ácido</th><th>Anión Resultante</th><th>Ejemplo de Sal</th></tr>
+                <tr><td>HClO4</td><td>Ácido perclórico</td><td>Perclorato</td><td>KClO4 (Perclorato de potasio)</td></tr>
+                <tr><td>H2CO3</td><td>Ácido carbónico</td><td>Carbonato</td><td>CaCO3 (Carbonato de calcio)</td></tr>
+                <tr><td>HNO2</td><td>Ácido nitroso</td><td>Nitrito</td><td>NaNO2 (Nitrito de sodio)</td></tr>
+            </table>
+
+            <div class="activity-card">
+                <h4>Actividad 6 (Cuaderno):</h4>
+                <p>Deduce y escribe los estados de oxidación de todos los elementos en: KMnO4 y K2Cr2O7.</p>
+                <button class="btn" onclick="saveActivity(6, 0.5)">Registrar en Bitácora</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 7 (Cuaderno):</h4>
+                <p>Dibuja la estructura de la sal de mesa (NaCl) y de una sal compleja como el Sulfato de Cobre (CuSO4). Nota las diferencias visuales.</p>
+                <button class="btn" onclick="saveActivity(7, 0.5)">Registrar en Bitácora</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 8 (Cuaderno):</h4>
+                <p>Tabla Comparativa: Escribe 5 fórmulas de ácidos y deduce el nombre de sus correspondientes sales (cambiando -oso por -ito e -ico por -ato).</p>
+                <button class="btn" onclick="saveActivity(8, 1.0)">Registrar en Bitácora</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 9 (Cuaderno):</h4>
+                <p>Mapa Conceptual: Los pasos lógicos que sigue un notario químico para nombrar una sal oxisal desde su fórmula.</p>
+                <button class="btn" onclick="saveActivity(9, 1.0)">Registrar en Bitácora</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 10 (Cuaderno):</h4>
+                <p>Contesta: ¿Por qué seguir las normas IUPAC es un acto de respeto hacia la comunidad científica global?</p>
+                <button class="btn" onclick="saveActivity(10, 0.5)">Registrar en Bitácora</button>
+            </div>
+        </section>
+
+        <section class="icfes-box" style="background: white;">
+            <h2>Taller de Certificación Notarial</h2>
+            <div id="final-exam">
+                <p><b>1. El nombre IUPAC Stock para el compuesto FeO es:</b></p>
+                <input type="radio" name="fe1" value="0"> Óxido de hierro | <input type="radio" name="fe1" value="1"> Óxido de hierro (II) | <input type="radio" name="fe1" value="0"> Óxido férrico
+                <p><b>2. La fórmula del ácido clorhídrico es:</b></p>
+                <input type="radio" name="fe2" value="1"> HCl | <input type="radio" name="fe2" value="0"> HClO | <input type="radio" name="fe2" value="0"> HClO3
+                <p><b>3. En la nomenclatura tradicional, el sufijo para el menor estado de oxidación (de dos posibles) es:</b></p>
+                <input type="radio" name="fe3" value="0"> -ico | <input type="radio" name="fe3" value="1"> -oso | <input type="radio" name="fe3" value="0"> -ato
+                <p><b>4. El compuesto LiOH se clasifica como un:</b></p>
+                <input type="radio" name="fe4" value="0"> Ácido | <input type="radio" name="fe4" value="1"> Hidróxido | <input type="radio" name="fe4" value="0"> Óxido ácido
+                <p><b>5. Las sales haloideas (binarias) se caracterizan por:</b></p>
+                <input type="radio" name="fe5" value="0"> Tener oxígeno | <input type="radio" name="fe5" value="1"> No tener oxígeno en su estructura | <input type="radio" name="fe5" value="0"> Tener siempre hidrógeno
+            </div>
+
+            <h3>Preguntas Abiertas (10 a 15 palabras)</h3>
+            <p>A1. ¿Cuál es la función principal de la IUPAC en la ciencia moderna?</p>
+            <textarea id="ans1"></textarea> <button class="btn" onclick="verifyText('ans1')">Validar</button>
+            
+            <p>A2. ¿Por qué es fundamental la precisión al nombrar un reactivo químico?</p>
+            <textarea id="ans2"></textarea> <button class="btn" onclick="verifyText('ans2')">Validar</button>
+
+            <div style="margin-top:50px; text-align: center;">
+                <button class="btn" style="background:var(--accent); font-size: 1.2em;" onclick="exportData()">Descargar Acta de Resultados (.txt)</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let session = {
+            name: "",
+            progress: 0,
+            score: 0,
+            completed: [],
+            openText: {}
+        };
+
+        const chemTable = ["H", "He", "Li", "Be", "B", "C"];
+
+        function initOVA() {
+            const name = document.getElementById('user-fullname').value.trim();
+            if (name.length < 6) return alert("Ingresa tu nombre y apellido completo.");
+            
+            session.name = name;
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('top-nav').style.display = 'block';
+            document.getElementById('main-view').style.display = 'block';
+            document.getElementById('nav-user').innerText = name;
+            
+            loadLocal();
+            refreshUI();
+        }
+
+        function refreshUI() {
+            document.getElementById('progress-bar').style.width = session.progress + "%";
+            document.getElementById('pts-display').innerText = session.score.toFixed(1);
+            let idx = Math.min(Math.floor(session.score), 5);
+            document.getElementById('el-tag').innerText = chemTable[idx];
+            localStorage.setItem('ova_nomen_gr10', JSON.stringify(session));
+        }
+
+        function saveActivity(id, p) {
+            if (!session.completed.includes(id)) {
+                session.completed.push(id);
+                session.progress += 8;
+                session.score += p;
+                if (session.progress > 100) session.progress = 100;
+                alert("✓ Actividad " + id + " sellada por el notario.");
+                refreshUI();
+            } else { alert("Este trámite ya fue realizado."); }
+        }
+
+        function checkPre() {
+            const fb = document.getElementById('pre-fb');
+            fb.style.display = "block";
+            fb.style.background = "#e3f2fd";
+            fb.innerHTML = "<b>Revisión Notarial:</b> 1. El oxígeno suele ser -2. 2. Metal + Oxígeno = Óxido básico. 3. IUPAC es la autoridad global. ¡Puntos iniciales concedidos!";
+            session.score += 0.2;
+            refreshUI();
+        }
+
+        function checkIcfes() {
+            const val = document.querySelector('input[name="icfes"]:checked')?.value;
+            const fb = document.getElementById('icfes-fb');
+            fb.style.display = "block";
+            if (val === 'b') {
+                fb.style.background = "#c8e6c9";
+                fb.innerHTML = "<b>¡Sello de Verdad!</b> Indagaste correctamente: al quedar un hidrógeno, la sal es 'ácida'. Proviene del sulfúrico, por lo que es un 'Sulfato'. Las otras opciones son incorrectas porque no son hidruros ni óxidos simples.";
+                session.score += 1.0;
+            } else {
+                fb.style.background = "#ffcdd2";
+                fb.innerHTML = "<b>Error en el Acta.</b> Revisa la teoría de sales ácidas y el origen del ácido sulfúrico.";
+            }
+            refreshUI();
+        }
+
+        function verifyText(id) {
+            const text = document.getElementById(id).value.trim();
+            const words = text.split(/\s+/);
+            if (words.length >= 10 && words.length <= 15) {
+                alert("✓ Texto validado por el sistema.");
+                session.openText[id] = text;
+                session.score += 0.4;
+                refreshUI();
+            } else { alert("La norma exige entre 10 y 15 palabras. Tienes: " + words.length); }
+        }
+
+        function loadLocal() {
+            const data = localStorage.getItem('ova_nomen_gr10');
+            if (data) {
+                const p = JSON.parse(data);
+                if (p.name === session.name) session = p;
+            }
+        }
+
+        function exportData() {
+            let out = `ACTA DE RESULTADOS - NOMENCLATURA 10\n`;
+            out += `Notario Químico: ${session.name}\n`;
+            out += `Calificación: ${session.score.toFixed(2)}/5.0\n`;
+            out += `Progreso Total: ${session.progress}%\n\n`;
+            out += `Declaraciones Abiertas:\n${JSON.stringify(session.openText, null, 2)}`;
+            
+            const blob = new Blob([out], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Acta_${session.name}.txt`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA Química Grado 9: Teoría de Lewis y pH</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #27ae60;
+            --accent-color: #e67e22;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --gold: #f1c40f;
+            --silver: #bdc3c7;
+            --iron: #95a5a6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding-bottom: 50px;
+        }
+
+        /* --- Header & Sticky Bar --- */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .user-info {
+            font-weight: bold;
+        }
+
+        .score-board {
+            font-size: 1.2rem;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* --- Login Section --- */
+        #login-screen {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .login-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #219150;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* --- Main Content --- */
+        #main-content {
+            display: none; /* Hidden by default */
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin: 40px 0 20px;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .intro-text {
+            background: #e8f6f3;
+            padding: 15px;
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        /* --- Activity Cards --- */
+        .activity-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+
+        .activity-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .challenge-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border: 2px dashed #cbd5e0;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .sentence-challenge {
+            letter-spacing: normal;
+            font-weight: normal;
+            font-style: italic;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .feedback-msg {
+            margin-top: 10px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 50%;
+            font-weight: bold;
+            color: white;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            width: 40px;
+            height: 40px;
+            line-height: 30px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: none; /* Hidden initially */
+        }
+
+        .badge.au { background-color: var(--gold); border: 2px solid #d4ac0d; }
+        .badge.ag { background-color: var(--silver); border: 2px solid #95a5a6; }
+        .badge.fe { background-color: var(--iron); border: 2px solid #7f8c8d; }
+
+        .hidden { display: none !important; }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+            font-size: 0.8rem;
+            margin-top: 40px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <section id="login-screen">
+        <div class="login-card">
+            <h2>Acceso al OVA</h2>
+            <p>Por favor, ingresa tus datos para comenzar.</p>
+            <input type="text" id="fname" placeholder="Nombre" required>
+            <input type="text" id="lname" placeholder="Apellido" required>
+            <button onclick="login()">Ingresar</button>
+        </div>
+    </section>
+
+    <div id="app-interface" class="hidden">
+        <header>
+            <div class="user-info">
+                Estudiante: <span id="display-name"></span>
+            </div>
+            <div class="score-board">
+                Puntaje Total: <span id="global-score">0</span> pts
+            </div>
+        </header>
+
+        <div id="main-content">
+            <div class="intro-text">
+                <h3>Bienvenido al Módulo de Química (Grado 9)</h3>
+                <p><strong>Temas:</strong> Teoría de Lewis, Indicadores Naturales y Escala de pH/pOH.</p>
+                <p>Completa las actividades para ganar insignias de la Tabla Periódica. Tienes 3 intentos por actividad.</p>
+            </div>
+
+            <h2 class="section-title">Parte 1: Conceptos Clave (Anagramas)</h2>
+            <p style="text-align: center; margin-bottom: 20px;">Ordena las letras para descubrir el término químico oculto.</p>
+            <div id="anagrams-container"></div>
+
+            <h2 class="section-title">Parte 2: Lógica Química (Ordenar Frases)</h2>
+            <p style="text-align: center; margin-bottom: 20px;">Reconstruye las oraciones para que tengan sentido técnico.</p>
+            <div id="sentences-container"></div>
+            
+            <footer>
+                <p>Desarrollado para Grado 9 - Ciencias Naturales</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN Y DATOS ---
+        
+        // Algoritmo Fisher-Yates para desordenar arrays
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Función para desordenar letras de una palabra (asegura que no quede igual)
+        function shuffleWord(word) {
+            let arr = word.split('');
+            let shuffled;
+            do {
+                shuffled = shuffleArray([...arr]);
+            } while (shuffled.join('') === word && word.length > 1);
+            return shuffled.join(' - ').toUpperCase();
+        }
+
+        // Función para desordenar palabras de una frase
+        function shuffleSentence(sentence) {
+            let words = sentence.split(' ');
+            let shuffled;
+            do {
+                shuffled = shuffleArray([...words]);
+            } while (shuffled.join(' ') === sentence);
+            return shuffled.join(' / ');
+        }
+
+        // Base de datos de actividades
+        const db = {
+            anagrams: [
+                { id: 'a1', answer: "ELECTRONES", hint: "Partículas que se intercambian en enlaces." },
+                { id: 'a2', answer: "LEWIS", hint: "Científico que propuso la estructura de puntos." },
+                { id: 'a3', answer: "ANTOCIANINA", hint: "Pigmento del repollo sensible al pH." },
+                { id: 'a4', answer: "INDICADOR", hint: "Sustancia que cambia de color según el medio." },
+                { id: 'a5', answer: "HIDROGENO", hint: "Ion cuya concentración determina el pH." },
+                { id: 'a6', answer: "LOGARITMO", hint: "Operación matemática usada para calcular pH." },
+                { id: 'a7', answer: "ACIDO", hint: "Sustancia con pH menor a 7." },
+                { id: 'a8', answer: "BASE", hint: "Sustancia capaz de aceptar protones." },
+                { id: 'a9', answer: "NEUTRO", hint: "Estado del agua pura (pH 7)." },
+                { id: 'a10', answer: "ALCALINO", hint: "Sinónimo de básico." }
+            ],
+            sentences: [
+                { id: 's1', answer: "Lewis define base como donante de electrones", display: "Lewis define base como donante de electrones" },
+                { id: 's2', answer: "El repollo morado contiene antocianinas sensibles al pH", display: "El repollo morado contiene antocianinas sensibles al pH" },
+                { id: 's3', answer: "El pH mide la concentración de iones hidrógeno", display: "El pH mide la concentración de iones hidrógeno" },
+                { id: 's4', answer: "La suma de pH y pOH es catorce", display: "La suma de pH y pOH es catorce" },
+                { id: 's5', answer: "Los ácidos tienen sabor agrio y pH bajo", display: "Los ácidos tienen sabor agrio y pH bajo" },
+                { id: 's6', answer: "Las bases tienen sabor amargo y tacto jabonoso", display: "Las bases tienen sabor amargo y tacto jabonoso" },
+                { id: 's7', answer: "Un par de electrones compartido forma enlace covalente", display: "Un par de electrones compartido forma enlace covalente" },
+                { id: 's8', answer: "El papel tornasol cambia de color según acidez", display: "El papel tornasol cambia de color según acidez" },
+                { id: 's9', answer: "La escala de pH va de cero a catorce", display: "La escala de pH va de cero a catorce" },
+                { id: 's10', answer: "El agua pura tiene un pH neutro de siete", display: "El agua pura tiene un pH neutro de siete" }
+            ]
+        };
+
+        // Estado de la aplicación
+        let state = {
+            user: null,
+            scores: {}, // Guardará { id_actividad: puntos }
+            attempts: {} // Guardará { id_actividad: intentos_usados }
+        };
+
+        // --- LÓGICA DE INICIO Y PERSISTENCIA ---
+
+        function init() {
+            loadState();
+            if (state.user) {
+                showApp();
+            }
+        }
+
+        function loadState() {
+            const savedData = localStorage.getItem('ova_quimica_data');
+            if (savedData) {
+                state = JSON.parse(savedData);
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('ova_quimica_data', JSON.stringify(state));
+            updateGlobalScore();
+        }
+
+        function login() {
+            const fname = document.getElementById('fname').value.trim();
+            const lname = document.getElementById('lname').value.trim();
+            
+            if (fname && lname) {
+                state.user = `${fname} ${lname}`;
+                saveState();
+                showApp();
+            } else {
+                alert("Por favor ingresa nombre y apellido.");
+            }
+        }
+
+        function showApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-interface').classList.remove('hidden');
+            document.getElementById('display-name').innerText = state.user;
+            renderActivities();
+            updateGlobalScore();
+        }
+
+        function updateGlobalScore() {
+            let total = 0;
+            for (let key in state.scores) {
+                total += state.scores[key];
+            }
+            document.getElementById('global-score').innerText = total;
+        }
+
+        // --- RENDERIZADO DE ACTIVIDADES ---
+
+        function renderActivities() {
+            const anagramContainer = document.getElementById('anagrams-container');
+            const sentenceContainer = document.getElementById('sentences-container');
+
+            // Render Anagrams
+            if (anagramContainer.innerHTML === "") { // Evitar re-render si ya existe
+                db.anagrams.forEach((item, index) => {
+                    anagramContainer.innerHTML += createCardHTML(item, 'anagram', index + 1);
+                });
+            }
+
+            // Render Sentences
+            if (sentenceContainer.innerHTML === "") {
+                db.sentences.forEach((item, index) => {
+                    sentenceContainer.innerHTML += createCardHTML(item, 'sentence', index + 1);
+                });
+            }
+
+            // Restaurar estado visual (bloqueos y mensajes)
+            restoreUIState();
+        }
+
+        function createCardHTML(item, type, num) {
+            // Mezclar contenido solo al generar HTML visualmente
+            const challengeContent = type === 'anagram' 
+                ? shuffleWord(item.answer) 
+                : shuffleSentence(item.display);
+            
+            const instruction = type === 'anagram' 
+                ? `Pista: ${item.hint}` 
+                : "Ordena las palabras (Escribe la frase completa):";
+
+            const placeholder = type === 'anagram' ? "Escribe la palabra..." : "Escribe la oración correcta...";
+
+            return `
+                <div class="activity-card" id="card-${item.id}">
+                    <div class="activity-header">
+                        <span>Actividad #${num}</span>
+                        <span>Intentos: <span id="att-${item.id}">0</span>/3</span>
+                    </div>
+                    <div class="challenge-box ${type === 'sentence' ? 'sentence-challenge' : ''}">
+                        ${challengeContent}
+                    </div>
+                    <p style="margin-bottom:10px; font-size:0.9rem; color:#555;">${instruction}</p>
+                    <div class="controls">
+                        <input type="text" id="input-${item.id}" placeholder="${placeholder}" autocomplete="off">
+                        <button id="btn-${item.id}" onclick="validate('${item.id}', '${type}')">Validar</button>
+                    </div>
+                    <div class="feedback-msg" id="msg-${item.id}"></div>
+                    <div style="text-align:right; margin-top:5px;">
+                        <span id="badge-${item.id}" class="badge"></span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- VALIDACIÓN Y GAMIFICACIÓN ---
+
+        function validate(id, type) {
+            const inputElem = document.getElementById(`input-${id}`);
+            const msgElem = document.getElementById(`msg-${id}`);
+            const btnElem = document.getElementById(`btn-${id}`);
+            const attElem = document.getElementById(`att-${id}`);
+            const badgeElem = document.getElementById(`badge-${id}`);
+
+            // Normalizar entrada del usuario
+            let userInput = inputElem.value.trim().toLowerCase();
+            // Eliminar puntuación final básica para evitar errores tontos en oraciones
+            if(userInput.endsWith('.')) userInput = userInput.slice(0, -1);
+
+            // Obtener respuesta correcta
+            let correctItem = type === 'anagram' 
+                ? db.anagrams.find(x => x.id === id) 
+                : db.sentences.find(x => x.id === id);
+            
+            let correctAnswer = correctItem.answer.toLowerCase();
+            if(correctAnswer.endsWith('.')) correctAnswer = correctAnswer.slice(0, -1);
+
+            // Inicializar intentos si no existen
+            if (!state.attempts[id]) state.attempts[id] = 0;
+
+            // Verificar respuesta
+            if (userInput === correctAnswer) {
+                // CORRECTO
+                handleSuccess(id, state.attempts[id]);
+            } else {
+                // INCORRECTO
+                state.attempts[id]++;
+                saveState();
+                
+                attElem.innerText = state.attempts[id];
+                msgElem.style.color = "#e74c3c"; // Rojo
+                msgElem.innerText = "Incorrecto. Intenta de nuevo.";
+
+                if (state.attempts[id] >= 3) {
+                    msgElem.innerText = `Agotaste tus intentos. La respuesta era: "${correctItem.answer}"`;
+                    inputElem.disabled = true;
+                    btnElem.disabled = true;
+                    state.scores[id] = 0; // 0 puntos
+                    saveState();
+                }
+            }
+        }
+
+        function handleSuccess(id, currentAttempts) {
+            let points = 0;
+            let badgeClass = "";
+            let badgeText = "";
+
+            if (currentAttempts === 0) {
+                points = 5; badgeClass = "au"; badgeText = "Au"; // Oro
+            } else if (currentAttempts === 1) {
+                points = 3; badgeClass = "ag"; badgeText = "Ag"; // Plata
+            } else {
+                points = 1.5; badgeClass = "fe"; badgeText = "Fe"; // Hierro
+            }
+
+            // Actualizar estado
+            state.scores[id] = points;
+            // Marcar como completado (usamos un número alto de intentos o flag especial, 
+            // pero para simplificar, si hay score, está resuelto).
+            saveState();
+
+            // Actualizar UI
+            const msgElem = document.getElementById(`msg-${id}`);
+            msgElem.style.color = "#27ae60"; // Verde
+            msgElem.innerText = `¡Correcto! +${points} puntos.`;
+            
+            const badgeElem = document.getElementById(`badge-${id}`);
+            badgeElem.innerText = badgeText;
+            badgeElem.classList.add(badgeClass);
+            badgeElem.style.display = "inline-block";
+
+            document.getElementById(`input-${id}`).disabled = true;
+            document.getElementById(`btn-${id}`).disabled = true;
+            document.getElementById(`att-${id}`).innerText = currentAttempts + 1; // Visual fix
+
+            updateGlobalScore();
+        }
+
+        function restoreUIState() {
+            // Recorrer todas las actividades para restaurar vista basada en localStorage
+            [...db.anagrams, ...db.sentences].forEach(item => {
+                const id = item.id;
+                
+                // Restaurar intentos visuales
+                if (state.attempts[id]) {
+                    document.getElementById(`att-${id}`).innerText = state.attempts[id];
+                }
+
+                // Verificar si ya fue resuelta (tiene puntaje)
+                if (state.scores[id] !== undefined && state.scores[id] > 0) {
+                    // Recuperar qué medalla ganó basado en el puntaje
+                    let points = state.scores[id];
+                    let badgeClass = points === 5 ? "au" : (points === 3 ? "ag" : "fe");
+                    let badgeText = points === 5 ? "Au" : (points === 3 ? "Ag" : "Fe");
+
+                    const badgeElem = document.getElementById(`badge-${id}`);
+                    badgeElem.innerText = badgeText;
+                    badgeElem.classList.add(badgeClass);
+                    badgeElem.style.display = "inline-block";
+                    
+                    document.getElementById(`msg-${id}`).innerText = "¡Actividad completada!";
+                    document.getElementById(`msg-${id}`).style.color = "#27ae60";
+                    document.getElementById(`input-${id}`).disabled = true;
+                    document.getElementById(`btn-${id}`).disabled = true;
+                }
+                
+                // Verificar si falló 3 veces y no tiene puntaje
+                else if (state.attempts[id] >= 3) {
+                    document.getElementById(`msg-${id}`).innerText = "Agotaste tus intentos.";
+                    document.getElementById(`msg-${id}`).style.color = "#e74c3c";
+                    document.getElementById(`input-${id}`).disabled = true;
+                    document.getElementById(`btn-${id}`).disabled = true;
+                }
+            });
+        }
+
+        // Iniciar
+        init();
+
+    </script>
+</body>
+</html>

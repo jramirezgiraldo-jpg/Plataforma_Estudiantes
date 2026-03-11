@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Estructuras de Lewis - Grado 8</title>
+    <style>
+        :root {
+            --primary: #1a2a6c;
+            --secondary: #203a43;
+            --accent: #fdbb2d;
+            --text: #2c3e50;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            scroll-behavior: smooth;
+        }
+
+        /* --- Login System --- */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 0.5s;
+        }
+
+        .login-box {
+            background: var(--white);
+            padding: 30px; border-radius: 15px;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-width: 400px; width: 90%;
+        }
+
+        input[type="text"] {
+            width: 80%; padding: 12px; margin: 15px 0;
+            border: 2px solid #ddd; border-radius: 8px;
+        }
+
+        /* --- Layout --- */
+        #main-content { display: none; padding-bottom: 50px; }
+
+        header {
+            position: sticky; top: 0; background: var(--white);
+            padding: 10px 5%; border-bottom: 3px solid var(--accent);
+            z-index: 900; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-stats { display: flex; justify-content: space-between; align-items: center; }
+
+        .progress-container {
+            width: 100%; background: #eee; height: 12px;
+            border-radius: 6px; margin-top: 8px; overflow: hidden;
+        }
+
+        #progress-bar {
+            width: 0%; height: 100%; background: var(--accent);
+            transition: width 0.4s ease;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+        section {
+            background: var(--white); padding: 40px;
+            margin-top: 30px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1, h2, h3 { color: var(--primary); }
+
+        /* --- Interactive Elements --- */
+        .btn {
+            background: var(--primary); color: white;
+            padding: 10px 20px; border: none; border-radius: 5px;
+            cursor: pointer; transition: 0.3s; margin: 5px;
+        }
+
+        .btn:hover { background: var(--accent); color: var(--primary); }
+
+        .btn-check { background: #27ae60; }
+
+        .feedback {
+            margin-top: 10px; padding: 15px; border-radius: 8px;
+            display: none; font-weight: bold;
+        }
+
+        .svg-container { text-align: center; margin: 20px 0; padding: 20px; background: #fafafa; border-radius: 10px; }
+
+        .activity-card {
+            border-left: 5px solid var(--accent);
+            background: #fff9e6; padding: 20px; margin: 20px 0;
+        }
+
+        /* --- Evaluation --- */
+        .icfes-option {
+            display: block; margin: 10px 0; padding: 15px;
+            background: #f8f9fa; border: 1px solid #ddd;
+            border-radius: 8px; cursor: pointer;
+        }
+
+        .icfes-option:hover { background: #eef2f3; }
+
+        #fortalecimiento-box {
+            display: none; background: #e3f2fd;
+            border: 2px solid #2196f3; padding: 25px;
+            border-radius: 10px; margin-top: 30px;
+        }
+
+        .word-count { font-size: 0.8em; color: #666; }
+    </style>
+</head>
+<body>
+
+<div id="login-screen">
+    <div class="login-box">
+        <h2>Laboratorio de Lewis</h2>
+        <p>Ingresa tus datos para comenzar la experiencia química.</p>
+        <input type="text" id="username" placeholder="Nombres y Apellidos">
+        <br>
+        <button class="btn" onclick="startOVA()">Ingresar</button>
+    </div>
+</div>
+
+<div id="main-content">
+    <header>
+        <div class="nav-stats">
+            <span>Estudiante: <strong id="user-display"></strong></span>
+            <span>Rango: <strong id="element-display">Hidrógeno (H)</strong></span>
+            <span>Puntos: <strong id="score-display">0.0</strong>/5</span>
+        </div>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+    </header>
+
+    <div class="container">
+        <section id="inicio">
+            <h1>Estructuras de Lewis: El Código de los Átomos</h1>
+            <p><strong>Objetivo:</strong> Representar compuestos químicos mediante modelos de Lewis para comprender la distribución de electrones de valencia y la formación de enlaces, fomentando la autonomía y el rigor científico.</p>
+            
+            <h3>Pre-saberes: ¿Qué tanto conoces?</h3>
+            <div class="activity-card">
+                <p>1. ¿Qué partículas del átomo participan directamente en la formación de enlaces?</p>
+                <button class="btn" onclick="preFeedback(1, 'correct')">Electrones de valencia</button>
+                <button class="btn" onclick="preFeedback(1, 'wrong')">Protones del núcleo</button>
+                <div id="pre-1" class="feedback"></div>
+            </div>
+
+            <div class="activity-card">
+                <p>2. ¿Cuántos electrones buscan tener la mayoría de los átomos para ser estables?</p>
+                <button class="btn" onclick="preFeedback(2, 'wrong')">2 electrones</button>
+                <button class="btn" onclick="preFeedback(2, 'correct')">8 electrones (Octeto)</button>
+                <div id="pre-2" class="feedback"></div>
+            </div>
+
+            <div class="activity-card">
+                <p>3. ¿Cómo se representan los electrones en un modelo de Lewis?</p>
+                <button class="btn" onclick="preFeedback(3, 'correct')">Puntos o cruces</button>
+                <button class="btn" onclick="preFeedback(3, 'wrong')">Números grandes</button>
+                <div id="pre-3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>Exploración Inductiva: De la Observación al Símbolo</h2>
+            <div class="content-text">
+                <p>Imagina que los átomos son como piezas de un rompecabezas social. No todos interactúan de la misma manera. Algunos son solitarios, como los gases nobles, y otros son extremadamente sociables, buscando siempre a alguien con quien compartir o intercambiar "energía". Gilbert N. Lewis, un visionario de la química, observó que esta "sociabilidad" atómica dependía exclusivamente de los electrones situados en la capa más externa del átomo. </p>
+                
+                <p>Al observar la tabla periódica, Lewis notó un patrón: los elementos del grupo 1 tienen un solo electrón periférico, mientras que los del grupo 17 tienen siete. Esta observación lo llevó a crear un sistema iconográfico simple pero poderoso. En lugar de dibujar órbitas complejas, utilizó puntos alrededor del símbolo químico. Si un átomo tiene 4 electrones de valencia, como el Carbono, dibujamos el símbolo "C" rodeado de cuatro puntos. Esta simplicidad permite visualizar por qué el Carbono necesita cuatro enlaces más para alcanzar la estabilidad: busca completar su octeto.</p>
+
+                <div class="svg-container">
+                    <svg width="400" height="150" viewBox="0 0 400 150">
+                        <text x="50" y="80" font-size="40" font-family="Arial" font-weight="bold">C</text>
+                        <circle cx="70" cy="35" r="4" fill="red" />
+                        <circle cx="70" cy="115" r="4" fill="red" />
+                        <circle cx="30" cy="75" r="4" fill="red" />
+                        <circle cx="110" cy="75" r="4" fill="red" />
+                        
+                        <text x="250" y="80" font-size="40" font-family="Arial" font-weight="bold">O</text>
+                        <circle cx="270" cy="35" r="4" fill="blue" />
+                        <circle cx="285" cy="35" r="4" fill="blue" />
+                        <circle cx="270" cy="115" r="4" fill="blue" />
+                        <circle cx="285" cy="115" r="4" fill="blue" />
+                        <circle cx="230" cy="75" r="4" fill="blue" />
+                        <circle cx="320" cy="75" r="4" fill="blue" />
+                        
+                        <text x="40" y="140" font-size="12">Carbono (4 valencia)</text>
+                        <text x="240" y="140" font-size="12">Oxígeno (6 valencia)</text>
+                    </svg>
+                </div>
+
+                <p>A través de esta inducción, entendemos que la estructura de Lewis no es solo un dibujo, es un mapa de potencialidad. Nos dice cuántos vecinos puede tener un átomo y qué tipo de enlaces (sencillos, dobles o triples) debe formar. La regla del octeto surge entonces no como una imposición, sino como la observación de que la configuración electrónica de un gas noble es el estado de mínima energía y máxima tranquilidad para el átomo.</p>
+            </div>
+
+            <div class="activity-card">
+                <h3>Actividades para el Cuaderno (Inducción)</h3>
+                <ol>
+                    <li>Dibuja los símbolos de Lewis para los primeros 10 elementos de la tabla periódica.</li>
+                    <li>Crea una tabla que relacione el Grupo de la tabla con el número de puntos de Lewis.</li>
+                    <li>Representa mediante puntos y cruces la unión de dos átomos de Cloro.</li>
+                    <li>Dibuja un átomo de Neón y explica por qué no tiene "espacios" para enlaces.</li>
+                    <li>Investiga y dibuja cómo Lewis imaginaba los átomos antes de usar puntos (Modelos cúbicos).</li>
+                </ol>
+                <button class="btn btn-check" onclick="registerActivity(0.5)">Verificar Actividades en Cuaderno</button>
+            </div>
+
+            <h3>Desafío ICFES: Competencia Indagar</h3>
+            <div class="activity-card">
+                <p>Un estudiante observa la siguiente representación de una molécula de agua (H-O-H) con sus pares de electrones libres sobre el Oxígeno. Si el Hidrógeno pertenece al Grupo 1 y el Oxígeno al Grupo 16, ¿cuál es la razón científica por la cual el Oxígeno se une a dos Hidrógenos y no a uno solo?</p>
+                
+                <div class="icfes-option" onclick="icfesFeedback('a')">A. Porque el Hidrógeno es un gas muy ligero y necesita compañía.</div>
+                <div class="icfes-option" onclick="icfesFeedback('b')">B. Porque el Oxígeno tiene 6 electrones de valencia y requiere 2 más para completar su octeto.</div>
+                <div class="icfes-option" onclick="icfesFeedback('c')">C. Porque el enlace covalente solo ocurre entre tres átomos al mismo tiempo.</div>
+                <div class="icfes-option" onclick="icfesFeedback('d')">D. Porque los electrones del Oxígeno repelen a un solo Hidrógeno.</div>
+                <div id="icfes-res" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>Cuerpo Deductivo: Reglas y Estructuras Complejas</h2>
+            <div class="content-text">
+                <p>Una vez que comprendemos el concepto de electrones de valencia, debemos deducir un método sistemático para construir moléculas más complejas. No podemos confiar solo en la intuición; necesitamos una secuencia lógica. La deducción química nos dicta que el primer paso es contar el total de electrones disponibles sumando las valencias de todos los átomos presentes. Por ejemplo, en el Dióxido de Carbono (CO2), el Carbono aporta 4 y cada Oxígeno 6, dándonos un total de 16 electrones de valencia para distribuir.</p>
+                
+                <p>El segundo paso deductivo es identificar el átomo central, que suele ser el menos electronegativo o el que tiene más capacidad de formar enlaces. A partir de allí, distribuimos los electrones buscando que todos los átomos cumplan la regla del octeto. Si después de formar enlaces sencillos nos sobran electrones, los colocamos como pares libres. Si nos faltan para completar un octeto, deducimos la necesidad de formar enlaces múltiples (dobles o triples).</p>
+
+                <div class="svg-container">
+                    <svg width="400" height="120" viewBox="0 0 400 120">
+                        <text x="175" y="70" font-size="35" font-family="Arial">C</text>
+                        <text x="80" y="70" font-size="35" font-family="Arial">O</text>
+                        <text x="280" y="70" font-size="35" font-family="Arial">O</text>
+                        <line x1="120" y1="55" x2="165" y2="55" stroke="black" stroke-width="4"/>
+                        <line x1="120" y1="65" x2="165" y2="65" stroke="black" stroke-width="4"/>
+                        <line x1="215" y1="55" x2="265" y2="55" stroke="black" stroke-width="4"/>
+                        <line x1="215" y1="65" x2="265" y2="65" stroke="black" stroke-width="4"/>
+                        <circle cx="85" cy="30" r="3" fill="blue"/><circle cx="100" cy="30" r="3" fill="blue"/>
+                        <circle cx="85" cy="90" r="3" fill="blue"/><circle cx="100" cy="90" r="3" fill="blue"/>
+                        <circle cx="285" cy="30" r="3" fill="blue"/><circle cx="300" cy="30" r="3" fill="blue"/>
+                        <circle cx="285" cy="90" r="3" fill="blue"/><circle cx="300" cy="90" r="3" fill="blue"/>
+                    </svg>
+                    <p><em>Esquema del CO2: Uso de enlaces dobles para satisfacer el octeto.</em></p>
+                </div>
+
+                <p>Existen excepciones que debemos deducir por su naturaleza. El Hidrógeno, por ejemplo, solo tiene una órbita 1s, por lo que su estabilidad se alcanza con solo 2 electrones (regla del dueto). Elementos como el Boro pueden ser estables con 6 electrones (octeto incompleto). La autonomía en la resolución de estos problemas reside en aplicar estas leyes paso a paso, verificando siempre la carga formal para asegurar que la estructura propuesta es la más estable en la naturaleza.</p>
+            </div>
+
+            <div class="activity-card">
+                <h3>Lewis-Match: Competencia de Rapidez</h3>
+                <p>Representa en tu cuaderno lo más rápido posible y verifica:</p>
+                <ol>
+                    <li>Molécula de Metano (CH4): ¿El C tiene pares libres? <button class="btn" onclick="registerActivity(0.1)">Verificar</button></li>
+                    <li>Molécula de Nitrógeno (N2): ¿Cuántos enlaces tiene? <button class="btn" onclick="registerActivity(0.1)">Verificar</button></li>
+                    <li>Molécula de Amoníaco (NH3): Dibuja su forma piramidal. <button class="btn" onclick="registerActivity(0.1)">Verificar</button></li>
+                    <li>Ión Amonio (NH4+): ¿Cómo afecta la carga positiva? <button class="btn" onclick="registerActivity(0.1)">Verificar</button></li>
+                    <li>Dióxido de Azufre (SO2): Prueba el concepto de resonancia. <button class="btn" onclick="registerActivity(0.1)">Verificar</button></li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="evaluacion">
+            <h2>Evaluación de Maestría</h2>
+            <div id="quiz-final">
+                <div class="activity-card">
+                    <p>1. ¿Cuántos electrones de valencia tiene el Nitrógeno (Grupo 15)?</p>
+                    <select id="q1">
+                        <option value="wrong">Selecciona...</option>
+                        <option value="wrong">3</option>
+                        <option value="correct">5</option>
+                        <option value="wrong">15</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>2. En la estructura de Lewis del agua, ¿cuántos pares de electrones libres quedan en el Oxígeno?</p>
+                    <select id="q2">
+                        <option value="wrong">Selecciona...</option>
+                        <option value="correct">2 pares</option>
+                        <option value="wrong">1 par</option>
+                        <option value="wrong">Ninguno</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>3. Un enlace triple implica el intercambio de:</p>
+                    <select id="q3">
+                        <option value="wrong">Selecciona...</option>
+                        <option value="wrong">3 electrones</option>
+                        <option value="correct">6 electrones</option>
+                        <option value="wrong">2 electrones</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>4. ¿Cuál de estos átomos es una excepción a la regla del octeto (completa con menos)?</p>
+                    <select id="q4">
+                        <option value="wrong">Selecciona...</option>
+                        <option value="correct">Hidrógeno</option>
+                        <option value="wrong">Carbono</option>
+                        <option value="wrong">Flúor</option>
+                    </select>
+                </div>
+                <div class="activity-card">
+                    <p>5. La regla del octeto se basa en la configuración electrónica de:</p>
+                    <select id="q5">
+                        <option value="wrong">Selecciona...</option>
+                        <option value="wrong">Los metales</option>
+                        <option value="correct">Los gases nobles</option>
+                        <option value="wrong">Los halógenos</option>
+                    </select>
+                </div>
+
+                <h3>Preguntas Abiertas (Análisis y Autonomía)</h3>
+                <p>Responde en un rango de 10 a 15 palabras.</p>
+                <div class="activity-card">
+                    <p>6. ¿Por qué el Carbono es fundamental para formar moléculas orgánicas complejas?</p>
+                    <input type="text" id="a1" oninput="validaPalabras(1)">
+                    <span id="wc1" class="word-count">Palabras: 0</span>
+                </div>
+                <div class="activity-card">
+                    <p>7. Explica la relación entre el grupo de la tabla periódica y los puntos de Lewis.</p>
+                    <input type="text" id="a2" oninput="validaPalabras(2)">
+                    <span id="wc2" class="word-count">Palabras: 0</span>
+                </div>
+                <div class="activity-card">
+                    <p>8. ¿Qué importancia tiene la regla del octeto en la estabilidad de los compuestos?</p>
+                    <input type="text" id="a3" oninput="validaPalabras(3)">
+                    <span id="wc3" class="word-count">Palabras: 0</span>
+                </div>
+                <div class="activity-card">
+                    <p>9. Describe cómo se forma un enlace covalente doble según el modelo de Lewis.</p>
+                    <input type="text" id="a4" oninput="validaPalabras(4)">
+                    <span id="wc4" class="word-count">Palabras: 0</span>
+                </div>
+                <div class="activity-card">
+                    <p>10. ¿Para qué sirve conocer los pares de electrones libres en una molécula?</p>
+                    <input type="text" id="a5" oninput="validaPalabras(5)">
+                    <span id="wc5" class="word-count">Palabras: 0</span>
+                </div>
+
+                <button class="btn" onclick="calificar()">Finalizar y Obtener Resultados</button>
+            </div>
+
+            <div id="fortalecimiento-box">
+                <h2 id="fort-titulo">Ruta de Fortalecimiento Personalizada</h2>
+                <p id="fort-instruccion" style="font-weight:bold; color:#d32f2f;"></p>
+                <div id="fort-contenido"></div>
+                <br>
+                <button class="btn" onclick="exportarResultados()">Descargar Reporte Final (.txt)</button>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    let score = 0;
+    const elements = ["Hidrógeno (H)", "Helio (He)", "Litio (Li)", "Berilio (Be)", "Boro (B)", "Carbono (C)"];
+    
+    // --- Gestión de Usuario ---
+    function startOVA() {
+        const name = document.getElementById('username').value;
+        if (name.length < 3) { alert("Ingresa tu nombre completo"); return; }
+        
+        localStorage.setItem('lewis_user', name);
+        document.getElementById('login-screen').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('user-display').innerText = name;
+            updateUI();
+        }, 500);
+    }
+
+    function updateUI() {
+        const displayScore = Math.min(score, 5).toFixed(1);
+        document.getElementById('score-display').innerText = displayScore;
+        const progress = (score / 5) * 100;
+        document.getElementById('progress-bar').style.width = progress + '%';
+        
+        const idx = Math.floor(score);
+        document.getElementById('element-display').innerText = elements[idx] || "Carbono (C) [Maestría]";
+    }
+
+    // --- Actividades ---
+    function preFeedback(q, type) {
+        const div = document.getElementById('pre-' + q);
+        div.style.display = 'block';
+        if(type === 'correct') {
+            div.innerHTML = "¡Excelente! Tienes buena base.";
+            div.style.background = "#d4edda";
+            score = Math.min(score + 0.1, 5);
+        } else {
+            div.innerHTML = "No es correcto, pero lo aprenderemos ahora.";
+            div.style.background = "#f8d7da";
+        }
+        updateUI();
+    }
+
+    function registerActivity(pts) {
+        score = Math.min(score + pts, 5);
+        updateUI();
+        alert("Progreso guardado en el sistema.");
+    }
+
+    function icfesFeedback(opt) {
+        const res = document.getElementById('icfes-res');
+        res.style.display = 'block';
+        if(opt === 'b') {
+            res.innerHTML = "CORRECTO. El Oxígeno (G16) tiene 6 electrones y necesita 2 más. Cada Hidrógeno aporta 1, logrando así el octeto.";
+            res.style.background = "#d4edda";
+            score = Math.min(score + 0.5, 5);
+        } else {
+            res.innerHTML = "INCORRECTO. A: Es una idea errónea. C: No hay límite de átomos. D: La repulsión existe pero no impide la unión.";
+            res.style.background = "#f8d7da";
+        }
+        updateUI();
+    }
+
+    function validaPalabras(id) {
+        const text = document.getElementById('a' + id).value.trim();
+        const count = text === "" ? 0 : text.split(/\s+/).length;
+        document.getElementById('wc' + id).innerText = "Palabras: " + count;
+        document.getElementById('wc' + id).style.color = (count >= 10 && count <= 15) ? "green" : "red";
+    }
+
+    // --- Evaluación y Fortalecimiento ---
+    function calificar() {
+        let nota = 0;
+        let fallosInductivos = 0;
+        let fallosDeductivos = 0;
+
+        // Cerradas
+        if(document.getElementById('q1').value === 'correct') nota += 0.5; else fallosInductivos++;
+        if(document.getElementById('q2').value === 'correct') nota += 0.5; else fallosDeductivos++;
+        if(document.getElementById('q3').value === 'correct') nota += 0.5; else fallosDeductivos++;
+        if(document.getElementById('q4').value === 'correct') nota += 0.5; else fallosInductivos++;
+        if(document.getElementById('q5').value === 'correct') nota += 0.5; else fallosInductivos++;
+
+        // Abiertas (validación técnica)
+        for(let i=1; i<=5; i++) {
+            const count = document.getElementById('a' + i).value.trim().split(/\s+/).length;
+            if(count >= 10 && count <= 15) nota += 0.5;
+            else fallosDeductivos++;
+        }
+
+        score = Math.min(nota, 5);
+        updateUI();
+        generarFortalecimiento(fallosInductivos, fallosDeductivos);
+    }
+
+    function generarFortalecimiento(fi, fd) {
+        const box = document.getElementById('fortalecimiento-box');
+        const inst = document.getElementById('fort-instruccion');
+        const cont = document.getElementById('fort-contenido');
+        
+        box.style.display = 'block';
+        inst.innerText = "De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades:";
+        
+        let texto = "";
+        if(fi > fd) {
+            texto = "RUTA INDUCTIVA: Debes repasar la teoría básica de los electrones de valencia y la observación de la tabla periódica. Recuerda que el número de puntos es igual al grupo del elemento (para representativos).";
+        } else if(fd >= fi && fd > 0) {
+            texto = "RUTA DEDUCTIVA: Tu debilidad está en la aplicación de las reglas sistemáticas. Practica más el conteo total de electrones y la formación de enlaces múltiples para satisfacer la regla del octeto en moléculas grandes.";
+        } else {
+            texto = "¡FELICITACIONES! Has demostrado un dominio total de los modelos de Lewis. Continúa explorando la geometría molecular.";
+        }
+        cont.innerText = texto;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function exportarResultados() {
+        const name = localStorage.getItem('lewis_user');
+        const finalScore = document.getElementById('score-display').innerText;
+        const element = document.getElementById('element-display').innerText;
+        const feedback = document.getElementById('fort-contenido').innerText;
+        
+        let contenido = `REPORTE DE LOGRO - OVA ESTRUCTURAS DE LEWIS\n`;
+        contenido += `Estudiante: ${name}\n`;
+        contenido += `Nota Final: ${finalScore}/5.0\n`;
+        contenido += `Elemento Alcanzado: ${element}\n\n`;
+        contenido += `RETROALIMENTACIÓN DE FORTALECIMIENTO:\n`;
+        contenido += feedback + `\n\n`;
+        contenido += `Generado el: ${new Date().toLocaleString()}`;
+
+        const blob = new Blob([contenido], {type: "text/plain"});
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Resultados_Lewis_${name}.txt`;
+        link.click();
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Métodos de Separación II - Evaporación y Decantación</title>
+    <style>
+        /* === VARIABLES DE DISEÑO (ESTILO TÉRMICO / HIDRÁULICO) === */
+        :root {
+            --bg-dark: #0d1117;
+            --bg-panel: #161b22;
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --accent-green: #2ea043;
+            --accent-cyan: #38bdf8; /* Representa líquidos y decantación */
+            --accent-orange: #f97316; /* Representa calor y evaporación */
+            --accent-red: #da3633;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --border-radius: 12px;
+        }
+
+        /* === ESTILOS GENERALES === */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--bg-panel);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            padding: 40px;
+            position: relative;
+            border-top: 5px solid var(--accent-cyan);
+            border-bottom: 5px solid var(--accent-orange);
+        }
+
+        h1, h2, h3 { margin-bottom: 20px; }
+        h1 { color: var(--accent-cyan); font-size: 2.5rem; display: flex; align-items: center; gap: 15px; }
+        h2 { color: var(--accent-orange); font-size: 1.8rem; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        p { margin-bottom: 15px; font-size: 1.1rem; }
+        
+        /* === BOTONES === */
+        button {
+            background-color: transparent;
+            color: var(--text-main);
+            border: 2px solid var(--accent-cyan);
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+        button:hover { background-color: var(--accent-cyan); color: var(--bg-dark); transform: translateY(-2px); }
+        button.btn-green { border-color: var(--accent-green); }
+        button.btn-green:hover { background-color: var(--accent-green); color: white; }
+        button.btn-orange { border-color: var(--accent-orange); }
+        button.btn-orange:hover { background-color: var(--accent-orange); color: white; }
+        button:disabled { border-color: #555; color: #555; cursor: not-allowed; transform: none; background: transparent; }
+
+        /* === INPUTS === */
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            background-color: #0d1117;
+            border: 2px solid #30363d;
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        input[type="text"]:focus { outline: none; border-color: var(--accent-cyan); }
+
+        /* === UTILIDADES VISUALES === */
+        .hidden { display: none !important; }
+        .emoji-icon { font-size: 2rem; }
+        
+        /* Barras de progreso */
+        .progress-container {
+            width: 100%;
+            background-color: #30363d;
+            border-radius: 10px;
+            height: 15px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 1px solid #444;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-orange));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* === MISIONES ESPECÍFICAS === */
+        /* Misión 2: Checklist del Cuaderno */
+        .checklist { list-style: none; margin-top: 20px; }
+        .check-item {
+            background-color: #0d1117;
+            border-left: 5px solid #30363d;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+        .check-item.active { border-color: var(--accent-orange); box-shadow: 0 0 15px rgba(249, 115, 22, 0.15); }
+        .check-item.completed { border-color: var(--accent-green); opacity: 0.8; }
+        
+        .check-header { display: flex; align-items: center; justify-content: space-between; }
+        .check-title { font-weight: bold; font-size: 1.2rem; color: var(--accent-cyan); }
+        .check-btn { width: auto; margin: 0; padding: 10px 20px; font-size: 1rem; }
+
+        .timer-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent-orange);
+            text-align: center;
+            font-family: monospace;
+            background: #000;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #30363d;
+            margin-bottom: 20px;
+            letter-spacing: 5px;
+        }
+
+        /* Misión 4: Trivia */
+        .trivia-card {
+            background: #0d1117;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-top: 4px solid var(--accent-cyan);
+            border-bottom: 4px solid var(--accent-orange);
+        }
+        .trivia-options { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
+        .trivia-option {
+            background: #161b22; border: 2px solid #30363d; padding: 15px;
+            border-radius: 8px; cursor: pointer; text-align: left;
+            font-size: 1.1rem; transition: all 0.2s; color: white;
+        }
+        .trivia-option:hover:not(:disabled) { border-color: var(--accent-cyan); background: #21262d; }
+        .trivia-option.correct { background: var(--accent-green); border-color: var(--accent-green); color: white; font-weight: bold; }
+        .trivia-option.wrong { background: var(--accent-red); border-color: var(--accent-red); color: white; opacity: 0.6; }
+
+        /* Misión 5: Podio y Elemento Químico */
+        .element-card {
+            width: 200px; height: 250px;
+            margin: 30px auto;
+            border-radius: 15px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            color: black;
+            transition: transform 0.3s;
+        }
+        .element-card:hover { transform: scale(1.05); }
+        .element-symbol { font-size: 5rem; font-weight: bold; line-height: 1; }
+        .element-name { font-size: 1.5rem; font-weight: bold; margin-top: 10px; }
+        .element-number { font-size: 1.2rem; align-self: flex-start; margin-left: 15px; margin-bottom: -10px; }
+        
+        .grade-display { text-align: center; font-size: 4.5rem; font-weight: bold; color: var(--accent-green); margin: 20px 0; text-shadow: 0 0 20px rgba(46, 160, 67, 0.4); }
+
+        /* Estilos de Elementos */
+        .element-au { background: linear-gradient(135deg, #FFD700, #FDB931); border: 4px solid #B8860B; }
+        .element-ag { background: linear-gradient(135deg, #E0E0E0, #9E9E9E); border: 4px solid #757575; }
+        .element-fe { background: linear-gradient(135deg, #A19D94, #6e6a62); border: 4px solid #4a4741; color: white;}
+
+        /* HUD Superior */
+        .hud {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #000; padding: 15px 20px; border-radius: 8px;
+            margin-bottom: 30px; border: 1px solid #30363d;
+        }
+        .hud-name { font-weight: bold; font-size: 1.2rem; color: var(--accent-cyan); }
+        .hud-mission { color: var(--accent-orange); font-weight: bold; }
+
+        /* Metáforas Visuales (Cajas de texto destacadas) */
+        .metaphor-box {
+            background-color: rgba(56, 189, 248, 0.05);
+            border-left: 5px solid var(--accent-cyan);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+        
+        .heat-box {
+            background-color: rgba(249, 115, 22, 0.05);
+            border-left: 5px solid var(--accent-orange);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+            font-style: italic;
+        }
+
+        .patience-box {
+            background-color: #161b22;
+            border: 2px dashed var(--accent-green);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- HUD (Heads Up Display) -->
+        <div id="hud" class="hud hidden">
+            <div class="hud-name" id="hudName">Especialista: ---</div>
+            <div class="hud-mission" id="hudMission">Sector: ---</div>
+        </div>
+
+        <!-- PANTALLA: AVISO DE RECUPERACIÓN -->
+        <div id="screen-recovery" class="hidden">
+            <h1><span class="emoji-icon">💾</span> Datos de Misión Recuperados</h1>
+            <p id="recoveryMessage">Hola, veo que tienes un proceso en curso.</p>
+            <button class="btn-green" onclick="app.resumeGame()">🚀 Continuar Misión</button>
+            <button class="btn-orange" onclick="app.resetGame()">🔄 Borrar todo y Empezar de Cero</button>
+        </div>
+
+        <!-- PANTALLA: LOGIN -->
+        <div id="screen-login" class="hidden">
+            <h1><span class="emoji-icon">⚖️</span> Laboratorio de Procesos Físicos</h1>
+            <p>Iniciando sistemas de gravedad y termodinámica. Ingresa tu nombre para acceder a la terminal.</p>
+            <input type="text" id="playerName" placeholder="Nombre del Especialista" autocomplete="off">
+            <button class="btn-cyan" onclick="app.startGame()">Iniciar Protocolo ❯</button>
+        </div>
+
+        <!-- MISIÓN 1: EL DESPEGUE -->
+        <div id="screen-m1" class="hidden">
+            <h2>Misión 1: Tiempo, Gravedad y Calor 🪐</h2>
+            <div class="progress-container"><div class="progress-bar" style="width: 20%;"></div></div>
+            
+            <p>Bienvenido, <span class="dynamic-name" style="font-weight:bold; color:var(--accent-cyan);"></span>. Ya sabes usar filtros y tamices. Pero hoy te enfrentarás a mezclas más difíciles. ¿Qué haces si la tierra es tan fina que atraviesa el filtro? ¿O si la sal ya está disuelta en el agua y no la puedes ver?</p>
+            
+            <p><strong>1. La Decantación (El poder de la gravedad):</strong> Se usa para separar líquidos que no se mezclan (como agua y aceite) o un líquido de un sólido pesado. El secreto aquí es no hacer nada. Solo esperar.</p>
+            
+            <div class="metaphor-box">
+                <span class="emoji-icon">🌴</span> Imagina la huella gigante de un T-Rex en la selva, llena de agua lodosa después de la lluvia. Si esperas unas horas, la tierra pesada se hunde hasta el fondo gracias a la gravedad. Arriba queda el agua clara que los animales pequeños pueden beber. ¡Eso es decantar!
+            </div>
+
+            <p><strong>2. La Evaporación (El poder del calor):</strong> Se usa cuando un sólido está completamente disuelto en un líquido (como la sal en el agua) y quieres recuperar el sólido.</p>
+            
+            <div class="heat-box">
+                <span class="emoji-icon">🚀</span> Imagina que estás en Marte y encuentras agua subterránea llena de minerales marcianos disueltos. Para obtener los minerales sólidos puros, calientas el agua. El agua se convierte en gas (vapor) y escapa, dejando atrás los cristales sólidos en el fondo del recipiente.
+            </div>
+
+            <div class="patience-box">
+                <strong>💡 Protocolo de Paciencia Científica:</strong><br>
+                A diferencia de un filtro que es rápido, <strong>la decantación y la evaporación requieren tiempo</strong>. Un buen científico, igual que un buen piloto o un cazador en la selva, sabe que la paciencia es su mejor herramienta.
+            </div>
+
+            <button class="btn-green" onclick="app.goToMission(2)">Entendido. Pasar al Taller de Pruebas ❯</button>
+        </div>
+
+        <!-- MISIÓN 2: EL TALLER DEL EXPERTO (CUADERNO Y FÍSICO) -->
+        <div id="screen-m2" class="hidden">
+            <h2>Misión 2: El Taller del Experto 🛠️</h2>
+            <div class="progress-container"><div class="progress-bar" style="width: 40%;"></div></div>
+            
+            <p>Atención <span class="dynamic-name"></span>. Tienes 75 minutos. Esta misión medirá tu capacidad de análisis, tu precisión al dibujar y, sobre todo, tu paciencia.</p>
+
+            <div class="timer-display" id="m2-timer">75:00</div>
+
+            <ul class="checklist">
+                <!-- Sub-Reto A -->
+                <li class="check-item active" id="task-a">
+                    <div class="check-header">
+                        <span class="check-title">Sub-Reto A: Registro de Datos (Escritura)</span>
+                        <button class="check-btn" id="btn-check-a" onclick="app.completeTask('a')">Marcar Listo ✔</button>
+                    </div>
+                    <div class="check-content">
+                        <p>Abre tu cuaderno. Escribe la fecha y el título: <strong>"Misión: Gravedad y Calor"</strong>.</p>
+                        <p>Escribe con tus propias palabras qué es la <em>Decantación</em> (separar dejando reposar) y qué es la <em>Evaporación</em> (separar usando calor). Usa el ejemplo del lodo de dinosaurio y el agua de Marte.</p>
+                    </div>
+                </li>
+
+                <!-- Sub-Reto B -->
+                <li class="check-item" id="task-b" style="opacity: 0.5; pointer-events: none;">
+                    <div class="check-header">
+                        <span class="check-title">Sub-Reto B: Esquemas Visuales (Dibujo)</span>
+                        <button class="check-btn" id="btn-check-b" onclick="app.completeTask('b')" disabled>Marcar Listo ✔</button>
+                    </div>
+                    <div class="check-content">
+                        <p>Dibuja en tu cuaderno dos esquemas analíticos:</p>
+                        <ol>
+                            <li><strong>Esquema 1:</strong> Dibuja un recipiente con aceite de motor flotando sobre agua. Muestra cómo al abrir una llave debajo, sale primero el agua y el aceite se queda (Decantación de líquidos).</li>
+                            <li><strong>Esquema 2:</strong> Dibuja una olla en el fuego. El agua sale en forma de "nubes" (vapor) y en el fondo quedan dibujados cristales de sal (Evaporación).</li>
+                        </ol>
+                        <p>Usa colores para diferenciar los elementos.</p>
+                    </div>
+                </li>
+
+                <!-- Sub-Reto C -->
+                <li class="check-item" id="task-c" style="opacity: 0.5; pointer-events: none;">
+                    <div class="check-header">
+                        <span class="check-title">Sub-Reto C: La Prueba de la Paciencia (Laboratorio)</span>
+                        <button class="check-btn" id="btn-check-c" onclick="app.completeTask('c')" disabled>Marcar Listo ✔</button>
+                    </div>
+                    <div class="check-content">
+                        <p><span class="emoji-icon">🔥</span> ¡Hora del laboratorio real! Prepararemos una trampa para extraer un mineral.</p>
+                        <p><strong>Paso 1:</strong> En medio vaso de agua, disuelve una o dos cucharadas de sal. Revuelve hasta que la sal "desaparezca". Has creado una mezcla homogénea.</p>
+                        <p><strong>Paso 2:</strong> Tenemos que recuperar esa sal. Pon la mezcla en un plato hondo o recipiente amplio. Tienes dos opciones:</p>
+                        <ul>
+                            <li><em>Opción Lenta (El Sol):</em> Pon el plato bajo el sol directo durante horas o días.</li>
+                            <li><em>Opción Rápida (El Motor):</em> Pide ayuda a un adulto para poner la mezcla en una olla en la estufa hasta que hierva y el agua se evapore por completo.</li>
+                        </ul>
+                        <div style="background-color: #000; padding: 10px; border-radius: 5px; margin-top: 10px; border-left: 3px solid var(--accent-orange);">
+                            <strong>Reporte Final:</strong> Escribe en tu cuaderno: ¿Por qué en la ciencia (y en la vida) a veces la única forma de resolver un problema es tener paciencia y esperar?
+                        </div>
+                    </div>
+                </li>
+            </ul>
+
+            <button id="btn-m2-next" class="btn-green hidden" onclick="app.goToMission(3)">Misión Física Iniciada. Continuar ❯</button>
+        </div>
+
+        <!-- MISIÓN 3: PIT STOP -->
+        <div id="screen-m3" class="hidden">
+            <h2>Misión 3: Pit Stop - Enfriamiento Térmico ⏸️</h2>
+            <div class="progress-container"><div class="progress-bar" style="width: 60%;"></div></div>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <!-- Círculo que crece y decrece para la respiración -->
+                <div id="breathe-circle" style="
+                    width: 100px; 
+                    height: 100px; 
+                    background: radial-gradient(circle, var(--accent-orange) 0%, transparent 70%);
+                    border-radius: 50%; 
+                    margin: 0 auto;
+                    transition: all 4s ease-in-out;
+                    box-shadow: 0 0 30px var(--accent-orange);
+                "></div>
+            </div>
+
+            <p style="text-align: center; font-size: 1.3rem;">Sistemas térmicos sobrecargados. Iniciando ventilación de emergencia.</p>
+            <p style="text-align: center;">Observa el núcleo de energía. Sincroniza tu respiración con él.</p>
+            <p style="text-align: center; font-size: 1.5rem; font-weight: bold; transition: color 1s;" id="breathe-text">Inhala profundo...</p>
+
+            <button class="btn-cyan" onclick="app.goToMission(4)" style="margin-top: 50px;">Temperatura Estable. Ir a la Prueba ❯</button>
+        </div>
+
+        <!-- MISIÓN 4: LA PRUEBA DE PISTA -->
+        <div id="screen-m4" class="hidden">
+            <h2>Misión 4: Pista de Pruebas Finales 🏁</h2>
+            <div class="progress-container"><div class="progress-bar" style="width: 80%;"></div></div>
+            
+            <p>Evalúa las situaciones usando tu lógica. Selecciona la técnica correcta para cada problema.</p>
+
+            <div id="trivia-container">
+                <!-- Las preguntas se inyectan por JS -->
+            </div>
+
+            <button id="btn-m4-next" class="btn-green hidden" onclick="app.goToMission(5)">Analizar Resultados del Simulador ❯</button>
+        </div>
+
+        <!-- MISIÓN 5: EL PODIO -->
+        <div id="screen-m5" class="hidden">
+            <h2>Misión 5: Centro de Comando 🏆</h2>
+            <div class="progress-container"><div class="progress-bar" style="width: 100%;"></div></div>
+            
+            <p style="text-align: center; font-size: 1.2rem;">Evaluación del Especialista <span class="dynamic-name" style="color:var(--accent-orange); font-weight:bold;"></span> completada.</p>
+
+            <div class="grade-display" id="final-grade">0.0</div>
+
+            <p style="text-align: center;">Elemento Químico Ganado:</p>
+            
+            <div class="element-card" id="element-card">
+                <div class="element-number" id="element-num">--</div>
+                <div class="element-symbol" id="element-sym">--</div>
+                <div class="element-name" id="element-name">-----</div>
+            </div>
+
+            <p style="text-align: center; margin-top: 20px;" id="element-desc"></p>
+
+            <button class="btn-cyan" onclick="app.downloadReport()">📥 Descargar Informe Oficial (.txt)</button>
+            <button class="btn-orange" onclick="app.resetGame()" style="margin-top: 10px; border-color: #555; color: #aaa;">🔄 Terminar y Formatear Datos</button>
+        </div>
+
+    </div>
+
+    <script>
+        // === DATOS DE LA TRIVIA ===
+        const triviaData = [
+            {
+                id: 0,
+                question: "1. Si accidentalmente derramas aceite de moto en un charco de agua, el aceite flota en la parte superior porque es más ligero. ¿Qué método usas para separarlos lentamente?",
+                options: [
+                    "A) Evaporación.",
+                    "B) Decantación.",
+                    "C) Tamizado."
+                ],
+                correct: 1
+            },
+            {
+                id: 1,
+                question: "2. Si tienes un líquido transparente pero sabes que tiene mucha sal disuelta y quieres recuperar esa sal sólida, ¿qué necesitas aplicar?",
+                options: [
+                    "A) Calor (para evaporar el agua).",
+                    "B) Un colador de cocina (Tamizado).",
+                    "C) Hielo."
+                ],
+                correct: 0
+            },
+            {
+                id: 2,
+                question: "3. La decantación es un proceso que separa sustancias usando:",
+                options: [
+                    "A) La fuerza de la gravedad a lo largo del tiempo.",
+                    "B) Exclusivamente fuego a altas temperaturas.",
+                    "C) Máquinas láser del espacio."
+                ],
+                correct: 0
+            },
+            {
+                id: 3,
+                question: "4. A diferencia de un colador que es rápido, esperar a que el lodo de una huella de dinosaurio se decante, o que el agua salada se evapore al sol, nos enseña una lección importante. ¿Cuál es?",
+                options: [
+                    "A) Que la ciencia siempre debe ser rápida de 5 minutos.",
+                    "B) Que la paciencia es una herramienta científica clave porque algunos procesos toman tiempo.",
+                    "C) Que los métodos de separación no sirven."
+                ],
+                correct: 1
+            }
+        ];
+
+        // === ESTADO DE LA APLICACIÓN (CLAVE ÚNICA) ===
+        const storageKey = 'ovaSantiagoSeparacion2Data';
+
+        const app = {
+            state: {
+                name: "",
+                currentMission: 1,
+                mission2Checks: { a: false, b: false, c: false },
+                mission2TimerStart: null,
+                triviaAnswers: { 0: null, 1: null, 2: null, 3: null },
+                grade: 0.0
+            },
+            timerInterval: null,
+            breatheInterval: null,
+
+            // === INICIALIZACIÓN ===
+            init() {
+                const savedData = localStorage.getItem(storageKey);
+                if (savedData) {
+                    this.state = JSON.parse(savedData);
+                    document.getElementById('recoveryMessage').innerHTML = `Hola <strong>${this.state.name}</strong>, el sistema indica que estás en la Misión ${this.state.currentMission}. ¿Retomamos?`;
+                    this.showScreen('screen-recovery');
+                } else {
+                    this.showScreen('screen-login');
+                }
+            },
+
+            saveState() {
+                localStorage.setItem(storageKey, JSON.stringify(this.state));
+            },
+
+            // === NAVEGACIÓN ===
+            showScreen(screenId) {
+                // Ocultar todas
+                document.querySelectorAll('div[id^="screen-"]').forEach(el => el.classList.add('hidden'));
+                // Mostrar la deseada
+                document.getElementById(screenId).classList.remove('hidden');
+                window.scrollTo(0,0);
+            },
+
+            updateHUD() {
+                const hud = document.getElementById('hud');
+                if (this.state.currentMission > 0 && this.state.name !== "") {
+                    hud.classList.remove('hidden');
+                    document.getElementById('hudName').innerText = `Especialista: ${this.state.name}`;
+                    document.getElementById('hudMission').innerText = `Fase: Misión ${this.state.currentMission}`;
+                    
+                    // Actualizar nombres dinámicos
+                    document.querySelectorAll('.dynamic-name').forEach(el => el.innerText = this.state.name);
+                } else {
+                    hud.classList.add('hidden');
+                }
+            },
+
+            // === CONTROL DE FLUJO ===
+            startGame() {
+                const nameInput = document.getElementById('playerName').value.trim();
+                if (nameInput === "") {
+                    const inp = document.getElementById('playerName');
+                    inp.style.borderColor = "var(--accent-red)";
+                    setTimeout(() => inp.style.borderColor = "#30363d", 1000);
+                    return;
+                }
+                this.state.name = nameInput;
+                this.goToMission(1);
+            },
+
+            resumeGame() {
+                this.goToMission(this.state.currentMission);
+            },
+
+            resetGame() {
+                localStorage.removeItem(storageKey);
+                clearInterval(this.timerInterval);
+                clearInterval(this.breatheInterval);
+                location.reload(); 
+            },
+
+            goToMission(n) {
+                this.state.currentMission = n;
+                this.saveState();
+                this.updateHUD();
+                this.showScreen(`screen-m${n}`);
+
+                if (n === 2) this.setupMission2();
+                if (n === 3) this.setupMission3();
+                if (n === 4) this.setupMission4();
+                if (n === 5) this.setupMission5();
+            },
+
+            // === LÓGICA MISIÓN 2 (CUADERNO Y TIMER) ===
+            setupMission2() {
+                // Configurar Timer (75 min = 4500000 ms)
+                const duration = 75 * 60 * 1000; 
+                
+                if (!this.state.mission2TimerStart) {
+                    this.state.mission2TimerStart = Date.now();
+                    this.saveState();
+                }
+
+                this.updateTimerDisplay(duration);
+                clearInterval(this.timerInterval);
+                this.timerInterval = setInterval(() => this.updateTimerDisplay(duration), 1000);
+
+                this.renderChecks();
+            },
+
+            updateTimerDisplay(duration) {
+                const elapsed = Date.now() - this.state.mission2TimerStart;
+                let remaining = duration - elapsed;
+                
+                if (remaining < 0) remaining = 0; 
+
+                const totalSeconds = Math.floor(remaining / 1000);
+                const mins = Math.floor(totalSeconds / 60);
+                const secs = totalSeconds % 60;
+
+                document.getElementById('m2-timer').innerText = 
+                    `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            },
+
+            completeTask(taskId) {
+                this.state.mission2Checks[taskId] = true;
+                this.calculateGrade();
+                this.saveState();
+                this.renderChecks();
+            },
+
+            renderChecks() {
+                const s = this.state.mission2Checks;
+                
+                if (s.a) {
+                    this.markCheckUI('a');
+                    this.unlockCheckUI('b');
+                }
+                if (s.b) {
+                    this.markCheckUI('b');
+                    this.unlockCheckUI('c');
+                }
+                if (s.c) {
+                    this.markCheckUI('c');
+                    document.getElementById('btn-m2-next').classList.remove('hidden');
+                }
+            },
+
+            markCheckUI(taskId) {
+                const li = document.getElementById(`task-${taskId}`);
+                const btn = document.getElementById(`btn-check-${taskId}`);
+                li.classList.remove('active');
+                li.classList.add('completed');
+                btn.innerText = "Completado ✔";
+                btn.style.backgroundColor = "var(--accent-green)";
+                btn.style.color = "white";
+                btn.disabled = true;
+            },
+
+            unlockCheckUI(taskId) {
+                const li = document.getElementById(`task-${taskId}`);
+                const btn = document.getElementById(`btn-check-${taskId}`);
+                li.style.opacity = "1";
+                li.style.pointerEvents = "auto";
+                li.classList.add('active');
+                btn.disabled = false;
+            },
+
+            // === LÓGICA MISIÓN 3 (RESPIRACIÓN) ===
+            setupMission3() {
+                const circle = document.getElementById('breathe-circle');
+                const text = document.getElementById('breathe-text');
+                let isInhaling = true;
+
+                clearInterval(this.breatheInterval);
+                
+                // Animación inicial
+                circle.style.transform = "scale(2.5)";
+                circle.style.background = "radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%)";
+                circle.style.boxShadow = "0 0 50px var(--accent-cyan)";
+                text.style.color = "var(--accent-cyan)";
+                
+                this.breatheInterval = setInterval(() => {
+                    isInhaling = !isInhaling;
+                    if (isInhaling) {
+                        circle.style.transform = "scale(2.5)";
+                        circle.style.background = "radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%)";
+                        circle.style.boxShadow = "0 0 50px var(--accent-cyan)";
+                        text.innerText = "Inhala profundo...";
+                        text.style.color = "var(--accent-cyan)";
+                    } else {
+                        circle.style.transform = "scale(1)";
+                        circle.style.background = "radial-gradient(circle, var(--accent-green) 0%, transparent 70%)";
+                        circle.style.boxShadow = "0 0 20px var(--accent-green)";
+                        text.innerText = "Exhala con paciencia...";
+                        text.style.color = "var(--accent-green)";
+                    }
+                }, 4000); 
+            },
+
+            // === LÓGICA MISIÓN 4 (TRIVIA) ===
+            setupMission4() {
+                const container = document.getElementById('trivia-container');
+                container.innerHTML = ""; 
+
+                triviaData.forEach((item) => {
+                    const card = document.createElement('div');
+                    card.className = "trivia-card";
+                    
+                    const qText = document.createElement('h3');
+                    qText.innerText = item.question;
+                    card.appendChild(qText);
+
+                    const optsDiv = document.createElement('div');
+                    optsDiv.className = "trivia-options";
+
+                    item.options.forEach((optText, index) => {
+                        const btn = document.createElement('button');
+                        btn.className = "trivia-option";
+                        btn.innerText = optText;
+                        
+                        if (this.state.triviaAnswers[item.id] !== null) {
+                            btn.disabled = true;
+                            if (index === item.correct) {
+                                btn.classList.add('correct');
+                            } else if (index === this.state.triviaAnswers[item.id]) {
+                                btn.classList.add('wrong');
+                            }
+                        } else {
+                            btn.onclick = () => this.answerTrivia(item.id, index, item.correct, card);
+                        }
+
+                        optsDiv.appendChild(btn);
+                    });
+
+                    card.appendChild(optsDiv);
+                    container.appendChild(card);
+                });
+
+                this.checkTriviaCompletion();
+            },
+
+            answerTrivia(questionId, selectedIndex, correctIndex, cardElement) {
+                this.state.triviaAnswers[questionId] = selectedIndex;
+                
+                const buttons = cardElement.querySelectorAll('.trivia-option');
+                buttons.forEach((btn, idx) => {
+                    btn.disabled = true;
+                    if (idx === correctIndex) {
+                        btn.classList.add('correct');
+                    } else if (idx === selectedIndex) {
+                        btn.classList.add('wrong'); 
+                    }
+                });
+
+                this.calculateGrade();
+                this.saveState();
+                this.checkTriviaCompletion();
+            },
+
+            checkTriviaCompletion() {
+                const allAnswered = Object.values(this.state.triviaAnswers).every(v => v !== null);
+                if (allAnswered) {
+                    document.getElementById('btn-m4-next').classList.remove('hidden');
+                }
+            },
+            
+            // Función centralizada para calcular la nota
+            calculateGrade() {
+                let currentGrade = 0.0;
+                
+                // 1.0 por cada check (max 3.0)
+                if (this.state.mission2Checks.a) currentGrade += 1.0;
+                if (this.state.mission2Checks.b) currentGrade += 1.0;
+                if (this.state.mission2Checks.c) currentGrade += 1.0;
+                
+                // 0.5 por cada trivia correcta (max 2.0)
+                triviaData.forEach(q => {
+                    if (this.state.triviaAnswers[q.id] === q.correct) {
+                        currentGrade += 0.5;
+                    }
+                });
+                
+                this.state.grade = currentGrade;
+            },
+
+            // === LÓGICA MISIÓN 5 (PODIO Y CALIFICACIÓN) ===
+            setupMission5() {
+                this.calculateGrade();
+                
+                let finalGrade = Math.min(5.0, this.state.grade);
+                finalGrade = (Math.round(finalGrade * 10) / 10).toFixed(1);
+                
+                document.getElementById('final-grade').innerText = finalGrade;
+
+                const card = document.getElementById('element-card');
+                const num = document.getElementById('element-num');
+                const sym = document.getElementById('element-sym');
+                const name = document.getElementById('element-name');
+                const desc = document.getElementById('element-desc');
+
+                card.className = "element-card";
+
+                if (finalGrade >= 4.6) {
+                    card.classList.add('element-au');
+                    num.innerText = "79"; sym.innerText = "Au"; name.innerText = "Oro";
+                    desc.innerHTML = "¡Rango Excelente! Eres como el <strong>Oro</strong>, un elemento noble que soporta el calor y el tiempo sin alterarse. Tienes la paciencia de un gran científico.";
+                } else if (finalGrade >= 3.6) {
+                    card.classList.add('element-ag');
+                    num.innerText = "47"; sym.innerText = "Ag"; name.innerText = "Plata";
+                    desc.innerHTML = "¡Muy Buen Trabajo! Eres como la <strong>Plata</strong>. Has comprendido muy bien que algunos procesos requieren tiempo y calor para funcionar correctamente.";
+                } else {
+                    card.classList.add('element-fe');
+                    num.innerText = "26"; sym.innerText = "Fe"; name.innerText = "Hierro";
+                    desc.innerHTML = "¡Sigue forjándote! Eres como el <strong>Hierro</strong>. Tienes una base resistente, pero recuerda que un buen especialista nunca pierde la paciencia ante un problema difícil.";
+                }
+            },
+
+            // === EXPORTACIÓN DE DATOS (TXT) ===
+            downloadReport() {
+                const date = new Date().toLocaleDateString('es-CO');
+                const finalGrade = (Math.round(Math.min(5.0, this.state.grade) * 10) / 10).toFixed(1);
+                
+                let element = "Hierro (Fe)";
+                if (finalGrade >= 4.6) element = "Oro (Au)";
+                else if (finalGrade >= 3.6) element = "Plata (Ag)";
+
+                let correctAnswers = 0;
+                triviaData.forEach(q => {
+                    if (this.state.triviaAnswers[q.id] === q.correct) correctAnswers++;
+                });
+
+                const content = `===========================================
+REPORTE DEL LABORATORIO DE FÍSICA Y MATERIALES
+===========================================
+Especialista a Cargo: ${this.state.name}
+Fecha de Emisión: ${date}
+Sector Estudiado: Separación (II) - Evaporación y Decantación
+Valor Analizado: La Paciencia en la Ciencia
+-------------------------------------------
+RESULTADOS DE LA MISIÓN:
+Calificación de Sistemas: ${finalGrade} / 5.0
+Elemento Químico Asignado: ${element}
+
+DESGLOSE DE OPERACIONES (CUADERNO):
+1. Registro Teórico: ${this.state.mission2Checks.a ? 'COMPLETADO' : 'PENDIENTE'}
+2. Esquemas Visuales: ${this.state.mission2Checks.b ? 'COMPLETADO' : 'PENDIENTE'}
+3. Extracción de Sal (Prueba de Paciencia): ${this.state.mission2Checks.c ? 'EN PROCESO/COMPLETADO' : 'PENDIENTE'}
+
+RENDIMIENTO EN SIMULADOR TÁCTICO:
+- Decisiones Correctas: ${correctAnswers} de 4
+-------------------------------------------
+Fin del comunicado. Todos los sistemas cerrados.
+===========================================`;
+
+                // Descarga local mediante Blob
+                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Reporte_Decantacion_${this.state.name.replace(/\s+/g, '_')}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        };
+
+        // Iniciar app
+        window.onload = () => app.init();
+
+    </script>
+</body>
+</html>

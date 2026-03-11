@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Evidencias de una reacción química - Prof. Juan Felipe Ramírez Giraldo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root{
+            --c1:#1b2735;
+            --c2:#090a0f;
+            --c3:#ffcc00;
+            --c4:#ff6b6b;
+            --c5:#4ecdc4;
+            --c6:#45aaf2;
+        }
+        *{box-sizing:border-box;}
+        body{
+            margin:0;
+            font-family:'Segoe UI', Arial, sans-serif;
+            background:radial-gradient(circle at top,var(--c1),var(--c2));
+            color:#fff;
+            overflow:hidden;
+        }
+        h1,h2,h3{margin:0 0 10px;}
+        .container{
+            width:100vw;
+            height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            position:relative;
+        }
+        .slide{
+            width:90%;
+            max-width:1000px;
+            height:85vh;
+            background:linear-gradient(135deg,rgba(10,25,47,0.95),rgba(15,32,39,0.9));
+            border-radius:20px;
+            box-shadow:0 0 25px rgba(0,0,0,0.8);
+            padding:20px 30px 70px;
+            display:none;
+            position:relative;
+            overflow:hidden;
+        }
+        .slide.active{
+            display:block;
+            animation:fadeIn 0.6s ease;
+        }
+        @keyframes fadeIn{
+            from{opacity:0; transform:scale(0.96) translateY(10px);}
+            to{opacity:1; transform:scale(1) translateY(0);}
+        }
+
+        .top-bar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:10px;
+        }
+        .tag{
+            font-size:0.85rem;
+            padding:4px 10px;
+            border-radius:20px;
+            background:rgba(255,255,255,0.1);
+        }
+        .progress{
+            width:180px;
+            height:8px;
+            background:rgba(255,255,255,0.15);
+            border-radius:10px;
+            overflow:hidden;
+        }
+        .progress-inner{
+            height:100%;
+            width:0%;
+            background:linear-gradient(90deg,var(--c5),var(--c3));
+            transition:width 0.3s;
+        }
+        .points{
+            font-size:0.9rem;
+            padding:4px 12px;
+            border-radius:20px;
+            background:rgba(0,0,0,0.4);
+            border:1px solid rgba(255,255,255,0.2);
+        }
+
+        .nav-buttons{
+            position:absolute;
+            bottom:15px;
+            left:0;
+            width:100%;
+            display:flex;
+            justify-content:space-between;
+            padding:0 25px;
+            align-items:center;
+        }
+        button{
+            padding:8px 16px;
+            border:none;
+            border-radius:20px;
+            cursor:pointer;
+            font-weight:bold;
+            transition:transform 0.2s, box-shadow 0.2s, background 0.3s;
+        }
+        .btn-prev{background:#555; color:#fff;}
+        .btn-next{background:linear-gradient(135deg,var(--c3),var(--c4)); color:#000;}
+        button:hover{transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,0.4);}
+        button:disabled{opacity:0.3; cursor:not-allowed; box-shadow:none; transform:none;}
+
+        .columns{
+            display:grid;
+            grid-template-columns:1.25fr 1fr;
+            gap:20px;
+            height:calc(100% - 70px);
+        }
+        .full{
+            height:calc(100% - 70px);
+            overflow-y:auto;
+        }
+        .card{
+            background:rgba(255,255,255,0.06);
+            border-radius:15px;
+            padding:12px 15px;
+            margin-bottom:10px;
+            border:1px solid rgba(255,255,255,0.1);
+        }
+        ul{padding-left:18px; margin-top:5px;}
+        li{margin-bottom:4px;}
+
+        .badge{
+            display:inline-block;
+            background:linear-gradient(135deg,var(--c3),var(--c4));
+            color:#000;
+            padding:4px 10px;
+            border-radius:15px;
+            font-size:0.8rem;
+            font-weight:bold;
+            margin-bottom:8px;
+        }
+        .highlight{color:var(--c3); font-weight:bold;}
+        .pill{
+            display:inline-block;
+            padding:4px 10px;
+            border-radius:999px;
+            background:rgba(0,0,0,0.5);
+            margin-right:6px;
+            font-size:0.8rem;
+        }
+
+        .question-box{
+            margin-top:10px;
+            padding:10px;
+            background:rgba(0,0,0,0.6);
+            border-radius:10px;
+            border:1px solid rgba(255,255,255,0.15);
+        }
+        .question-box p{margin-bottom:8px;}
+        .question-box label{display:block; margin-bottom:4px; cursor:pointer;}
+        .feedback{
+            margin-top:6px;
+            padding:6px 8px;
+            border-radius:8px;
+            font-size:0.85rem;
+            display:none;
+        }
+        .feedback.ok{background:rgba(78,205,196,0.25); border:1px solid var(--c5);}
+        .feedback.bad{background:rgba(255,107,107,0.25); border:1px solid var(--c4);}
+
+        .points-pop{
+            position:absolute;
+            top:10px;
+            right:210px;
+            font-size:0.9rem;
+            padding:4px 8px;
+            border-radius:10px;
+            background:rgba(0,0,0,0.7);
+            border:1px solid rgba(255,255,255,0.5);
+            display:none;
+            animation:pop 0.8s ease-out forwards;
+        }
+        @keyframes pop{
+            from{opacity:0; transform:translateY(-10px) scale(0.8);}
+            to{opacity:1; transform:translateY(0) scale(1);}
+        }
+
+        .lab-scene{
+            position:relative;
+            width:100%;
+            height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .flask{
+            width:120px;
+            height:160px;
+            border-radius:20px 20px 40px 40px;
+            background:linear-gradient(180deg,rgba(255,255,255,0.4),rgba(255,255,255,0.05));
+            border:3px solid rgba(255,255,255,0.6);
+            position:relative;
+            overflow:hidden;
+        }
+        .liquid{
+            position:absolute;
+            bottom:0;
+            width:100%;
+            height:45%;
+            background:linear-gradient(135deg,var(--c4),var(--c6));
+            animation:wave 2.5s ease-in-out infinite;
+        }
+        @keyframes wave{
+            0%,100%{transform:translateY(3px);}
+            50%{transform:translateY(-3px);}
+        }
+        .bubble{
+            position:absolute;
+            width:14px;
+            height:14px;
+            border-radius:50%;
+            border:2px solid rgba(255,255,255,0.8);
+            animation:rise 3s linear infinite;
+            opacity:0;
+        }
+        @keyframes rise{
+            0%{bottom:10px; opacity:0;}
+            20%{opacity:1;}
+            100%{bottom:150px; opacity:0;}
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            font-size:0.9rem;
+        }
+        th,td{
+            border:1px solid rgba(255,255,255,0.3);
+            padding:4px 6px;
+        }
+
+        .emoji-big{
+            font-size:3rem;
+            text-align:center;
+        }
+
+        .full::-webkit-scrollbar{width:6px;}
+        .full::-webkit-scrollbar-thumb{
+            background:rgba(255,255,255,0.3);
+            border-radius:10px;
+        }
+        .full::-webkit-scrollbar-track{background:transparent;}
+
+        @media (max-width:800px){
+            .columns{grid-template-columns:1fr;}
+            .slide{height:90vh;padding:15px 15px 75px;}
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="pointsPop" class="points-pop">+10 pts</div>
+
+    <!-- Diapositiva 1: Presentación -->
+    <div class="slide active" data-index="0">
+        <div class="top-bar">
+            <div class="tag">Grado 8° – Química</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner" id="progressBar"></div></div>
+                <div class="points" id="pointsBox">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <span class="badge">Bienvenidas y bienvenidos</span>
+                <h1>Evidencias de una reacción química</h1>
+                <p>
+                    Docente: <span class="highlight">Juan Felipe Ramírez Giraldo</span><br>
+                    Licenciado en Biología y Educación Ambiental.<br>
+                    Magíster en Recursos Digitales aplicados a la Educación.<br>
+                    Estudiante de Doctorado en Ciencias Biomédicas.
+                </p>
+                <div class="card">
+                    <h3>Objetivo de aprendizaje</h3>
+                    <ul>
+                        <li>Identificar indicadores de cambio químico en reacciones sencillas.</li>
+                        <li>Observar y registrar evidencias de reacción en el experimento vinagre + bicarbonato.</li>
+                        <li>Relacionar las reacciones químicas con la gestión de las propias “reacciones explosivas” emocionales.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Evidencias de aprendizaje</h3>
+                    <ul>
+                        <li>Tabla de registro de burbujeo, cambio de temperatura y olor en el experimento.</li>
+                        <li>Explicación escrita u oral de por qué la reacción es un cambio químico.</li>
+                        <li>Reflexión corta: “Mis reacciones explosivas” y cómo puedo gestionarlas mejor.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="lab-scene">
+                <div class="flask">
+                    <div class="liquid"></div>
+                    <div class="bubble" style="left:25px; animation-delay:0s;"></div>
+                    <div class="bubble" style="left:60px; animation-delay:0.6s;"></div>
+                    <div class="bubble" style="left:95px; animation-delay:1.2s;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev" disabled>&larr; Anterior</button>
+            <span>Diapositiva 1 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 2: ¿Qué es una reacción química? -->
+    <div class="slide" data-index="1">
+        <div class="top-bar">
+            <div class="tag">Recordemos (concepto)</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>¿Qué es una reacción química?</h2>
+            <div class="card">
+                <p>
+                    Una reacción química es un proceso en el que unas sustancias iniciales se transforman en otras diferentes, con nuevas propiedades.
+                </p>
+                <ul>
+                    <li>Las sustancias que reaccionan se llaman <span class="highlight">reactivos</span>.</li>
+                    <li>Las sustancias que se forman se llaman <span class="highlight">productos</span>.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Cambios físicos vs. cambios químicos</h3>
+                <ul>
+                    <li>Cambio físico: cambia la forma o el estado, pero la sustancia sigue siendo la misma (ejemplo: hielo que se derrite).</li>
+                    <li>Cambio químico: se forman sustancias nuevas (ejemplo: papel que se quema, hierro que se oxida).</li>
+                </ul>
+            </div>
+            <div class="question-box" data-question="q1">
+                <p><strong>Pregunta 1:</strong> ¿Qué tipo de cambio es cuando el agua se congela?</p>
+                <label><input type="radio" name="q1" value="a"> Cambio químico</label>
+                <label><input type="radio" name="q1" value="b"> Cambio físico</label>
+                <label><input type="radio" name="q1" value="c"> No es un cambio</label>
+                <button onclick="checkQuestion('q1','b')">Comprobar</button>
+                <div class="feedback" id="fb-q1"></div>
+            </div>
+            <p style="margin-top:10px;">
+                ✏️ En tu cuaderno: escribe un ejemplo de cambio físico y uno de cambio químico que hayas visto en casa.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 2 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 3: Indicadores de cambio químico -->
+    <div class="slide" data-index="2">
+        <div class="top-bar">
+            <div class="tag">Indicadores de cambio químico</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>¿Cómo saber si hubo reacción?</h2>
+                <div class="card">
+                    <p>
+                        No vemos las partículas, pero sí podemos observar señales externas de que ocurrió una reacción química.
+                    </p>
+                    <ul>
+                        <li><span class="highlight">Producción de gas</span>: burbujeo, espuma.</li>
+                        <li><span class="highlight">Cambio de temperatura</span> sin calentar ni enfriar desde afuera.</li>
+                        <li><span class="highlight">Cambio de olor</span> apreciable.</li>
+                        <li><span class="highlight">Cambio de color</span> permanente.</li>
+                        <li><span class="highlight">Formación de un sólido nuevo</span> en una disolución (precipitado).</li>
+                    </ul>
+                </div>
+                <div class="question-box" data-question="q2">
+                    <p><strong>Pregunta 2:</strong> ¿Cuál de estas NO es una buena evidencia de cambio químico?</p>
+                    <label><input type="radio" name="q2" value="a"> Producción de gas</label>
+                    <label><input type="radio" name="q2" value="b"> Cambio permanente de color</label>
+                    <label><input type="radio" name="q2" value="c"> Cortar un papel en pedazos</label>
+                    <button onclick="checkQuestion('q2','c')">Comprobar</button>
+                    <div class="feedback" id="fb-q2"></div>
+                </div>
+            </div>
+            <div class="lab-scene">
+                <div class="flask">
+                    <div class="liquid"></div>
+                    <div class="bubble" style="left:20px; animation-delay:0s;"></div>
+                    <div class="bubble" style="left:60px; animation-delay:0.5s;"></div>
+                    <div class="bubble" style="left:90px; animation-delay:1s;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 3 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 4: Presentación del experimento -->
+    <div class="slide" data-index="3">
+        <div class="top-bar">
+            <div class="tag">Experimento: vinagre + bicarbonato</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>¿Qué vamos a hacer?</h2>
+            <div class="card">
+                <p>
+                    Mezclaremos vinagre (ácido) con bicarbonato de sodio para observar evidencias de una reacción química.
+                </p>
+                <h3>Materiales</h3>
+                <ul>
+                    <li>1 vaso de vidrio o plástico transparente.</li>
+                    <li>Vinagre blanco.</li>
+                    <li>Bicarbonato de sodio.</li>
+                    <li>Cuchara pequeña.</li>
+                    <li>Termómetro (si está disponible).</li>
+                    <li>Hoja de registro y lápiz.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Antes de mezclar…</h3>
+                <ul>
+                    <li>Observa el aspecto del vinagre y del bicarbonato por separado.</li>
+                    <li>Acerca la nariz con cuidado para percibir el olor del vinagre (sin inhalar fuerte).</li>
+                    <li>Si hay termómetro, toma la temperatura inicial del vinagre.</li>
+                </ul>
+            </div>
+            <p>
+                ⚠️ Seguridad: no acerques demasiado la cara al vaso y no ingieras ninguna sustancia del experimento.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 4 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 5: Procedimiento y observación -->
+    <div class="slide" data-index="4">
+        <div class="top-bar">
+            <div class="tag">Paso a paso del experimento

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Masterclass: Arquitectos del Conocimiento - Ingeniería Visual</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-warm: #fdfaf5;
+            --olive: #606c38;
+            --earth: #bc6c25;
+            --text: #283618;
+            --white: #ffffff;
+            --border: #e2e2e2;
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background: var(--bg-warm); 
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .app-shell { width: 100%; display: flex; flex-direction: column; }
+        
+        header { 
+            padding: 30px; 
+            text-align: center; 
+            background: #f1ede3; 
+            border-bottom: 2px solid var(--border); 
+        }
+        h1 { font-size: 2.5rem; margin: 0; color: var(--olive); font-weight: 800; }
+
+        .nav-tabs { 
+            display: flex; 
+            justify-content: center; 
+            gap: 10px; 
+            background: #e9edc9; 
+            padding: 15px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000;
+        }
+        .tab-btn { 
+            padding: 10px 25px; 
+            border: 2px solid var(--olive); 
+            background: white; 
+            border-radius: 30px; 
+            cursor: pointer; 
+            font-weight: bold;
+            color: var(--olive);
+        }
+        .tab-btn.active { background: var(--olive); color: white; }
+
+        .content-section { display: none; padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%; }
+        .active-section { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Estilo de Tarjetas y Teoría */
+        .card { background: var(--white); border-radius: 20px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 20px;}
+        
+        .viz-example { 
+            background: #faf8f2; 
+            border: 2px solid #f1ede3; 
+            border-radius: 15px; 
+            padding: 20px; 
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* --- DRAG & DROP LABORATORY --- */
+        .lab-container { background: #f1ede3; padding: 30px; border-radius: 20px; text-align: center; }
+        .chip-box { margin-bottom: 25px; padding: 15px; background: rgba(255,255,255,0.5); border-radius: 10px; }
+        .chip { 
+            background: var(--olive); 
+            color: white; 
+            padding: 8px 12px; 
+            border-radius: 5px; 
+            cursor: grab; 
+            display: inline-block; 
+            margin: 4px; 
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .map-canvas { 
+            width: 100%; 
+            height: 600px; 
+            background: white; 
+            border: 2px dashed var(--earth); 
+            border-radius: 20px; 
+            position: relative; 
+        }
+        .slot { 
+            position: absolute; 
+            border: 1px dashed #bbb; 
+            border-radius: 6px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 0.7rem; 
+            background: #fff;
+        }
+        .connector-txt { position: absolute; font-style: italic; font-size: 0.75rem; color: var(--earth); }
+
+        /* --- PIZARRAS DE DIBUJO --- */
+        .drawing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .canvas-box { border: 2px solid #a0522d; border-radius: 15px; background: white; padding: 10px; }
+        canvas { border: 1px solid #eee; width: 100%; height: 250px; cursor: crosshair; touch-action: none; }
+
+        .notebook-challenge { 
+            background: #fefae0; 
+            border-left: 10px solid var(--olive); 
+            padding: 25px; 
+            border-radius: 15px; 
+            margin-top: 30px;
+        }
+
+        .btn-check {
+            padding: 15px 40px;
+            background: var(--earth);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+    <header>
+        <h1>INGENIERÍA DEL PENSAMIENTO</h1>
+        <p>Masterclass Integral: Estructuras de Alto Nivel para Ciencias Naturales</p>
+    </header>
+
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="openTab(1, this)">1. Teoría y Ejemplos</button>
+        <button class="tab-btn" onclick="openTab(2, this)">2. Lab: 3 Mapas Conceptuales</button>
+        <button class="tab-btn" onclick="openTab(3, this)">3. Lab: 3 Mapas Mentales</button>
+    </nav>
+
+    <section id="tab1" class="content-section active-section">
+        <div class="card">
+            <h2 style="color: var(--olive)">Estructura de 3 Ramas: El Mapa Conceptual Maestro</h2>
+            <p>Para que un mapa conceptual sea válido, debe presentar una jerarquía clara con al menos tres ramificaciones que expliquen el tema principal:</p>
+            <div class="viz-example">
+                <svg width="600" height="300" viewBox="0 0 600 300">
+                    <rect x="225" y="10" width="150" height="40" rx="5" fill="#f1f8e9" stroke="#606c38" stroke-width="2"/>
+                    <text x="300" y="35" text-anchor="middle" font-weight="bold">IDEA PRINCIPAL</text>
+                    
+                    <path d="M 300 50 L 100 90 M 300 50 L 300 90 M 300 50 L 500 90" stroke="#bc6c25" stroke-width="2" fill="none"/>
+                    
+                    <rect x="25" y="90" width="150" height="40" rx="5" fill="#fff" stroke="#606c38"/>
+                    <text x="100" y="115" text-anchor="middle" font-size="12">Idea Secundaria 1</text>
+                    
+                    <rect x="225" y="90" width="150" height="40" rx="5" fill="#fff" stroke="#606c38"/>
+                    <text x="300" y="115" text-anchor="middle" font-size="12">Idea Secundaria 2</text>
+                    
+                    <rect x="425" y="90" width="150" height="40" rx="5" fill="#fff" stroke="#606c38"/>
+                    <text x="500" y="115" text-anchor="middle" font-size="12">Idea Secundaria 3</text>
+
+                    <text x="100" y="160" text-anchor="middle" font-size="11" font-style="italic">Explicación + Ejemplo</text>
+                    <text x="300" y="160" text-anchor="middle" font-size="11" font-style="italic">Explicación + Ejemplo</text>
+                    <text x="500" y="160" text-anchor="middle" font-size="11" font-style="italic">Explicación + Ejemplo</text>
+                </svg>
+            </div>
+            <p>Cada rama debe incluir un <b>conector</b> (verbo), una <b>explicación</b> técnica y un <b>ejemplo</b> concreto que ilustre la idea.</p>
+        </div>
+    </section>
+
+    <section id="tab2" class="content-section">
+        <div class="lab-container">
+            <h2>🧪 Desafío OVA: La Triple Cascada Lógica</h2>
+            <p>Completa el mapa conceptual de los <b>Estados de la Materia</b> con sus 3 ramas fundamentales:</p>
+            
+            <div class="chip-box" id="pool">
+                <div class="chip" draggable="true" id="c1">SÓLIDO</div>
+                <div class="chip" draggable="true" id="c2">LÍQUIDO</div>
+                <div class="chip" draggable="true" id="c3">GASEOSO</div>
+                <div class="chip" draggable="true" id="c4">MATERIA</div>
+                <div class="chip" draggable="true" id="c5">Forma definida</div>
+                <div class="chip" draggable="true" id="c6">Fluidez</div>
+                <div class="chip" draggable="true" id="c7">Expansión</div>
+                <div class="chip" draggable="true" id="c8">Hielo</div>
+                <div class="chip" draggable="true" id="c9">Agua</div>
+                <div class="chip" draggable="true" id="c10">Vapor</div>
+            </div>
+
+            <div class="map-canvas">
+                <div class="slot" id="s1" style="top: 20px; left: 40%; width: 20%;">TEMA PRINCIPAL</div>
+                
+                <div class="slot" id="s2" style="top: 130px; left: 10%; width: 180px;">IDEA SECUNDARIA 1</div>
+                <div class="slot" id="s3" style="top: 230px; left: 10%; width: 180px;">EXPLICACIÓN</div>
+                <div class="slot" id="s4" style="top: 330px; left: 10%; width: 180px;">EJEMPLO</div>
+
+                <div class="slot" id="s5" style="top: 130px; left: 40%; width: 180px;">IDEA SECUNDARIA 2</div>
+                <div class="slot" id="s6" style="top: 230px; left: 40%; width: 180px;">EXPLICACIÓN</div>
+                <div class="slot" id="s7" style="top: 330px; left: 40%; width: 180px;">EJEMPLO</div>
+
+                <div class="slot" id="s8" style="top: 130px; left: 70%; width: 180px;">IDEA SECUNDARIA 3</div>
+                <div class="slot" id="s9" style="top: 230px; left: 70%; width: 180px;">EXPLICACIÓN</div>
+                <div class="slot" id="s10" style="top: 330px; left: 70%; width: 180px;">EJEMPLO</div>
+            </div>
+            <button class="btn-check" onclick="checkMap()">Verificar Desafío 1 🚀</button>
+        </div>
+
+        <div class="notebook-challenge">
+            <h3>📓 ACTIVIDAD EN EL CUADERNO (DESAFÍO 3)</h3>
+            <p>Diseña un mapa conceptual sobre <b>"Los Reinos de la Naturaleza"</b>. Debe incluir obligatoriamente 3 ideas secundarias, cada una con su conector, explicación y un ejemplo dibujado.</p>
+        </div>
+    </section>
+
+    <section id="tab3" class="content-section">
+        <h2>🎨 Desafío OVA: 3 Mapas Mentales Interactivos</h2>
+        <p>Usa el mouse para dibujar los esquemas radiales de estos temas: <b>1. La Célula, 2. El Ecosistema, 3. La Energía</b>.</p>
+        
+        <div class="drawing-grid">
+            <div class="canvas-box">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Mapa 1</span><button onclick="clearCanvas(0)">Limpiar</button></div>
+                <canvas id="canv0"></canvas>
+            </div>
+            <div class="canvas-box">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Mapa 2</span><button onclick="clearCanvas(1)">Limpiar</button></div>
+                <canvas id="canv1"></canvas>
+            </div>
+            <div class="canvas-box">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Mapa 3</span><button onclick="clearCanvas(2)">Limpiar</button></div>
+                <canvas id="canv2"></canvas>
+            </div>
+        </div>
+
+        <div class="notebook-challenge" style="border-color: var(--earth);">
+            <h3>📓 ACTIVIDAD EN EL CUADERNO</h3>
+            <p>Crea un mapa mental a gran escala sobre <b>"El Calentamiento Global"</b>. Usa una idea central potente, ramas de colores para los conceptos y dibujos descriptivos para cada conexión.</p>
+        </div>
+        <button class="btn-check" style="background: var(--olive); width: 100%;" onclick="celebrate()">¡CONCLUIR SESIÓN! 🎖️</button>
+    </section>
+</div>
+
+<script>
+    function openTab(n, btn) {
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active-section'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab' + n).classList.add('active-section');
+        btn.classList.add('active');
+        if(n === 3) initDrawing();
+    }
+
+    // Lógica Drag and Drop
+    let dragged = null;
+    document.querySelectorAll('.chip').forEach(c => {
+        c.addEventListener('dragstart', (e) => {
+            dragged = e.target;
+            e.dataTransfer.setData('text', e.target.id);
+        });
+    });
+
+    document.querySelectorAll('.slot').forEach(s => {
+        s.addEventListener('dragover', (e) => e.preventDefault());
+        s.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if(e.target.classList.contains('slot') && e.target.children.length === 0) {
+                e.target.appendChild(dragged);
+                dragged.style.width = "100%";
+                dragged.style.margin = "0";
+            }
+        });
+    });
+
+    function checkMap() {
+        const t = document.getElementById('s1').innerText;
+        if(t.includes('MATERIA')) {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            alert("¡Excelente! Has construido un mapa con 3 ramas funcionales.");
+        } else {
+            alert("Recuerda: El tema principal debe estar en la cima.");
+        }
+    }
+
+    // Lógica de Dibujo
+    let contexts = [];
+    let isDrawing = false;
+
+    function initDrawing() {
+        if(contexts.length > 0) return;
+        for(let i=0; i<3; i++) {
+            let canv = document.getElementById('canv' + i);
+            canv.width = canv.parentElement.clientWidth - 20;
+            canv.height = 250;
+            let ctx = canv.getContext('2d');
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#bc6c25';
+            
+            canv.addEventListener('mousedown', (e) => { isDrawing = true; draw(e, ctx, canv); });
+            canv.addEventListener('mousemove', (e) => { if(isDrawing) draw(e, ctx, canv); });
+            canv.addEventListener('mouseup', () => { isDrawing = false; ctx.beginPath(); });
+            contexts.push(ctx);
+        }
+    }
+
+    function draw(e, ctx, canv) {
+        let rect = canv.getBoundingClientRect();
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function clearCanvas(i) {
+        let canv = document.getElementById('canv' + i);
+        contexts[i].clearRect(0, 0, canv.width, canv.height);
+    }
+
+    function celebrate() {
+        confetti({ particleCount: 200, spread: 100, origin: { y: 0.8 } });
+        alert("¡Felicidades! Has completado tus desafíos de ingeniería visual.");
+    }
+</script>
+
+</body>
+</html>

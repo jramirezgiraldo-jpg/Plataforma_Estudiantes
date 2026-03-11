@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruptura de Enlaces: Homólisis vs Heterólisis</title>
+    <style>
+        :root {
+            --primary: #2c3e50; /* Oscuro */
+            --homolysis: #e67e22; /* Naranja - Radicales */
+            --heterolysis: #8e44ad; /* Morado - Iones */
+            --bg-color: #f4f6f7;
+            --text-color: #333;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        /* --- Estructura de Diapositivas --- */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 60px 80px 60px;
+            text-align: center;
+            background: white;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .slide.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* --- Tipografía --- */
+        h1 { font-size: 3.5rem; margin-bottom: 10px; color: var(--primary); }
+        h2 { font-size: 2.5rem; margin-bottom: 30px; border-bottom: 4px solid var(--primary); padding-bottom: 10px; display: inline-block; }
+        h3 { font-size: 1.8rem; margin: 10px 0; }
+        p { font-size: 1.5rem; line-height: 1.6; max-width: 900px; margin-bottom: 20px; color: #555; }
+
+        .highlight-homo { color: var(--homolysis); font-weight: bold; }
+        .highlight-hetero { color: var(--heterolysis); font-weight: bold; }
+
+        /* --- Elementos de Simulación Molecular --- */
+        .molecule-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 40px;
+            height: 200px;
+            width: 500px;
+            position: relative;
+        }
+
+        .atom {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            font-weight: bold;
+            position: absolute;
+            transition: transform 1s ease-in-out;
+            z-index: 1;
+        }
+
+        .atom-left { background-color: #34495e; left: 140px; }
+        .atom-right { background-color: #7f8c8d; right: 140px; }
+
+        /* Los electrones (puntos) */
+        .electron-pair {
+            position: absolute;
+            display: flex;
+            gap: 10px;
+            z-index: 2;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 1s ease-in-out;
+        }
+
+        .dot {
+            width: 15px;
+            height: 15px;
+            background-color: #f1c40f; /* Amarillo electrón */
+            border-radius: 50%;
+            box-shadow: 0 0 5px #f39c12;
+            transition: transform 1s ease-in-out, opacity 0.5s;
+        }
+
+        /* Clases para animación de ruptura */
+        .broken-homo .atom-left { transform: translateX(-100px); }
+        .broken-homo .atom-right { transform: translateX(100px); }
+        .broken-homo .dot:first-child { transform: translateX(-100px); } /* Un electrón a la izquierda */
+        .broken-homo .dot:last-child { transform: translateX(100px); }  /* Un electrón a la derecha */
+
+        .broken-hetero .atom-left { transform: translateX(-100px); background-color: #e74c3c; } /* Catión (rojo) */
+        .broken-hetero .atom-right { transform: translateX(100px); background-color: #3498db; } /* Anión (azul) */
+        .broken-hetero .electron-pair { transform: translate(65px, -50%); } /* Ambos se van a la derecha */
+
+
+        /* --- Botones --- */
+        .btn-sim {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: transform 0.2s;
+        }
+        .btn-sim:hover { transform: scale(1.05); background-color: #1abc9c; }
+
+        /* --- Controles de Navegación --- */
+        .controls-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background-color: #ecf0f1;
+            border: none;
+            color: #2c3e50;
+            padding: 10px 25px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .nav-btn:hover { background-color: white; }
+        .nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        #slide-indicator { color: white; font-size: 1.2rem; }
+
+        /* Tabla comparativa */
+        .comparison-table {
+            width: 80%;
+            border-collapse: collapse;
+            font-size: 1.4rem;
+            margin-top: 20px;
+        }
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 15px;
+        }
+        .comparison-table th { background-color: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="slide active">
+        <div style="font-size: 5rem;">⚛️💥</div>
+        <h1>Ruptura de Enlaces</h1>
+        <h2>Mecanismos de Reacción</h2>
+        <p>¿Cómo se rompen las moléculas? Un vistazo a la <strong>Homólisis</strong> y la <strong>Heterólisis</strong>.</p>
+        <p style="font-size: 1rem; margin-top: 40px;">Docente: Juan Felipe Ramírez Giraldo</p>
+    </div>
+
+    <div class="slide">
+        <h2>Romper para Construir</h2>
+        <p>Una reacción química es básicamente el proceso de romper enlaces antiguos para formar enlaces nuevos.</p>
+        <p>Existen dos formas principales de romper un enlace covalente (compartición de electrones):</p>
+        <div style="display: flex; justify-content: center; gap: 50px; margin-top: 30px;">
+            <div style="padding: 20px; background: #fcece0; border-radius: 10px; width: 300px;">
+                <h3 style="color: var(--homolysis)">Homólisis</h3>
+                <p style="font-size: 1rem;">Ruptura Simétrica</p>
+            </div>
+            <div style="padding: 20px; background: #e8daef; border-radius: 10px; width: 300px;">
+                <h3 style="color: var(--heterolysis)">Heterólisis</h3>
+                <p style="font-size: 1rem;">Ruptura Asimétrica</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2 style="color: var(--homolysis);">1. Homólisis (Simétrica)</h2>
+        <p>Ocurre cuando el enlace se rompe de manera igualitaria.</p>
+        <ul style="text-align: left; font-size: 1.4rem; max-width: 800px;">
+            <li>Cada átomo recupera su propio electrón.</li>
+            <li>Se usa la "flecha de medio anzuelo" (media cabeza).</li>
+            <li><strong>Producto:</strong> Se forman <span class="highlight-homo">RADICALES LIBRES</span>.</li>
+        </ul>
+        <p style="font-size: 1rem; margin-top:20px;">Nota: Requiere mucha energía (Calor o Luz UV).</p>
+    </div>
+
+    <div class="slide">
+        <h2>Esquema de Homólisis</h2>
+        <div style="font-size: 3rem; font-family: monospace; background: #eee; padding: 20px; border-radius: 10px;">
+            A : B  &nbsp; ➝ &nbsp; A<span style="color:var(--homolysis)">•</span> &nbsp; + &nbsp; <span style="color:var(--homolysis)">•</span>B
+        </div>
+        <p>Los puntos representan los electrones desapareados.</p>
+        <p>Las especies resultantes son neutras pero <strong>extremadamente reactivas</strong>.</p>
+    </div>
+
+    <div class="slide">
+        <h2 style="color: var(--homolysis);">Simulación: Homólisis</h2>
+        <p>Observa cómo cada átomo se lleva 1 electrón.</p>
+        
+        <div class="molecule-container" id="sim-homo">
+            <div class="atom atom-left">A</div>
+            <div class="electron-pair">
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="atom atom-right">B</div>
+        </div>
+
+        <button class="btn-sim" onclick="runSimulation('homo')">⚡ Romper Enlace (Luz UV) ⚡</button>
+        <p id="label-homo" style="opacity:0; margin-top:20px; font-weight:bold; color:var(--homolysis);">¡RADICALES FORMADOS!</p>
+    </div>
+
+    <div class="slide">
+        <h2 style="color: var(--heterolysis);">2. Heterólisis (Asimétrica)</h2>
+        <p>Ocurre cuando el enlace se rompe de manera desigual.</p>
+        <ul style="text-align: left; font-size: 1.4rem; max-width: 800px;">
+            <li>El átomo más electronegativo se queda con el par de electrones.</li>
+            <li>Se usa la "flecha completa" (cabeza entera).</li>
+            <li><strong>Producto:</strong> Se forman <span class="highlight-hetero">IONES</span> (Cationes y Aniones).</li>
+        </ul>
+    </div>
+
+    <div class="slide">
+        <h2 style="color: var(--heterolysis);">Simulación: Heterólisis</h2>
+        <p>El átomo B es más fuerte (electronegativo) y roba el par.</p>
+        
+        <div class="molecule-container" id="sim-hetero">
+            <div class="atom atom-left">A</div>
+            <div class="electron-pair">
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="atom atom-right">B</div>
+        </div>
+
+        <button class="btn-sim" style="background-color: var(--heterolysis);" onclick="runSimulation('hetero')">💧 Romper Enlace (Solvente) 💧</button>
+        
+        <div id="label-hetero" style="opacity:0; margin-top:20px; font-size:1.5rem;">
+            <span style="color:#e74c3c;">Catión (A+)</span> y <span style="color:#3498db;">Anión (B:⁻)</span>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>Cuadro Comparativo</h2>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Característica</th>
+                    <th style="background-color: var(--homolysis);">Homólisis</th>
+                    <th style="background-color: var(--heterolysis);">Heterólisis</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Ruptura</strong></td>
+                    <td>Simétrica (Igual)</td>
+                    <td>Asimétrica (Desigual)</td>
+                </tr>
+                <tr>
+                    <td><strong>Productos</strong></td>
+                    <td>Radicales Libres (•)</td>
+                    <td>Iones (+ / -)</td>
+                </tr>
+                <tr>
+                    <td><strong>Causa usual</strong></td>
+                    <td>Luz (hv) o Calor (Δ)</td>
+                    <td>Solventes Polares / Ácidos</td>
+                </tr>
+                <tr>
+                    <td><strong>Flecha</strong></td>
+                    <td>Media cabeza 🎣</td>
+                    <td>Cabeza completa 🏹</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="slide">
+        <h2>Prueba de Laboratorio</h2>
+        <p>¿Qué tipo de ruptura crees que ocurre aquí?</p>
+        
+        <div style="background: white; padding: 20px; border: 2px dashed #ccc; margin-bottom: 20px;">
+            <h3 style="font-family: monospace;">H-Cl &nbsp;➝&nbsp; H⁺ + Cl⁻</h3>
+        </div>
+
+        <div>
+            <button class="btn-sim" style="background:gray; margin:10px;" onclick="checkQuiz(this, false)">Homólisis</button>
+            <button class="btn-sim" style="background:gray; margin:10px;" onclick="checkQuiz(this, true)">Heterólisis</button>
+        </div>
+        <p id="quiz-feedback" style="height: 30px; font-weight: bold;"></p>
+    </div>
+
+    <div class="slide">
+        <h2>Conclusión e Importancia</h2>
+        <div style="display: flex; gap: 40px; margin-top: 20px; flex-wrap: wrap; justify-content: center;">
+            <div style="width: 400px;">
+                <h3 style="color: var(--homolysis)">En Biología</h3>
+                <p>La homólisis genera radicales libres que pueden dañar el ADN (envejecimiento), por eso comemos antioxidantes.</p>
+            </div>
+            <div style="width: 400px;">
+                <h3 style="color: var(--heterolysis)">En Química Orgánica</h3>
+                <p>La mayoría de reacciones en laboratorio ocurren por heterólisis (formando carbocationes) porque son más fáciles de controlar.</p>
+            </div>
+        </div>
+        <h3 style="margin-top: 40px;">¡Fin de la clase!</h3>
+    </div>
+
+    <div class="controls-bar">
+        <button class="nav-btn" id="prevBtn">⬅ Anterior</button>
+        <span id="slide-indicator">1 / 10</span>
+        <button class="nav-btn" id="nextBtn">Siguiente ➡</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentSlide = 0;
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const indicator = document.getElementById('slide-indicator');
+
+            function updateSlide(index) {
+                slides.forEach(s => s.classList.remove('active'));
+                slides[index].classList.add('active');
+                indicator.textContent = `Diapositiva ${index + 1} / ${slides.length}`;
+                
+                prevBtn.disabled = index === 0;
+                
+                if (index === slides.length - 1) {
+                    nextBtn.textContent = "🔄 Reiniciar";
+                } else {
+                    nextBtn.textContent = "Siguiente ➡";
+                }
+
+                // Resetear simulaciones al salir de la diapositiva para poder verlas de nuevo
+                resetSimulations();
+            }
+
+            nextBtn.addEventListener('click', () => {
+                if (currentSlide < slides.length - 1) {
+                    currentSlide++;
+                } else {
+                    currentSlide = 0;
+                }
+                updateSlide(currentSlide);
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateSlide(currentSlide);
+                }
+            });
+
+            // Teclado
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "ArrowRight") nextBtn.click();
+                if (e.key === "ArrowLeft") prevBtn.click();
+            });
+
+            updateSlide(0);
+        });
+
+        // Función para ejecutar las animaciones
+        function runSimulation(type) {
+            if (type === 'homo') {
+                const container = document.getElementById('sim-homo');
+                const label = document.getElementById('label-homo');
+                
+                // Reiniciar por si acaso
+                container.classList.remove('broken-homo');
+                void container.offsetWidth; // Forzar reflow
+                
+                // Activar
+                container.classList.add('broken-homo');
+                setTimeout(() => { label.style.opacity = 1; }, 800);
+            } else if (type === 'hetero') {
+                const container = document.getElementById('sim-hetero');
+                const label = document.getElementById('label-hetero');
+                
+                container.classList.remove('broken-hetero');
+                void container.offsetWidth; 
+                
+                container.classList.add('broken-hetero');
+                setTimeout(() => { label.style.opacity = 1; }, 800);
+            }
+        }
+
+        function resetSimulations() {
+            // Quitar clases para que al volver a la slide esté "unida" la molécula
+            document.getElementById('sim-homo').classList.remove('broken-homo');
+            document.getElementById('label-homo').style.opacity = 0;
+            
+            document.getElementById('sim-hetero').classList.remove('broken-hetero');
+            document.getElementById('label-hetero').style.opacity = 0;
+        }
+
+        // Lógica del Quiz
+        function checkQuiz(btn, isCorrect) {
+            const feedback = document.getElementById('quiz-feedback');
+            if (isCorrect) {
+                btn.style.backgroundColor = "#27ae60"; // Verde
+                btn.textContent = "¡Correcto!";
+                feedback.textContent = "Exacto. Se forman cargas (+ y -), es heterólisis.";
+                feedback.style.color = "#27ae60";
+            } else {
+                btn.style.backgroundColor = "#e74c3c"; // Rojo
+                btn.textContent = "Intenta de nuevo";
+                feedback.textContent = "Incorrecto. No hay puntos (radicales), hay cargas.";
+                feedback.style.color = "#e74c3c";
+            }
+        }
+    </script>
+
+</body>
+</html>

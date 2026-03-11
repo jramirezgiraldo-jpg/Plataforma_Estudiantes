@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Propiedades, Enlaces y Conciencia Ambiental</title>
+    <style>
+        :root {
+            --bg-color: #f4f9f4;
+            --primary: #2c7a7b;
+            --secondary: #319795;
+            --accent: #d69e2e;
+            --text-dark: #2d3748;
+            --text-light: #f7fafc;
+            --card-bg: #ffffff;
+            --error: #e53e3e;
+            --success: #38a169;
+        }
+        
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* --- Header y Progreso --- */
+        header {
+            background-color: var(--primary);
+            color: var(--text-light);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 15px; font-weight: bold; }
+        
+        .element-badge {
+            background-color: var(--accent);
+            color: var(--text-dark);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            border: 2px solid white;
+        }
+
+        .progress-container { width: 300px; }
+        .progress-bar { background-color: rgba(255,255,255,0.3); border-radius: 10px; height: 12px; overflow: hidden; margin-top: 5px; }
+        .progress-fill { background-color: var(--accent); height: 100%; width: 0%; transition: width 0.5s ease; }
+
+        /* --- Pantalla de Logueo --- */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--card-bg); padding: 3rem; border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center;
+            border-top: 5px solid var(--primary);
+        }
+
+        .login-card input {
+            width: 100%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--primary); color: white; border: none; padding: 10px 20px;
+            font-size: 1rem; border-radius: 5px; cursor: pointer; transition: background 0.3s;
+        }
+        button:hover { background-color: var(--secondary); }
+        button:disabled { background-color: #a0aec0; cursor: not-allowed; }
+
+        /* --- Contenido Principal --- */
+        .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        section { background: var(--card-bg); margin-bottom: 2rem; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h1, h2, h3 { color: var(--primary); }
+        
+        .activity-box {
+            background-color: #ebf8fa; border-left: 4px solid var(--secondary); padding: 1rem; margin: 1rem 0; border-radius: 0 5px 5px 0;
+        }
+
+        .feedback { display: none; padding: 10px; margin-top: 10px; border-radius: 5px; font-weight: bold; }
+        .feedback.correct { background-color: #c6f6d5; color: #22543d; display: block; }
+        .feedback.incorrect { background-color: #fed7d7; color: #822727; display: block; }
+
+        .svg-container { text-align: center; margin: 1.5rem 0; }
+        textarea { width: 100%; height: 80px; resize: vertical; margin-top: 10px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
+        
+        .hidden { display: none !important; }
+
+        .rutas-fortalecimiento {
+            background-color: #fffaf0; border: 2px dashed var(--accent); padding: 1.5rem; border-radius: 10px; margin-top: 2rem;
+        }
+
+        table.styled-table {
+            width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 0.9em; min-width: 400px;
+        }
+        table.styled-table thead tr { background-color: var(--primary); color: #ffffff; text-align: left; }
+        table.styled-table th, table.styled-table td { padding: 12px 15px; border-bottom: 1px solid #dddddd; }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>Bienvenido a la Clase de Ciencias</h2>
+            <p>Tema: Propiedades, Enlaces y nuestro Entorno</p>
+            <input type="text" id="username-input" placeholder="Ingresa tus Nombres y Apellidos">
+            <button onclick="iniciarOVA()">Comenzar Aventura</button>
+        </div>
+    </div>
+
+    <header class="hidden" id="main-header">
+        <div class="user-info">
+            <div class="element-badge" id="element-badge" title="Nivel de Elemento">H</div>
+            <span id="display-name">Estudiante</span>
+        </div>
+        <div class="progress-container">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                <span>Progreso de Actividades</span>
+                <span id="progress-text">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container hidden" id="ova-content">
+        
+        <section id="inicio">
+            <h2>1. Inicio: Nuestro Objetivo</h2>
+            <p><strong>Objetivo de Aprendizaje:</strong> Comprender cómo los tipos de enlaces químicos determinan las propiedades macroscópicas de la materia, como la solubilidad y el punto de ebullición, para luego aplicar estos conceptos en la reflexión sobre el uso de jabones y detergentes, y su impacto ambiental en las fuentes hídricas de nuestra vereda.</p>
+            
+            <h3>Pre-saberes: ¿Qué recuerdas?</h3>
+            <p>Responde estas 3 preguntas. No te preocupes si te equivocas, es para calentar motores.</p>
+            
+            <div class="activity-box">
+                <p><strong>1. Un enlace químico es:</strong></p>
+                <input type="radio" name="pre1" value="a" onchange="verificarPre(1, false)"> a) Una mezcla física de dos sustancias.<br>
+                <input type="radio" name="pre1" value="b" onchange="verificarPre(1, true)"> b) La fuerza que mantiene unidos a los átomos para ser más estables.<br>
+                <div id="fb-pre1" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p><strong>2. ¿Cuál de estas sustancias crees que se disuelve más fácil en agua?</strong></p>
+                <input type="radio" name="pre2" value="a" onchange="verificarPre(2, true)"> a) La sal de cocina.<br>
+                <input type="radio" name="pre2" value="b" onchange="verificarPre(2, false)"> b) El aceite de cocina.<br>
+                <div id="fb-pre2" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p><strong>3. Cuando lavas los platos llenos de grasa, usas jabón porque:</strong></p>
+                <input type="radio" name="pre3" value="a" onchange="verificarPre(3, true)"> a) Atrapa la grasa y permite que el agua se la lleve.<br>
+                <input type="radio" name="pre3" value="b" onchange="verificarPre(3, false)"> b) Calienta el agua para derretir la grasa.<br>
+                <div id="fb-pre3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>2. Cuerpo Inductivo: El Mundo de los Enlaces Químicos</h2>
+            <p>
+                En el fascinante mundo de la química, la materia que observamos todos los días —el agua que bebemos, la sal que le ponemos a la comida, el oxígeno que respiramos— está formada por átomos diminutos. Sin embargo, en la naturaleza, los átomos rara vez se encuentran aislados. Ellos buscan desesperadamente alcanzar la estabilidad energética, y para lograrlo, se unen entre sí formando lo que conocemos como <strong>enlaces químicos</strong>. Esta búsqueda de estabilidad está guiada por la "regla del octeto", donde los átomos interactúan para tener ocho electrones en su capa más externa, asemejándose a los nobles y estables gases nobles.
+            </p>
+            <p>
+                Existen diferentes formas en que los átomos pueden alcanzar esta meta, dando lugar a diferentes tipos de enlaces. Por un lado, tenemos el <strong>enlace iónico</strong>. Este ocurre cuando hay una pelea desigual por los electrones; un átomo (generalmente un metal) cede sus electrones a otro átomo (un no metal). Al ceder y ganar electrones, se forman partículas con carga eléctrica llamadas iones: cationes (positivos) y aniones (negativos). Las cargas opuestas se atraen con una fuerza magnética inmensa, formando estructuras rígidas llamadas redes cristalinas. Un ejemplo clásico es la sal de mesa (Cloruro de Sodio). Debido a esta fuerte atracción, separar estos iones requiere muchísima energía térmica. Es por esto que los compuestos iónicos tienen <strong>puntos de fusión y ebullición altísimos</strong> (¡la sal se funde a más de 800 grados centígrados!).
+            </p>
+            
+            <div class="svg-container">
+                <svg width="400" height="250" viewBox="0 0 400 250">
+                    <rect width="400" height="250" fill="#f8fafc" stroke="#cbd5e0" stroke-width="2"/>
+                    <text x="200" y="30" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#2c7a7b">Red Cristalina Iónica (Sal)</text>
+                    <circle cx="150" cy="100" r="20" fill="#63b3ed" />
+                    <text x="150" y="105" text-anchor="middle" fill="white" font-weight="bold">+</text>
+                    <circle cx="200" cy="100" r="25" fill="#68d391" />
+                    <text x="200" y="105" text-anchor="middle" fill="white" font-weight="bold">-</text>
+                    <circle cx="250" cy="100" r="20" fill="#63b3ed" />
+                    <text x="250" y="105" text-anchor="middle" fill="white" font-weight="bold">+</text>
+                    
+                    <circle cx="150" cy="150" r="25" fill="#68d391" />
+                    <text x="150" y="155" text-anchor="middle" fill="white" font-weight="bold">-</text>
+                    <circle cx="200" cy="150" r="20" fill="#63b3ed" />
+                    <text x="200" y="155" text-anchor="middle" fill="white" font-weight="bold">+</text>
+                    <circle cx="250" cy="150" r="25" fill="#68d391" />
+                    <text x="250" y="155" text-anchor="middle" fill="white" font-weight="bold">-</text>
+                    
+                    <line x1="170" y1="100" x2="175" y2="100" stroke="#a0aec0" stroke-width="2"/>
+                    <line x1="225" y1="100" x2="230" y2="100" stroke="#a0aec0" stroke-width="2"/>
+                    <text x="200" y="220" font-family="Arial" font-size="12" text-anchor="middle" fill="#4a5568">Fuerte atracción electrostática = Alto punto de ebullición</text>
+                </svg>
+            </div>
+
+            <p>
+                Por otro lado, está el <strong>enlace covalente</strong>, que es más como una sociedad o cooperativa. Los átomos (usualmente no metales) comparten pares de electrones para completar su octeto. Aquí se forman verdaderas moléculas independientes, como el agua (H<sub>2</sub>O) o el gas oxígeno (O<sub>2</sub>). Las fuerzas que mantienen unida a una molécula por dentro son fuertes, pero las fuerzas que atraen a una molécula con otra molécula vecina (fuerzas intermoleculares) son comparativamente más débiles. Por esto, muchos compuestos covalentes son líquidos o gases a temperatura ambiente, lo que significa que tienen <strong>puntos de ebullición bajos</strong>.
+            </p>
+            <p>
+                
+
+[Image of water molecule polarity]
+
+                Dentro de los compuestos covalentes, existe un concepto vital: la <strong>polaridad</strong>. En moléculas como el agua, el átomo de oxígeno es más "fuerte" (electronegativo) y tira de los electrones compartidos hacia sí mismo, creando un polo parcialmente negativo, mientras que los hidrógenos quedan con un polo parcialmente positivo. El agua es como un pequeño imán. Esto nos lleva a la regla de oro de la química para la solubilidad: <em>"lo semejante disuelve a lo semejante"</em>. Sustancias polares (como el agua) pueden disolver a otras sustancias polares o a compuestos con cargas eléctricas completas (como la sal iónica), porque los "imanes" se atraen. Las sustancias que no tienen polos (apolares) no pueden ser disueltas por el agua.
+            </p>
+
+            <h3>Actividades de Cuaderno (Sección 1)</h3>
+            <p>Realiza las siguientes actividades en tu cuaderno de ciencias y marca el botón cuando termines para ganar progreso.</p>
+            <div class="activity-box">
+                <ol>
+                    <li>Dibuja una molécula de agua (H<sub>2</sub>O) indicando sus polos positivo y negativo.</li>
+                    <li>Crea un cuadro comparativo entre Enlace Iónico y Enlace Covalente.</li>
+                    <li>Haz un mapa conceptual sobre la "Polaridad" y la "Solubilidad".</li>
+                    <li>Dibuja cómo imaginas que las moléculas de agua rodean y separan los iones de la sal.</li>
+                    <li>Escribe en tus propias palabras por qué la sal tiene un punto de ebullición tan alto.</li>
+                </ol>
+                <button id="btn-cuaderno-1" onclick="completarCuaderno(1)">¡Completé las 5 actividades en mi cuaderno!</button>
+                <span id="check-cuaderno-1" class="hidden" style="color: green; font-weight: bold;">✓ Registrado</span>
+            </div>
+
+            <h3>Pregunta ICFES: Competencia de Indagar</h3>
+            <p>Observa la siguiente gráfica elaborada a partir de datos de laboratorio de cuatro sustancias desconocidas y responde la pregunta.</p>
+            
+            <div class="svg-container">
+                <svg width="500" height="300" viewBox="0 0 500 300">
+                    <rect width="500" height="300" fill="#fff" stroke="#ccc"/>
+                    <text x="250" y="25" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">Puntos de Ebullición de 4 Sustancias (°C)</text>
+                    
+                    <line x1="50" y1="250" x2="450" y2="250" stroke="#000" stroke-width="2"/>
+                    <line x1="50" y1="50" x2="50" y2="250" stroke="#000" stroke-width="2"/>
+                    
+                    <text x="40" y="60" text-anchor="end" font-size="12">1500</text>
+                    <text x="40" y="150" text-anchor="end" font-size="12">500</text>
+                    <text x="40" y="250" text-anchor="end" font-size="12">0</text>
+                    
+                    <rect x="80" y="200" width="40" height="50" fill="#fbd38d"/>
+                    <text x="100" y="270" text-anchor="middle" font-size="12">Sust. W</text>
+                    
+                    <rect x="180" y="70" width="40" height="180" fill="#f56565"/>
+                    <text x="200" y="270" text-anchor="middle" font-size="12">Sust. X</text>
+                    
+                    <rect x="280" y="220" width="40" height="30" fill="#fbd38d"/>
+                    <text x="300" y="270" text-anchor="middle" font-size="12">Sust. Y</text>
+                    
+                    <rect x="380" y="55" width="40" height="195" fill="#f56565"/>
+                    <text x="400" y="270" text-anchor="middle" font-size="12">Sust. Z</text>
+                </svg>
+            </div>
+            
+            <div class="activity-box" id="icfes-container">
+                <p><strong>De acuerdo con la gráfica y los conceptos de enlaces, ¿qué hipótesis es más acertada sobre la naturaleza de estas sustancias?</strong></p>
+                <input type="radio" name="icfes" value="a"> A) Las sustancias W e Y son probablemente compuestos iónicos porque hierven rápido.<br>
+                <input type="radio" name="icfes" value="b"> B) Las sustancias X y Z son probablemente compuestos covalentes apolares.<br>
+                <input type="radio" name="icfes" value="c"> C) Las sustancias X y Z forman fuertes redes cristalinas, sugiriendo enlaces iónicos.<br>
+                <input type="radio" name="icfes" value="d"> D) Ninguna sustancia superó los 100°C, por lo tanto todas son gases.<br>
+                <br>
+                <button onclick="verificarICFES()">Comprobar Respuesta</button>
+                <div id="fb-icfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>3. Cuerpo Deductivo: La Química en Nuestra Vereda</h2>
+            <p>
+                Toda esta teoría sobre enlaces y polaridad tiene aplicaciones directas en nuestro día a día, específicamente en la limpieza y el cuidado de nuestro medio ambiente. Pensemos en una prueba de solubilidad casera: si echas sal al agua y revuelves, esta desaparece. El agua (polar) rodea los iones de la sal y los separa. Pero, ¿qué pasa si intentamos disolver azufre en polvo o grasa de cocina en agua? Simplemente no se mezclan. El azufre y las grasas son sustancias <strong>apolares</strong> (no tienen polos magnéticos). Como dictaba la regla, el agua polar no puede "agarrar" a las moléculas apolares de la grasa.
+            </p>
+            <p>
+                
+                Aquí es donde entra el héroe químico de la limpieza: <strong>el jabón</strong>. A nivel molecular, el jabón es brillante. Tiene una estructura "anfipática", que significa que sufre de doble personalidad. Tiene una "cabeza" que es iónica y sumamente polar (hidrofílica, que ama el agua), y una "cola" larga hecha de carbono e hidrógeno que es totalmente apolar (hidrofóbica, que odia el agua pero ama la grasa).
+            </p>
+            
+            <div class="svg-container">
+                <svg width="400" height="250" viewBox="0 0 400 250">
+                    <rect width="400" height="250" fill="#e6fffa" stroke="#319795" stroke-width="2" rx="10"/>
+                    <text x="200" y="25" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#285e61">Acción del Jabón: La Micela</text>
+                    
+                    <circle cx="200" cy="140" r="40" fill="#ecc94b"/>
+                    <text x="200" y="145" text-anchor="middle" font-weight="bold" fill="#744210">Grasa</text>
+                    
+                    <line x1="200" y1="100" x2="200" y2="70" stroke="#4a5568" stroke-width="3"/>
+                    <circle cx="200" cy="65" r="8" fill="#4299e1"/>
+                    <line x1="200" y1="180" x2="200" y2="210" stroke="#4a5568" stroke-width="3"/>
+                    <circle cx="200" cy="215" r="8" fill="#4299e1"/>
+                    <line x1="160" y1="140" x2="130" y2="140" stroke="#4a5568" stroke-width="3"/>
+                    <circle cx="125" cy="140" r="8" fill="#4299e1"/>
+                    <line x1="240" y1="140" x2="270" y2="140" stroke="#4a5568" stroke-width="3"/>
+                    <circle cx="275" cy="140" r="8" fill="#4299e1"/>
+                    <line x1="172" y1="112" x2="150" y2="90" stroke="#4a5568" stroke-width="3"/>
+                    <circle cx="145" cy="85" r="8" fill="#4299e1"/>
+                    
+                    <line x1="228" y1="112" x2="250" y2="90" stroke="#4a5568" stroke-width="3"/>
+                    <circle cx="255" cy="85" r="8" fill="#4299e1"/>
+                    
+                    <line x1="172" y1="168" x2="150" y2="190" stroke="#4a5568" stroke-width="3"/>
+                    <circle cx="145" cy="195" r="8" fill="#4299e1"/>
+                    
+                    <line x1="228" y1="168" x2="250" y2="190" stroke="#4a5568" stroke-width="3"/>
+                    <circle cx="255" cy="195" r="8" fill="#4299e1"/>
+
+                    <text x="100" y="40" font-size="10" fill="#2b6cb0">Cabeza polar</text>
+                    <path d="M 120 45 Q 160 55 192 65" fill="none" stroke="#2b6cb0" stroke-width="1" marker-end="url(#arrow)"/>
+                </svg>
+            </div>
+
+            <p>
+                Cuando lavas la loza o la ropa, las colas apolares del jabón se clavan en la gota de grasa (porque lo semejante disuelve a lo semejante). Las cabezas polares quedan hacia afuera, apuntando al agua. Esto forma una esfera microscópica llamada <strong>micela</strong>. Ahora, el agua ve una esfera que por fuera es totalmente polar y ¡boom!, arrastra la micela con la grasa atrapada adentro hacia el desagüe. Se ha formado una emulsión.
+            </p>
+            <p>
+                
+
+[Image of eutrophication in a lake]
+
+                Sin embargo, aquí surge nuestra <strong>conciencia ambiental</strong>. En nuestra vereda, es común que las aguas de lavado (aguas grises) terminen en pozos sépticos o directamente en las quebradas. Muchos polvos de lavar modernos no son simples jabones, son detergentes sintéticos que contienen fosfatos para ablandar el agua. Cuando estos fosfatos llegan a nuestra quebrada, actúan como un súper fertilizante para las algas. Las algas crecen descontroladamente cubriendo la superficie del agua en un proceso llamado <strong>eutrofización</strong>. Esto bloquea la luz del sol, ahoga a las plantas del fondo, y cuando las algas mueren, las bacterias consumen todo el oxígeno del agua para descomponerlas, matando a los peces y anfibios locales. Por eso, comprender la química de lo que usamos nos invita a buscar detergentes biodegradables, libres de fosfatos, o implementar biofiltros con plantas que purifiquen el agua antes de llegar al río.
+            </p>
+
+            <h3>Actividades de Cuaderno (Sección 2)</h3>
+            <p>Realiza estas actividades de aplicación y reflexión en tu cuaderno.</p>
+            <div class="activity-box">
+                <ol>
+                    <li>Dibuja una micela de jabón atrapando una mancha de aceite.</li>
+                    <li>Haz un cuadro de pros y contras entre jabones naturales y detergentes sintéticos.</li>
+                    <li>Dibuja el proceso de eutrofización (exceso de nutrientes -> algas -> falta de oxígeno).</li>
+                    <li>Describe en 3 renglones a dónde va a parar el agua con jabón en tu casa.</li>
+                    <li>Propón una solución familiar para reducir la contaminación de la quebrada de tu vereda.</li>
+                </ol>
+                <button id="btn-cuaderno-2" onclick="completarCuaderno(2)">¡Completé las 5 actividades en mi cuaderno!</button>
+                <span id="check-cuaderno-2" class="hidden" style="color: green; font-weight: bold;">✓ Registrado</span>
+            </div>
+        </section>
+
+        <section id="evaluacion">
+            <h2>4. Evaluación Final: El Reto Químico</h2>
+            <p>Demuestra lo aprendido. Son 5 preguntas de selección múltiple y 5 de texto abierto.</p>
+            
+            <form id="form-evaluacion">
+                <div class="activity-box">
+                    <p><strong>1. ¿Por qué la sal (NaCl) tiene un punto de ebullición muy alto?</strong></p>
+                    <input type="radio" name="q1" value="a"> Porque es un gas natural.<br>
+                    <input type="radio" name="q1" value="b"> Por la fuerte atracción magnética en su red cristalina iónica.<br>
+                    <input type="radio" name="q1" value="c"> Porque tiene enlaces covalentes débiles.<br>
+                </div>
+                
+                <div class="activity-box">
+                    <p><strong>2. Según la regla "lo semejante disuelve a lo semejante", el agua disuelve a la sal porque:</strong></p>
+                    <input type="radio" name="q2" value="a"> Ambos tienen cargas o polos magnéticos.<br>
+                    <input type="radio" name="q2" value="b"> El agua es caliente y derrite la sal.<br>
+                    <input type="radio" name="q2" value="c"> Ambos son apolares.<br>
+                </div>
+
+                <div class="activity-box">
+                    <p><strong>3. ¿Qué es una micela?</strong></p>
+                    <input type="radio" name="q3" value="a"> Una bacteria que se come la grasa.<br>
+                    <input type="radio" name="q3" value="b"> Un tipo de enlace iónico.<br>
+                    <input type="radio" name="q3" value="c"> Una esfera de moléculas de jabón que atrapa la grasa en su interior apolar.<br>
+                </div>
+
+                <div class="activity-box">
+                    <p><strong>4. La eutrofización en la quebrada de la vereda es causada principalmente por:</strong></p>
+                    <input type="radio" name="q4" value="a"> Exceso de fosfatos y nutrientes de los detergentes.<br>
+                    <input type="radio" name="q4" value="b"> La sal de la cocina que llega al río.<br>
+                    <input type="radio" name="q4" value="c"> El agua pura y cristalina.<br>
+                </div>
+
+                <div class="activity-box">
+                    <p><strong>5. Una parte de la molécula de jabón es hidrofóbica, lo que significa que:</strong></p>
+                    <input type="radio" name="q5" value="a"> Rechaza el agua y se une a las grasas.<br>
+                    <input type="radio" name="q5" value="b"> Se disuelve fácilmente en agua pura.<br>
+                    <input type="radio" name="q5" value="c"> Evapora el agua a su alrededor.<br>
+                </div>
+
+                <p><strong>Preguntas Abiertas (Responde entre 10 y 20 palabras por pregunta)</strong></p>
+                <div class="activity-box">
+                    <p>6. Explica con tus palabras qué es la "Regla del Octeto".</p>
+                    <textarea id="q6" placeholder="Escribe tu respuesta aquí..."></textarea>
+                    <div id="err-q6" class="feedback incorrect"></div>
+                </div>
+                <div class="activity-box">
+                    <p>7. ¿Por qué el aceite no se mezcla con el agua?</p>
+                    <textarea id="q7" placeholder="Escribe tu respuesta aquí..."></textarea>
+                    <div id="err-q7" class="feedback incorrect"></div>
+                </div>
+                <div class="activity-box">
+                    <p>8. Describe la estructura anfipática del jabón (cabeza y cola).</p>
+                    <textarea id="q8" placeholder="Escribe tu respuesta aquí..."></textarea>
+                    <div id="err-q8" class="feedback incorrect"></div>
+                </div>
+                <div class="activity-box">
+                    <p>9. ¿Qué consecuencias trae el exceso de algas en una quebrada?</p>
+                    <textarea id="q9" placeholder="Escribe tu respuesta aquí..."></textarea>
+                    <div id="err-q9" class="feedback incorrect"></div>
+                </div>
+                <div class="activity-box">
+                    <p>10. ¿Qué acción ambiental propones para tu hogar respecto a los jabones?</p>
+                    <textarea id="q10" placeholder="Escribe tu respuesta aquí..."></textarea>
+                    <div id="err-q10" class="feedback incorrect"></div>
+                </div>
+
+                <button type="button" onclick="evaluarFinal()">Terminar y Evaluar</button>
+            </form>
+        </section>
+
+        <section id="resultados" class="hidden">
+            <h2>Resultados Finales</h2>
+            <p>Nota obtenida: <strong id="nota-final"></strong> / 5.0</p>
+            <p>Elemento alcanzado: <strong id="elemento-final"></strong></p>
+            
+            <div id="zona-fortalecimiento" class="rutas-fortalecimiento hidden">
+                <h3>Ruta de Fortalecimiento Personalizada</h3>
+                <p style="color: red; font-weight: bold;">Instrucción Pedagógica: De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno de ciencias para fortalecer tus debilidades.</p>
+                <div id="texto-fortalecimiento"></div>
+            </div>
+
+            <br>
+            <button onclick="descargarReporte()">Descargar Reporte (TXT)</button>
+        </section>
+
+    </div>
+
+    <script>
+        // --- Variables de Estado ---
+        let state = {
+            user: "",
+            progress: 0,
+            checkpoints: { pre1: false, pre2: false, pre3: false, cuad1: false, icfes: false, cuad2: false },
+            nota: 0,
+            elemento: "H",
+            respuestasError: [],
+            fortalecimientoTexto: "",
+            reporteGenerado: ""
+        };
+
+        // --- Inicialización y LocalStorage ---
+        window.onload = () => {
+            const savedData = localStorage.getItem('ovaCienciasData');
+            if (savedData) {
+                state = JSON.parse(savedData);
+                if (state.user) {
+                    document.getElementById('username-input').value = state.user;
+                    // Restaurar visualmente el OVA
+                    iniciarOVA(true);
+                }
+            }
+        };
+
+        function guardarProgreso() {
+            localStorage.setItem('ovaCienciasData', JSON.stringify(state));
+            actualizarBarra();
+        }
+
+        // --- Lógica Principal ---
+        function iniciarOVA(isRestoring = false) {
+            const user = document.getElementById('username-input').value.trim();
+            if (user === "") {
+                alert("Por favor ingresa tus Nombres y Apellidos.");
+                return;
+            }
+            state.user = user;
+            if (!isRestoring) guardarProgreso();
+            
+            document.getElementById('login-overlay').classList.add('hidden');
+            document.getElementById('main-header').classList.remove('hidden');
+            document.getElementById('ova-content').classList.remove('hidden');
+            document.getElementById('display-name').innerText = state.user;
+            
+            actualizarBarra();
+        }
+
+        function actualizarBarra() {
+            let pts = 0;
+            if (state.checkpoints.pre1) pts += 10;
+            if (state.checkpoints.pre2) pts += 10;
+            if (state.checkpoints.pre3) pts += 10;
+            if (state.checkpoints.cuad1) pts += 25;
+            if (state.checkpoints.icfes) pts += 20;
+            if (state.checkpoints.cuad2) pts += 25;
+            
+            state.progress = pts;
+            document.getElementById('progress-fill').style.width = state.progress + '%';
+            document.getElementById('progress-text').innerText = state.progress + '%';
+
+            // Elemento de Gamificación
+            const elements = ["H (Hidrógeno)", "He (Helio)", "Li (Litio)", "Be (Berilio)", "B (Boro)", "C (Carbono)"];
+            let idx = Math.floor(state.nota); 
+            if(idx > 5) idx = 5;
+            state.elemento = elements[idx];
+            document.getElementById('element-badge').innerText = state.elemento.split(" ")[0];
+        }
+
+        // --- Actividades ---
+        function verificarPre(num, isCorrect) {
+            const fb = document.getElementById('fb-pre' + num);
+            if (isCorrect) {
+                fb.innerText = "¡Correcto! Excelente inicio.";
+                fb.className = "feedback correct";
+            } else {
+                fb.innerText = "Incorrecto, pero no te preocupes, para eso estamos aquí. Sigue leyendo.";
+                fb.className = "feedback incorrect";
+            }
+            if (!state.checkpoints['pre' + num]) {
+                state.checkpoints['pre' + num] = true;
+                guardarProgreso();
+            }
+        }
+
+        function completarCuaderno(num) {
+            document.getElementById('btn-cuaderno-' + num).classList.add('hidden');
+            document.getElementById('check-cuaderno-' + num).classList.remove('hidden');
+            state.checkpoints['cuad' + num] = true;
+            guardarProgreso();
+        }
+
+        function verificarICFES() {
+            const opciones = document.getElementsByName('icfes');
+            let val = "";
+            for (let op of opciones) if (op.checked) val = op.value;
+            
+            const fb = document.getElementById('fb-icfes');
+            if (val === "c") {
+                fb.innerText = "¡Excelente (Respuesta C)! Al observar que X y Z tienen puntos de ebullición muy superiores, se deduce que deben formar redes cristalinas fuertemente unidas (enlaces iónicos) que requieren mucha energía para romperse. W e Y tienen puntos bajos, indicando moléculas covalentes con fuerzas intermoleculares débiles.";
+                fb.className = "feedback correct";
+            } else if (val === "") {
+                fb.innerText = "Selecciona una opción primero.";
+                fb.className = "feedback incorrect";
+            } else {
+                fb.innerText = "Incorrecto. Recuerda que los puntos de ebullición altísimos (barras largas rojas) requieren mucha energía para separar la sustancia, lo cual es característico de las redes cristalinas iónicas. Los covalentes suelen tener puntos bajos. La correcta es la C.";
+                fb.className = "feedback incorrect";
+            }
+            
+            if (!state.checkpoints.icfes) {
+                state.checkpoints.icfes = true;
+                guardarProgreso();
+            }
+        }
+
+        // --- Evaluación Final ---
+        function validarTextarea(id) {
+            const text = document.getElementById(id).value.trim();
+            if (text.length === 0) return { valid: false, msg: "Respuesta vacía." };
+            
+            const words = text.split(/\s+/).length;
+            if (words < 10) return { valid: false, msg: `Te faltan palabras. Tienes ${words}/10 mínimo.` };
+            if (words > 20) return { valid: false, msg: `Muy larga. Tienes ${words}/20 máximo.` };
+            
+            return { valid: true, msg: "" };
+        }
+
+        function evaluarFinal() {
+            let correctasMulti = 0;
+            state.respuestasError = [];
+
+            // Claves: q1=b, q2=a, q3=c, q4=a, q5=a
+            const resp = {
+                q1: document.querySelector('input[name="q1"]:checked')?.value,
+                q2: document.querySelector('input[name="q2"]:checked')?.value,
+                q3: document.querySelector('input[name="q3"]:checked')?.value,
+                q4: document.querySelector('input[name="q4"]:checked')?.value,
+                q5: document.querySelector('input[name="q5"]:checked')?.value,
+            };
+
+            // Evaluar Múltiples y recolectar errores para Fortaleza
+            if (resp.q1 === "b") correctasMulti++; else state.respuestasError.push("q1");
+            if (resp.q2 === "a") correctasMulti++; else state.respuestasError.push("q2");
+            if (resp.q3 === "c") correctasMulti++; else state.respuestasError.push("q3");
+            if (resp.q4 === "a") correctasMulti++; else state.respuestasError.push("q4");
+            if (resp.q5 === "a") correctasMulti++; else state.respuestasError.push("q5");
+
+            // Evaluar Abiertas
+            let correctasAbiertas = 0;
+            let todoValido = true;
+            for (let i = 6; i <= 10; i++) {
+                let check = validarTextarea("q" + i);
+                let errDiv = document.getElementById("err-q" + i);
+                if (!check.valid) {
+                    errDiv.innerText = check.msg;
+                    errDiv.style.display = "block";
+                    todoValido = false;
+                } else {
+                    errDiv.style.display = "none";
+                    correctasAbiertas++;
+                }
+            }
+
+            if (!todoValido) {
+                alert("Debes corregir la extensión de las preguntas abiertas (entre 10 y 20 palabras) antes de enviar.");
+                return;
+            }
+
+            // Calculo de nota: 5 Multiples (0.5 c/u) + 5 Abiertas (0.5 c/u validas por extension)
+            state.nota = (correctasMulti * 0.5) + (correctasAbiertas * 0.5);
+            document.getElementById('nota-final').innerText = state.nota.toFixed(1);
+            
+            actualizarBarra();
+            document.getElementById('elemento-final').innerText = state.elemento;
+            
+            generarFortalecimiento();
+            
+            document.getElementById('resultados').classList.remove('hidden');
+            guardarProgreso();
+            
+            // Scroll hacia abajo
+            document.getElementById('resultados').scrollIntoView({behavior: "smooth"});
+        }
+
+        // --- Sistema de Retroalimentación de Fortalecimiento ---
+        function generarFortalecimiento() {
+            const zona = document.getElementById('zona-fortalecimiento');
+            const textoBox = document.getElementById('texto-fortalecimiento');
+            
+            if (state.respuestasError.length === 0) {
+                zona.classList.add('hidden');
+                state.fortalecimientoTexto = "¡Felicidades! Tuviste todos los conceptos claros.";
+                return;
+            }
+
+            let refuerzo = "<ul>";
+            
+            // Análisis Inductivo
+            if (state.respuestasError.includes("q1") || state.respuestasError.includes("q2")) {
+                refuerzo += "<li><strong>Refuerzo Teórico (Enlaces y Solubilidad):</strong> Un enlace iónico forma redes muy fuertes (altos puntos de ebullición). Por otro lado, la polaridad define la solubilidad: el agua disuelve a la sal porque ambos interactúan con sus cargas (polos). Lo semejante disuelve a lo semejante.</li>";
+            }
+            // Análisis Deductivo
+            if (state.respuestasError.includes("q3") || state.respuestasError.includes("q5")) {
+                refuerzo += "<li><strong>Refuerzo Práctico (Química del Jabón):</strong> El jabón es anfipático. Su cabeza es hidrofílica (polar, ama el agua) y su cola es hidrofóbica (apolar, ama la grasa). Al rodear la grasa, forman una estructura llamada micela que permite que el agua arrastre la suciedad.</li>";
+            }
+            if (state.respuestasError.includes("q4")) {
+                refuerzo += "<li><strong>Refuerzo Ambiental (Eutrofización):</strong> Los detergentes sintéticos contienen fosfatos que actúan como abono en los ríos. Esto hace que crezcan demasiadas algas (eutrofización), las cuales al morir agotan el oxígeno del agua, afectando gravemente a la fauna de nuestra vereda.</li>";
+            }
+            
+            refuerzo += "</ul>";
+            textoBox.innerHTML = refuerzo;
+            state.fortalecimientoTexto = textoBox.innerText; // Guarda versión texto puro
+            zona.classList.remove('hidden');
+        }
+
+        // --- Descarga de Reporte ---
+        function descargarReporte() {
+            let reporte = `======================================\n`;
+            reporte += `   REPORTE DE OVA: CIENCIAS GRADO 8\n`;
+            reporte += `======================================\n\n`;
+            reporte += `Estudiante: ${state.user}\n`;
+            reporte += `Nota Final: ${state.nota.toFixed(1)} / 5.0\n`;
+            reporte += `Elemento Alcanzado: ${state.elemento}\n\n`;
+            
+            reporte += `--- Respuestas Abiertas ---\n`;
+            for (let i = 6; i <= 10; i++) {
+                reporte += `Pregunta ${i}: ${document.getElementById("q" + i).value}\n`;
+            }
+            
+            reporte += `\n--- Retroalimentación de Fortalecimiento ---\n`;
+            reporte += state.fortalecimientoTexto + "\n";
+            reporte += `\n[Nota: Debes copiar esta retroalimentación en tu cuaderno]\n`;
+
+            const blob = new Blob([reporte], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Reporte_${state.user.replace(/\s+/g, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Enlace Iónico - El Arte de Dar</title>
+    <style>
+        :root {
+            --primary: #6C3483; /* Violeta: Sabiduría y profundidad */
+            --secondary: #1ABC9C; /* Menta: Calma y concentración */
+            --accent: #F39C12; /* Naranja: Energía para puntos clave */
+            --bg: #F4F6F7;
+            --text: #2E4053;
+            --white: #ffffff;
+            --notebook: #FEF9E7;
+        }
+
+        body {
+            font-family: 'Verdana', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.8;
+        }
+
+        /* --- LOGIN --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(46, 64, 83, 0.98);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* --- HEADER & PROGRESS --- */
+        header {
+            background: var(--primary);
+            color: var(--white);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .status-bar {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .progress-track {
+            flex-grow: 1;
+            margin: 0 20px;
+            height: 18px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 9px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            width: 0%;
+            transition: width 0.6s ease;
+        }
+
+        .score-badge {
+            background: var(--accent);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* --- CONTENT --- */
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 20px;
+            padding-bottom: 100px;
+        }
+
+        .section-card {
+            background: var(--white);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            border-left: 6px solid var(--primary);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        h2, h3 { color: var(--primary); }
+        
+        .illustration-box {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #E8F8F5;
+            border-radius: 8px;
+            border: 1px dashed var(--secondary);
+        }
+
+        /* --- INTERACTIVE ELEMENTS --- */
+        .notebook-activity {
+            background: var(--notebook);
+            border: 2px dashed #F1C40F;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .notebook-activity::before {
+            content: "📓 Actividad en Cuaderno";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #F1C40F;
+            color: #333;
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+
+        button:hover { background: #512E5F; transform: scale(1.02); }
+
+        .btn-verify { background: var(--secondary); margin-top: 10px;}
+        .btn-verify:hover { background: #148F77; }
+        
+        .btn-disabled {
+            background: #95A5A6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        /* --- FEEDBACK --- */
+        .feedback {
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct { background: #D4EFDF; color: #145A32; border: 1px solid #145A32; }
+        .incorrect { background: #FADBD8; color: #78281F; border: 1px solid #78281F; }
+
+        /* --- ATOM VISUALS (CSS ONLY) --- */
+        .atom-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        .atom {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            position: relative;
+        }
+        .atom-na { background: #F39C12; box-shadow: 0 0 0 4px #FDEBD0; }
+        .atom-cl { background: #27AE60; box-shadow: 0 0 0 10px #D5F5E3; }
+        .electron {
+            width: 15px;
+            height: 15px;
+            background: #3498DB;
+            border-radius: 50%;
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        /* --- TABLES --- */
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: var(--primary); color: white; }
+        
+        /* --- ICFES STYLE --- */
+        .icfes-options label {
+            display: block;
+            background: #fff;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .icfes-options label:hover { background: #f0f0f0; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2 style="color:var(--primary)">Bienvenido al Laboratorio de Química</h2>
+            <p>Ingresa tu nombre para iniciar la simulación.</p>
+            <input type="text" id="username" placeholder="Nombres y Apellidos">
+            <br><br>
+            <button onclick="login()">Iniciar Aventura</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="status-bar">
+            <div>👤 <span id="display-name">Estudiante</span></div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+            <div class="score-badge" id="score-display">H (Nivel 0)</div>
+        </div>
+    </header>
+
+    <main>
+        <div class="section-card">
+            <h2>🎯 Objetivo de Aprendizaje</h2>
+            <p>Comprender el <strong>Enlace Iónico</strong> como un proceso de transferencia de electrones que genera estabilidad química, utilizando la analogía del mercado y la generosidad para modelar la formación de compuestos como la sal común (NaCl) y reflexionar sobre la importancia de dar para crear uniones fuertes.</p>
+        </div>
+
+        <div class="section-card">
+            <h3>🧠 Activación de Pre-saberes</h3>
+            <p>Responde con lo que sabes. No importa si te equivocas.</p>
+
+            <div class="quiz-block">
+                <p><strong>1. ¿Qué carga eléctrica tienen los electrones?</strong></p>
+                <select id="pre1"><option value="0">Elige...</option><option value="a">Positiva (+)</option><option value="b">Negativa (-)</option><option value="c">Neutra (0)</option></select>
+                
+                <p><strong>2. Si tú tienes algo negativo y te deshaces de ello (lo regalas), ¿cómo te sientes "emocionalmente"? (Analogía de carga)</strong></p>
+                <select id="pre2"><option value="0">Elige...</option><option value="a">Más Negativo</option><option value="b">Más Positivo</option><option value="c">Igual</option></select>
+
+                <p><strong>3. En un imán, ¿qué polos se atraen?</strong></p>
+                <select id="pre3"><option value="0">Elige...</option><option value="a">Positivo con Positivo</option><option value="b">Negativo con Negativo</option><option value="c">Positivo con Negativo (Opuestos)</option></select>
+            </div>
+            <br>
+            <button class="btn-verify" onclick="checkPresaberes()">Verificar Pre-saberes</button>
+            <div id="pre-feedback" class="feedback"></div>
+        </div>
+
+        <div class="section-card">
+            <h3>El Mercado Químico: Una Historia de Generosidad</h3>
+            <p>Imagina que entras a un mercado muy especial: "El Mercado de la Tabla Periódica". Aquí, la moneda de cambio no es el dinero, sino los <strong>electrones</strong>. Pero hay una regla curiosa en este mercado: todos los átomos quieren ser "Nobles" (como la realeza, los Gases Nobles), y para serlo, necesitan tener exactamente 8 electrones en su canasta externa (su última capa). A esto le llamamos la <strong>Regla del Octeto</strong>.</p>
+            
+            <p>Conozcamos a dos personajes. Por un lado, tenemos al Sr. <strong>Sodio (Na)</strong>. Es un metal, es brillante y muy enérgico. Pero el Sr. Sodio tiene un problema: tiene 11 electrones en total. 2 en la primera fila, 8 en la segunda, y le sobra <strong>1 electrón</strong> en su canasta externa. Ese electrón extra le molesta, le pesa, lo hace sentir inestable. Él desea profundamente regalarlo para quedarse con su capa anterior llena y perfecta.</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #1 (Dibujar):</strong> Dibuja en tu cuaderno al "Sr. Sodio" como un vendedor que ofrece una manzana (el electrón) porque le sobra. Ponle cara de querer regalar.</p>
+                <button class="btn-verify" onclick="markActivity(1)">¡Ya lo dibujé!</button>
+            </div>
+
+            <p>Por otro lado, camina por el mercado la Sra. <strong>Cloro (Cl)</strong>. Ella es una No Metal, un poco tóxica si está sola. Tiene 17 electrones: 2 adentro, 8 en medio, y <strong>7 en su canasta externa</strong>. ¡Está desesperada! Le falta solo 1 electrón para completar sus 8 y ser feliz (estable). Ella no quiere dar, ella necesita recibir.</p>
+
+            <p>Aquí sucede la magia de la química y la empatía. El Sr. Sodio ve la necesidad de la Sra. Cloro. Él tiene lo que a ella le falta. Así que, en un acto de "generosidad atómica", el Sodio <strong>transfiere</strong> (regala definitivamente) su electrón al Cloro.</p>
+
+            <div class="illustration-box">
+                <h4>Simulación Visual: La Transferencia</h4>
+                <div class="atom-container">
+                    <div class="atom atom-na">Na <div class="electron"></div></div>
+                    <div style="font-size:30px">➡️ 🎁 ➡️</div>
+                    <div class="atom atom-cl">Cl</div>
+                </div>
+                <p><em>El Sodio da, el Cloro recibe. No comparten, es una transferencia total.</em></p>
+            </div>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #2 (Contestar):</strong> Define con tus palabras: ¿Qué significa "transferir" en química? ¿Es lo mismo que "prestar"?</p>
+                <button class="btn-verify" onclick="markActivity(2)">¡Respuesta lista!</button>
+            </div>
+
+            <p>Al regalar su electrón (que es negativo), el Sodio pierde negatividad. Matemáticamente: si pierdes algo malo (negativo), te vuelves bueno (positivo). El Sodio se convierte en un <strong>CATIÓN (Na+)</strong>. Por su parte, el Cloro recibe una carga negativa extra. Se vuelve más negativo. Se convierte en un <strong>ANIÓN (Cl-)</strong>.</p>
+            
+            <p>Ahora tenemos un positivo y un negativo. Como recordaste en los pre-saberes, los opuestos se atraen. Se forma una fuerza eléctrica invisible pero fortísima que los pega. ¡Se ha formado el <strong>Enlace Iónico</strong>! Nace la Sal Común (NaCl).</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #3 (Tabla Comparativa):</strong> Haz una tabla con dos columnas: "Átomo que DA" y "Átomo que RECIBE". Clasifica las siguientes características en la columna correcta: Metal, No Metal, Queda Positivo, Queda Negativo, Catión, Anión.</p>
+                <button class="btn-verify" onclick="markActivity(3)">¡Tabla completada!</button>
+            </div>
+
+            <p>Esta unión nos enseña algo sobre la vida: la empatía y la generosidad crean puentes. Si el Sodio fuera egoísta y se guardara su electrón, ambos serían infelices e inestables. Al dar, ambos ganan estabilidad. La mesa familiar, donde compartimos el pan (o la sal), es un espacio de unión iónica, donde unos dan y otros reciben para el bienestar del grupo.</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #4 (Mapa Mental):</strong> Crea un mapa mental donde el centro sea "ENLACE IÓNICO". Ramas principales: Transferencia, Metal + No Metal, Atracción Electrostática, Ejemplo (Sal).</p>
+                <button class="btn-verify" onclick="markActivity(4)">¡Mapa mental hecho!</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #5 (Reflexión):</strong> Escribe 3 renglones: ¿Cómo puedes aplicar el "Efecto Sodio" (dar lo que te sobra a quien le falta) en tu salón de clases esta semana?</p>
+                <button class="btn-verify" onclick="markActivity(5)">¡Reflexión escrita!</button>
+            </div>
+        </div>
+
+        <div class="section-card" style="border-left-color: var(--accent);">
+            <h3>🕵️ Ponte a Prueba: Competencia INDAGAR</h3>
+            
+            <div style="background: #EAF2F8; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <p><strong>Situación Experimental:</strong></p>
+                <p>Un estudiante de grado octavo tiene un circuito eléctrico simple con un bombillo y una batería. Tiene dos vasos:</p>
+                <ul>
+                    <li><strong>Vaso 1:</strong> Contiene sal sólida (granos de sal secos).</li>
+                    <li><strong>Vaso 2:</strong> Contiene sal disuelta en agua.</li>
+                </ul>
+                <p>Al meter los cables en el Vaso 1, el bombillo <strong>NO</strong> enciende. Al meterlos en el Vaso 2, el bombillo <strong>SÍ</strong> enciende.</p>
+                <div style="text-align: center; font-size: 40px;">🧪🔋💡</div>
+            </div>
+
+            <p><strong>Pregunta:</strong> El estudiante desea indagar la causa de este fenómeno. Sabiendo que la corriente eléctrica es el movimiento de cargas, ¿cuál es la explicación más probable de por qué la sal conduce solo cuando está disuelta?</p>
+
+            <div class="icfes-options" id="icfes-area">
+                <label><input type="radio" name="icfes" value="A"> <strong>A.</strong> Porque el agua le da energía a la sal para que se vuelva radiactiva y brille.</label>
+                <label><input type="radio" name="icfes" value="B"> <strong>B.</strong> Porque en estado sólido los iones (cargas) están atrapados en una red rígida, pero el agua los separa permitiendo que se muevan.</label>
+                <label><input type="radio" name="icfes" value="C"> <strong>C.</strong> Porque la sal sólida no tiene electrones, estos solo aparecen cuando se mojan.</label>
+                <label><input type="radio" name="icfes" value="D"> <strong>D.</strong> Porque el vidrio del Vaso 2 es un material conductor especial.</label>
+            </div>
+            
+            <button class="btn-verify" onclick="checkICFES()">Enviar Respuesta</button>
+            <div id="icfes-feedback" class="feedback"></div>
+        </div>
+
+        <div class="section-card">
+            <h3>Deduciendo las Reglas del Juego</h3>
+            <p>Después de observar el mercado y el experimento, podemos deducir las leyes formales del Enlace Iónico. No es magia, es fuerza electrostática. Un enlace iónico se define rigurosamente como la fuerza de atracción que mantiene unidos a iones de cargas opuestas.</p>
+            
+            <p><strong>Características que deducimos:</strong></p>
+            <table border="1">
+                <tr>
+                    <th>Característica</th>
+                    <th>Explicación</th>
+                </tr>
+                <tr>
+                    <td><strong>Diferencia de Electronegatividad</strong></td>
+                    <td>Es muy alta (generalmente mayor a 1.7). Uno es muy fuerte robando electrones (el No Metal) y el otro muy débil reteniéndolos (el Metal).</td>
+                </tr>
+                <tr>
+                    <td><strong>Estado Físico</strong></td>
+                    <td>Son sólidos cristalinos a temperatura ambiente. Forman redes ordenadas (como cubos perfectos de sal), no moléculas sueltas.</td>
+                </tr>
+                <tr>
+                    <td><strong>Conductividad</strong></td>
+                    <td>Como vimos en la pregunta ICFES: sólidos NO conducen (iones quietos). Disueltos o fundidos SÍ conducen (iones libres).</td>
+                </tr>
+            </table>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #6 (Mapa Conceptual):</strong> Elabora un mapa conceptual sobre "Propiedades de los Compuestos Iónicos" usando la tabla anterior. Agrega dibujos pequeños (ej: un cubo para cristalino).</p>
+                <button class="btn-verify" onclick="markActivity(6)">¡Mapa conceptual listo!</button>
+            </div>
+
+            <p>Podemos representar estos enlaces usando números simples, sin fórmulas complejas. Por ejemplo:</p>
+            <ul>
+                <li><strong>Na+</strong> (Sodio positivo, perdió 1)</li>
+                <li><strong>Cl-</strong> (Cloro negativo, ganó 1)</li>
+                <li><strong>Mg+2</strong> (Magnesio perdió 2, es muy generoso)</li>
+                <li><strong>O-2</strong> (Oxígeno ganó 2, tenía mucha hambre de electrones)</li>
+            </ul>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #7 (Contestar):</strong> Si el Magnesio (Mg) regala 2 electrones, y el Oxígeno (O) necesita recibir 2. ¿Podrían formar una pareja perfecta? Explica por qué.</p>
+                <button class="btn-verify" onclick="markActivity(7)">¡Análisis escrito!</button>
+            </div>
+
+            <p>Es fundamental entender que este "Arte de Dar" crea estructuras muy rígidas. Los compuestos iónicos son duros pero frágiles (si los golpeas, se rompen, no se doblan). Así como la confianza: es fuerte, pero si la golpeas con una mentira (rompes el equilibrio de cargas), la relación se quiebra.</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #8 (Dibujar):</strong> Dibuja una "Red Cristalina". Imagina un cubo hecho de pelotas, alternando colores: una roja (+), una azul (-), una roja (+), una azul (-). Así se ve la sal por dentro.</p>
+                <button class="btn-verify" onclick="markActivity(8)">¡Red dibujada!</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #9 (Tabla Comparativa):</strong> Busca en tu cocina: Sal (Iónico) y Azúcar (Covalente/No Iónico). Obsérvalos. Haz una tabla de diferencias visuales (brillo, forma del grano). <em>Nota: El azúcar se derrite al fuego, la sal no.</em></p>
+                <button class="btn-verify" onclick="markActivity(9)">¡Comparación hecha!</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #10 (Creatividad):</strong> Inventa un slogan o frase corta que invite a las personas a ser "Como el Sodio" (Generosos) para formar una sociedad estable.</p>
+                <button class="btn-verify" onclick="markActivity(10)">¡Slogan creado!</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h3>📝 Taller Final: ¿Cuánto Aprendiste?</h3>
+            <p>Responde con honestidad. Tus respuestas serán verificadas.</p>
+
+            <h4>Selección Múltiple</h4>
+            <div id="final-mc-quiz">
+                </div>
+
+            <h4>Preguntas Abiertas (Anti-Copy/Paste)</h4>
+            <p><em>Reglas: Mínimo 10 palabras, Máximo 15 palabras. Escribe tú mismo.</em></p>
+            <div id="final-open-quiz">
+                </div>
+
+            <br>
+            <button onclick="downloadReport()" style="width:100%; font-size:1.2rem; background-color: var(--secondary);">📥 Descargar Mis Respuestas (.txt)</button>
+        </div>
+
+    </main>
+
+    <script>
+        // --- ESTADO DEL JUEGO ---
+        const gameState = {
+            user: "",
+            score: 0, // 0 a 5
+            progress: 0, // 0 a 100
+            activities: [],
+            answers: {},
+            levelNames: ["H", "He", "Li", "Be", "B", "C"] // Elementos tabla periódica 1-6
+        };
+
+        // --- CARGA INICIAL ---
+        window.onload = function() {
+            if(localStorage.getItem('ovaIonic_user')) {
+                loadState();
+                if(gameState.user) {
+                    document.getElementById('login-overlay').style.display = 'none';
+                    updateUI();
+                }
+            }
+            renderFinalQuiz();
+        };
+
+        // --- FUNCIONES CORE ---
+        function login() {
+            const name = document.getElementById('username').value.trim();
+            if(name.length > 3) {
+                gameState.user = name;
+                saveState();
+                document.getElementById('login-overlay').style.display = 'none';
+                updateUI();
+            } else {
+                alert("Por favor escribe tu nombre completo.");
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('ovaIonic_user', JSON.stringify(gameState));
+        }
+
+        function loadState() {
+            const data = JSON.parse(localStorage.getItem('ovaIonic_user'));
+            Object.assign(gameState, data);
+            // Restaurar botones
+            gameState.activities.forEach(id => {
+                const btn = document.querySelector(`button[onclick="markActivity(${id})"]`);
+                if(btn) disableBtn(btn);
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('display-name').innerText = gameState.user;
+            document.getElementById('progress-bar').style.width = gameState.progress + "%";
+            
+            let lvl = Math.floor(gameState.score);
+            if(lvl > 5) lvl = 5;
+            document.getElementById('score-display').innerText = `${gameState.levelNames[lvl]} (${gameState.score.toFixed(1)})`;
+        }
+
+        function addPoints(pts, prog) {
+            gameState.score = Math.min(5, gameState.score + pts);
+            gameState.progress = Math.min(100, gameState.progress + prog);
+            saveState();
+            updateUI();
+        }
+
+        function disableBtn(btn) {
+            btn.className = "btn-disabled";
+            btn.innerHTML = "✅ Completado";
+            btn.disabled = true;
+        }
+
+        // --- LÓGICA DE SECCIONES ---
+
+        function checkPresaberes() {
+            const a1 = document.getElementById('pre1').value;
+            const a2 = document.getElementById('pre2').value;
+            const a3 = document.getElementById('pre3').value;
+            const fb = document.getElementById('pre-feedback');
+
+            if(a1 == 0 || a2 == 0 || a3 == 0) { alert("Responde todo."); return; }
+
+            let hits = 0;
+            if(a1 == 'b') hits++;
+            if(a2 == 'b') hits++;
+            if(a3 == 'c') hits++;
+
+            fb.style.display = 'block';
+            if(hits === 3) {
+                fb.className = "feedback correct";
+                fb.innerHTML = "¡Excelente! Entiendes las cargas y la atracción.";
+                addPoints(0.5, 5);
+            } else {
+                fb.className = "feedback incorrect";
+                fb.innerHTML = `Tienes ${hits}/3. Recuerda: Electrones son negativos, perder negativo te hace positivo, y los opuestos se atraen.`;
+                addPoints(0.2, 5);
+            }
+            gameState.answers.pre = hits;
+        }
+
+        function markActivity(id) {
+            if(!gameState.activities.includes(id)) {
+                gameState.activities.push(id);
+                addPoints(0.35, 6); // 10 actividades * 0.35 = 3.5 puntos + bonos
+                const btn = document.querySelector(`button[onclick="markActivity(${id})"]`);
+                disableBtn(btn);
+            }
+        }
+
+        function checkICFES() {
+            const opts = document.getElementsByName('icfes');
+            let sel = null;
+            for(let o of opts) if(o.checked) sel = o.value;
+            
+            if(!sel) { alert("Selecciona una opción"); return; }
+            
+            const fb = document.getElementById('icfes-feedback');
+            fb.style.display = 'block';
+
+            if(sel === 'B') {
+                fb.className = "feedback correct";
+                fb.innerHTML = "<strong>¡Correcto!</strong> Indagaste bien. Para que haya corriente, las cargas deben moverse. En el sólido están fijas (prisión), el agua 'abre las celdas' y permite el flujo.";
+                addPoints(1.0, 10);
+            } else {
+                fb.className = "feedback incorrect";
+                let expl = "";
+                if(sel === 'A') expl = "El agua no vuelve radiactivas a las cosas.";
+                if(sel === 'C') expl = "La sal sólida SI tiene electrones, pero están quietos.";
+                if(sel === 'D') expl = "El vaso es el mismo en ambos casos.";
+                fb.innerHTML = `<strong>Incorrecto.</strong> ${expl} La clave es el movimiento de las cargas.`;
+                addPoints(0.1, 10);
+            }
+            gameState.answers.icfes = sel;
+            // Disable
+            for(let o of opts) o.disabled = true;
+            saveState();
+        }
+
+        // --- FINAL QUIZ ---
+        const mcqs = [
+            {q: "¿Qué le pasa al átomo que pierde electrones?", ops: ["Se vuelve Anión (-)", "Se vuelve Catión (+)", "Se vuelve Neutro", "Explota"], c: 1},
+            {q: "¿Quiénes forman generalmente un enlace iónico?", ops: ["Dos Metales", "Dos No Metales", "Metal + No Metal", "Gases Nobles"], c: 2},
+            {q: "¿Cuál es la regla mágica de estabilidad?", ops: ["Regla del 2", "Regla del Octeto", "Regla del Cuarteto", "Regla de Oro"], c: 1},
+            {q: "¿Qué mantiene unidos a los iones?", ops: ["Pegante químico", "Gravedad", "Fuerza Magnética", "Atracción Electrostática"], c: 3},
+            {q: "¿La sal sólida conduce electricidad?", ops: ["Sí, siempre", "No, nunca", "Solo de día", "Depende la marca"], c: 1} // Trick question in solid state usually NO, but option 1 is 'Yes'. Wait. Solid salt NO. Option 1: Yes. Option 2: No. Correct is 1 (index 1 which is 'No, nunca' in my array logic? No wait. Index 1 is the second option.)
+            // Correction: Array index 1 is "No, nunca". That is correct.
+        ];
+
+        const openQs = [
+            "Define 'Enlace Iónico' con tus propias palabras.",
+            "¿Por qué el Sodio quiere regalar su electrón?",
+            "¿Qué sucede con las cargas cuando se disuelve sal?",
+            "Explica la analogía del mercado químico.",
+            "¿Por qué la generosidad se parece a un enlace?"
+        ];
+
+        function renderFinalQuiz() {
+            // MC
+            let h = "";
+            mcqs.forEach((m, i) => {
+                h += `<div style="margin-bottom:15px"><strong>${i+1}. ${m.q}</strong><br>`;
+                m.ops.forEach((o, j) => {
+                    h += `<label style="margin-right:10px"><input type="radio" name="fmc_${i}" value="${j}"> ${o}</label>`;
+                });
+                h += `</div>`;
+            });
+            document.getElementById('final-mc-quiz').innerHTML = h;
+
+            // Open
+            let ho = "";
+            openQs.forEach((q, i) => {
+                ho += `<div style="margin-bottom:15px">
+                    <strong>${i+1}. ${q}</strong><br>
+                    <textarea id="oq_${i}" rows="2" placeholder="10 a 15 palabras..." onpaste="return false"></textarea>
+                    <button class="btn-verify" id="btn_oq_${i}" onclick="verOpen(${i})">Verificar Texto</button>
+                    <span id="msg_oq_${i}" style="margin-left:10px; font-weight:bold"></span>
+                </div>`;
+            });
+            document.getElementById('final-open-quiz').innerHTML = ho;
+        }
+
+        function verOpen(i) {
+            const txt = document.getElementById(`oq_${i}`).value.trim();
+            const msg = document.getElementById(`msg_oq_${i}`);
+            const words = txt.split(/\s+/).filter(w => w.length>0).length;
+
+            if(words < 10) { msg.style.color = "red"; msg.innerText = `Muy corto (${words}). Mínimo 10.`; }
+            else if(words > 15) { msg.style.color = "red"; msg.innerText = `Muy largo (${words}). Máximo 15.`; }
+            else {
+                msg.style.color = "green"; msg.innerText = "¡Válido! Guardado.";
+                document.getElementById(`btn_oq_${i}`).disabled = true;
+                document.getElementById(`oq_${i}`).disabled = true;
+                gameState.answers[`open_${i}`] = txt;
+                addPoints(0.1, 2);
+            }
+        }
+
+        function downloadReport() {
+            // Check MC
+            let mcScore = 0;
+            let mcDetails = "";
+            mcqs.forEach((m, i) => {
+                const opts = document.getElementsByName(`fmc_${i}`);
+                let ans = "No respondió";
+                for(let o of opts) {
+                    if(o.checked) {
+                        ans = m.ops[o.value];
+                        if(parseInt(o.value) === m.c) mcScore++;
+                    }
+                }
+                mcDetails += `P${i+1}: ${ans}\n`;
+            });
+
+            const txt = `REPORTE OVA: ENLACE IÓNICO
+Estudiante: ${gameState.user}
+Fecha: ${new Date().toLocaleDateString()}
+Puntaje: ${gameState.score.toFixed(2)}/5.0
+Progreso: ${gameState.progress}%
+---------------------------
+ACTIVIDADES CUADERNO: ${gameState.activities.length}/10
+---------------------------
+PREGUNTA INDAGAR: ${gameState.answers.icfes || 'Pendiente'}
+---------------------------
+TEST SELECCIÓN MÚLTIPLE (${mcScore}/5):
+${mcDetails}
+---------------------------
+RESPUESTAS ABIERTAS:
+1. ${gameState.answers.open_0 || '-'}
+2. ${gameState.answers.open_1 || '-'}
+3. ${gameState.answers.open_2 || '-'}
+4. ${gameState.answers.open_3 || '-'}
+5. ${gameState.answers.open_4 || '-'}
+---------------------------
+Fin del reporte.`;
+
+            const blob = new Blob([txt], {type:'text/plain'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Reporte_Ionico_${gameState.user.replace(/\s+/g,'_')}.txt`;
+            link.click();
+        }
+
+    </script>
+</body>
+</html>

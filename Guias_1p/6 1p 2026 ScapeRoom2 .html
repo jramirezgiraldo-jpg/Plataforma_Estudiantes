@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: El Laboratorio del Dr. Aquiles</title>
+    <style>
+        /* ================= CSS INMERSIVO ================= */
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #1e293b;
+            --text-main: #e2e8f0;
+            --neon-blue: #38bdf8;
+            --neon-green: #4ade80;
+            --neon-red: #f87171;
+            --font-mono: 'Courier New', Courier, monospace;
+            --font-sans: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* Cabecera e Inventario */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 2px solid var(--neon-blue);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2);
+        }
+
+        h1 { font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-blue); }
+
+        #inventory-panel {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: #0f172a;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--neon-green);
+            font-weight: bold;
+            font-family: var(--font-mono);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        /* Habitaciones (Fases) */
+        .room-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .room {
+            background-color: var(--panel-bg);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            opacity: 0.5;
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+
+        .room.active {
+            opacity: 1;
+            pointer-events: auto;
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+        }
+
+        .room-header {
+            font-size: 1.8rem;
+            color: var(--neon-blue);
+            border-bottom: 1px dashed #475569;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        /* Acertijos (Terminales) */
+        .puzzle-box {
+            background-color: #0f172a;
+            border-left: 4px solid #475569;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .puzzle-box.solved {
+            border-left-color: var(--neon-green);
+            background-color: rgba(74, 222, 128, 0.05);
+        }
+
+        .reading-block {
+            font-family: var(--font-mono);
+            background: #000;
+            padding: 15px;
+            border-radius: 5px;
+            color: #a3e635;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+
+        .puzzle-title { font-weight: bold; margin-bottom: 10px; color: #cbd5e1; }
+
+        /* Controles de Input */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            padding: 10px 15px;
+            border: 1px solid #475569;
+            border-radius: 5px;
+            background-color: #1e293b;
+            color: white;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            flex-grow: 1;
+            text-transform: uppercase;
+        }
+
+        input:focus { outline: none; border-color: var(--neon-blue); }
+        input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        button {
+            padding: 10px 20px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover { background-color: #1d4ed8; }
+        button:disabled { background-color: #475569; cursor: not-allowed; }
+        
+        button.solved-btn { background-color: var(--neon-green); color: #000; }
+
+        .error-msg {
+            color: var(--neon-red);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            margin-top: 8px;
+            display: none;
+        }
+
+        /* Modales Personalizados */
+        #custom-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--panel-bg);
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid var(--neon-blue);
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(56,189,248,0.4);
+        }
+
+        .modal-title { font-size: 1.5rem; color: var(--neon-blue); margin-bottom: 15px; }
+        .modal-btn { margin-top: 20px; background: var(--neon-blue); }
+
+        /* ARTE CSS COMO RESPALDO PARA IMÁGENES */
+        .img-placeholder-container {
+            border: 1px dashed #475569;
+            padding: 15px;
+            margin: 15px 0;
+            background: #000;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .real-image { max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #334155; margin-top:10px; }
+
+        /* Simulador Tyndall CSS */
+        .css-tyndall { display: flex; justify-content: center; gap: 20px; margin-top: 15px; position: relative;}
+        .beaker { width: 60px; height: 80px; border: 2px solid rgba(255,255,255,0.3); border-top: none; border-radius: 0 0 10px 10px; position: relative; background: rgba(56,189,248,0.1); }
+        .laser-beam { position: absolute; top: 40px; left: -50px; width: 300px; height: 4px; background: rgba(248, 113, 113, 0.2); z-index: 1; }
+        .beaker.colloid { background: rgba(167, 139, 250, 0.3); }
+        .beaker.colloid::after { content: ''; position: absolute; top: 38px; left: 0; width: 100%; height: 8px; background: rgba(248, 113, 113, 0.9); box-shadow: 0 0 10px red; z-index: 2; } /* Rayo visible */
+        
+        /* Simulador Cromatografía CSS */
+        .css-chroma { width: 60px; height: 150px; background: #f8fafc; margin: 0 auto; position: relative; border-bottom: 10px solid rgba(56,189,248,0.3); }
+        .spot { width: 15px; height: 15px; border-radius: 50%; position: absolute; left: 22px; filter: blur(1px); }
+        .spot-top { background: red; bottom: 120px; }
+        .spot-mid { background: blue; bottom: 80px; }
+        .spot-bot { background: green; bottom: 40px; }
+        .chroma-labels { position: absolute; right: -30px; font-family: var(--font-mono); color: #cbd5e1; font-weight: bold; font-size: 14px;}
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Responsividad */
+        @media (max-width: 600px) {
+            header { flex-direction: column; gap: 10px; text-align: center; }
+            .input-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🧪 Proyecto Aquiles: Escape Room</h1>
+        <div id="inventory-panel">
+            <span>Inventario:</span>
+            <span id="empty-inv" style="color: #64748b; font-size: 0.9rem;">Vacío</span>
+            <!-- Items se añadirán aquí vía JS -->
+        </div>
+    </header>
+
+    <div class="room-container">
+        
+        <!-- ================= FASE 1: PROPIEDADES DEL AGUA ================= -->
+        <section class="room active" id="room-1">
+            <h2 class="room-header">Fase 1: Los Cimientos Líquidos</h2>
+            <p style="margin-bottom: 20px;">Has sido encerrado en el laboratorio subterráneo del Dr. Aquiles. Para escapar antes de que el oxígeno se agote (simulado por tu tiempo de 30 minutos), debes demostrar tus conocimientos científicos. Los sistemas de la Fase 2 están bloqueados.</p>
+
+            <div class="puzzle-box" id="box-p1">
+                <div class="puzzle-title">Acertijo #01: La Naturaleza del Solvente</div>
+                <p>El agua (H2O) disuelve la sal (NaCl) atrayendo sus iones. El oxígeno tiene carga parcial negativa y los hidrógenos carga parcial positiva. ¿Qué propiedad química describe esta distribución desigual de cargas que convierte al agua en el solvente universal?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p1" placeholder="Ingresa la propiedad (una palabra)...">
+                    <button id="btn-p1" onclick="checkAnswer('p1')">Verificar</button>
+                </div>
+                <div class="error-msg" id="error-p1"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p2">
+                <div class="puzzle-title">Acertijo #02: El Diario del Doctor</div>
+                <p>Lee detenidamente el registro arruinado de la bitácora para encontrar el PIN de 4 dígitos de la consola principal.</p>
+                <div class="reading-block">"Día 1: Los experimentos de separación comenzaron. Inicié vertiendo 2 litros de agua ultrapura en el matraz principal. Afortunadamente, registramos 0 reacciones explosivas indeseadas. Dejamos reposar la mezcla durante 4 horas exactas bajo la luz UV, y finalmente, conseguimos precipitar 8 gramos de cristales de soluto puro al fondo del recipiente."</div>
+                <div class="input-group">
+                    <input type="text" id="input-p2" placeholder="Código numérico (4 dígitos)...">
+                    <button id="btn-p2" onclick="checkAnswer('p2')">Desbloquear</button>
+                </div>
+                <div class="error-msg" id="error-p2"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p3">
+                <div class="puzzle-title">Acertijo #03: Cifrado Básico (Premio: Filtro)</div>
+                <p>El candado de la gaveta de suministros tiene un cifrado César inverso. La nota dice: <em>"Para obtener el papel, debes pensar en nuestro solvente. Resté 2 posiciones en el abecedario a cada letra (ej. C se volvió A, D se volvió B). El código cifrado es: <strong>C I W C</strong>."</em></p>
+                <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 5px;">(Pista: Si la letra cifrada es C, avanza 2 letras para encontrar la original: D, E...).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p3" placeholder="Sustancia desencriptada...">
+                    <button id="btn-p3" onclick="checkAnswer('p3')">Abrir Gaveta</button>
+                </div>
+                <div class="error-msg" id="error-p3"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 2: LA CÁMARA DE COLOIDES ================= -->
+        <section class="room" id="room-2">
+            <h2 class="room-header">Fase 2: La Cámara de Coloides</h2>
+            <p style="margin-bottom: 20px;">La puerta se ha abierto. Aquí el aire está denso. Debes clasificar correctamente las mezclas intermedias para encender los sistemas de extracción.</p>
+
+            <div class="puzzle-box" id="box-p4">
+                <div class="puzzle-title">Acertijo #04: El Haz Delator</div>
+                <div class="img-placeholder-container">
+                    <p style="color: #64748b; font-size:0.8rem;">[Marcador de Imagen: <code style="color:#cbd5e1">&lt;img src="pista_1_tyndall.png"&gt;</code> - Descarga e inserta aquí tu imagen]</p>
+                    <p><strong>Simulador Táctico Integrado (Arte CSS):</strong></p>
+                    <div class="css-tyndall">
+                        <div class="laser-beam"></div>
+                        <div class="beaker"><span style="position:absolute; bottom:-25px; left:10px; font-size:12px;">Solución</span></div>
+                        <div class="beaker colloid"><span style="position:absolute; bottom:-25px; left:15px; font-size:12px;">???</span></div>
+                        <div class="beaker"><span style="position:absolute; bottom:-25px; left:5px; font-size:12px;">Suspensión</span></div>
+                    </div>
+                </div>
+                <p style="margin-top:35px;">Un rayo láser atraviesa 3 vasos. En el primero (Solución) la luz no se ve. En el segundo, la luz "dibuja" su trayectoria claramente porque las partículas intermedias dispersan la luz (Efecto Tyndall). ¿Cuál es el nombre científico genérico de la mezcla del vaso central?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p4" placeholder="Nombre de la mezcla...">
+                    <button id="btn-p4" onclick="checkAnswer('p4')">Analizar Haz</button>
+                </div>
+                <div class="error-msg" id="error-p4"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p5">
+                <div class="puzzle-title">Acertijo #05: La Clasificación Gaseosa</div>
+                <div class="reading-block">
+LISTADO DE INVENTARIO DEL DOCTOR:
+- Niebla espesa
+- Gelatina de fresa
+- Mayonesa rancia
+- Humo de combustión
+- Leche entera
+                </div>
+                <p>Cruza los datos: Un aerosol es un tipo de dispersión coloidal donde partículas sólidas o líquidas están suspendidas en un gas. Lee la lista de arriba. ¿Cuántos de esos 5 ejemplos clasifican específicamente como <strong>Aerosoles</strong>?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p5" placeholder="Ingresa solo el número...">
+                    <button id="btn-p5" onclick="checkAnswer('p5')">Clasificar</button>
+                </div>
+                <div class="error-msg" id="error-p5"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p6">
+                <div class="puzzle-title">Acertijo #06: Cálculo de Concentración (Premio: Imán)</div>
+                <p>Para desbloquear el equipo de seguridad magnético, el sistema exige resolver un problema de concentración matemática. Preparaste una disolución mezclando exactamente <strong>50 gramos</strong> de soluto dentro de <strong>500 mililitros (0.5 Litros)</strong> de agua.</p>
+                <p>Calcula la concentración en gramos por litro (g/L) dividiendo la masa entre el volumen en litros.</p>
+                <div class="input-group">
+                    <input type="text" id="input-p6" placeholder="Ingresa solo el resultado numérico...">
+                    <button id="btn-p6" onclick="checkAnswer('p6')">Calcular y Abrir</button>
+                </div>
+                <div class="error-msg" id="error-p6"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 3: SALA DE SEPARACIÓN I ================= -->
+        <section class="room" id="room-3">
+            <h2 class="room-header">Fase 3: Separación de Mezclas I</h2>
+            <p style="margin-bottom: 20px;">Has llegado al área de ingeniería física. Necesitas aislar los componentes puros de mezclas heterogéneas y homogéneas.</p>
+
+            <div class="puzzle-box" id="box-p7">
+                <div class="puzzle-title">Acertijo #07: Ciclo Térmico</div>
+                <div class="img-placeholder-container">
+                    <p style="color: #64748b; font-size:0.8rem;">[Marcador: <code style="color:#cbd5e1">&lt;img src="pista_2_destilacion.png"&gt;</code>]</p>
+                    <p style="font-family: var(--font-mono); color: #cbd5e1;">(ESQUEMA DAÑADO. EL LÍQUIDO HIERVE [V]. EL GAS SUBE [A]. EL GAS PASA AL CONDENSADOR [P]. SE ENFRÍA [O]. CAE LA GOTA PURA [R]).</p>
+                </div>
+                <p>La destilación separa líquidos por sus diferentes puntos de ebullición. Basado en el esquema dañado arriba, ¿qué estado de la materia se forma en la fase intermedia (letras entre corchetes ordenadas) antes de volver a condensarse?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p7" placeholder="Estado de la materia...">
+                    <button id="btn-p7" onclick="checkAnswer('p7')">Comprobar</button>
+                </div>
+                <div class="error-msg" id="error-p7"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p8">
+                <div class="puzzle-title">Acertijo #08: Extracción de Metales</div>
+                <p>Sobre la mesa hay un vaso de precipitados que contiene una mezcla heterogénea seca de arena fina mezclada con limaduras de hierro oscuro.</p>
+                <p>Revisa tu <strong>Inventario</strong> en la parte superior de la pantalla. Dependiendo de las herramientas que poseas, ingresa el nombre del <strong>método de separación</strong> que usarás para extraer el hierro rápidamente sin mojar la mezcla.</p>
+                <div class="input-group">
+                    <input type="text" id="input-p8" placeholder="Método (termina en -ción o -ismo)...">
+                    <button id="btn-p8" onclick="checkAnswer('p8')">Ejecutar Método</button>
+                </div>
+                <div class="error-msg" id="error-p8"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p9">
+                <div class="puzzle-title">Acertijo #09: Protocolo Combinado</div>
+                <div class="reading-block">"Registro #99: Recibí una mezcla de Hierro, Arena gruesa y Sal completamente disuelta en Agua. Protocolo ejecutado:
+1. Usé una fuerza invisible para retirar el metal.
+2. Pasé el líquido lodoso por un poro fino de celulosa para que la arena quedara atrapada.
+3. Al agua salada transparente le apliqué fuego directo hasta que el líquido desapareció hacia el techo, dejando un polvo blanco en el fondo."</div>
+                <p>El sistema requiere la secuencia de iniciales de los 3 métodos científicos físicos utilizados en orden. (Ejemplo si fue Decantación, Cristalización, Tamizado = DCT).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p9" placeholder="Ingresa las 3 iniciales (Ej: XYZ)...">
+                    <button id="btn-p9" onclick="checkAnswer('p9')">Validar Secuencia</button>
+                </div>
+                <div class="error-msg" id="error-p9"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 4: SALA DE SEPARACIÓN II ================= -->
+        <section class="room" id="room-4">
+            <h2 class="room-header">Fase 4: Técnicas Avanzadas</h2>
+            <p style="margin-bottom: 20px;">Solo los alumnos más observadores llegan hasta aquí. La presión del aire disminuye.</p>
+
+            <div class="puzzle-box" id="box-p10">
+                <div class="puzzle-title">Acertijo #10: Agua Lodosa</div>
+                <p>En el fregadero hay un litro de agua mezclada con polvo de tiza (carbonato de calcio) que no se disuelve, creando una suspensión. Necesitas el agua limpia para el motor.</p>
+                <p>Verifica tu <strong>Inventario</strong> obtenido en la Fase 1. ¿Qué técnica de separación de sólidos insolubles en líquidos aplicarás usando ese objeto específico?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p10" placeholder="Nombre del método...">
+                    <button id="btn-p10" onclick="checkAnswer('p10')">Purificar Agua</button>
+                </div>
+                <div class="error-msg" id="error-p10"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p11">
+                <div class="puzzle-title">Acertijo #11: El Código Pigmentado</div>
+                <div class="img-placeholder-container">
+                    <p style="color: #64748b; font-size:0.8rem;">[Marcador: <code style="color:#cbd5e1">&lt;img src="pista_3_cromatografia.png"&gt;</code>]</p>
+                    <div style="display:flex; justify-content:center; align-items:center; gap:20px;">
+                        <div class="css-chroma">
+                            <div class="spot spot-bot"></div><span class="chroma-labels" style="bottom:40px;">= 5</span>
+                            <div class="spot spot-mid"></div><span class="chroma-labels" style="bottom:80px;">= 3</span>
+                            <div class="spot spot-top"></div><span class="chroma-labels" style="bottom:120px;">= 7</span>
+                        </div>
+                    </div>
+                </div>
+                <p style="margin-top:15px;">Se realizó una cromatografía sobre papel. El solvente arrastró las tintas a diferentes alturas según su afinidad. Leyendo las manchas de colores de ARRIBA hacia ABAJO en la tira de papel, se forma un código numérico de 3 cifras indispensable para abrir la esclusa.</p>
+                <div class="input-group">
+                    <input type="text" id="input-p11" placeholder="Código de 3 dígitos...">
+                    <button id="btn-p11" onclick="checkAnswer('p11')">Ingresar Código</button>
+                </div>
+                <div class="error-msg" id="error-p11"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 5: EL ESCAPE MAESTRO ================= -->
+        <section class="room" id="room-5">
+            <h2 class="room-header">Fase 5: El Escape Maestro</h2>
+            <p style="margin-bottom: 20px;">La compuerta final. Todo tu conocimiento sobre química física y mezclas será puesto a prueba. Resuelve estos últimos enigmas o quédate atrapado para siempre.</p>
+
+            <div class="puzzle-box" id="box-p12">
+                <div class="puzzle-title">Acertijo #12: Lógica de Separación Multiestado</div>
+                <div class="reading-block">
+ENTRADA: Mezcla [Agua + Aceite + Sal]
+  |
+  +--> NODO 1: Se aplica DECANTACIÓN usando embudo de separación.
+         |
+         +-- Se retira el líquido menos denso (X) por arriba.
+         |
+         +-- La fase pesada (Y) baja al matraz.
+               |
+               +--> NODO 2: A la fase (Y) se le aplica EVAPORACIÓN con mechero.
+                      |
+                      +-- El solvente (Z) pasa a gas y se escapa.
+                      |
+                      +-- PREGUNTA FINAL: ¿Qué sustancia pura cristalizada se queda en el fondo del recipiente caliente?
+                </div>
+                <div class="input-group">
+                    <input type="text" id="input-p12" placeholder="Nombre de la sustancia...">
+                    <button id="btn-p12" onclick="checkAnswer('p12')">Resolver Nodos</button>
+                </div>
+                <div class="error-msg" id="error-p12"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p13" style="border-left-color: var(--neon-blue); box-shadow: 0 0 15px rgba(56,189,248,0.2);">
+                <div class="puzzle-title" style="color: var(--neon-blue); font-size: 1.2rem; text-transform: uppercase;">Acertijo #13: El Pergamino de Aquiles</div>
+                
+                <p style="margin-bottom:15px;">Has hallado la obra maestra del doctor. Observa atentamente esta imagen geńerada por los escáneres IA del laboratorio. Dentro de las geometrías que unen la estructura molecular del agua (H2O) con los embudos y los imanes, hay 6 letras de neón escondidas que forman una exclamación científica griega.</p>
+                
+                <div class="img-placeholder-container" style="border-color: var(--neon-blue); background: rgba(56,189,248,0.05);">
+                    <!-- IMAGEN GENERADA POR IA INSERTADA AQUÍ -->
+                    http://googleusercontent.com/image_generation_content/0
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="input-p13" placeholder="Ingresa la palabra oculta final..." style="border-color: var(--neon-blue); text-shadow: 0 0 5px rgba(255,255,255,0.5);">
+                    <button id="btn-p13" onclick="checkAnswer('p13')" style="background-color: var(--neon-blue); color: #000;">¡ABRIR ESCLUSA!</button>
+                </div>
+                <div class="error-msg" id="error-p13"></div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODAL PERSONALIZADO (No alerts) -->
+    <div id="custom-modal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modal-title">Mensaje del Sistema</h3>
+            <p id="modal-text" style="margin-bottom: 20px;"></p>
+            <button class="modal-btn" onclick="closeModal()">Entendido</button>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT LÓGICA ================= -->
+    <script>
+        // Diccionario de respuestas (las respuestas son evaluadas sin tildes y en mayúsculas)
+        const answers = {
+            p1: "POLARIDAD",
+            p2: "2048",
+            p3: "AGUA",
+            p4: "COLOIDE",
+            p5: "2",
+            p6: "100",
+            p7: "VAPOR",
+            p8: ["IMANTACION", "MAGNETISMO"], // Aceptamos ambas para evitar frustración
+            p9: "IFE",
+            p10: "FILTRACION",
+            p11: "735",
+            p12: "SAL",
+            p13: "EUREKA"
+        };
+
+        // Estado del Juego
+        let gameState = {
+            solvedPuzzles: [],
+            inventory: [],
+            activeRoom: 1
+        };
+
+        // Modal Logic
+        function showModal(title, text) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').style.display = 'none';
+        }
+
+        // Normalización de cadenas (Quita tildes, espacios extra y pasa a mayúscula)
+        function normalizeString(str) {
+            return str.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        // Validación de Acertijos
+        function checkAnswer(puzzleId) {
+            const inputEl = document.getElementById(`input-${puzzleId}`);
+            const btnEl = document.getElementById(`btn-${puzzleId}`);
+            const errorEl = document.getElementById(`error-${puzzleId}`);
+            
+            const userAnswerRaw = inputEl.value;
+            const userAnswer = normalizeString(userAnswerRaw);
+            
+            let isCorrect = false;
+            const correctAnswer = answers[puzzleId];
+
+            if(Array.isArray(correctAnswer)) {
+                isCorrect = correctAnswer.includes(userAnswer);
+            } else {
+                isCorrect = (userAnswer === correctAnswer);
+            }
+
+            // Dependencias de Inventario
+            if(puzzleId === 'p8' && !gameState.inventory.includes('Imán')) {
+                showModal("Acción Denegada", "Intentaste separar el hierro de la arena con las manos, pero es muy fina. Necesitas una herramienta magnética de la Fase 2.");
+                return;
+            }
+            if(puzzleId === 'p10' && !gameState.inventory.includes('Filtro de Papel')) {
+                showModal("Acción Denegada", "Si viertes la mezcla en el desagüe, la tiza tapará la tubería. Necesitas un material poroso obtenido en la Fase 1.");
+                return;
+            }
+
+            if(isCorrect) {
+                handleSuccess(puzzleId, inputEl, btnEl, errorEl);
+            } else {
+                handleFailure(puzzleId, inputEl, btnEl, errorEl);
+            }
+        }
+
+        function handleSuccess(puzzleId, inputEl, btnEl, errorEl) {
+            // Estilos de éxito
+            inputEl.disabled = true;
+            btnEl.disabled = true;
+            btnEl.classList.add('solved-btn');
+            btnEl.innerText = 'Resuelto';
+            errorEl.style.display = 'none';
+            document.getElementById(`box-${puzzleId}`).classList.add('solved');
+
+            if (!gameState.solvedPuzzles.includes(puzzleId)) {
+                gameState.solvedPuzzles.push(puzzleId);
+                
+                // Recompensas de Inventario
+                if(puzzleId === 'p3') addInventoryItem('Filtro de Papel', '📜');
+                if(puzzleId === 'p6') addInventoryItem('Imán', '🧲');
+                
+                // Progreso de Habitaciones
+                checkRoomProgress();
+                saveProgress();
+                
+                // Final del juego
+                if(puzzleId === 'p13') {
+                    setTimeout(() => {
+                        showModal("¡ESCAPE EXITOSO!", "¡Felicidades! Has utilizado tus conocimientos sobre las propiedades del agua, la naturaleza de los coloides y las técnicas de separación para escapar del Laboratorio de Aquiles en tiempo récord. Eres un verdadero científico.");
+                    }, 500);
+                }
+            }
+        }
+
+        function handleFailure(puzzleId, inputEl, btnEl, errorEl) {
+            inputEl.disabled = true;
+            btnEl.disabled = true;
+            let timeLeft = 7; // Penalización anti fuerza-bruta
+            
+            errorEl.style.display = 'block';
+            errorEl.innerText = `Error en el análisis. Bloqueo de sistema: ${timeLeft}s`;
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                errorEl.innerText = `Error en el análisis. Bloqueo de sistema: ${timeLeft}s`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    inputEl.disabled = false;
+                    btnEl.disabled = false;
+                    inputEl.value = "";
+                    errorEl.style.display = 'none';
+                    inputEl.focus();
+                }
+            }, 1000);
+        }
+
+        // Sistema de Inventario
+        function addInventoryItem(itemName, icon) {
+            if (!gameState.inventory.includes(itemName)) {
+                gameState.inventory.push(itemName);
+                renderInventory();
+                showModal("¡Objeto Obtenido!", `Has encontrado: ${icon} ${itemName}. Se ha añadido a tu inventario y será útil más adelante.`);
+            }
+        }
+
+        function renderInventory() {
+            const panel = document.getElementById('inventory-panel');
+            const emptySpan = document.getElementById('empty-inv');
+            
+            if (gameState.inventory.length > 0 && emptySpan) {
+                emptySpan.style.display = 'none';
+            }
+
+            // Limpiar items existentes (menos el título y empty span)
+            const existingItems = panel.querySelectorAll('.inventory-item');
+            existingItems.forEach(item => item.remove());
+
+            gameState.inventory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'inventory-item';
+                let icon = item === 'Imán' ? '🧲' : '📜';
+                div.innerHTML = `${icon} ${item}`;
+                panel.appendChild(div);
+            });
+        }
+
+        // Progreso y Apertura de Habitaciones
+        function checkRoomProgress() {
+            const r1 = ['p1', 'p2', 'p3'].every(p => gameState.solvedPuzzles.includes(p));
+            const r2 = ['p4', 'p5', 'p6'].every(p => gameState.solvedPuzzles.includes(p));
+            const r3 = ['p7', 'p8', 'p9'].every(p => gameState.solvedPuzzles.includes(p));
+            const r4 = ['p10', 'p11'].every(p => gameState.solvedPuzzles.includes(p));
+
+            if (r1 && gameState.activeRoom < 2) activateRoom(2);
+            if (r1 && r2 && gameState.activeRoom < 3) activateRoom(3);
+            if (r1 && r2 && r3 && gameState.activeRoom < 4) activateRoom(4);
+            if (r1 && r2 && r3 && r4 && gameState.activeRoom < 5) activateRoom(5);
+        }
+
+        function activateRoom(roomNumber) {
+            gameState.activeRoom = roomNumber;
+            const roomEl = document.getElementById(`room-${roomNumber}`);
+            if(roomEl && !roomEl.classList.contains('active')) {
+                roomEl.classList.add('active');
+                // Scroll suave a la nueva sala
+                setTimeout(() => roomEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 500);
+            }
+        }
+
+        // Persistencia (localStorage)
+        function saveProgress() {
+            try {
+                localStorage.setItem('aquilesEscapeRoom_v1', JSON.stringify(gameState));
+            } catch (e) { console.error("Error guardando progreso", e); }
+        }
+
+        function loadProgress() {
+            try {
+                const savedData = localStorage.getItem('aquilesEscapeRoom_v1');
+                if (savedData) {
+                    gameState = JSON.parse(savedData);
+                    
+                    // Restaurar interfaz visual
+                    gameState.solvedPuzzles.forEach(puzzleId => {
+                        const inputEl = document.getElementById(`input-${puzzleId}`);
+                        const btnEl = document.getElementById(`btn-${puzzleId}`);
+                        const errorEl = document.getElementById(`error-${puzzleId}`);
+                        
+                        if(inputEl && btnEl) {
+                            inputEl.value = answers[puzzleId]; // Mostramos la respuesta guardada
+                            handleSuccess(puzzleId, inputEl, btnEl, errorEl);
+                        }
+                    });
+
+                    renderInventory();
+                    
+                    // Activar habitaciones según progreso
+                    for(let i = 1; i <= gameState.activeRoom; i++) {
+                        const roomEl = document.getElementById(`room-${i}`);
+                        if(roomEl) roomEl.classList.add('active');
+                    }
+                }
+            } catch (e) { console.error("Error cargando progreso", e); }
+        }
+
+        // Inicializar
+        window.onload = () => {
+            loadProgress();
+        };
+    </script>
+</body>
+</html>

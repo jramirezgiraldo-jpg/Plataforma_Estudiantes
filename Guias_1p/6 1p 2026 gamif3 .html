@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Coloides y Mezclas - Grado 6</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #27ae60;
+            --accent: #e67e22;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --iron: #a19d94;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--primary);
+            scroll-behavior: smooth;
+        }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        /* Header Fijo */
+        header {
+            position: sticky;
+            top: 0;
+            background: var(--white);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 900;
+        }
+
+        .user-info { font-weight: bold; color: var(--secondary); }
+        .score-box { 
+            background: var(--primary); 
+            color: white; 
+            padding: 0.5rem 1rem; 
+            border-radius: 20px;
+        }
+
+        /* Contenedor Principal */
+        main {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .activity-card {
+            background: var(--white);
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 5px solid var(--secondary);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .activity-card:hover { transform: translateY(-5px); }
+
+        .badge {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            border-radius: 50%;
+            text-align: center;
+            font-weight: bold;
+            margin-left: 10px;
+            color: #000;
+        }
+
+        .badge-Au { background: var(--gold); }
+        .badge-Ag { background: var(--silver); }
+        .badge-Fe { background: var(--iron); }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 70%;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:disabled { background: #ccc; cursor: not-allowed; }
+
+        .feedback { margin-top: 10px; font-weight: bold; }
+
+        /* Reporte Final */
+        #final-panel {
+            text-align: center;
+            padding: 3rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 15px;
+        }
+
+        .btn-download {
+            background: var(--accent);
+            font-size: 1.2rem;
+            padding: 15px 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h2>Bienvenido al Laboratorio Virtual</h2>
+        <p>Ingresa tus datos para comenzar</p>
+        <input type="text" id="nombre" placeholder="Nombre" required><br>
+        <input type="text" id="apellido" placeholder="Apellido" required><br>
+        <button onclick="login()">Empezar Actividad</button>
+    </div>
+</div>
+
+<header>
+    <div class="user-info" id="display-name">Estudiante: -</div>
+    <div class="score-box">Puntaje Total: <span id="global-score">0.0</span></div>
+</header>
+
+<main id="content">
+    <h1 style="text-align: center;">Coloides y Métodos de Separación</h1>
+    <p style="text-align: center;">Resuelve los desafíos para ganar insignias de la tabla periódica.</p>
+    
+    <div id="activities-container"></div>
+
+    <div id="final-panel">
+        <h2>¡Felicidades! Has terminado el recorrido.</h2>
+        <p>Tu esfuerzo científico ha sido registrado.</p>
+        <button class="btn-download" onclick="downloadTXT()">Descargar Reporte .txt</button>
+    </div>
+</main>
+
+<script>
+    // --- DATOS DE LAS ACTIVIDADES ---
+    const anagrams = [
+        { word: "COLOIDE", hint: "Mezcla donde una sustancia se dispersa en otra sin disolverse." },
+        { word: "GELATINA", hint: "Ejemplo común de un coloide que comemos en el postre." },
+        { word: "FILTRACION", hint: "Método para separar sólidos de líquidos usando un papel o malla." },
+        { word: "TAMIZADO", hint: "Se usa para separar granos de diferentes tamaños (como arena)." },
+        { word: "NIEBLA", hint: "Coloide formado por gotas de agua suspendidas en el aire." },
+        { word: "DECANTACION", hint: "Separar agua y aceite dejando reposar la mezcla." },
+        { word: "EVAPORACION", hint: "Método para recuperar la sal disuelta en agua usando calor." },
+        { word: "SOLVENTE", hint: "Sustancia que disuelve a otra (ejemplo: el agua)." },
+        { word: "HOMOGENEA", hint: "Mezcla donde no se pueden ver sus componentes a simple vista." },
+        { word: "LECHE", hint: "Coloide de origen animal que parece líquido pero tiene grasa dispersa." }
+    ];
+
+    const sentences = [
+        { correct: "La gelatina es un coloide semisólido", jumbled: "un coloide gelatina es La semisólido" },
+        { correct: "El tamizado separa piedras de la arena", jumbled: "arena de la separa piedras El tamizado" },
+        { correct: "La evaporación recupera la sal del agua", jumbled: "del agua sal la recupera La evaporación" },
+        { correct: "El aceite flota sobre el agua pura", jumbled: "pura agua el sobre flota El aceite" },
+        { correct: "Los coloides tienen importancia en la industria", jumbled: "industria la en importancia tienen coloides Los" },
+        { correct: "La filtración separa el café del agua", jumbled: "agua del café el separa La filtración" },
+        { correct: "La leche es una emulsión de grasa", jumbled: "grasa de emulsión una es leche La" },
+        { correct: "El sol es la fuente de calor", jumbled: "calor de fuente la es El sol" },
+        { correct: "Usamos decantación para separar mezclas heterogéneas", jumbled: "heterogéneas mezclas separar para decantación Usamos" },
+        { correct: "La ciencia requiere paciencia y observación", jumbled: "observación y paciencia requiere ciencia La" }
+    ];
+
+    let user = { nombre: "", apellido: "", score: 0, completed: [] };
+
+    // --- LÓGICA DE INICIO ---
+    window.onload = () => {
+        const saved = localStorage.getItem('ova_user');
+        if (saved) {
+            user = JSON.parse(saved);
+            document.getElementById('login-overlay').style.display = 'none';
+            updateUI();
+        }
+        renderActivities();
+    };
+
+    function login() {
+        const n = document.getElementById('nombre').value;
+        const a = document.getElementById('apellido').value;
+        if (n && a) {
+            user.nombre = n;
+            user.apellido = a;
+            localStorage.setItem('ova_user', JSON.stringify(user));
+            document.getElementById('login-overlay').style.display = 'none';
+            updateUI();
+        } else {
+            alert("Por favor completa tus datos.");
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('display-name').innerText = `Estudiante: ${user.nombre} ${user.apellido}`;
+        document.getElementById('global-score').innerText = user.score.toFixed(1);
+    }
+
+    // --- ALGORITMO FISHER-YATES ---
+    function shuffleString(str) {
+        let arr = str.split('');
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        let shuffled = arr.join('');
+        return shuffled === str ? shuffleString(str) : shuffled; // Evita que salga igual
+    }
+
+    // --- RENDERIZADO ---
+    function renderActivities() {
+        const container = document.getElementById('activities-container');
+        
+        // Render Anagramas
+        anagrams.forEach((item, index) => {
+            const shuffled = shuffleString(item.word);
+            createCard(container, index, "Anagrama", `Ordena las letras: <strong>${shuffled.split('').join('-')}</strong><br><small>${item.hint}</small>`, item.word);
+        });
+
+        // Render Oraciones
+        sentences.forEach((item, index) => {
+            const i = index + 10;
+            createCard(container, i, "Orden de Frase", `Organiza la idea: <em>"${item.jumbled}"</em>`, item.correct);
+        });
+    }
+
+    function createCard(container, id, type, prompt, correct) {
+        const card = document.createElement('div');
+        card.className = 'activity-card';
+        card.id = `card-${id}`;
+        card.innerHTML = `
+            <h3>Actividad ${id + 1}: ${type}</h3>
+            <p>${prompt}</p>
+            <input type="text" id="input-${id}" placeholder="Tu respuesta aquí...">
+            <button id="btn-${id}" onclick="validate(${id}, '${correct}')">Validar</button>
+            <div id="feedback-${id}" class="feedback"></div>
+        `;
+        container.appendChild(card);
+    }
+
+    // --- VALIDACIÓN Y GAMIFICACIÓN ---
+    let attempts = {};
+
+    function validate(id, correct) {
+        const input = document.getElementById(`input-${id}`).value.trim().toUpperCase();
+        const feedback = document.getElementById(`feedback-${id}`);
+        const btn = document.getElementById(`btn-${id}`);
+        
+        if (!attempts[id]) attempts[id] = 0;
+        attempts[id]++;
+
+        if (input === correct.toUpperCase()) {
+            let pts = 0;
+            let badge = "";
+            if (attempts[id] === 1) { pts = 5; badge = "Au"; }
+            else if (attempts[id] === 2) { pts = 3; badge = "Ag"; }
+            else { pts = 1.5; badge = "Fe"; }
+
+            user.score += pts;
+            feedback.innerHTML = `<span style="color:green">¡Correcto! +${pts} pts</span> <span class="badge badge-${badge}">${badge}</span>`;
+            btn.disabled = true;
+            document.getElementById(`input-${id}`).disabled = true;
+            saveProgress();
+        } else {
+            if (attempts[id] >= 3) {
+                feedback.innerHTML = `<span style="color:red">Intentos agotados. La respuesta era: ${correct}</span>`;
+                btn.disabled = true;
+                document.getElementById(`input-${id}`).disabled = true;
+            } else {
+                feedback.innerHTML = `<span style="color:orange">Incorrecto. Intento ${attempts[id]}/3</span>`;
+            }
+        }
+        updateUI();
+    }
+
+    function saveProgress() {
+        localStorage.setItem('ova_user', JSON.stringify(user));
+    }
+
+    // --- EXPORTAR TXT ---
+    function downloadTXT() {
+        const fecha = new Date().toLocaleString();
+        let content = `REPORTE DE NOTAS - OVA CIENCIAS NATURALES\n`;
+        content += `==========================================\n`;
+        content += `Estudiante: ${user.nombre} ${user.apellido}\n`;
+        content += `Fecha: ${fecha}\n`;
+        content += `Puntaje Final: ${user.score.toFixed(1)} / 100\n`;
+        content += `==========================================\n`;
+        content += `Grado: Sexto\n`;
+        content += `Institución: Ramón Messa Londoño\n`;
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Notas_${user.apellido}_${user.nombre}.txt`;
+        link.click();
+    }
+</script>
+
+</body>
+</html>

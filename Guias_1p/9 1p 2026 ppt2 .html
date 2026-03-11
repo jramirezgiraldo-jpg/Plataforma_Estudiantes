@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Teoría de Arrhenius - Prof. Juan Felipe Ramírez Giraldo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root{
+            --c1:#0f2027;
+            --c2:#203a43;
+            --c3:#2c5364;
+            --c4:#ffcc00;
+            --c5:#ff6b6b;
+            --c6:#4ecdc4;
+        }
+        *{box-sizing:border-box;}
+        body{
+            margin:0;
+            font-family:'Segoe UI', Arial, sans-serif;
+            background:radial-gradient(circle at top,#1b2735,#090a0f);
+            color:#fff;
+            overflow:hidden;
+        }
+        h1,h2,h3{margin:0 0 10px;}
+        .container{
+            width:100vw;
+            height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            position:relative;
+        }
+        .slide{
+            width:90%;
+            max-width:1000px;
+            height:85vh;
+            background:linear-gradient(135deg,rgba(15,32,39,0.95),rgba(44,83,100,0.9));
+            border-radius:20px;
+            box-shadow:0 0 25px rgba(0,0,0,0.8);
+            padding:20px 30px 70px;
+            display:none;
+            position:relative;
+            overflow:hidden;
+        }
+        .slide.active{
+            display:block;
+            animation:fadeIn 0.6s ease;
+        }
+        @keyframes fadeIn{
+            from{opacity:0; transform:scale(0.96) translateY(10px);}
+            to{opacity:1; transform:scale(1) translateY(0);}
+        }
+
+        .top-bar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:10px;
+        }
+        .tag{
+            font-size:0.85rem;
+            padding:4px 10px;
+            border-radius:20px;
+            background:rgba(255,255,255,0.1);
+        }
+        .progress{
+            width:180px;
+            height:8px;
+            background:rgba(255,255,255,0.15);
+            border-radius:10px;
+            overflow:hidden;
+        }
+        .progress-inner{
+            height:100%;
+            width:0%;
+            background:linear-gradient(90deg,var(--c6),var(--c4));
+            transition:width 0.3s;
+        }
+        .nav-buttons{
+            position:absolute;
+            bottom:15px;
+            left:0;
+            width:100%;
+            display:flex;
+            justify-content:space-between;
+            padding:0 25px;
+            align-items:center;
+        }
+        button{
+            padding:8px 16px;
+            border:none;
+            border-radius:20px;
+            cursor:pointer;
+            font-weight:bold;
+            transition:transform 0.2s, box-shadow 0.2s, background 0.3s;
+        }
+        .btn-prev{background:#555; color:#fff;}
+        .btn-next{background:linear-gradient(135deg,var(--c4),var(--c5)); color:#000;}
+        button:hover{transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,0.4);}
+        button:disabled{opacity:0.3; cursor:not-allowed; box-shadow:none; transform:none;}
+
+        .points{
+            font-size:0.9rem;
+            padding:4px 12px;
+            border-radius:20px;
+            background:rgba(0,0,0,0.4);
+            border:1px solid rgba(255,255,255,0.2);
+        }
+        .points-pop{
+            position:absolute;
+            top:10px;
+            right:210px;
+            font-size:0.9rem;
+            padding:4px 8px;
+            border-radius:10px;
+            background:rgba(0,0,0,0.7);
+            border:1px solid rgba(255,255,255,0.5);
+            display:none;
+            animation:pop 0.8s ease-out forwards;
+        }
+        @keyframes pop{
+            from{opacity:0; transform:translateY(-10px) scale(0.8);}
+            to{opacity:1; transform:translateY(0) scale(1);}
+        }
+
+        .columns{
+            display:grid;
+            grid-template-columns:1.25fr 1fr;
+            gap:20px;
+            height:calc(100% - 70px);
+        }
+        .full{
+            height:calc(100% - 70px);
+            overflow-y:auto;
+        }
+        .card{
+            background:rgba(255,255,255,0.06);
+            border-radius:15px;
+            padding:12px 15px;
+            margin-bottom:10px;
+            border:1px solid rgba(255,255,255,0.1);
+        }
+        ul{padding-left:18px; margin-top:5px;}
+        li{margin-bottom:4px;}
+        .badge{
+            display:inline-block;
+            background:linear-gradient(135deg,var(--c4),var(--c5));
+            color:#000;
+            padding:4px 10px;
+            border-radius:15px;
+            font-size:0.8rem;
+            font-weight:bold;
+            margin-bottom:8px;
+        }
+        .highlight{color:var(--c4); font-weight:bold;}
+        .pill{
+            display:inline-block;
+            padding:4px 10px;
+            border-radius:999px;
+            background:rgba(0,0,0,0.5);
+            margin-right:6px;
+            font-size:0.8rem;
+        }
+
+        .question-box{
+            margin-top:10px;
+            padding:10px;
+            background:rgba(0,0,0,0.6);
+            border-radius:10px;
+            border:1px solid rgba(255,255,255,0.15);
+        }
+        .question-box p{margin-bottom:8px;}
+        .question-box label{display:block; margin-bottom:4px; cursor:pointer;}
+        .feedback{
+            margin-top:6px;
+            padding:6px 8px;
+            border-radius:8px;
+            font-size:0.85rem;
+            display:none;
+        }
+        .feedback.ok{background:rgba(78,205,196,0.25); border:1px solid var(--c6);}
+        .feedback.bad{background:rgba(255,107,107,0.25); border:1px solid var(--c5);}
+
+        .full::-webkit-scrollbar{width:6px;}
+        .full::-webkit-scrollbar-thumb{
+            background:rgba(255,255,255,0.3);
+            border-radius:10px;
+        }
+        .full::-webkit-scrollbar-track{background:transparent;}
+
+        .water-scene{
+            position:relative;
+            width:100%;
+            height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .beaker{
+            width:140px;
+            height:170px;
+            border-radius:18px 18px 35px 35px;
+            border:3px solid rgba(255,255,255,0.7);
+            background:linear-gradient(180deg,rgba(255,255,255,0.3),rgba(255,255,255,0.05));
+            position:relative;
+            overflow:hidden;
+        }
+        .solution{
+            position:absolute;
+            bottom:0;
+            width:100%;
+            height:50%;
+            background:linear-gradient(135deg,#00b4db,#0083b0);
+            animation:wave 3s ease-in-out infinite;
+        }
+        @keyframes wave{
+            0%,100%{transform:translateY(3px);}
+            50%{transform:translateY(-3px);}
+        }
+        .ion{
+            position:absolute;
+            width:26px;
+            height:26px;
+            border-radius:50%;
+            background:rgba(0,0,0,0.5);
+            border:2px solid rgba(255,255,255,0.8);
+            font-size:0.7rem;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#fff;
+            animation:float 4s ease-in-out infinite;
+        }
+        @keyframes float{
+            0%,100%{transform:translateY(0);}
+            50%{transform:translateY(-12px);}
+        }
+
+        .emoji-big{
+            font-size:3rem;
+            text-align:center;
+        }
+
+        @media (max-width:800px){
+            .columns{grid-template-columns:1fr;}
+            .slide{height:90vh;padding:15px 15px 75px;}
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="pointsPop" class="points-pop">+10 pts</div>
+
+    <!-- Diapositiva 1: Presentación -->
+    <div class="slide active" data-index="0">
+        <div class="top-bar">
+            <div class="tag">Grado 9° – Química</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner" id="progressBar"></div></div>
+                <div class="points" id="pointsBox">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <span class="badge">Bienvenidas y bienvenidos</span>
+                <h1>Teoría de Arrhenius<br>y disociación iónica</h1>
+                <p>
+                    Docente: <span class="highlight">Juan Felipe Ramírez Giraldo</span><br>
+                    Licenciado en Biología y Educación Ambiental.<br>
+                    Magíster en Recursos Digitales aplicados a la Educación.<br>
+                    Estudiante de Doctorado en Ciencias Biomédicas.
+                </p>
+                <div class="card">
+                    <h3>Objetivo de aprendizaje</h3>
+                    <ul>
+                        <li>Comprender la teoría de Arrhenius para ácidos, bases y sales en disolución acuosa.</li>
+                        <li>Identificar la disociación iónica y relacionarla con la conductividad eléctrica de disoluciones.</li>
+                        <li>Representar la liberación de H⁺ y OH⁻ mediante esquemas sencillos y ejercicios de disociación.</li>
+                        <li>Reflexionar sobre lo que “liberamos” al entorno con nuestras palabras y acciones.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Evidencias de aprendizaje</h3>
+                    <ul>
+                        <li>Esquemas de disociación iónica de diferentes compuestos (ácidos, bases y sales).</li>
+                        <li>Explicación escrita u oral de por qué el agua con sal conduce mejor la electricidad.</li>
+                        <li>Resolución de ejercicios de disociación iónica.</li>
+                        <li>Reflexión escrita: “¿Qué estoy liberando al entorno cuando reacciono?”.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="water-scene">
+                <div class="beaker">
+                    <div class="solution"></div>
+                    <div class="ion" style="left:15px; bottom:30px; animation-delay:0s;">Na⁺</div>
+                    <div class="ion" style="left:80px; bottom:55px; animation-delay:0.8s;">Cl⁻</div>
+                    <div class="ion" style="left:50px; bottom:20px; animation-delay:1.6s;">H⁺</div>
+                    <div class="ion" style="left:100px; bottom:35px; animation-delay:2.2s;">OH⁻</div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev" disabled>&larr; Anterior</button>
+            <span>Diapositiva 1 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 2: Idea inicial – agua y sal -->
+    <div class="slide" data-index="1">
+        <div class="top-bar">
+            <div class="tag">Idea inicial (I)</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>¿Por qué el agua con sal conduce electricidad?</h2>
+                <div class="card">
+                    <p>
+                        El agua pura casi no conduce electricidad, pero cuando añadimos sal (u otras sustancias iónicas) la conductividad aumenta.
+                    </p>
+                    <p>
+                        Esto ocurre porque al disolverse la sal se separa en iones que pueden moverse libremente y transportar carga eléctrica.
+                    </p>
+                </div>
+                <div class="question-box" data-question="q1">
+                    <p><strong>Pregunta 1:</strong> ¿Qué crees que pasa con la sal al disolverse en agua?</p>
+                    <label><input type="radio" name="q1" value="a"> Desaparece completamente.</label>
+                    <label><input type="radio" name="q1" value="b"> Se reparte en partículas invisibles, pero sigue siendo sal sólida.</label>
+                    <label><input type="radio" name="q1" value="c"> Se separa en iones cargados que se mueven en el agua.</label>
+                    <button onclick="checkQuestion('q1','c')">Comprobar</button>
+                    <div class="feedback" id="fb-q1"></div>
+                </div>
+            </div>
+            <div class="water-scene">
+                <div class="beaker">
+                    <div class="solution"></div>
+                    <div class="ion" style="left:20px; bottom:25px; animation-delay:0s;">Na⁺</div>
+                    <div class="ion" style="left:70px; bottom:50px; animation-delay:0.7s;">Cl⁻</div>
+                    <div class="ion" style="left:105px; bottom:30px; animation-delay:1.4s;">Na⁺</div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 2 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 3: Teoría de Arrhenius (concepto) -->
+    <div class="slide" data-index="2">
+        <div class="top-bar">
+            <div class="tag">Teoría de Arrhenius</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>¿Qué propone la teoría de Arrhenius?</h2>
+            <div class="card">
+                <p>
+                    Svante Arrhenius propuso una teoría para explicar cómo se comportan ácidos, bases y sales cuando se disuelven en agua.
+                </p>
+                <ul>
+                    <li><span class="highlight">Ácido de Arrhenius</span>: sustancia que en agua libera iones H⁺.</li>
+                    <li><span class="highlight">Base de Arrhenius</span>: sustancia que en agua libera iones OH⁻.</li>
+                    <li><span class="highlight">Sal</span>: sustancia que en agua se disocia en cationes y aniones distintos de H⁺ y OH⁻.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Ejemplos rápidos</h3>
+                <ul>
+                    <li>HCl(ac) → H⁺(ac) + Cl⁻(ac)</li>
+                    <li>NaOH(ac) → Na⁺(ac) + OH⁻(ac)</li>
+                    <li>NaCl(ac) → Na⁺(ac) + Cl⁻(ac)</li>
+                </ul>
+            </div>
+            <p>
+                ✏️ En tu cuaderno: copia las tres ecuaciones de disociación anteriores y agrega un ejemplo más de ácido y uno de base.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 3 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 4: Disociación iónica (D) -->
+    <div class="slide" data-index="3">
+        <div class="top-bar">
+            <div class="tag">Disociación iónica (D)</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>¿Qué es disociación iónica?</h2>
+                <div class="card">
+                    <p>
+                        La disociación iónica es el proceso por el cual un compuesto iónico (o un ácido/base) se separa en iones al disolverse en agua.
+                    </p>
+                    <p>
+                        Es como si una molécula “se rompiera” en piezas cargadas que pueden moverse libremente en la disolución.
+                    </p>
+                </div>
+                <div class="card">
+                    <h3>Esquemas de liberación de H⁺ y OH⁻</h3>
+                    <ul>
+                        <li>HCl → H⁺ + Cl⁻ (libera H⁺ → ácido).</li>
+                        <li>NaOH → Na⁺ + OH⁻ (libera OH⁻ → base).</li>
+                        <li>H₂SO₄ → 2 H⁺ + SO₄²⁻ (ácido fuerte, libera más de un H⁺).</li>
+                        <li>Ca(OH)₂ → Ca²⁺ + 2 OH⁻ (base que libera dos OH⁻).</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="water-scene">
+                <div class="beaker">
+                    <div class="solution"></div>
+                    <div class="ion" style="left:15px; bottom:30px; animation-delay:0s;">H⁺</div>
+                    <div class="ion" style="left:80px; bottom:60px; animation-delay:0.8s;">Cl⁻</div>
+                    <div class="ion" style="left:105px; bottom:35px; animation-delay:1.5s;">OH⁻</div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 4 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 5: Ejercicios guiados de disociación -->
+    <div class="slide" data-index="4">
+        <div class="top-bar">
+            <div class="tag">Ejercicios guiados (C)</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Ejercicios de disociación</h2>
+            <div class="card">
+                <p>
+                    En tu cuaderno, escribe la disociación iónica de los siguientes compuestos en agua:
+                </p>
+                <ol>
+                    <li>NaCl</li>
+                    <li>KOH</li>
+                    <li>HNO₃</li>
+                    <li>CaCl₂</li>
+                    <li>H₂SO₄</li>
+                </ol>
+            </div>
+            <div class="question-box" data-question="q2">
+                <p><strong>Pregunta 2:</strong> ¿Cuál de las siguientes disociaciones de NaCl es correcta?</p>
+                <label><input type="radio" name="q2" value="a"> NaCl → Na⁺ + Cl⁻</label>
+                <label><input type="radio" name="q2" value="b"> NaCl → Na + Cl</label>
+                <label><input type="radio" name="q2" value="c"> NaCl → H⁺ + Cl⁻</label>
+                <button onclick="checkQuestion('q2','a')">Comprobar</button>
+                <div class="feedback" id="fb-q2"></div>
+            </div>
+            <p style="margin-top:10px;">
+                💡 Recuerda usar los signos de carga correctamente: cationes con carga positiva (⁺) y aniones con carga negativa (⁻).
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 5 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 6: Conductividad y electrolitos -->
+    <div class="slide" data-index="5">
+        <div class="top-bar">
+            <div class="tag">Conductividad eléctrica</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>Electrolitos y no electrolitos</h2>
+                <div class="card">
+                    <ul>
+                        <li><span class="highlight">Electrolito fuerte</span>: se disocia casi totalmente en iones (HCl, NaOH, NaCl).</li>
+                        <li><span class="highlight">Electrolito débil</span>: se disocia parcialmente (ácido acético, NH₃).</li>
+                        <li><span class="highlight">No electrolito</span>: no forma iones (azúcar, alcohol).</li>
+                    </ul>
+                    <p>
+                        Cuantos más iones haya en la disolución, mejor conduce la electricidad.
+                    </p>
+                </div>
+                <div class="question-box" data-question="q3">
+                    <p><strong>Pregunta 3:</strong> ¿Cuál solución conducirá mejor la electricidad?</p>
+                    <label><input type="radio" name="q3" value="a"> Agua con azúcar</label>
+                    <label><input type="radio" name="q3" value="b"> Agua con sal (NaCl)</label>
+                    <label><input type="radio" name="q3" value="c"> Agua pura</label>
+                    <button onclick="checkQuestion('q3','b')">Comprobar</button>
+                    <div class="feedback" id="fb-q3"></div>
+                </div>
+            </div>
+            <div class="emoji-big">
+                ⚡<br>
+                <span style="font-size:1.4rem;">Iones en movimiento</span>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 6 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 7: Comparando ecuaciones de Arrhenius -->
+    <div class="slide" data-index="6">
+        <div class="top-bar">
+            <div class="tag">Conclusión parcial</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Ácido + Base según Arrhenius</h2>
+            <div class="card">
+                <p>
+                    Cuando un ácido de Arrhenius se mezcla con una base de Arrhenius en agua, sus iones H⁺ y OH⁻ se combinan para formar agua.
+                </p>
+                <ul>
+                    <li>Ejemplo general: Ácido (H⁺) + Base (OH⁻) → Agua (H₂O) + Sal.</li>
+                    <li>HCl + NaOH → NaCl + H₂O.</li>
+                </ul>
+            </div>
+            <div class="question-box" data-question="q4">
+                <p><strong>Pregunta 4:</strong> ¿Qué iones se combinan para formar agua en una reacción ácido‑base de Arrhenius?</p>
+                <label><input type="radio" name="q4" value="a"> Na⁺ y Cl⁻</label>
+                <label><input type="radio" name="q4" value="b"> H⁺ y OH⁻</label>
+                <label><input type="radio" name="q4" value="c"> H₂ y O₂</label>
+                <button onclick="checkQuestion('q4','b')">Comprobar</button>
+                <div class="feedback" id="fb-q4"></div>
+            </div>
+            <p style="margin-top:10px;">
+                ✏️ En tu cuaderno: representa con flechas cómo H⁺ “se une” con OH⁻ para formar H₂O.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 7 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 8: Reflexión – lo que “liberamos” -->
+    <div class="slide" data-index="7">
+        <div class="top-bar">
+            <div class="tag">Reflexión personal</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>¿Qué “liberamos” al entorno?</h2>
+                <div class="card">
+                    <p>
+                        Así como las sustancias en agua liberan iones que afectan la conductividad, nuestras acciones y palabras “liberan” cosas al ambiente social.
+                    </p>
+                    <ul>
+                        <li>Hay personas que liberan tranquilidad, apoyo, respeto.</li>
+                        <li>Otras liberan tensión, burlas, agresión o indiferencia.</li>
+                        <li>Cada reacción que tenemos deja una huella en quienes nos rodean.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="emoji-big">
+                🌊<br>
+                <span style="font-size:1.4rem;">¿Qué dejo a mi paso?</span>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 8 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 9: Actividad de reflexión -->
+    <div class="slide" data-index="8">
+        <div class="top-bar">
+            <div class="tag">Actividad escrita</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Actividad: “Mi disociación emocional”</h2>
+            <div class="card">
+                <p>En tu cuaderno realiza un texto corto titulado <span class="highlight">“Lo que libero cuando reacciono”</span>:</p>
+                <ol>
+                    <li>Describe una situación en la que reaccionaste de forma intensa (rabia, sarcasmo, indiferencia, etc.).</li>
+                    <li>Escribe qué “iones” liberaste: ¿palabras hirientes, gritos, bromas pesadas, silencio frío, apoyo, calma?</li>
+                    <li>Reflexiona si eso que liberaste ayudó o perjudicó a las personas a tu alrededor.</li>
+                    <li>Propón una nueva forma de reaccionar que “libere” algo más positivo la próxima vez.</li>
+                </ol>
+            </div>
+            <div class="question-box" data-question="q5">
+                <p><strong>Pregunta 5 (autoobservación):</strong> ¿Qué te gustaría liberar más a partir de hoy?</p>
+                <label><input type="radio" name="q5" value="a"> Respeto y escucha</label>
+                <label><input type="radio" name="q5" value="b"> Burlas y críticas</label>
+                <label><input type="radio" name="q5" value="c"> Indiferencia total</label>
+                <button onclick="checkQuestion('q5','a')">Comprobar</button>
+                <div class="feedback" id="fb-q5"></div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 9 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 10: Autoevaluación de contenidos -->
+    <div class="slide" data-index="9">
+        <div class="top-bar">
+            <div class="tag">Autoevaluación</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>¿Qué tanto aprendí de Arrhenius?</h2>
+            <div class="card">
+                <p>Responde en tu cuaderno:</p>
+                <ol>
+                    <li>Define con tus palabras la teoría de Arrhenius para ácidos y bases.</li>
+                    <li>Escribe qué es disociación iónica y da un ejemplo.</li>
+                    <li>Explica por qué el agua con sal conduce mejor la electricidad que el agua pura.</li>
+                    <li>Escribe una frase sobre qué quieres “liberar” al entorno en tu vida diaria.</li>
+                </ol>
+            </div>
+            <div class="card">
+                <h3>Checklist personal</h3>
+                <p>Marca con ✔️ en tu cuaderno si:</p>
+                <ul>
+                    <li>Puedo escribir ecuaciones de disociación de ácidos, bases y sales sencillas.</li>
+                    <li>Entiendo la relación entre iones en solución y conductividad eléctrica.</li>
+                    <li>Conecto el concepto de “liberar iones” con lo que yo libero en mis relaciones con otras personas.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 10 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 11: Bibliografía -->
+    <div class="slide" data-index="10">
+        <div class="top-bar">
+            <div class="tag">Citas bibliográficas</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Bibliografía y recursos consultados</h2>
+            <div class="card">
+                <ul>
+                    <li>Wikipedia. “Teoría ácido‑base de Arrhenius”.</li>
+                    <li>Interlab. “Teoría de ácidos y bases de Svante Arrhenius”.</li>
+                    <li>Portal Académico CCH UNAM. “Teoría de Arrhenius”.</li>
+                    <li>CK‑12 y otros recursos de química general sobre electrolitos y disociación iónica.</li>
+                    <li>Materiales de divulgación sobre conductividad eléctrica de soluciones acuosas de sales.</li>
+                    <li>Videos educativos sobre ácidos y bases de Arrhenius y ejercicios de ionización.</li>
+                </ul>
+            </div>
+            <p>
+                Puedes complementar esta presentación con experimentos sencillos de conductividad y simuladores virtuales de disociación iónica.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 11 / 11</span>
+            <button class="btn-next" disabled>Fin</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+    let points = 0;
+
+    function updateSlide(index){
+        slides.forEach((s,i)=>{
+            s.classList.toggle('active', i === index);
+            const pBar = s.querySelector('.progress-inner');
+            const pBox = s.querySelector('.points');
+            if(pBar){
+                const progress = ((index+1)/totalSlides)*100;
+                pBar.style.width = progress + '%';
+            }
+            if(pBox){
+                pBox.textContent = 'Puntos: ' + points;
+            }
+            const label = s.querySelector('.nav-buttons span');
+            if(label){
+                label.textContent = 'Diapositiva ' + (index+1) + ' / ' + totalSlides;
+            }
+            const prevBtn = s.querySelector('.btn-prev');
+            const nextBtn = s.querySelector('.btn-next');
+            if(prevBtn){
+                prevBtn.onclick = ()=>changeSlide(-1);
+                prevBtn.disabled = (index===0);
+            }
+            if(nextBtn){
+                nextBtn.onclick = ()=>changeSlide(1);
+                if(index===totalSlides-1){
+                    nextBtn.disabled = true;
+                }
+            }
+        });
+    }
+
+    function changeSlide(direction){
+        const newIndex = currentSlide + direction;
+        if(newIndex>=0 && newIndex<totalSlides){
+            currentSlide = newIndex;
+            updateSlide(currentSlide);
+        }
+    }
+
+    function showPointsPop(){
+        const pop = document.getElementById('pointsPop');
+        pop.style.display='block';
+        pop.style.animation='none';
+        void pop.offsetWidth;
+        pop.style.animation='pop 0.8s ease-out forwards';
+        setTimeout(()=>{ pop.style.display='none'; },800);
+    }
+
+    function checkQuestion(qId, correct){
+        const selected = document.querySelector('input[name="'+qId+'"]:checked');
+        const fb = document.getElementById('fb-'+qId);
+        if(!fb) return;
+        if(!selected){
+            fb.textContent = 'Primero selecciona una respuesta.';
+            fb.className = 'feedback bad';
+            fb.style.display='block';
+            return;
+        }
+        if(selected.value === correct){
+            fb.textContent = '¡Muy bien! Respuesta correcta.';
+            fb.className = 'feedback ok';
+            if(!fb.dataset.counted){
+                points += 10;
+                fb.dataset.counted = 'true';
+                showPointsPop();
+                updateSlide(currentSlide);
+            }
+        }else{
+            fb.textContent = 'No es correcto. Revisa la explicación de la diapositiva.';
+            fb.className = 'feedback bad';
+        }
+        fb.style.display='block';
+    }
+
+    updateSlide(currentSlide);
+</script>
+</body>
+</html>

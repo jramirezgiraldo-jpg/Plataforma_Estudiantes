@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: El Reactor de Mendeleiev</title>
+    <style>
+        /* ================= ESTILOS CSS INMERSIVOS (CYBER-QUÍMICA) ================= */
+        :root {
+            --bg-color: #050b14;
+            --panel-bg: #0f172a;
+            --text-main: #cbd5e1;
+            --neon-green: #22c55e;
+            --neon-cyan: #06b6d4;
+            --neon-alert: #ef4444;
+            --font-mono: 'Consolas', 'Courier New', monospace;
+            --font-sans: 'Roboto', 'Segoe UI', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        /* HUD - Cabecera e Inventario */
+        header {
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 2px solid var(--neon-cyan);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 { 
+            font-size: 1.4rem; 
+            color: #fff;
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            text-shadow: 0 0 10px var(--neon-cyan); 
+        }
+
+        #inventory-panel {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--neon-green);
+            font-weight: bold;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            animation: pulseIn 0.5s ease-out;
+        }
+
+        /* Estructura de Habitaciones */
+        .room-container {
+            max-width: 950px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .room {
+            background-color: var(--panel-bg);
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            opacity: 0.4;
+            pointer-events: none;
+            transition: all 0.6s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .room::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: #334155; transition: background 0.6s;
+        }
+
+        .room.active {
+            opacity: 1;
+            pointer-events: auto;
+            border-color: #334155;
+        }
+
+        .room.active::before { background: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-cyan); }
+
+        .room-header {
+            font-size: 1.6rem;
+            color: #fff;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .room-header::before { content: '>'; color: var(--neon-cyan); font-family: var(--font-mono); font-weight: bold; }
+
+        /* Cajas de Acertijos */
+        .puzzle-box {
+            background: #020617;
+            border-left: 3px solid #475569;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 0 8px 8px 0;
+            position: relative;
+        }
+
+        .puzzle-box.solved {
+            border-left-color: var(--neon-green);
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        .puzzle-title { 
+            font-family: var(--font-mono); 
+            font-weight: bold; 
+            color: var(--neon-cyan); 
+            margin-bottom: 15px; 
+            font-size: 1.1rem;
+        }
+
+        .reading-block {
+            font-family: var(--font-mono);
+            background: #000;
+            padding: 20px;
+            border: 1px dashed #334155;
+            border-radius: 4px;
+            color: #94a3b8;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        /* Controles (Inputs y Botones) */
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            padding: 12px 15px;
+            border: 1px solid #334155;
+            border-radius: 4px;
+            background-color: #0f172a;
+            color: var(--neon-green);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            flex-grow: 1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        input:focus { outline: none; border-color: var(--neon-cyan); box-shadow: 0 0 10px rgba(6,182,212,0.2); }
+        input:disabled { opacity: 0.6; cursor: not-allowed; border-color: var(--neon-green); }
+
+        button {
+            padding: 12px 25px;
+            background-color: transparent;
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        button:hover { background-color: rgba(6, 182, 212, 0.1); box-shadow: 0 0 15px rgba(6,182,212,0.4); }
+        button:disabled { border-color: #475569; color: #475569; background: transparent; cursor: not-allowed; box-shadow: none; }
+        
+        button.solved-btn { 
+            background-color: var(--neon-green); 
+            color: #000; 
+            border-color: var(--neon-green);
+            box-shadow: 0 0 15px rgba(34,197,94,0.4);
+        }
+
+        .error-msg {
+            color: var(--neon-alert);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+            padding: 8px;
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 2px solid var(--neon-alert);
+        }
+
+        /* Modal / Alertas del Sistema */
+        #custom-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #0f172a;
+            padding: 40px;
+            border-radius: 8px;
+            border: 1px solid var(--neon-cyan);
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(6,182,212,0.2);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .modal-title { font-size: 1.5rem; color: #fff; margin-bottom: 15px; font-family: var(--font-mono); }
+        .modal-btn { margin-top: 25px; background: var(--neon-cyan); color: #000; }
+        .modal-btn:hover { background: #fff; }
+
+        /* Arte CSS para Acertijos Visuales */
+        .img-placeholder-container {
+            border: 1px dashed #334155;
+            padding: 20px;
+            margin: 20px 0;
+            background: #000;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        /* CSS Radio Atómico */
+        .css-atomic-radius { display: flex; justify-content: center; align-items: center; gap: 40px; margin: 20px 0; }
+        .atom-sim { border-radius: 50%; border: 2px dashed rgba(6,182,212,0.5); display: flex; justify-content: center; align-items: center; color: #fff; font-family: var(--font-mono); position: relative;}
+        .atom-sim::after { content: ''; position: absolute; width: 10px; height: 10px; background: var(--neon-cyan); border-radius: 50%; box-shadow: 0 0 10px var(--neon-cyan); }
+        .atom-Li { width: 120px; height: 120px; }
+        .atom-C { width: 80px; height: 80px; }
+        .atom-F { width: 50px; height: 50px; }
+
+        /* Animaciones */
+        @keyframes pulseIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Filtro UV activable por CSS */
+        .hidden-ink { color: #000; background: #000; transition: all 0.5s; user-select: none; }
+        .hidden-ink.revealed { color: #a855f7; background: transparent; text-shadow: 0 0 5px #a855f7; }
+
+        @media (max-width: 650px) {
+            header { flex-direction: column; gap: 15px; text-align: center; }
+            .css-atomic-radius { gap: 20px; }
+            .atom-Li { width: 90px; height: 90px; }
+            .atom-C { width: 60px; height: 60px; }
+            .atom-F { width: 40px; height: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>☢️ Reactor Mendeleiev: Protocolo de Escape</h1>
+        <div id="inventory-panel">
+            <span style="color:#64748b; font-family:var(--font-mono);">INV_SYS:</span>
+            <span id="empty-inv" style="color: #475569; font-size: 0.9rem;">[Vacío]</span>
+            <!-- Items generados por JS -->
+        </div>
+    </header>
+
+    <div class="room-container">
+        
+        <!-- ================= FASE 1: NATURALEZA ELEMENTAL ================= -->
+        <section class="room active" id="room-1">
+            <h2 class="room-header">Fase 1: La Clasificación Primordial</h2>
+            <p style="margin-bottom: 20px;">Estás atrapado en la Sala de Materiales. Para abrir la primera compuerta de seguridad, debes demostrar que comprendes la naturaleza básica de los elementos en la tabla periódica.</p>
+
+            <div class="puzzle-box" id="box-p1">
+                <div class="puzzle-title">TERMINAL 01: Estado Físico</div>
+                <p>El sensor detecta una lámina sólida a temperatura ambiente. Es extremadamente brillante, se puede golpear con un martillo sin romperse (es maleable) y cuando se conecta a un circuito, la corriente eléctrica fluye perfectamente a través de ella.</p>
+                <p>¿A qué gran grupo de elementos de la tabla periódica pertenece este material?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p1" placeholder="Clasificación general (ej. Gas Noble)...">
+                    <button id="btn-p1" onclick="checkAnswer('p1')">Ingresar Datos</button>
+                </div>
+                <div class="error-msg" id="error-p1"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p2">
+                <div class="puzzle-title">TERMINAL 02: El Informe Perdido</div>
+                <p>Lee detenidamente el siguiente fragmento del diario del Dr. Mendeleiev para encontrar el nombre del elemento misterioso.</p>
+                <div class="reading-block">"Día 45 en el laboratorio: He estado estudiando un elemento fascinante que me confunde. A simple vista, tiene un brillo metálico grisáceo espectacular, casi como el acero. Cualquiera diría que es un metal. Sin embargo, cuando intenté doblarlo con pinzas, se quebró en pedazos como si fuera vidrio (es muy quebradizo, propiedad típica de los no metales). 
+
+Lo más asombroso es su comportamiento eléctrico: en frío no conduce la electricidad, pero al calentarlo o añadirle impurezas, se convierte en un conductor aceptable. Es un 'semiconductor'. Es el puente perfecto entre los dos mundos, un metaloide por excelencia. Gracias a él, en el futuro construiremos procesadores de computadoras y paneles solares."</div>
+                <p>¿De qué elemento específico (nombre completo, no símbolo) está hablando el diario?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p2" placeholder="Nombre del elemento...">
+                    <button id="btn-p2" onclick="checkAnswer('p2')">Desencriptar Diario</button>
+                </div>
+                <div class="error-msg" id="error-p2"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p3">
+                <div class="puzzle-title">TERMINAL 03: Protocolo de Seguridad Cifrado (Premio: Lente UV)</div>
+                <p>La gaveta que contiene equipo especial está bloqueada con un código César inverso. Un post-it pegado a la pantalla dice: <em>"Para hallar la clave, retrocede 1 posición en el abecedario. La palabra encriptada es: <strong>H B T F T</strong>"</em></p>
+                <p style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">(Pista lógica: Si la letra cifrada es H, la letra anterior en el alfabeto es G...).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p3" placeholder="Ingresa la palabra de 5 letras...">
+                    <button id="btn-p3" onclick="checkAnswer('p3')">Abrir Gaveta</button>
+                </div>
+                <div class="error-msg" id="error-p3"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 2: PROPIEDADES PERIÓDICAS I ================= -->
+        <section class="room" id="room-4"> <!-- IDs internos cambiados a numericos secuenciales para el DOM pero el titulo es Fase 2 -->
+            <h2 class="room-header">Fase 2: Patrones Periódicos (I)</h2>
+            <p style="margin-bottom: 20px;">Has ingresado a la Sala de Escáner Atómico. Aquí se estudian las tendencias o propiedades que varían de forma predecible en la tabla.</p>
+
+            <div class="puzzle-box" id="box-p4">
+                <div class="puzzle-title">TERMINAL 04: Contracción Periódica</div>
+                <div class="img-placeholder-container">
+                    <p style="color: #64748b; font-size:0.8rem; margin-bottom:15px;">[Marcador Imagen: <code style="color:#cbd5e1">&lt;img src="radio_atomico.png"&gt;</code> - Descarga tu imagen e insértala aquí]</p>
+                    <p><strong>Simulador de Radio Atómico (Periodo 2):</strong></p>
+                    <div class="css-atomic-radius">
+                        <div class="atom-sim atom-Li"><span style="position:absolute; top:-25px;">Litio (Li)</span></div>
+                        <div class="atom-sim atom-C"><span style="position:absolute; top:-25px;">Carbono (C)</span></div>
+                        <div class="atom-sim atom-F"><span style="position:absolute; top:-25px;">Flúor (F)</span></div>
+                    </div>
+                </div>
+                <p>Observa el simulador. A medida que avanzas de izquierda a derecha en un mismo periodo (fila), el radio atómico disminuye debido a que hay más protones tirando de la misma capa de electrones. Basándote en el Periodo 2, ¿cuál es el elemento con el átomo más pequeño mostrado?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p4" placeholder="Nombre completo del elemento...">
+                    <button id="btn-p4" onclick="checkAnswer('p4')">Calibrar Escáner</button>
+                </div>
+                <div class="error-msg" id="error-p4"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p5">
+                <div class="puzzle-title">TERMINAL 05: El Ladrón de Electrones</div>
+                <p>La electronegatividad es la fuerza con la que un átomo atrae los electrones en un enlace. Tienes una tabla parcial con valores:</p>
+                <ul style="list-style:none; padding-left:15px; margin: 10px 0; color: #94a3b8; font-family: var(--font-mono);">
+                    <li>> Sodio (Na): 0.9</li>
+                    <li>> Cloro (Cl): 3.2</li>
+                    <li>> Oxígeno (O): 3.4</li>
+                    <li>> Flúor (F): 4.0</li>
+                </ul>
+                <p>El sistema requiere que identifiques la letra (símbolo químico) del elemento de esta lista que tiene la mayor tendencia a arrebatar electrones a los demás en toda la tabla periódica.</p>
+                <div class="input-group">
+                    <input type="text" id="input-p5" placeholder="Ingresa solo el símbolo (1 letra)...">
+                    <button id="btn-p5" onclick="checkAnswer('p5')">Identificar Ladrón</button>
+                </div>
+                <div class="error-msg" id="error-p5"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p6">
+                <div class="puzzle-title">TERMINAL 06: Estructura Vertical (Premio: Celda de Litio)</div>
+                <p>Las propiedades químicas se repiten. Los elementos litio, sodio y potasio reaccionan violentamente con el agua. Mendeleiev los colocó en la misma columna vertical porque comparten comportamientos. ¿Cómo se le llama a estas columnas verticales en la tabla periódica?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p6" placeholder="Escribe tu respuesta...">
+                    <button id="btn-p6" onclick="checkAnswer('p6')">Desbloquear Fuente</button>
+                </div>
+                <div class="error-msg" id="error-p6"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 3: PROPIEDADES PERIÓDICAS II ================= -->
+        <section class="room" id="room-3">
+            <h2 class="room-header">Fase 3: Patrones Periódicos (II)</h2>
+            <p style="margin-bottom: 20px;">La temperatura baja en esta sala. Debes cruzar coordenadas en tu mente (o en papel) para continuar.</p>
+
+            <div class="puzzle-box" id="box-p7">
+                <div class="puzzle-title">TERMINAL 07: Coordenadas Atómicas</div>
+                <p>El sistema de ventilación está atascado. Necesita las coordenadas de un metal alcalinotérreo. Busca (o recuerda) qué elemento se encuentra exactamente en la intersección del <strong>Grupo 2</strong> (columna 2) y el <strong>Periodo 4</strong> (fila 4).</p>
+                <p style="font-size:0.85rem; color:#64748b;">(Pista: Forma parte de nuestros huesos).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p7" placeholder="Nombre completo del elemento...">
+                    <button id="btn-p7" onclick="checkAnswer('p7')">Ingresar Coordenadas</button>
+                </div>
+                <div class="error-msg" id="error-p7"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p8">
+                <div class="puzzle-title">TERMINAL 08: Mensaje Espectral</div>
+                <p>Hay un panel con un texto pintado con tinta invisible reactiva a luz ultravioleta.</p>
+                <div class="img-placeholder-container">
+                    <p class="hidden-ink" id="uv-text">"El gas noble inerte que se utiliza dentro de las bombillas incandescentes para que el filamento no se queme, ubicado en el Periodo 3."</p>
+                </div>
+                <p>Revisa tu <strong>Inventario</strong> en la parte superior. Si tienes la herramienta adecuada, úsala (haz clic en el botón de abajo) para revelar el texto oculto y descubrir qué elemento es.</p>
+                <div class="input-group">
+                    <input type="text" id="input-p8" placeholder="Nombre del elemento...">
+                    <button id="btn-p8" onclick="checkAnswer('p8')">Aplicar Luz UV y Responder</button>
+                </div>
+                <div class="error-msg" id="error-p8"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p9">
+                <div class="puzzle-title">TERMINAL 09: Diagrama de Deducción</div>
+                <div class="reading-block">
+INICIO DE ANÁLISIS ELEMENTO [X]:
+1. ¿Tiene brillo metálico? ---> NO (Es un No Metal).
+2. ¿Es un gas a temperatura ambiente? ---> NO (Es un sólido).
+3. ¿Cuántos electrones tiene en su última capa (valencia)? ---> TIENE 5.
+4. ¿En qué periodo se encuentra? ---> PERIODO 3.
+                </div>
+                <p>Sigue el diagrama lógico anterior y localiza mentalmente el elemento. (Grupo 15, Periodo 3). ¿De qué elemento estamos hablando?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p9" placeholder="Nombre del elemento...">
+                    <button id="btn-p9" onclick="checkAnswer('p9')">Ejecutar Deducción</button>
+                </div>
+                <div class="error-msg" id="error-p9"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 4: GASES NOBLES Y ESTABILIDAD ================= -->
+        <section class="room" id="room-4b"> <!-- ID DOM p10 p11 -->
+            <h2 class="room-header">Fase 4: La Búsqueda de la Perfección</h2>
+            <p style="margin-bottom: 20px;">Los átomos reaccionan porque buscan la estabilidad perfecta. Han llegado al área de los elementos intocables.</p>
+
+            <div class="puzzle-box" id="box-p10">
+                <div class="puzzle-title">TERMINAL 10: Sacrificio Electrónico</div>
+                <p>El terminal principal requiere energía. Revisa tu inventario: necesitas conectar la celda de poder (Celda de Litio) que encontraste en la Fase 2.</p>
+                <p>El átomo de Litio (Li) se encuentra en el Grupo 1. Para alcanzar la misma configuración electrónica estable que el gas noble más cercano (Helio), ¿cuántos electrones de valencia necesita <strong>perder</strong>?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p10" placeholder="Ingresa solo el número...">
+                    <button id="btn-p10" onclick="checkAnswer('p10')">Conectar Celda y Responder</button>
+                </div>
+                <div class="error-msg" id="error-p10"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p11">
+                <div class="puzzle-title">TERMINAL 11: La Regla de Oro</div>
+                <p>Una secuencia matemática gobierna la estabilidad atómica:</p>
+                <ul style="list-style:none; padding-left:15px; margin: 10px 0; color: #94a3b8; font-family: var(--font-mono);">
+                    <li>> Neón (Ne): Tiene X e- en su última capa.</li>
+                    <li>> Argón (Ar): Tiene X e- en su última capa.</li>
+                    <li>> Kriptón (Kr): Tiene X e- en su última capa.</li>
+                </ul>
+                <p>Todos los átomos en la naturaleza ganan, pierden o comparten electrones para intentar igualar esta cantidad mágica (la regla del...). ¿Cuál es ese número universal de electrones de valencia (excepto para el Helio)?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p11" placeholder="Solo el número...">
+                    <button id="btn-p11" onclick="checkAnswer('p11')">Verificar Estabilidad</button>
+                </div>
+                <div class="error-msg" id="error-p11"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 5: EL ESCAPE MAESTRO ================= -->
+        <section class="room" id="room-5">
+            <h2 class="room-header">Fase 5: Núcleo del Reactor</h2>
+            <p style="margin-bottom: 20px;">Has llegado a la compuerta final. Todo el conocimiento adquirido debe sintetizarse ahora.</p>
+
+            <div class="puzzle-box" id="box-p12">
+                <div class="puzzle-title">TERMINAL 12: Identificación Cruzada</div>
+                <div class="reading-block">
+DATOS DEL ELEMENTO OMEGA:
+1. No es un metal.
+2. Es muy electronegativo, casi tanto como el flúor, pero su átomo es más grande (mayor radio atómico) que el del flúor.
+3. Le falta exactamente 1 electrón para cumplir la regla del octeto, por lo que pertenece al Grupo 17 (Halógenos).
+4. Está en el Periodo 3. Es un gas tóxico de color amarillo verdoso usado para purificar el agua de las piscinas.
+                </div>
+                <p>Cruza toda la información de los 4 pasos. ¿Cuál es el Elemento Omega?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p12" placeholder="Nombre del elemento...">
+                    <button id="btn-p12" onclick="checkAnswer('p12')">Aislar Elemento</button>
+                </div>
+                <div class="error-msg" id="error-p12"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p13" style="border-left-color: var(--neon-cyan); box-shadow: 0 0 20px rgba(6,182,212,0.15);">
+                <div class="puzzle-title" style="color: var(--neon-cyan); font-size: 1.25rem;">TERMINAL 13: El Mandala de Valencia (Acertijo Final)</div>
+                
+                <p style="margin-bottom:15px;">El sistema principal requiere una palabra clave final para desactivar el encierro magnético. Analiza la imagen generada por el escáner del núcleo. Observa el modelo de Bohr en el centro (con su configuración estable) y busca las letras de neón ocultas en las líneas de la estructura circular.</p>
+                
+                <div class="img-placeholder-container" style="border-color: var(--neon-cyan); background: rgba(6,182,212,0.05);">
+                    <!-- IMAGEN GENERADA POR IA INSERTADA AQUÍ (Acertijo Visual Complejo) -->
+                    http://googleusercontent.com/image_generation_content/1

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Precipitación y Estequiometría - Grado 10</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --primary: #0f172a;
+            --secondary: #3b82f6;
+            --accent: #10b981;
+            --bg: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            scroll-behavior: smooth;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 1);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .hidden-section { display: none; }
+        
+        .progress-bar-fill {
+            transition: width 0.5s ease-in-out;
+        }
+
+        .crystal-anim {
+            animation: grow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes grow {
+            from { transform: scale(0.95) rotate(0deg); opacity: 0.8; }
+            to { transform: scale(1.05) rotate(2deg); opacity: 1; }
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="custom-scroll">
+
+    <!-- Pantalla de Bienvenida (Login) -->
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900">
+        <div class="max-w-md w-full p-8 bg-white rounded-2xl shadow-2xl text-center">
+            <div class="mb-6 flex justify-center">
+                <svg width="80" height="80" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#3b82f6" stroke-width="2"/>
+                    <path d="M30 70 L50 30 L70 70 Z" fill="#3b82f6" opacity="0.6" class="crystal-anim"/>
+                    <path d="M40 75 L50 55 L60 75 Z" fill="#10b981" opacity="0.8"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">Química Experimental</h1>
+            <p class="text-slate-500 mb-6">Unidad: Precipitación y Estequiometría</p>
+            <input type="text" id="user-name" placeholder="Nombres y Apellidos" class="w-full p-3 border border-slate-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 outline-none">
+            <button onclick="startApp()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all">Ingresar al Laboratorio</button>
+        </div>
+    </div>
+
+    <!-- Barra de Navegación Fija -->
+    <nav id="main-nav" class="hidden-section sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+            <span class="font-bold text-blue-600">OVA 10°</span>
+            <div class="h-4 w-px bg-slate-300"></div>
+            <span id="display-name" class="text-slate-600 text-sm font-medium"></span>
+        </div>
+        <div class="flex items-center space-x-6">
+            <div class="flex flex-col items-end">
+                <div class="text-xs text-slate-400 uppercase font-bold">Progreso</div>
+                <div class="w-48 h-2 bg-slate-200 rounded-full mt-1 overflow-hidden">
+                    <div id="main-progress" class="progress-bar-fill h-full bg-blue-500" style="width: 0%"></div>
+                </div>
+            </div>
+            <div id="score-badge" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold flex items-center">
+                <span class="mr-1">Elemento:</span> <span id="element-rank">H</span>
+            </div>
+        </div>
+    </nav>
+
+    <main id="content" class="hidden-section max-w-5xl mx-auto p-6 space-y-12 pb-24">
+        
+        <!-- SECCIÓN: INICIO -->
+        <section id="section-intro" class="pt-8">
+            <div class="glass-card p-8 border-l-8 border-blue-500">
+                <h2 class="text-4xl font-black text-slate-800 mb-4 tracking-tight">Objetivo de Aprendizaje</h2>
+                <p class="text-xl text-slate-600 leading-relaxed">
+                    Comprender los mecanismos químicos detrás de la formación de precipitados y aplicar cálculos estequiométricos para predecir la cantidad de masa producida en una reacción en medio acuoso, valorando la importancia de la observación en procesos microscópicos.
+                </p>
+            </div>
+
+            <!-- Pre-saberes -->
+            <div class="mt-12 space-y-6">
+                <h3 class="text-2xl font-bold text-slate-700">Exploración de Pre-saberes</h3>
+                <div id="presaberes-container" class="grid md:grid-cols-3 gap-6">
+                    <!-- Dinámico por JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: CUERPO INDUCTIVO -->
+        <section id="section-inductive" class="space-y-8">
+            <div class="bg-white p-10 rounded-3xl shadow-sm border border-slate-100">
+                <h2 class="text-3xl font-bold text-blue-800 mb-6">1. La Naturaleza de lo Invisible: Precipitación</h2>
+                <div class="prose prose-slate max-w-none text-lg leading-relaxed text-slate-700">
+                    <p>
+                        Imagina que mezclas dos líquidos transparentes y, de repente, como por arte de magia, aparecen copos sólidos que caen lentamente al fondo del recipiente. Este fenómeno, conocido como <strong>precipitación</strong>, es una de las manifestaciones más visuales y fascinantes de la química. En esencia, un precipitado es un sólido insoluble que se forma a partir de una reacción química entre dos sustancias disueltas en un solvente (generalmente agua).
+                    </p>
+                    <p>
+                        Desde una perspectiva inductiva, observamos que no todas las mezclas producen este efecto. Por ejemplo, si disuelves sal en agua, obtenemos una solución clara. Pero si añadimos nitrato de plata a una solución de cloruro de sodio, se forma inmediatamente un "humo blanco" sólido de cloruro de plata. ¿Por qué ocurre esto? Todo se reduce a la <em>solubilidad</em> y a la fuerza de atracción entre los iones.
+                    </p>
+                    
+                    <!-- Ilustración Compleja SVG -->
+                    <div class="my-10 flex flex-col items-center">
+                        <svg width="600" height="300" viewBox="0 0 600 300" class="rounded-xl bg-slate-50 border border-slate-200">
+                            <!-- Vaso de precipitado 1 -->
+                            <rect x="50" y="100" width="100" height="150" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2" rx="5"/>
+                            <path d="M50 120 Q100 130 150 120" stroke="#3b82f6" fill="none" stroke-width="2"/>
+                            <text x="50" y="90" class="text-[10px] font-bold fill-slate-500">Solución A (Iones libres)</text>
+                            <circle cx="70" cy="180" r="5" fill="#3b82f6"><animate attributeName="cy" values="180;190;180" dur="3s" repeatCount="indefinite"/></circle>
+                            <circle cx="120" cy="210" r="5" fill="#3b82f6"><animate attributeName="cy" values="210;200;210" dur="4s" repeatCount="indefinite"/></circle>
+
+                            <!-- Flecha de reacción -->
+                            <path d="M180 175 L280 175" stroke="#64748b" stroke-width="4" marker-end="url(#arrowhead)"/>
+                            <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+                                </marker>
+                            </defs>
+                            <text x="195" y="160" class="text-xs font-bold fill-blue-600">REACCIÓN</text>
+
+                            <!-- Vaso de precipitado 2 (Con precipitado) -->
+                            <rect x="320" y="100" width="100" height="150" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2" rx="5"/>
+                            <rect x="320" y="230" width="100" height="20" fill="#cbd5e1"/>
+                            <!-- Cristales SVG -->
+                            <path d="M340 235 L350 225 L360 235 L350 245 Z" fill="#475569" class="crystal-anim"/>
+                            <path d="M380 238 L390 228 L400 238 L390 248 Z" fill="#475569" style="animation-delay: 1s;" class="crystal-anim"/>
+                            <text x="320" y="90" class="text-[10px] font-bold fill-slate-500">Solución B (Sólido formado)</text>
+                            
+                            <!-- Zoom Molecular -->
+                            <circle cx="500" cy="150" r="60" fill="white" stroke="#3b82f6" stroke-dasharray="4"/>
+                            <circle cx="485" cy="140" r="12" fill="#ef4444"/> <!-- Anión -->
+                            <circle cx="515" cy="160" r="8" fill="#3b82f6"/> <!-- Catión -->
+                            <path d="M495 145 L505 155" stroke="#94a3b8" stroke-width="1"/>
+                            <text x="460" y="230" class="text-[10px] fill-slate-600 font-bold italic">Atracción Electrostática Fuerte</text>
+                        </svg>
+                        <p class="mt-4 text-sm text-slate-500 italic">Figura 1: Representación esquemática del proceso de precipitación y el enlace iónico resultante.</p>
+                    </div>
+
+                    <p>
+                        La formación de cristales de sal a partir de una solución sobresaturada es un proceso lento que requiere paciencia. Cuando el solvente no puede sostener más soluto, las moléculas comienzan a organizarse en estructuras geométricas perfectas. Este "baile" molecular es influenciado por la temperatura y la velocidad de evaporación. En el laboratorio, observar cómo una solución incolora da paso a cristales brillantes es un ejercicio de disciplina científica.
+                    </p>
+                </div>
+
+                <!-- Actividades de Cuaderno (Inductivo) -->
+                <div class="mt-10 border-t pt-8">
+                    <h4 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                        <span class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">C</span>
+                        Actividades para el Cuaderno (Fase Inductiva)
+                    </h4>
+                    <div id="inductive-tasks" class="grid gap-4">
+                        <!-- Dinámico por JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PREGUNTA TIPO ICFES (INDAGAR) -->
+        <section id="icfes-section" class="bg-slate-900 text-white p-10 rounded-3xl shadow-xl">
+            <div class="max-w-3xl mx-auto">
+                <span class="bg-blue-500 text-white px-3 py-1 rounded text-xs font-bold uppercase mb-4 inline-block">Competencia: Indagar</span>
+                <h3 class="text-2xl font-bold mb-6">Análisis de Resultados Experimentales</h3>
+                
+                <div class="bg-white/10 p-6 rounded-xl mb-8">
+                    <p class="mb-6 text-slate-300">Un estudiante mezcla 100 ml de una solución A con 100 ml de una solución B. La siguiente gráfica muestra la masa de precipitado obtenido en función del tiempo bajo dos temperaturas distintas:</p>
+                    
+                    <!-- Gráfica Compleja SVG -->
+                    <svg width="100%" height="250" viewBox="0 0 400 200" class="bg-white/5 rounded-lg">
+                        <!-- Ejes -->
+                        <line x1="40" y1="20" x2="40" y2="170" stroke="white" stroke-width="2"/>
+                        <line x1="40" y1="170" x2="380" y2="170" stroke="white" stroke-width="2"/>
+                        <!-- Etiquetas Ejes -->
+                        <text x="10" y="100" fill="white" font-size="10" transform="rotate(-90, 15, 100)">Masa (g)</text>
+                        <text x="200" y="190" fill="white" font-size="10">Tiempo (min)</text>
+                        <!-- Curva 25°C -->
+                        <path d="M40 170 Q100 100 380 90" stroke="#3b82f6" fill="none" stroke-width="3"/>
+                        <text x="300" y="80" fill="#3b82f6" font-size="10" font-weight="bold">25°C</text>
+                        <!-- Curva 50°C -->
+                        <path d="M40 170 Q150 160 380 140" stroke="#10b981" fill="none" stroke-width="3"/>
+                        <text x="300" y="130" fill="#10b981" font-size="10" font-weight="bold">50°C</text>
+                        <!-- Puntos de datos -->
+                        <circle cx="210" cy="98" r="4" fill="#3b82f6"/>
+                        <circle cx="210" cy="151" r="4" fill="#10b981"/>
+                    </svg>
+                </div>
+
+                <div class="space-y-4">
+                    <p class="font-bold text-xl">¿Cuál de las siguientes conclusiones es coherente con la gráfica observada?</p>
+                    <div id="icfes-options" class="grid gap-3">
+                        <!-- Dinámico por JS -->
+                    </div>
+                </div>
+                <div id="icfes-feedback" class="mt-6 p-4 rounded-lg hidden"></div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: CUERPO DEDUCTIVO -->
+        <section id="section-deductive" class="space-y-8">
+            <div class="bg-white p-10 rounded-3xl shadow-sm border border-slate-100">
+                <h2 class="text-3xl font-bold text-blue-800 mb-6">2. Estequiometría: La Matemática de la Precipitación</h2>
+                <div class="prose prose-slate max-w-none text-lg leading-relaxed text-slate-700">
+                    <p>
+                        Pasamos ahora de la observación a la predicción. La <strong>Estequiometría</strong> es la herramienta que nos permite calcular exactamente cuánto producto se formará. Para ello, nos basamos en la Ley de Conservación de la Materia. En una reacción de precipitación, debemos identificar primero la ecuación balanceada y el <em>reactivo límite</em>, aquel que se agota primero y detiene la formación del sólido.
+                    </p>
+                    <p>
+                        Consideremos la reacción entre el Cloruro de Bario ($BaCl_2$) y el Sulfato de Sodio ($Na_2SO_4$). La ecuación nos dice que un mol de cada uno produce un mol de Sulfato de Bario sólido ($BaSO_4$). Si conocemos las concentraciones y volúmenes iniciales, podemos deducir la masa teórica del precipitado. Este rigor matemático es lo que diferencia a un alquimista de un químico moderno.
+                    </p>
+
+                    <!-- Esquema Deductivo SVG: Balance de Masas -->
+                    <div class="my-10 flex flex-col items-center">
+                        <svg width="600" height="200" viewBox="0 0 600 200" class="rounded-xl bg-blue-50">
+                            <!-- Balanza 1 -->
+                            <rect x="50" y="150" width="100" height="10" fill="#334155"/>
+                            <path d="M100 150 L100 80 L60 100 L140 100" stroke="#475569" stroke-width="2" fill="none"/>
+                            <circle cx="60" cy="110" r="20" fill="#3b82f6" opacity="0.6"/>
+                            <text x="65" y="50" class="text-xs font-bold fill-slate-700 text-center">Reactivos</text>
+                            
+                            <!-- Signo + -->
+                            <text x="180" y="110" class="text-3xl font-bold fill-slate-400">+</text>
+
+                            <!-- Balanza 2 -->
+                            <rect x="250" y="150" width="100" height="10" fill="#334155"/>
+                            <path d="M300 150 L300 80 L260 100 L340 100" stroke="#475569" stroke-width="2" fill="none"/>
+                            <circle cx="340" cy="110" r="20" fill="#10b981" opacity="0.6"/>
+                            
+                            <!-- Flecha Igualdad -->
+                            <text x="380" y="110" class="text-3xl font-bold fill-slate-400">=</text>
+
+                            <!-- Producto Final -->
+                            <path d="M450 150 L550 150 L500 80 Z" fill="#1e293b" class="crystal-anim"/>
+                            <text x="470" y="50" class="text-xs font-bold fill-slate-700">Masa Total Conservada</text>
+                        </svg>
+                        <p class="mt-4 text-sm text-slate-500 italic">Esquema 2: Ley de conservación de la masa aplicada a sistemas de precipitación.</p>
+                    </div>
+
+                    <p>
+                        La aplicación de leyes como la de Proust (Proporciones Definidas) nos asegura que no importa cuánta solución tengamos, los átomos siempre se combinarán en relaciones de números enteros sencillos. Esto es crucial en procesos industriales como la purificación de metales o el tratamiento de aguas residuales, donde la remoción de contaminantes mediante precipitación debe ser calculada con precisión quirúrgica.
+                    </p>
+                </div>
+
+                <!-- Actividades de Cuaderno (Deductivo) -->
+                <div class="mt-10 border-t pt-8">
+                    <h4 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                        <span class="bg-emerald-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">D</span>
+                        Actividades para el Cuaderno (Fase Deductiva)
+                    </h4>
+                    <div id="deductive-tasks" class="grid gap-4">
+                        <!-- Dinámico por JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EVALUACIÓN FINAL -->
+        <section id="final-exam" class="space-y-10">
+            <h2 class="text-4xl font-black text-center text-slate-800">Evaluación de Competencias</h2>
+            
+            <div id="exam-questions" class="space-y-8">
+                <!-- Dinámico por JS -->
+            </div>
+
+            <div class="flex justify-center pt-10">
+                <button id="submit-exam" onclick="validateExam()" class="bg-slate-900 hover:bg-black text-white px-12 py-4 rounded-xl font-bold text-lg transition-all shadow-lg">Finalizar y Evaluar</button>
+            </div>
+        </section>
+
+        <!-- RESULTADOS Y REFUERZO -->
+        <section id="results-section" class="hidden-section space-y-8 border-t-4 border-slate-900 pt-12">
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="glass-card p-8 text-center bg-blue-50">
+                    <h3 class="text-2xl font-bold mb-4">Tu Resultado Final</h3>
+                    <div id="final-score-display" class="text-6xl font-black text-blue-600 mb-2">0.0</div>
+                    <div id="rank-name" class="text-xl font-medium text-slate-500 italic">Iniciando proceso...</div>
+                </div>
+                <div id="reinforcement-card" class="glass-card p-8 border-l-8 border-orange-400 bg-orange-50">
+                    <h3 class="text-2xl font-bold mb-4 text-orange-800 italic">Ruta de Fortalecimiento Personalizada</h3>
+                    <div id="reinforcement-text" class="text-slate-700 leading-relaxed"></div>
+                </div>
+            </div>
+            <div class="flex justify-center">
+                <button onclick="downloadReport()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-lg font-bold flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12 a2 2 0 002-2v-1M7 10l5 5 5-5M12 15V3"></path></svg>
+                    Descargar Reporte de Desempeño (.txt)
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- ESTADO Y PERSISTENCIA ---
+        let state = {
+            userName: "",
+            progress: 0,
+            score: 0,
+            tasksCompleted: [],
+            examResponses: {},
+            examFinished: false
+        };
+
+        const APP_ID = "ova-quimica-g10";
+
+        const elements = [
+            { symbol: "H", name: "Hidrógeno", min: 0 },
+            { symbol: "Li", name: "Litio", min: 1 },
+            { symbol: "Na", name: "Sodio", min: 2 },
+            { symbol: "K", name: "Potasio", min: 3 },
+            { symbol: "Ag", name: "Plata", min: 4 },
+            { symbol: "Au", name: "Oro", min: 4.8 }
+        ];
+
+        // --- INICIALIZACIÓN ---
+        window.onload = () => {
+            const saved = localStorage.getItem(APP_ID);
+            if (saved) {
+                state = JSON.parse(saved);
+                if (state.userName) {
+                    showContent();
+                    renderAll();
+                }
+            }
+            renderPreSaberes();
+            renderTasks();
+            renderIcfes();
+            renderExam();
+        };
+
+        function saveState() {
+            localStorage.setItem(APP_ID, JSON.stringify(state));
+        }
+
+        function startApp() {
+            const nameInput = document.getElementById('user-name').value;
+            if (nameInput.trim().length < 5) {
+                alert("Por favor ingresa tu nombre completo.");
+                return;
+            }
+            state.userName = nameInput;
+            showContent();
+            saveState();
+        }
+
+        function showContent() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-nav').classList.remove('hidden-section');
+            document.getElementById('content').classList.remove('hidden-section');
+            document.getElementById('display-name').innerText = state.userName;
+            updateGlobalUI();
+        }
+
+        function updateGlobalUI() {
+            const progress = calculateProgress();
+            document.getElementById('main-progress').style.width = progress + "%";
+            
+            const currentElement = elements.reduce((prev, curr) => (state.score >= curr.min ? curr : prev));
+            document.getElementById('element-rank').innerText = `${currentElement.symbol} (${currentElement.name})`;
+        }
+
+        function calculateProgress() {
+            const totalTasks = 10;
+            const completedTasks = state.tasksCompleted.length;
+            const examDone = state.examFinished ? 1 : 0;
+            return Math.min(100, ((completedTasks + examDone * 5) / 15) * 100);
+        }
+
+        // --- COMPONENTES DINÁMICOS ---
+
+        function renderPreSaberes() {
+            const container = document.getElementById('presaberes-container');
+            const questions = [
+                { q: "¿Qué sucede con la visibilidad en una precipitación?", o: ["Se vuelve transparente", "Se opaca", "No cambia"], c: 1 },
+                { q: "¿Cuál es el solvente universal?", o: ["Alcohol", "Agua", "Aceite"], c: 1 },
+                { q: "¿Qué mide la estequiometría?", o: ["Color", "Relaciones de masa", "Temperatura"], c: 1 }
+            ];
+
+            questions.forEach((q, i) => {
+                const card = document.createElement('div');
+                card.className = "glass-card p-5 border-t-4 border-blue-400";
+                card.innerHTML = `
+                    <p class="font-bold mb-3">${q.q}</p>
+                    <div class="space-y-2">
+                        ${q.o.map((opt, idx) => `
+                            <button onclick="checkPre(${i}, ${idx}, ${q.c}, this)" class="w-full text-left p-2 rounded text-sm hover:bg-slate-100 border transition-all">${opt}</button>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function checkPre(qIdx, sIdx, cIdx, btn) {
+            if (sIdx === cIdx) {
+                btn.classList.add('bg-green-100', 'border-green-500', 'text-green-700');
+                btn.innerText += " ✓";
+            } else {
+                btn.classList.add('bg-red-100', 'border-red-500', 'text-red-700');
+                btn.innerText += " ✗";
+            }
+            const buttons = btn.parentElement.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+        }
+
+        function renderTasks() {
+            const inductiveCont = document.getElementById('inductive-tasks');
+            const deductiveCont = document.getElementById('deductive-tasks');
+
+            const tasks = [
+                { id: 'i1', text: "Dibuja un diagrama de flujo del proceso de formación de un cristal.", type: 'ind' },
+                { id: 'i2', text: "Observa y describe 3 ejemplos de precipitación en la cocina.", type: 'ind' },
+                { id: 'i3', text: "Realiza un glosario con: Solubilidad, Precipitado, Soluto.", type: 'ind' },
+                { id: 'i4', text: "Dibuja una red iónica simplificada en tu cuaderno.", type: 'ind' },
+                { id: 'i5', text: "Escribe una reflexión sobre la importancia de la paciencia en el laboratorio.", type: 'ind' },
+                { id: 'd1', text: "Copia y balancea la ecuación: AgNO3 + NaCl -> AgCl + NaNO3.", type: 'ded' },
+                { id: 'd2', text: "Calcula el peso molecular del BaSO4 detallando cada átomo.", type: 'ded' },
+                { id: 'd3', text: "Crea una tabla comparativa entre Reactivo Límite y Reactivo en Exceso.", type: 'ded' },
+                { id: 'd4', text: "Resuelve: ¿Cuántos gramos de AgCl se forman con 1 mol de AgNO3?", type: 'ded' },
+                { id: 'd5', text: "Dibuja una balanza equilibrada representando la Ley de Lavoisier.", type: 'ded' }
+            ];
+
+            tasks.forEach(t => {
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:shadow-md transition-all";
+                const isComp = state.tasksCompleted.includes(t.id);
+                item.innerHTML = `
+                    <span class="text-slate-700 font-medium">${t.text}</span>
+                    <button id="btn-${t.id}" onclick="markTask('${t.id}')" class="${isComp ? 'bg-green-500' : 'bg-slate-300'} text-white px-4 py-1 rounded-full text-sm font-bold transition-all">
+                        ${isComp ? '¡Hecho!' : 'Lo hice'}
+                    </button>
+                `;
+                if (t.type === 'ind') inductiveCont.appendChild(item);
+                else deductiveCont.appendChild(item);
+            });
+        }
+
+        function markTask(id) {
+            if (!state.tasksCompleted.includes(id)) {
+                state.tasksCompleted.push(id);
+                const btn = document.getElementById(`btn-${id}`);
+                btn.className = "bg-green-500 text-white px-4 py-1 rounded-full text-sm font-bold transition-all";
+                btn.innerText = "¡Hecho!";
+                updateGlobalUI();
+                saveState();
+            }
+        }
+
+        function renderIcfes() {
+            const options = [
+                "A mayor temperatura, la velocidad de formación del precipitado disminuye drásticamente.",
+                "A 25°C se obtiene una mayor masa de precipitado final que a 50°C.",
+                "La temperatura no afecta la cantidad de masa de precipitado obtenida al final del experimento.",
+                "El experimento a 50°C alcanza su equilibrio mucho antes que el de 25°C."
+            ];
+            const feedback = [
+                "Incorrecto. La curva muestra que se forma, pero con menor masa final, no necesariamente habla solo de velocidad.",
+                "¡Correcto! La gráfica muestra que la línea azul (25°C) termina en un punto superior en el eje Y (Masa) comparada con la línea verde.",
+                "Incorrecto. La gráfica muestra claramente dos niveles distintos de masa final para cada temperatura.",
+                "Incorrecto. Ambas curvas tienden a estabilizarse en tiempos similares, pero con masas diferentes."
+            ];
+
+            const cont = document.getElementById('icfes-options');
+            options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border-2 border-white/10 hover:border-blue-500 transition-all text-sm bg-white/5";
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    const fb = document.getElementById('icfes-feedback');
+                    fb.className = `mt-6 p-4 rounded-lg ${i === 1 ? 'bg-green-500/20 border border-green-500 text-green-200' : 'bg-red-500/20 border border-red-500 text-red-200'}`;
+                    fb.innerHTML = `<strong>${i === 1 ? '¡Excelente!' : 'Sigue analizando:'}</strong> ${feedback[i]}`;
+                    fb.classList.remove('hidden');
+                };
+                cont.appendChild(btn);
+            });
+        }
+
+        function renderExam() {
+            const cont = document.getElementById('exam-questions');
+            const questions = [
+                { id: 'f1', q: "¿Qué indica la formación de un precipitado?", o: ["Cambio de estado físico solamente", "Una reacción química de insolubilidad", "Que el agua se evaporó", "Que la temperatura bajó"], c: 1, type: 'ind' },
+                { id: 'f2', q: "Si en una reacción se usan 10g de reactivos y se forma un precipitado de 6g, ¿cuántos gramos de solución acuosa quedan?", o: ["16g", "10g", "4g", "0g"], c: 2, type: 'ded' },
+                { id: 'f3', q: "¿Cuál es el papel del reactivo límite?", o: ["Acelerar la reacción", "Aumentar el volumen", "Determinar la cantidad máxima de producto", "Hacer que el precipitado sea de color"], c: 2, type: 'ded' },
+                { id: 'f4', q: "En la formación de cristales, un proceso lento favorece:", o: ["Cristales más pequeños", "Que no se formen cristales", "Cristales más grandes y definidos", "La explosión del recipiente"], c: 2, type: 'ind' },
+                { id: 'f5', q: "La unidad fundamental para cálculos estequiométricos es:", o: ["El gramo", "El litro", "El mol", "La densidad"], c: 2, type: 'ded' }
+            ];
+
+            questions.forEach((q, i) => {
+                const div = document.createElement('div');
+                div.className = "glass-card p-6 border-l-4 border-slate-300";
+                div.innerHTML = `
+                    <p class="font-bold mb-4">${i+1}. ${q.q}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        ${q.o.map((opt, idx) => `
+                            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+                                <input type="radio" name="q-${q.id}" value="${idx}" class="form-radio h-4 w-4 text-blue-600">
+                                <span class="text-sm">${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+                cont.appendChild(div);
+            });
+
+            // Preguntas Abiertas
+            const openQuestions = [
+                { id: 'o1', q: "Explica brevemente por qué es importante observar los cambios lentos en química." },
+                { id: 'o2', q: "Define con tus palabras qué es la estequiometría en una reacción." },
+                { id: 'o3', q: "¿Qué pasaría si agregas exceso de reactivo a una precipitación ya terminada?" },
+                { id: 'o4', q: "Describe la relación entre temperatura y solubilidad según lo visto." },
+                { id: 'o5', q: "¿Para qué sirve conocer el reactivo límite en la industria?" }
+            ];
+
+            openQuestions.forEach((q, i) => {
+                const div = document.createElement('div');
+                div.className = "glass-card p-6 border-l-4 border-emerald-300";
+                div.innerHTML = `
+                    <p class="font-bold mb-4">${i+6}. ${q.q}</p>
+                    <textarea id="text-${q.id}" oninput="validateWordCount('${q.id}')" class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none h-24 text-sm" placeholder="Escribe aquí (entre 10 y 15 palabras)..."></textarea>
+                    <div class="flex justify-between mt-2">
+                        <span id="word-count-${q.id}" class="text-xs font-bold text-slate-400">Palabras: 0/15</span>
+                        <span id="valid-${q.id}" class="text-xs hidden text-emerald-600">✓ Longitud correcta</span>
+                    </div>
+                `;
+                cont.appendChild(div);
+            });
+        }
+
+        function validateWordCount(id) {
+            const val = document.getElementById(`text-${id}`).value.trim();
+            const words = val ? val.split(/\s+/).length : 0;
+            const counter = document.getElementById(`word-count-${id}`);
+            const indicator = document.getElementById(`valid-${id}`);
+            
+            counter.innerText = `Palabras: ${words}/15`;
+            if (words >= 10 && words <= 15) {
+                counter.className = "text-xs font-bold text-emerald-500";
+                indicator.classList.remove('hidden');
+            } else {
+                counter.className = "text-xs font-bold text-red-400";
+                indicator.classList.add('hidden');
+            }
+        }
+
+        function validateExam() {
+            let totalScore = 0;
+            let inductiveErrors = 0;
+            let deductiveErrors = 0;
+            const results = {};
+
+            // Validar Selección Múltiple (5 preguntas)
+            const questions = [
+                { id: 'f1', c: 1, type: 'ind' },
+                { id: 'f2', c: 2, type: 'ded' },
+                { id: 'f3', c: 2, type: 'ded' },
+                { id: 'f4', c: 2, type: 'ind' },
+                { id: 'f5', c: 2, type: 'ded' }
+            ];
+
+            questions.forEach(q => {
+                const selected = document.querySelector(`input[name="q-${q.id}"]:checked`);
+                if (selected && parseInt(selected.value) === q.c) {
+                    totalScore += 0.5;
+                    results[q.id] = "Correcta";
+                } else {
+                    if (q.type === 'ind') inductiveErrors++;
+                    else deductiveErrors++;
+                    results[q.id] = "Incorrecta";
+                }
+            });
+
+            // Validar Abiertas (5 preguntas)
+            const openIds = ['o1', 'o2', 'o3', 'o4', 'o5'];
+            let allOpenValid = true;
+
+            openIds.forEach(id => {
+                const val = document.getElementById(`text-${id}`).value.trim();
+                const words = val ? val.split(/\s+/).length : 0;
+                
+                // Simulación de validación de originalidad básica (que no sea un string del texto base)
+                const isCopied = val.includes("precipitado es un sólido insoluble") || val.includes("Ley de Conservación de la Materia");
+
+                if (words >= 10 && words <= 15 && !isCopied) {
+                    totalScore += 0.5;
+                    results[id] = val;
+                } else {
+                    allOpenValid = false;
+                    results[id] = val + " (INVALIDA POR LONGITUD O COPIA)";
+                }
+            });
+
+            if (!allOpenValid) {
+                alert("Atención: Algunas respuestas abiertas no cumplen con la extensión de 10-15 palabras o son copia textual. No recibirán puntaje.");
+            }
+
+            state.score = totalScore;
+            state.examFinished = true;
+            state.examResponses = results;
+            saveState();
+            showResults(totalScore, inductiveErrors, deductiveErrors);
+        }
+
+        function showResults(score, indErr, dedErr) {
+            const resultsSection = document.getElementById('results-section');
+            resultsSection.classList.remove('hidden-section');
+            document.getElementById('final-score-display').innerText = score.toFixed(1);
+            
+            const currentElement = elements.reduce((prev, curr) => (score >= curr.min ? curr : prev));
+            document.getElementById('rank-name').innerText = `Rango Alcanzado: ${currentElement.name}`;
+
+            const reinforcementText = document.getElementById('reinforcement-text');
+            let content = "";
+
+            if (indErr >= dedErr && indErr > 0) {
+                content = `De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades:
+                \n\n- REFUERZO INDUCTIVO: La precipitación es la formación de sólidos insolubles en soluciones. Debes repasar el concepto de solubilidad y observar con más detalle cómo las interacciones iónicas determinan si una sustancia se queda en solución o cae como sólido. Recuerda que la cristalización es un proceso geométrico que requiere tiempo y estabilidad térmica.`;
+            } else if (dedErr > 0) {
+                content = `De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades:
+                \n\n- REFUERZO DEDUCTIVO: La estequiometría requiere precisión matemática. Es fundamental identificar el reactivo límite, pues es él quien manda cuánto producto se forma. Debes repasar el uso del mol como unidad de conteo y practicar el balanceo de ecuaciones para asegurar que la masa se conserve en tus cálculos.`;
+            } else {
+                content = `¡Excelente desempeño! Has dominado tanto la observación inductiva como la aplicación deductiva de leyes químicas. Puedes continuar explorando el mundo de la química inorgánica.`;
+            }
+
+            reinforcementText.innerText = content;
+            state.reinforcement = content;
+            updateGlobalUI();
+            saveState();
+            
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function downloadReport() {
+            const currentElement = elements.reduce((prev, curr) => (state.score >= curr.min ? curr : prev));
+            let report = `REPORT DE DESEMPEÑO - OVA QUÍMICA\n`;
+            report += `====================================\n`;
+            report += `Estudiante: ${state.userName}\n`;
+            report += `Nota Final: ${state.score.toFixed(1)} / 5.0\n`;
+            report += `Elemento Alcanzado: ${currentElement.name} (${currentElement.symbol})\n`;
+            report += `====================================\n\n`;
+            report += `RESPUESTAS EVALUACIÓN:\n`;
+            
+            for (const [key, val] of Object.entries(state.examResponses)) {
+                report += `- Pregunta ${key}: ${val}\n`;
+            }
+            
+            report += `\n====================================\n`;
+            report += `RUTA DE FORTALECIMIENTO:\n`;
+            report += state.reinforcement || "Completado satisfactoriamente.";
+            
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Resultado_${state.userName.replace(/\s/g, '_')}.txt`;
+            a.click();
+        }
+
+        function renderAll() {
+            // Recargar botones de tareas
+            state.tasksCompleted.forEach(id => {
+                const btn = document.getElementById(`btn-${id}`);
+                if (btn) {
+                    btn.className = "bg-green-500 text-white px-4 py-1 rounded-full text-sm font-bold transition-all";
+                    btn.innerText = "¡Hecho!";
+                }
+            });
+            if (state.examFinished) {
+                showResults(state.score, 0, 0); // Recarga simple
+            }
+        }
+    </script>
+</body>
+</html>

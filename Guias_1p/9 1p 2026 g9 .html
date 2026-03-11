@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Neutralización y Resolución de Conflictos</title>
+    <style>
+        :root {
+            --bg-main: #f0f4f8;
+            --primary: #2b6cb0;
+            --secondary: #4299e1;
+            --accent: #ed8936;
+            --text-dark: #2d3748;
+            --text-light: #ffffff;
+            --card-bg: #ffffff;
+            --success: #38a169;
+            --danger: #e53e3e;
+            --acid: #fc8181;
+            --base: #63b3ed;
+            --neutral: #68d391;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        /* --- Header y Barra de Progreso --- */
+        header {
+            background-color: var(--primary);
+            color: var(--text-light);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-panel { display: flex; align-items: center; gap: 15px; font-weight: 600; }
+        
+        .element-badge {
+            background-color: var(--accent);
+            color: var(--text-light);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .progress-wrapper { width: 350px; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px; }
+        .progress-track { background-color: rgba(255,255,255,0.2); border-radius: 10px; height: 14px; overflow: hidden; }
+        .progress-fill { background-color: var(--accent); height: 100%; width: 0%; transition: width 0.6s ease; }
+
+        /* --- Overlay de Login --- */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-main);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 2000;
+        }
+
+        .login-box {
+            background: var(--card-bg); padding: 3rem; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center;
+            border-top: 6px solid var(--primary);
+            max-width: 400px; width: 90%;
+        }
+
+        .login-box input {
+            width: 100%; padding: 12px; margin: 20px 0; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--primary); color: white; border: none; padding: 12px 24px;
+            font-size: 1rem; border-radius: 6px; cursor: pointer; transition: background 0.3s; font-weight: bold;
+        }
+        button:hover { background-color: var(--secondary); }
+        button:disabled { background-color: #a0aec0; cursor: not-allowed; }
+
+        /* --- Contenido --- */
+        .container { max-width: 950px; margin: 2rem auto; padding: 0 1.5rem; }
+        section { background: var(--card-bg); margin-bottom: 2.5rem; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h1, h2, h3 { color: var(--primary); margin-top: 0; }
+        h2 { border-bottom: 2px solid var(--bg-main); padding-bottom: 10px; }
+        
+        .activity-card {
+            background-color: #ebf8fa; border-left: 5px solid var(--secondary); padding: 1.5rem; margin: 1.5rem 0; border-radius: 0 8px 8px 0;
+        }
+
+        .feedback { display: none; padding: 12px; margin-top: 12px; border-radius: 6px; font-weight: 500; }
+        .feedback.correct { background-color: #c6f6d5; color: #22543d; border-left: 4px solid var(--success); display: block; }
+        .feedback.incorrect { background-color: #fed7d7; color: #822727; border-left: 4px solid var(--danger); display: block; }
+
+        .svg-box { text-align: center; margin: 2rem 0; overflow-x: auto; }
+        textarea { width: 100%; height: 90px; resize: vertical; margin-top: 10px; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e0; font-family: inherit; }
+        
+        .hidden { display: none !important; }
+
+        .fortalecimiento-box {
+            background-color: #fffaf0; border: 3px dashed var(--accent); padding: 2rem; border-radius: 12px; margin-top: 2rem;
+        }
+        
+        table.custom-table {
+            width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.95em;
+        }
+        table.custom-table th, table.custom-table td { border: 1px solid #cbd5e0; padding: 12px; text-align: left; }
+        table.custom-table th { background-color: var(--primary); color: white; }
+        table.custom-table tr:nth-child(even) { background-color: #f7fafc; }
+
+        .word-counter { font-size: 0.8rem; color: #718096; float: right; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="color: var(--primary);">Ciencias Naturales - Grado 9</h2>
+            <p><strong>Tema:</strong> Neutralización Química y Resolución de Conflictos</p>
+            <input type="text" id="user-input" placeholder="Ingresa tus Nombres y Apellidos">
+            <button onclick="iniciarSesion()">Ingresar a la Clase</button>
+        </div>
+    </div>
+
+    <header class="hidden" id="app-header">
+        <div class="user-panel">
+            <div class="element-badge" id="badge-element" title="Tu Nivel Químico">H</div>
+            <span id="nav-username">Estudiante</span>
+        </div>
+        <div class="progress-wrapper">
+            <div class="progress-text">
+                <span>Progreso de Aprendizaje</span>
+                <span id="nav-progress-text">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="nav-progress-fill"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container hidden" id="main-content">
+        
+        <section id="inicio">
+            <h2>1. Inicio: El Equilibrio de la Materia</h2>
+            <p><strong>Objetivo de Aprendizaje:</strong> Comprender el proceso químico de la neutralización a través de la formación de sales y agua, aplicando este principio científico como metáfora para la resolución pacífica de conflictos humanos.</p>
+            
+            <h3>Pre-saberes: Explora tus conocimientos</h3>
+            <p>Responde estas 3 preguntas exploratorias. Te ayudarán a preparar tu mente para el tema.</p>
+            
+            <div class="activity-card">
+                <p><strong>1. ¿Qué sueles tomar cuando tienes "acidez" estomacal?</strong></p>
+                <input type="radio" name="pre1" value="a" onchange="checkPre(1, false)"> a) Jugo de limón o naranja.<br>
+                <input type="radio" name="pre1" value="b" onchange="checkPre(1, true)"> b) Un antiácido (como leche de magnesia o bicarbonato).<br>
+                <div id="fb-pre1" class="feedback"></div>
+            </div>
+
+            <div class="activity-card">
+                <p><strong>2. ¿Qué característica define mejor a un ácido en la vida cotidiana?</strong></p>
+                <input type="radio" name="pre2" value="a" onchange="checkPre(2, true)"> a) Su sabor agrio y su capacidad corrosiva.<br>
+                <input type="radio" name="pre2" value="b" onchange="checkPre(2, false)"> b) Su sabor amargo y textura jabonosa al tacto.<br>
+                <div id="fb-pre2" class="feedback"></div>
+            </div>
+
+            <div class="activity-card">
+                <p><strong>3. Cuando dos personas tienen posiciones totalmente opuestas (un conflicto), buscar el "equilibrio" significa:</strong></p>
+                <input type="radio" name="pre3" value="a" onchange="checkPre(3, false)"> a) Que una persona se rinda por completo y acepte lo que dice la otra.<br>
+                <input type="radio" name="pre3" value="b" onchange="checkPre(3, true)"> b) Dialogar para encontrar un punto medio que neutralice la agresión y genere paz.<br>
+                <div id="fb-pre3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>2. Cuerpo Inductivo: Ácidos, Bases y el Poder de la Neutralización</h2>
+            <p>
+                Nuestro universo está regido por el equilibrio, y la química no es la excepción. A nuestro alrededor y dentro de nosotros mismos coexisten sustancias con propiedades opuestas y extremas. Por un lado, tenemos los <strong>ácidos</strong>. Desde la antigüedad, se reconocen por su sabor agrio, como el ácido cítrico en los limones o el ácido acético en el vinagre. A nivel microscópico, según la teoría de Svante Arrhenius, un ácido es una sustancia que, al disolverse en agua, libera iones de hidrógeno positivos (H<sup>+</sup>). Estos iones H<sup>+</sup> son altamente reactivos; buscan desesperadamente unirse a otras moléculas, lo que explica por qué los ácidos fuertes pueden ser altamente corrosivos y destruir metales o tejidos orgánicos.
+            </p>
+            <p>
+                En el extremo opuesto del espectro químico se encuentran las <strong>bases</strong> (o álcalis). Estas sustancias tienen un sabor amargo y una textura resbaladiza o jabonosa al tacto, como el jabón, el cloro, o el hidróxido de sodio (soda cáustica). Químicamente, las bases liberan iones hidroxilo (OH<sup>-</sup>) en solución acuosa. Al igual que los ácidos, las bases fuertes son extremadamente cáusticas y peligrosas si no se manejan con cuidado. Para medir qué tan ácida o básica es una sustancia, los científicos utilizan la <strong>escala de pH</strong> (potencial de hidrógeno), que va del 0 al 14. Un pH de 0 a 6.9 indica acidez, un pH de 7.1 a 14 indica alcalinidad (base), y un pH exactamente de 7.0 representa la neutralidad absoluta, como el agua pura.
+            </p>
+
+            <div class="svg-box">
+                <svg width="600" height="150" viewBox="0 0 600 150">
+                    <rect width="600" height="150" fill="#fff" stroke="none"/>
+                    <text x="300" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#2d3748">La Escala de pH</text>
+                    
+                    <defs>
+                        <linearGradient id="phGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#e53e3e" /> <stop offset="25%" stop-color="#ed8936" /> <stop offset="50%" stop-color="#ecc94b" /> <stop offset="50%" stop-color="#68d391" /> <stop offset="75%" stop-color="#4299e1" /> <stop offset="100%" stop-color="#2b6cb0" /> </linearGradient>
+                    </defs>
+                    <rect x="50" y="50" width="500" height="40" fill="url(#phGradient)" rx="20" ry="20" stroke="#cbd5e0" stroke-width="2"/>
+                    
+                    <line x1="50" y1="50" x2="50" y2="100" stroke="#2d3748" stroke-width="2"/>
+                    <text x="50" y="115" text-anchor="middle" font-weight="bold">0</text>
+                    <text x="50" y="135" text-anchor="middle" font-size="12">Ácido Fuerte</text>
+
+                    <line x1="300" y1="50" x2="300" y2="100" stroke="#2d3748" stroke-width="2"/>
+                    <text x="300" y="115" text-anchor="middle" font-weight="bold">7</text>
+                    <text x="300" y="135" text-anchor="middle" font-size="12">Neutro (Agua)</text>
+
+                    <line x1="550" y1="50" x2="550" y2="100" stroke="#2d3748" stroke-width="2"/>
+                    <text x="550" y="115" text-anchor="middle" font-weight="bold">14</text>
+                    <text x="550" y="135" text-anchor="middle" font-size="12">Base Fuerte</text>
+                </svg>
+            </div>
+
+            <p>
+                Pero, ¿qué sucede si mezclamos a estos dos "enemigos" naturales? Aquí ocurre uno de los procesos más hermosos de la química: la <strong>Reacción de Neutralización</strong>. Cuando un ácido reacciona con una base, ocurre un intercambio iónico espectacular. El catión de hidrógeno (H<sup>+</sup>) del ácido se encuentra con el anión hidroxilo (OH<sup>-</sup>) de la base. Juntos, se neutralizan mutuamente perdiendo sus propiedades corrosivas y forman una de las sustancias más dadoras de vida del universo: el <strong>agua (H<sub>2</sub>O)</strong>. Simultáneamente, el ion negativo que sobró del ácido y el ion positivo que sobró de la base se atraen magnéticamente para formar un compuesto iónico sólido que llamamos <strong>sal</strong>. 
+            </p>
+            <p>
+                La ecuación general es simple: <em>Ácido + Base → Sal + Agua</em>. Un ejemplo clásico es mezclar ácido clorhídrico (HCl), el cual está en nuestros jugos gástricos, con hidróxido de sodio (NaOH). La reacción genera Cloruro de Sodio (NaCl), que es la sal de mesa que usamos en nuestras comidas, y agua (H<sub>2</sub>O). Dos sustancias altamente peligrosas y letales, al encontrarse en las proporciones correctas, anulan el daño que podrían causar por separado y crean productos inofensivos e incluso necesarios para la vida. Esta transformación evidencia el principio fundamental de conservación de la materia, donde nada se destruye, solo se reorganiza buscando la estabilidad.
+            </p>
+
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Sustancia</th>
+                        <th>Tipo</th>
+                        <th>Ion Principal liberado</th>
+                        <th>Ejemplo Cotidiano</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Ácido Clorhídrico (HCl)</td><td>Ácido Fuerte</td><td>H<sup>+</sup></td><td>Jugos gástricos</td></tr>
+                    <tr><td>Ácido Acético (CH<sub>3</sub>COOH)</td><td>Ácido Débil</td><td>H<sup>+</sup></td><td>Vinagre de cocina</td></tr>
+                    <tr><td>Hidróxido de Sodio (NaOH)</td><td>Base Fuerte</td><td>OH<sup>-</sup></td><td>Destapa cañerías</td></tr>
+                    <tr><td>Bicarbonato de Sodio (NaHCO<sub>3</sub>)</td><td>Base Débil</td><td>OH<sup>-</sup> (al reaccionar)</td><td>Antiácido / Polvo de hornear</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Actividades de Cuaderno (Sección 1)</h3>
+            <p>Realiza las siguientes actividades en tu cuaderno. Cuando termines, haz clic en el botón.</p>
+            <div class="activity-card">
+                <ol>
+                    <li>Dibuja y colorea en tu cuaderno la escala de pH, marcando dónde se ubican los ácidos, las bases y la zona neutral.</li>
+                    <li>Escribe con tus propias palabras la definición de Ácido y de Base según los iones que liberan.</li>
+                    <li>Copia la ecuación general de neutralización y la ecuación de formación de la sal de mesa (NaCl).</li>
+                    <li>Explica por qué mezclar un ácido fuerte y una base fuerte produce sustancias inofensivas.</li>
+                    <li>Elabora un mapa mental con 3 ejemplos de ácidos y 3 ejemplos de bases que tengas en tu casa.</li>
+                </ol>
+                <button id="btn-cuad-1" onclick="completarCuaderno(1)">¡Completé las 5 actividades teóricas!</button>
+                <span id="check-cuad-1" class="hidden" style="color: var(--success); font-weight: bold;">✓ Actividades registradas en el sistema.</span>
+            </div>
+
+            <h3>Pregunta ICFES: Competencia de Indagar</h3>
+            <p>Un estudiante de grado 9º realiza un experimento agregando lentamente gotas de una Base Fuerte a un vaso que contenía un Ácido Fuerte. Él midió el pH de la mezcla durante el proceso y graficó los resultados. Observa la gráfica y responde:</p>
+            
+            <div class="svg-box">
+                <svg width="450" height="300" viewBox="0 0 450 300">
+                    <rect width="450" height="300" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
+                    <text x="225" y="25" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">Curva de Titulación (pH vs Volumen de Base)</text>
+                    
+                    <line x1="50" y1="260" x2="400" y2="260" stroke="#2d3748" stroke-width="2"/>
+                    <line x1="50" y1="40" x2="50" y2="260" stroke="#2d3748" stroke-width="2"/>
+                    
+                    <text x="40" y="50" text-anchor="end" font-size="12">14</text>
+                    <text x="40" y="150" text-anchor="end" font-size="12">7</text>
+                    <text x="40" y="260" text-anchor="end" font-size="12">0</text>
+                    <text x="20" y="150" text-anchor="middle" font-size="12" transform="rotate(-90 20,150)">pH</text>
+                    
+                    <text x="225" y="290" text-anchor="middle" font-size="12">Volumen de Base añadida (Gotas)</text>
+                    
+                    <line x1="50" y1="150" x2="400" y2="150" stroke="#68d391" stroke-width="2" stroke-dasharray="5,5"/>
+                    <text x="410" y="155" text-anchor="start" font-size="12" fill="#38a169">Neutro</text>
+
+                    <path d="M 50 240 Q 150 230 200 200 T 225 150 T 250 100 T 300 70 Q 350 60 400 55" fill="none" stroke="#e53e3e" stroke-width="3"/>
+                    
+                    <circle cx="225" cy="150" r="5" fill="#2b6cb0"/>
+                </svg>
+            </div>
+            
+            <div class="activity-card" id="icfes-box">
+                <p><strong>De acuerdo con la gráfica, ¿qué conclusión es la correcta sobre el experimento?</strong></p>
+                <input type="radio" name="icfes" value="a"> A) La sustancia en el vaso siempre fue una base porque la curva va hacia arriba.<br>
+                <input type="radio" name="icfes" value="b"> B) Al agregar la base, el ácido se volvió más corrosivo llegando a pH 14.<br>
+                <input type="radio" name="icfes" value="c"> C) En el punto marcado con el círculo azul, la cantidad de ácido y base se equilibraron, logrando la neutralización (pH 7).<br>
+                <input type="radio" name="icfes" value="d"> D) El experimento falló porque el pH nunca debió superar el valor de 7.<br>
+                <br>
+                <button onclick="verificarICFES()">Verificar Respuesta</button>
+                <div id="fb-icfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>3. Cuerpo Deductivo: El Experimento y la Resolución de Conflictos</h2>
+            <p>
+                Para llevar la teoría a la práctica, no necesitamos un laboratorio avanzado. En nuestra cocina ocurre una de las reacciones de neutralización más emocionantes y accesibles: la mezcla de <strong>vinagre y bicarbonato de sodio</strong>. El vinagre contiene ácido acético (CH<sub>3</sub>COOH), un ácido débil, y el bicarbonato de sodio (NaHCO<sub>3</sub>) actúa como una base débil. Al unir estas dos sustancias en un recipiente, inmediatamente observamos un burbujeo intenso y efervescencia. ¿Qué está pasando a nivel molecular?
+            </p>
+            <p>
+                Ocurre una reacción de doble desplazamiento. El ácido y la base se neutralizan para formar, como dictan las reglas, agua (H<sub>2</sub>O) y una sal llamada acetato de sodio (CH<sub>3</sub>COONa). Sin embargo, en esta reacción específica hay un paso intermedio; se forma temporalmente ácido carbónico (H<sub>2</sub>CO<sub>3</sub>), el cual es altamente inestable y se descompone instantáneamente en agua y un gas: el <strong>dióxido de carbono (CO<sub>2</sub>)</strong>. ¡Son estas moléculas de gas de CO<sub>2</sub> las que escapan violentamente de la mezcla formando las burbujas que vemos! La ecuación química balanceada se escribe así:<br>
+                <strong>CH<sub>3</sub>COOH + NaHCO<sub>3</sub> → CH<sub>3</sub>COONa + H<sub>2</sub>O + CO<sub>2</sub>↑</strong>
+            </p>
+
+            <div class="svg-box">
+                <svg width="400" height="250" viewBox="0 0 400 250">
+                    <rect width="400" height="250" fill="#fff" stroke="none"/>
+                    
+                    <path d="M 120 50 L 120 200 Q 120 220 140 220 L 260 220 Q 280 220 280 200 L 280 50" fill="none" stroke="#a0aec0" stroke-width="4"/>
+                    <ellipse cx="200" cy="50" rx="80" ry="15" fill="none" stroke="#a0aec0" stroke-width="4"/>
+                    
+                    <path d="M 122 130 L 122 200 Q 122 218 140 218 L 260 218 Q 278 218 278 200 L 278 130 Q 200 140 122 130" fill="#bee3f8" opacity="0.7"/>
+                    
+                    <circle cx="150" cy="180" r="5" fill="#fff" stroke="#4299e1" stroke-width="1"/>
+                    <circle cx="180" cy="160" r="8" fill="#fff" stroke="#4299e1" stroke-width="1"/>
+                    <circle cx="220" cy="190" r="6" fill="#fff" stroke="#4299e1" stroke-width="1"/>
+                    <circle cx="240" cy="150" r="4" fill="#fff" stroke="#4299e1" stroke-width="1"/>
+                    <circle cx="200" cy="120" r="10" fill="#fff" stroke="#4299e1" stroke-width="1"/>
+                    <circle cx="160" cy="90" r="7" fill="#fff" stroke="#4299e1" stroke-width="1"/>
+                    <circle cx="230" cy="70" r="9" fill="#fff" stroke="#4299e1" stroke-width="1"/>
+                    <circle cx="190" cy="40" r="12" fill="#fff" stroke="#4299e1" stroke-width="1"/>
+                    
+                    <text x="320" y="80" font-family="Arial" font-size="14" font-weight="bold" fill="#2d3748">CO₂↑ (Gas)</text>
+                    <text x="320" y="180" font-family="Arial" font-size="14" fill="#2b6cb0">Agua + Sal</text>
+                    <text x="200" y="240" font-family="Arial" font-size="12" text-anchor="middle" fill="#718096">Neutralización: Vinagre + Bicarbonato</text>
+                </svg>
+            </div>
+
+            <p>
+                <strong>La Química de la Paz y la Resolución de Conflictos</strong><br>
+                Así como en la química, en las relaciones humanas también experimentamos "reacciones violentas". Un conflicto entre dos personas es muy similar a la interacción entre un ácido corrosivo y una base cáustica. Cuando las personas se enfrentan con ira o resentimiento (sustancias altamente reactivas), el choque puede causar daño emocional severo si no se controla. La tendencia natural en una pelea es "ganar" o destruir el argumento del otro, lo cual solo aumenta la toxicidad del ambiente.
+            </p>
+            <p>
+                Aquí es donde debemos aplicar la neutralización a nuestras vidas. Resolver un conflicto no significa que uno tenga la razón absoluta y el otro se rinda. <em>Buscar el equilibrio</em>, al igual que lograr un pH de 7, implica introducir un agente neutralizador: el diálogo empático, la escucha activa y el respeto. Cuando dos posturas extremas y conflictivas logran comunicarse adecuadamente, sus diferencias se "neutralizan". La tensión y la ira (gas CO<sub>2</sub>) se liberan de forma segura, y lo que queda es un nuevo acuerdo sólido (la sal) y una relación purificada y transparente (el agua). La próxima vez que te encuentres en un conflicto intenso, recuerda la química: no respondas con más ácido; aporta el equilibrio necesario para neutralizar la situación y transformar el problema en aprendizaje mutuo.
+            </p>
+
+            <h3>Actividades de Cuaderno (Sección 2)</h3>
+            <p>Realiza estas actividades relacionando la química con las habilidades socioemocionales.</p>
+            <div class="activity-card">
+                <ol>
+                    <li>Dibuja el experimento del vinagre y el bicarbonato, señalando dónde queda el agua, la sal y qué gas sale volando.</li>
+                    <li>Copia la ecuación química balanceada del vinagre y el bicarbonato.</li>
+                    <li>Explica por escrito por qué se forman burbujas en esta reacción.</li>
+                    <li>Relata brevemente un conflicto personal reciente. Identifica quiénes fueron las partes "reactivas" (ácido/base).</li>
+                    <li>Escribe 3 "agentes neutralizadores" (acciones o palabras) que usarías para resolver un conflicto pacíficamente y llegar al "pH 7" (equilibrio).</li>
+                </ol>
+                <button id="btn-cuad-2" onclick="completarCuaderno(2)">¡Completé las 5 actividades de aplicación!</button>
+                <span id="check-cuad-2" class="hidden" style="color: var(--success); font-weight: bold;">✓ Actividades registradas en el sistema.</span>
+            </div>
+        </section>
+
+        <section id="evaluacion">
+            <h2>4. Evaluación Final: Taller Integrador</h2>
+            <p>Demuestra lo que has aprendido sobre neutralización química y resolución de conflictos. <br><small><em>Atención: Las preguntas abiertas deben tener estrictamente entre 10 y 15 palabras para ser válidas.</em></small></p>
+            
+            <form id="form-eval">
+                <div class="activity-card">
+                    <p><strong>1. Según la teoría, el ion característico que liberan los ácidos en solución es:</strong></p>
+                    <input type="radio" name="q1" value="a"> A) El ion Cloro (Cl<sup>-</sup>).<br>
+                    <input type="radio" name="q1" value="b"> B) El catión Hidrógeno (H<sup>+</sup>).<br>
+                    <input type="radio" name="q1" value="c"> C) El anión Hidroxilo (OH<sup>-</sup>).<br>
+                </div>
+                
+                <div class="activity-card">
+                    <p><strong>2. Los productos principales de una reacción de neutralización química son siempre:</strong></p>
+                    <input type="radio" name="q2" value="a"> A) Sal y Agua.<br>
+                    <input type="radio" name="q2" value="b"> B) Ácido fuerte y Base débil.<br>
+                    <input type="radio" name="q2" value="c"> C) Fuego y Tierra.<br>
+                </div>
+
+                <div class="activity-card">
+                    <p><strong>3. En el experimento de vinagre y bicarbonato, la efervescencia ocurre porque se libera:</strong></p>
+                    <input type="radio" name="q3" value="a"> A) Oxígeno puro (O<sub>2</sub>).<br>
+                    <input type="radio" name="q3" value="b"> B) Dióxido de carbono (CO<sub>2</sub>).<br>
+                    <input type="radio" name="q3" value="c"> C) Ácido clorhídrico en forma de gas.<br>
+                </div>
+
+                <div class="activity-card">
+                    <p><strong>4. Aplicando la metáfora química, buscar el equilibrio en un conflicto humano significa:</strong></p>
+                    <input type="radio" name="q4" value="a"> A) Usar el diálogo para llegar a un acuerdo pacífico, como lograr un pH 7.<br>
+                    <input type="radio" name="q4" value="b"> B) Ganarle a la otra persona usando argumentos más fuertes y corrosivos.<br>
+                    <input type="radio" name="q4" value="c"> C) Ignorar a la otra persona hasta que el conflicto desaparezca solo.<br>
+                </div>
+
+                <div class="activity-card">
+                    <p><strong>5. Si a una solución muy ácida (pH 2) le agrego una base, su pH tenderá a:</strong></p>
+                    <input type="radio" name="q5" value="a"> A) Bajar a cero.<br>
+                    <input type="radio" name="q5" value="b"> B) Subir acercándose hacia el 7 (neutralidad).<br>
+                    <input type="radio" name="q5" value="c"> C) Quedarse igual, la base no afecta al ácido.<br>
+                </div>
+
+                <h3 style="margin-top: 2rem;">Preguntas Abiertas (Límite estricto: 10 a 15 palabras)</h3>
+                
+                <div class="activity-card">
+                    <p>6. ¿Qué significa que una sustancia tenga un pH de 7?</p>
+                    <textarea id="q6" onkeyup="contarPalabras('q6')" placeholder="Escribe tu respuesta..."></textarea>
+                    <div id="count-q6" class="word-counter">Palabras: 0/15</div>
+                    <div id="err-q6" class="feedback incorrect"></div>
+                </div>
+                
+                <div class="activity-card">
+                    <p>7. Describe brevemente el resultado físico de mezclar vinagre y bicarbonato.</p>
+                    <textarea id="q7" onkeyup="contarPalabras('q7')" placeholder="Escribe tu respuesta..."></textarea>
+                    <div id="count-q7" class="word-counter">Palabras: 0/15</div>
+                    <div id="err-q7" class="feedback incorrect"></div>
+                </div>
+                
+                <div class="activity-card">
+                    <p>8. Define químicamente qué es una "sal" tras la neutralización.</p>
+                    <textarea id="q8" onkeyup="contarPalabras('q8')" placeholder="Escribe tu respuesta..."></textarea>
+                    <div id="count-q8" class="word-counter">Palabras: 0/15</div>
+                    <div id="err-q8" class="feedback incorrect"></div>
+                </div>
+                
+                <div class="activity-card">
+                    <p>9. ¿Cómo actúa un antiácido médico en tu estómago?</p>
+                    <textarea id="q9" onkeyup="contarPalabras('q9')" placeholder="Escribe tu respuesta..."></textarea>
+                    <div id="count-q9" class="word-counter">Palabras: 0/15</div>
+                    <div id="err-q9" class="feedback incorrect"></div>
+                </div>
+                
+                <div class="activity-card">
+                    <p>10. Escribe una acción clave para resolver conflictos escolares pacíficamente.</p>
+                    <textarea id="q10" onkeyup="contarPalabras('q10')" placeholder="Escribe tu respuesta..."></textarea>
+                    <div id="count-q10" class="word-counter">Palabras: 0/15</div>
+                    <div id="err-q10" class="feedback incorrect"></div>
+                </div>
+
+                <button type="button" onclick="calificarTaller()">Finalizar Evaluación</button>
+            </form>
+        </section>
+
+        <section id="seccion-resultados" class="hidden">
+            <h2>Resultados de Aprendizaje</h2>
+            <div style="font-size: 1.2rem; background: #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;">
+                <p>Nota Final Obtenida: <strong id="nota-pantalla" style="font-size: 1.5rem; color: var(--primary);"></strong> / 5.0</p>
+                <p>Nivel de Elemento Químico Alcanzado: <strong id="elemento-pantalla" style="color: var(--accent);"></strong></p>
+            </div>
+            
+            <div id="caja-fortalecimiento" class="fortalecimiento-box hidden">
+                <h3 style="color: var(--accent); margin-top: 0;">Ruta de Fortalecimiento Personalizada</h3>
+                <p style="color: var(--danger); font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid var(--danger); padding-bottom: 5px;">
+                    Instrucción Pedagógica: De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades.
+                </p>
+                <div id="texto-ruta"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="exportarReporte()" style="background-color: var(--success);">Descargar Reporte del OVA (.txt)</button>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // --- Estado Global ---
+        let appState = {
+            alumno: "",
+            puntosTotales: 0,
+            progreso: { pre1: false, pre2: false, pre3: false, t1: false, icf: false, t2: false },
+            calificacion: 0,
+            elementoLogrado: "H",
+            fallosTest: [],
+            textoRefuerzoPuro: ""
+        };
+
+        const tablaElementos = ["H (Hidrógeno)", "He (Helio)", "Li (Litio)", "Be (Berilio)", "B (Boro)", "C (Carbono)"];
+
+        // --- Inicialización y LocalStorage ---
+        window.onload = () => {
+            const dataGuardada = localStorage.getItem('ovaNeutralizacion');
+            if (dataGuardada) {
+                appState = JSON.parse(dataGuardada);
+                if (appState.alumno) {
+                    document.getElementById('user-input').value = appState.alumno;
+                    iniciarSesion(true); // Restaura la vista
+                }
+            }
+        };
+
+        function guardarData() {
+            localStorage.setItem('ovaNeutralizacion', JSON.stringify(appState));
+            calcularPuntosNav();
+        }
+
+        function iniciarSesion(desdeStorage = false) {
+            const nombre = document.getElementById('user-input').value.trim();
+            if (nombre === "") {
+                alert("Por favor, ingresa tu nombre completo para comenzar.");
+                return;
+            }
+            appState.alumno = nombre;
+            if (!desdeStorage) guardarData();
+            
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-header').classList.remove('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('nav-username').innerText = appState.alumno;
+            
+            calcularPuntosNav();
+        }
+
+        function calcularPuntosNav() {
+            let pts = 0;
+            if (appState.progreso.pre1) pts += 10;
+            if (appState.progreso.pre2) pts += 10;
+            if (appState.progreso.pre3) pts += 10;
+            if (appState.progreso.t1) pts += 25;
+            if (appState.progreso.icf) pts += 20;
+            if (appState.progreso.t2) pts += 25;
+            
+            document.getElementById('nav-progress-fill').style.width = pts + '%';
+            document.getElementById('nav-progress-text').innerText = pts + '%';
+
+            // Elemento basado en calificación actual (0 a 5)
+            let indexElemento = Math.floor(appState.calificacion); 
+            if(indexElemento > 5) indexElemento = 5;
+            appState.elementoLogrado = tablaElementos[indexElemento];
+            document.getElementById('badge-element').innerText = appState.elementoLogrado.split(" ")[0];
+        }
+
+        // --- Lógica Actividades Formativas ---
+        function checkPre(num, correcto) {
+            const msj = document.getElementById('fb-pre' + num);
+            if (correcto) {
+                msj.innerText = "¡Excelente respuesta! Tienes buenas bases.";
+                msj.className = "feedback correct";
+            } else {
+                msj.innerText = "No te preocupes si fallas ahora. Aprenderemos esto a fondo a continuación.";
+                msj.className = "feedback incorrect";
+            }
+            if (!appState.progreso['pre' + num]) {
+                appState.progreso['pre' + num] = true;
+                guardarData();
+            }
+        }
+
+        function completarCuaderno(num) {
+            document.getElementById('btn-cuad-' + num).classList.add('hidden');
+            document.getElementById('check-cuad-' + num).classList.remove('hidden');
+            appState.progreso['t' + num] = true;
+            guardarData();
+        }
+
+        function verificarICFES() {
+            const opciones = document.getElementsByName('icfes');
+            let elegida = "";
+            for (let opt of opciones) if (opt.checked) elegida = opt.value;
+            
+            const msj = document.getElementById('fb-icfes');
+            if (elegida === "c") {
+                msj.innerText = "¡Correcto (Opción C)! La gráfica inicia abajo (pH ácido). A medida que agregas gotas de base, el pH sube. El punto en pH 7 indica que el ácido fue totalmente contrarrestado, logrando la neutralización.";
+                msj.className = "feedback correct";
+            } else if (elegida === "") {
+                msj.innerText = "Debes seleccionar una opción.";
+                msj.className = "feedback incorrect";
+            } else {
+                msj.innerText = "Respuesta incorrecta. Analiza la gráfica: empieza en un pH muy bajo (cerca a 0, lo que indica que había un ácido), y al agregar la base sube cruzando la línea verde del pH 7. La respuesta correcta es la C.";
+                msj.className = "feedback incorrect";
+            }
+            
+            if (!appState.progreso.icf) {
+                appState.progreso.icf = true;
+                guardarData();
+            }
+        }
+
+        // --- Lógica Evaluación Final ---
+        function contarPalabras(id) {
+            const text = document.getElementById(id).value.trim();
+            let palabras = text === "" ? 0 : text.split(/\s+/).length;
+            document.getElementById('count-' + id).innerText = `Palabras: ${palabras}/15`;
+            return palabras;
+        }
+
+        function calificarTaller() {
+            appState.fallosTest = [];
+            let aciertosMC = 0;
+
+            // Claves: q1=b, q2=a, q3=b, q4=a, q5=b
+            const q1 = document.querySelector('input[name="q1"]:checked')?.value;
+            const q2 = document.querySelector('input[name="q2"]:checked')?.value;
+            const q3 = document.querySelector('input[name="q3"]:checked')?.value;
+            const q4 = document.querySelector('input[name="q4"]:checked')?.value;
+            const q5 = document.querySelector('input[name="q5"]:checked')?.value;
+
+            if (q1 === "b") aciertosMC++; else appState.fallosTest.push("q1");
+            if (q2 === "a") aciertosMC++; else appState.fallosTest.push("q2");
+            if (q3 === "b") aciertosMC++; else appState.fallosTest.push("q3");
+            if (q4 === "a") aciertosMC++; else appState.fallosTest.push("q4");
+            if (q5 === "b") aciertosMC++; else appState.fallosTest.push("q5");
+
+            let aciertosAbiertas = 0;
+            let validadasOk = true;
+
+            for (let i = 6; i <= 10; i++) {
+                let errorDiv = document.getElementById("err-q" + i);
+                let numPalabras = contarPalabras("q" + i);
+                
+                if (numPalabras < 10 || numPalabras > 15) {
+                    errorDiv.innerText = `Error: Tienes ${numPalabras} palabras. Deben ser estrictamente entre 10 y 15.`;
+                    errorDiv.style.display = "block";
+                    validadasOk = false;
+                } else {
+                    errorDiv.style.display = "none";
+                    aciertosAbiertas++; 
+                }
+            }
+
+            if (!validadasOk) {
+                alert("Por favor, corrige la extensión de las preguntas abiertas. Deben tener entre 10 y 15 palabras exactas.");
+                return;
+            }
+
+            // Cada pregunta vale 0.5 puntos
+            appState.calificacion = (aciertosMC * 0.5) + (aciertosAbiertas * 0.5);
+            document.getElementById('nota-pantalla').innerText = appState.calificacion.toFixed(1);
+            
+            guardarData(); // Guarda para actualizar elemento
+            document.getElementById('elemento-pantalla').innerText = appState.elementoLogrado;
+            
+            procesarFortalecimiento();
+            
+            document.getElementById('seccion-resultados').classList.remove('hidden');
+            document.getElementById('seccion-resultados').scrollIntoView();
+        }
+
+        // --- Retroalimentación Dinámica ---
+        function procesarFortalecimiento() {
+            const box = document.getElementById('caja-fortalecimiento');
+            const targetHtml = document.getElementById('texto-ruta');
+            
+            if (appState.fallosTest.length === 0) {
+                box.classList.add('hidden');
+                appState.textoRefuerzoPuro = "¡Felicidades! Lograste una asimilación perfecta de la teoría y la práctica. Tienes un nivel excelente.";
+                return;
+            }
+
+            let htmlStr = "<ul>";
+            
+            // Analizar fallos Inductivos (Teoría de iones, ácidos/bases, pH, formación de sal)
+            if (appState.fallosTest.includes("q1") || appState.fallosTest.includes("q2") || appState.fallosTest.includes("q5")) {
+                htmlStr += "<li style='margin-bottom: 10px;'><strong>Refuerzo Teórico Básico (Inductivo):</strong> Recuerda que los ácidos se caracterizan por liberar iones de Hidrógeno (H<sup>+</sup>) y las bases iones Hidroxilo (OH<sup>-</sup>). Cuando reaccionan, se neutralizan (el pH busca llegar a 7, la neutralidad) y SIEMPRE forman Agua y una Sal como productos finales.</li>";
+            }
+            
+            // Analizar fallos Deductivos (Experimento, gas, analogía socioemocional)
+            if (appState.fallosTest.includes("q3") || appState.fallosTest.includes("q4")) {
+                htmlStr += "<li><strong>Refuerzo Práctico y Ético (Deductivo):</strong> En el experimento del vinagre y el bicarbonato, las burbujas que observas son el gas Dióxido de Carbono (CO<sub>2</sub>) escapando. A nivel humano, buscar la neutralidad en un conflicto implica usar el diálogo empático para balancear las posturas opuestas sin destruirse mutuamente, tal como ocurre en la química.</li>";
+            }
+            
+            htmlStr += "</ul>";
+            targetHtml.innerHTML = htmlStr;
+            appState.textoRefuerzoPuro = targetHtml.innerText; // Guarda texto para TXT
+            box.classList.remove('hidden');
+        }
+
+        // --- Exportación a TXT ---
+        function exportarReporte() {
+            let reporte = `==============================================\n`;
+            reporte += ` REPORTE DE APRENDIZAJE: CIENCIAS GRADO 9\n`;
+            reporte += `==============================================\n\n`;
+            reporte += `Nombre del Estudiante: ${appState.alumno}\n`;
+            reporte += `Nota Final: ${appState.calificacion.toFixed(1)} / 5.0\n`;
+            reporte += `Rango Químico Alcanzado: ${appState.elementoLogrado}\n\n`;
+            
+            reporte += `--- Respuestas Desarrollo Abierto ---\n`;
+            for (let i = 6; i <= 10; i++) {
+                reporte += `Pregunta ${i}: ${document.getElementById("q" + i).value}\n`;
+            }
+            
+            reporte += `\n==============================================\n`;
+            reporte += `    RUTA DE FORTALECIMIENTO PERSONALIZADA\n`;
+            reporte += `==============================================\n`;
+            reporte += appState.textoRefuerzoPuro + "\n";
+            reporte += `\n*** OBLIGATORIO: De acuerdo a tus resultados, debes copiar la retroalimentación superior en tu cuaderno para fortalecer tus debilidades. ***\n`;
+
+            const dataBlob = new Blob([reporte], { type: 'text/plain' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `OVA_Resultados_${appState.alumno.replace(/\s+/g, '_')}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

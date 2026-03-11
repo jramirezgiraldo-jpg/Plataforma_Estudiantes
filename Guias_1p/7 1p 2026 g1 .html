@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>OVA - El viaje al interior de la materia (Grado 7)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    :root{
+        --bg:#020617;
+        --card:#ffffff;
+        --accent:#4f46e5;
+        --accent2:#22c55e;
+        --accent3:#0ea5e9;
+        --danger:#dc2626;
+        --text:#111827;
+        --muted:#6b7280;
+    }
+    *{box-sizing:border-box;}
+    body{
+        margin:0;
+        font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+        background: radial-gradient(circle at top,#1d4ed8 0,#020617 45%,#000 100%);
+        color:var(--text);
+        display:flex;
+        justify-content:center;
+    }
+    .shell{
+        max-width:1050px;
+        width:100%;
+        padding:20px;
+    }
+    .ova{
+        background:linear-gradient(135deg,#f9fafb 0,#e0f2fe 35%,#dcfce7 100%);
+        border-radius:20px;
+        padding:22px 16px 30px;
+        box-shadow:0 20px 50px rgba(0,0,0,0.5);
+        position:relative;
+        overflow:hidden;
+    }
+    h1,h2,h3{
+        color:#0f172a;
+        margin-top:0;
+    }
+    h1{
+        font-size:1.9rem;
+        display:flex;
+        flex-wrap:wrap;
+        align-items:center;
+        gap:10px;
+    }
+    h1 span.badge{
+        background:#0f172a;
+        color:white;
+        font-size:0.8rem;
+        padding:4px 10px;
+        border-radius:999px;
+    }
+    p{
+        line-height:1.6;
+        color:#111827;
+        margin:0 0 8px;
+        font-size:0.96rem;
+    }
+    .context{
+        background:rgba(255,255,255,0.9);
+        border-radius:14px;
+        padding:12px 14px;
+        border:1px solid #d1d5db;
+        margin-bottom:14px;
+        font-size:0.9rem;
+    }
+    .context strong{color:#22c55e;}
+    .progress-bar{
+        margin-bottom:14px;
+    }
+    .progress-label{
+        display:flex;
+        justify-content:space-between;
+        font-size:0.9rem;
+        color:#0f172a;
+        margin-bottom:4px;
+    }
+    .progress-track{
+        width:100%;
+        height:10px;
+        border-radius:999px;
+        background:#e5e7eb;
+        position:relative;
+        overflow:hidden;
+    }
+    .progress-fill{
+        height:100%;
+        width:0%;
+        border-radius:999px;
+        background:linear-gradient(90deg,#22c55e,#4ade80,#bef264);
+        transition:width 0.35s ease-out;
+    }
+    .points-display{
+        font-size:0.9rem;
+        color:#0f172a;
+        margin-top:4px;
+    }
+    .points-display span.animal{
+        font-weight:bold;
+        margin-left:6px;
+    }
+    .section{
+        background:rgba(255,255,255,0.97);
+        border-radius:16px;
+        padding:14px 14px 16px;
+        border:1px solid #d4d4d8;
+        margin-top:14px;
+    }
+    .section-title{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        font-weight:600;
+        color:#111827;
+        margin-bottom:8px;
+        font-size:1rem;
+    }
+    .section-title span.icon{font-size:1.2rem;}
+    .question-block{
+        background:#f1f5f9;
+        border-radius:14px;
+        padding:10px 12px;
+        margin:8px 0;
+        border:1px solid #cbd5f5;
+    }
+    .question-block h3{
+        margin:0 0 4px;
+        font-size:0.98rem;
+    }
+    .question-block p{
+        margin:4px 0 6px;
+        font-size:0.94rem;
+    }
+    .options{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        margin-top:4px;
+    }
+    .options label{
+        background:white;
+        border-radius:999px;
+        padding:6px 10px;
+        border:1px solid #e5e7eb;
+        display:flex;
+        align-items:center;
+        gap:6px;
+        cursor:pointer;
+        font-size:0.93rem;
+    }
+    .options input[type="radio"]{
+        accent-color:#22c55e;
+    }
+    .btn{
+        border:none;
+        border-radius:999px;
+        padding:6px 12px;
+        font-size:0.9rem;
+        cursor:pointer;
+        margin-top:6px;
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        background:linear-gradient(135deg,#4f46e5,#6366f1);
+        color:white;
+    }
+    .btn.secondary{background:#0ea5e9;}
+    .btn.verify{background:#22c55e;}
+    .btn.small{padding:4px 10px;font-size:0.8rem;}
+    .feedback{
+        margin-top:5px;
+        font-size:0.9rem;
+    }
+    .feedback.correct{color:#16a34a;}
+    .feedback.incorrect{color:#b91c1c;}
+    textarea,input[type="text"]{
+        width:100%;
+        box-sizing:border-box;
+        border-radius:10px;
+        border:1px solid #cbd5e1;
+        padding:7px;
+        font-size:0.9rem;
+        resize:vertical;
+        margin-top:4px;
+    }
+    .note{
+        font-size:0.83rem;
+        color:#6b7280;
+        margin-top:3px;
+    }
+    .verify-status{
+        font-size:0.85rem;
+        margin-top:4px;
+    }
+    .verify-status.ok{color:#16a34a;}
+    .verify-status.bad{color:#b91c1c;}
+    .reward-flash{
+        animation:pop 0.5s forwards;
+        display:inline-block;
+        margin-left:6px;
+    }
+    @keyframes pop{
+        0%{transform:scale(0.5);opacity:0;}
+        60%{transform:scale(1.2);opacity:1;}
+        100%{transform:scale(1);opacity:1;}
+    }
+    .icfes-intro{
+        background:#fef9c3;
+        border:1px solid #facc15;
+        border-radius:12px;
+        padding:9px 11px;
+        font-size:0.9rem;
+        margin-bottom:6px;
+    }
+    .icfes-graphic{
+        margin:8px 0;
+        padding:8px;
+        background:#e0f2fe;
+        border-radius:10px;
+        font-size:0.86rem;
+    }
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin:8px 0;
+        font-size:0.9rem;
+    }
+    th,td{
+        border:1px solid #cbd5e1;
+        padding:5px;
+        text-align:center;
+    }
+    th{background:#f1f5f9;}
+    .svg-graph{
+        width:100%;
+        max-width:420px;
+        display:block;
+        margin:8px auto 2px;
+        background:white;
+        border-radius:8px;
+        border:1px solid #e5e7eb;
+    }
+    .drag-area{
+        background:#eff6ff;
+        border-radius:12px;
+        padding:8px;
+        margin-top:8px;
+        border:1px dashed #60a5fa;
+        font-size:0.9rem;
+    }
+    .drag-list,.drop-list{
+        display:flex;
+        flex-wrap:wrap;
+        gap:6px;
+        margin-top:6px;
+    }
+    .drag-item,.drop-slot{
+        padding:5px 8px;
+        border-radius:999px;
+        background:white;
+        border:1px solid #93c5fd;
+        cursor:pointer;
+        min-width:60px;
+        text-align:center;
+        font-size:0.85rem;
+    }
+    .drop-slot{
+        background:#e5e7eb;
+        border-style:dashed;
+    }
+    .drop-slot.filled{
+        background:#dcfce7;
+        border-style:solid;
+        border-color:#22c55e;
+    }
+    .hidden{display:none;}
+    .animal-banner{
+        margin-top:8px;
+        padding:9px;
+        border-radius:12px;
+        background:#ecfdf5;
+        border:1px solid #4ade80;
+        font-size:0.93rem;
+        display:flex;
+        align-items:center;
+        gap:8px;
+    }
+    .animal-banner span.icon{font-size:1.4rem;}
+    .exp-block{
+        background:#fefce8;
+        border-radius:14px;
+        padding:11px 12px;
+        border:1px solid #facc15;
+        font-size:0.9rem;
+    }
+    ul{margin:4px 0 4px 18px;padding:0;}
+    li{margin-bottom:3px;}
+    @media(max-width:700px){
+        .ova{padding:18px 12px 24px;}
+    }
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="ova">
+    <h1>
+        OVA – El viaje al interior de la materia
+        <span class="badge">Grado 7 · Vereda Pueblo Rico</span>
+    </h1>
+
+    <div class="context">
+        En la vereda <strong>Pueblo Rico</strong>, en Quimbaya, el trabajo con café, cítricos, ganado y turismo rural hace parte de la vida diaria. 
+        Cada grano de café que se recoge, cada gota de agua que riega los cultivos y cada herramienta que se usa está hecho de <strong>materia</strong>. 
+        En este OVA iniciarás un viaje imaginario al interior de esa materia, comenzando por un grano de café y llegando hasta el <strong>átomo</strong>, 
+        mientras también reflexionas sobre “lo que no se ve de ti”: tus valores internos.
+    </div>
+
+    <!-- Barra de progreso y puntos -->
+    <div class="progress-bar">
+        <div class="progress-label">
+            <span>Progreso de la OVA</span>
+            <span id="progressText">0 %</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="points-display">
+            Puntos: <span id="pointsValue">0</span> / 50 · Animal:
+            <span id="animalValue" class="animal">🐢 Tortuga pensativa (0–10)</span>
+        </div>
+    </div>
+
+    <!-- Objetivo -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">🎯</span>Objetivo de aprendizaje
+        </div>
+        <p>
+            Al finalizar esta OVA, identificarás tus saberes previos sobre el <strong>átomo</strong>, 
+            reconocerás que toda la materia (incluido un grano de café) está formada por partículas muy pequeñas, 
+            relacionarás este viaje al interior de la materia con tus valores internos y comprenderás la estructura básica del átomo (protones, neutrones y electrones).
+        </p>
+    </div>
+
+    <!-- Saberes previos -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">🧪</span>Saberes previos sobre el átomo
+        </div>
+        <p>Responde estas tres preguntas para explorar lo que ya sabes sobre el átomo y lo que hay “dentro” de la materia.</p>
+
+        <div class="question-block" data-question="prev1">
+            <h3>Pregunta 1</h3>
+            <p>Si tomas un grano de café de la vereda y lo partes por la mitad, y luego esa mitad la vuelves a partir, y así sucesivamente, ¿qué crees que encontrarías al final?</p>
+            <div class="options">
+                <label><input type="radio" name="prev1" value="a"> a) Llegarías a una parte tan pequeña que ya no se puede dividir: el átomo.</label>
+                <label><input type="radio" name="prev1" value="b"> b) El grano de café desaparecería por completo, sin nada dentro.</label>
+                <label><input type="radio" name="prev1" value="c"> c) Aparecería solo aire entre las partes.</label>
+            </div>
+            <button class="btn small" onclick="checkSingle('prev1','a')">Comprobar</button>
+            <div id="feedback-prev1" class="feedback"></div>
+        </div>
+
+        <div class="question-block" data-question="prev2">
+            <h3>Pregunta 2</h3>
+            <p>¿Cuál de las siguientes afirmaciones se acerca más a lo que entiendes por “átomo”?</p>
+            <div class="options">
+                <label><input type="radio" name="prev2" value="a"> a) Un átomo es una bolita dura e indivisible sin nada adentro.</label>
+                <label><input type="radio" name="prev2" value="b"> b) Un átomo es una partícula muy pequeña que tiene partes internas, como protones, neutrones y electrones.</label>
+                <label><input type="radio" name="prev2" value="c"> c) Un átomo es lo mismo que una célula.</label>
+            </div>
+            <button class="btn small" onclick="checkSingle('prev2','b')">Comprobar</button>
+            <div id="feedback-prev2" class="feedback"></div>
+        </div>
+
+        <div class="question-block" data-question="prev3">
+            <h3>Pregunta 3</h3>
+            <p>Piensa en el agua que usas para preparar café o lavar los tanques. Esa agua está formada por moléculas, y a su vez, las moléculas por átomos. ¿Qué relación ves entre átomo y materia?</p>
+            <div class="options">
+                <label><input type="radio" name="prev3" value="a"> a) La materia está formada por átomos.</label>
+                <label><input type="radio" name="prev3" value="b"> b) Los átomos están formados por trozos de materia visibles.</label>
+                <label><input type="radio" name="prev3" value="c"> c) No hay relación entre átomo y materia.</label>
+            </div>
+            <button class="btn small" onclick="checkSingle('prev3','a')">Comprobar</button>
+            <div id="feedback-prev3" class="feedback"></div>
+        </div>
+
+        <button class="btn" onclick="retroPrevios()">Ver retroalimentación general</button>
+        <div id="retroPreviosText" class="feedback"></div>
+    </div>
+
+    <!-- Texto inductivo (con 5 actividades cuaderno + 4 juegos letras + 3 juegos palabras + 1 verificador cuaderno) -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">🌱</span>Texto inductivo: del grano de café a lo que no se ve
+        </div>
+        <p>
+            Imagina que estás en plena cosecha en la vereda Pueblo Rico. 
+            Tu familia y tú han pasado varias horas recogiendo granos maduros de café, rojos y brillantes, que llenan las canastas. 
+            Cuando miras un grano de café en tu mano, parece algo muy simple: pequeño, duro, con un color característico. 
+            Lo puedes pesar, lanzar al aire, oler; incluso puedes imaginar el sabor del café que saldrá de muchos granos juntos. 
+            Pero detrás de ese grano, hay un viaje invisible hacia el interior de la materia.
+        </p>
+        <p>
+            Ahora piensa en una <strong>dinámica mental</strong>. 
+            Imagina que tienes un cuchillo mágico que puede dividir el grano de café infinitamente, sin que se dañe ni se pierda nada. 
+            Primero lo partes en dos, luego tomas una de las mitades y la vuelves a partir, después repites el proceso una y otra vez. 
+            Cada vez obtienes pedazos más pequeños: trozos de la semilla, partículas de su cáscara, restos del mucílago seco. 
+            Llega un momento en el que esos trozos son tan pequeños que ya no los ves a simple vista. 
+            Aun así, sigues imaginando que divides y divides.
+        </p>
+        <p>
+            En la historia de la ciencia, hubo filósofos y luego científicos que se hicieron preguntas muy parecidas. 
+            Se preguntaban si era posible dividir la materia infinitas veces o si había una parte tan pequeña que ya no se podía cortar. 
+            A esa partícula “última” la llamaron <strong>átomo</strong>, que significa “indivisible”. 
+            Más adelante, la ciencia descubrió que el átomo, aunque muy pequeño, sí tiene partes internas: un núcleo con protones y neutrones, y una zona alrededor donde se mueven electrones. 
+            Pero la idea principal sigue siendo que los átomos son las unidades básicas que forman toda la materia que ves en tu vereda.
+        </p>
+
+        <!-- Juego ordenar letras 1 -->
+        <div class="drag-area" id="ordLetrasI1">
+            <strong>Juego 1 – Ordena las letras</strong>
+            <p>Ordena las letras para formar una palabra clave sobre las unidades básicas de la materia.</p>
+            <div class="drag-list" id="lettersI1"></div>
+            <div class="drop-list" id="slotsI1"></div>
+            <button class="btn small" onclick="checkOrderLetters('I1','ATOMO')">Verificar intento</button>
+            <div id="feedback-ordLetrasI1" class="feedback"></div>
+        </div>
+
+        <p>
+            En este viaje imaginario hacia el interior del grano de café, puedes hacer una <strong>lluvia de ideas</strong> sobre qué crees que hay dentro. 
+            Antes de pensar en protones, neutrones y electrones, tal vez imaginas fibras, líquidos, aceites, fragmentos de color. 
+            Cada idea que tengas es valiosa, porque muestra cómo te representas lo que no ves directamente. 
+            Así como en el grano de café hay partes ocultas, en cada persona también hay cosas que no se ven: sentimientos, pensamientos, valores, sueños.
+        </p>
+
+        <!-- Actividad cuaderno 1 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 1 (cuaderno – lluvia de ideas)</h3>
+            <p>En tu cuaderno, realiza una lluvia de ideas respondiendo: “¿Qué creo que hay dentro de un grano de café si lo divido muchas veces?”. Escribe al menos 10 ideas.</p>
+            <textarea id="actC1" placeholder="Escribe aquí 3 de tus ideas para verificar que hiciste la lluvia de ideas."></textarea>
+            <button class="btn verify small" onclick="verifyCuaderno('actC1','verifC1')">Verificar actividad en cuaderno</button>
+            <div id="verifC1" class="verify-status"></div>
+        </div>
+
+        <p>
+            Ahora conecta esta idea con la dinámica “<strong>Lo que no se ve de mí</strong>”. 
+            Así como dentro del grano de café hay partes que no ves, dentro de ti mismo/a también hay aspectos que no se notan a primera vista: 
+            tu capacidad de ayudar en la finca, tu paciencia con tus hermanos, tus miedos, tus sueños, tu forma de valorar el trabajo del campo. 
+            A menudo, las personas solo ven lo que haces por fuera: si trabajas, si estudias, si cumples tareas; pero no ven fácilmente tus valores internos.
+        </p>
+
+        <!-- Actividad cuaderno 2 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 2 (cuaderno – lo que no se ve de mí)</h3>
+            <p>En tu cuaderno, dibuja un grano de café y, dentro de él, escribe palabras que representen tus valores internos (por ejemplo: respeto, responsabilidad, solidaridad, amor por el campo).</p>
+            <textarea id="actC2" placeholder="Describe dos de los valores internos que dibujaste."></textarea>
+            <button class="btn verify small" onclick="verifyCuaderno('actC2','verifC2')">Verificar actividad en cuaderno</button>
+            <div id="verifC2" class="verify-status"></div>
+        </div>
+
+        <!-- Juego ordenar palabras 1 -->
+        <div class="drag-area" id="ordPalabrasI1">
+            <strong>Juego 2 – Ordena las palabras</strong>
+            <p>Ordena las palabras para formar una frase que relacione el átomo con la materia.</p>
+            <div class="drag-list" id="wordsI1"></div>
+            <div class="drop-list" id="wslotsI1"></div>
+            <button class="btn small" onclick="checkOrderWords('I1',['Los','atomos','forman','toda','la','materia'])">Verificar intento</button>
+            <div id="feedback-ordPalI1" class="feedback"></div>
+        </div>
+
+        <p>
+            Piensa ahora en otros materiales de tu vereda: la madera de los árboles, el metal de las herramientas, el plástico de las canecas, el vidrio de algunos envases. 
+            Todos esos materiales están formados por átomos. 
+            La diferencia entre un material y otro está en el tipo de átomos que lo forman y en cómo están organizados. 
+            Por ejemplo, el hierro de una herramienta tiene átomos de hierro acomodados de cierta manera; 
+            el agua de la quebrada tiene átomos de hidrógeno y oxígeno formando moléculas de agua; 
+            el dióxido de carbono que exhalas al respirar está formado por átomos de carbono y oxígeno.
+        </p>
+
+        <!-- Actividad cuaderno 3 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 3 (cuaderno – mapa conceptual)</h3>
+            <p>En tu cuaderno, elabora un mapa conceptual titulado “El viaje al interior de la materia”. Incluye los conceptos: materia, partícula, átomo, grano de café, valores internos.</p>
+            <textarea id="actC3" placeholder="Describe brevemente dos relaciones importantes de tu mapa conceptual."></textarea>
+            <button class="btn verify small" onclick="verifyCuaderno('actC3','verifC3')">Verificar actividad en cuaderno</button>
+            <div id="verifC3" class="verify-status"></div>
+        </div>
+
+        <!-- Juego ordenar letras 2 -->
+        <div class="drag-area" id="ordLetrasI2">
+            <strong>Juego 3 – Ordena las letras</strong>
+            <p>Ordena las letras para formar una palabra relacionada con lo que sientes y piensas por dentro.</p>
+            <div class="drag-list" id="lettersI2"></div>
+            <div class="drop-list" id="slotsI2"></div>
+            <button class="btn small" onclick="checkOrderLetters('I2','VALOR')">Verificar intento</button>
+            <div id="feedback-ordLetrasI2" class="feedback"></div>
+        </div>
+
+        <p>
+            Para ayudarte a imaginar cómo pasamos de lo grande a lo pequeño, observa la siguiente tabla, que muestra una “escalera” de tamaños desde la vereda hasta el átomo:
+        </p>
+        <table>
+            <tr>
+                <th>Nivel</th>
+                <th>Ejemplo</th>
+                <th>Comentario</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Vereda Pueblo Rico</td>
+                <td>Espacio donde vives, trabajas, estudias.</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Finca de café</td>
+                <td>Parte de la vereda dedicada a la producción.</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Grano de café</td>
+                <td>Unidad visible de la planta que cosechas.</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Fragmento del grano</td>
+                <td>Piezas cada vez más pequeñas al dividirlo.</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>Molécula</td>
+                <td>Conjunto de átomos unidos (no visible a simple vista).</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>Átomo</td>
+                <td>Unidad básica de la materia.</td>
+            </tr>
+        </table>
+
+        <!-- Actividad cuaderno 4 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 4 (cuaderno – análisis de tabla)</h3>
+            <p>En tu cuaderno, explica con tus palabras cómo se pasa del nivel 3 (grano de café) al nivel 6 (átomo). Usa flechas o dibujos si lo deseas.</p>
+            <textarea id="actC4" placeholder="Escribe un resumen de tu explicación."></textarea>
+            <button class="btn verify small" onclick="verifyCuaderno('actC4','verifC4')">Verificar actividad en cuaderno</button>
+            <div id="verifC4" class="verify-status"></div>
+        </div>
+
+        <!-- Juego ordenar palabras 2 -->
+        <div class="drag-area" id="ordPalabrasI2">
+            <strong>Juego 4 – Ordena las palabras</strong>
+            <p>Ordena las palabras para formar una frase sobre lo que no se ve de una persona.</p>
+            <div class="drag-list" id="wordsI2"></div>
+            <div class="drop-list" id="wslotsI2"></div>
+            <button class="btn small" onclick="checkOrderWords('I2',['Mis','valores','no','se','ven','pero','estan','en','mi','interior'])">Verificar intento</button>
+            <div id="feedback-ordPalI2" class="feedback"></div>
+        </div>
+
+        <p>
+            Finalmente, piensa en cómo conocer el átomo también puede ayudarte a conocerte mejor a ti mismo. 
+            Así como un átomo tiene partes diferentes (protones, neutrones, electrones) que cumplen funciones específicas, 
+            tú también tienes dimensiones distintas: lo que haces, lo que piensas, lo que sientes y lo que valoras. 
+            El equilibrio de un átomo neutro (igual número de protones y electrones) puede recordarte la importancia de buscar equilibrio en tu vida: 
+            entre estudio y descanso, entre trabajo en la finca y tiempo para ti, entre lo que muestras y lo que guardas dentro.
+        </p>
+
+        <!-- Actividad cuaderno 5 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 5 (cuaderno – reflexión personal)</h3>
+            <p>En tu cuaderno, escribe una reflexión de media página respondiendo: “¿Qué cosas importantes de mí no se ven a simple vista, pero forman parte de quién soy en Pueblo Rico?”.</p>
+            <textarea id="actC5" placeholder="Escribe una frase clave de tu reflexión."></textarea>
+            <button class="btn verify small" onclick="verifyCuaderno('actC5','verifC5')">Verificar actividad en cuaderno</button>
+            <div id="verifC5" class="verify-status"></div>
+        </div>
+
+        <!-- Juego ordenar letras 3 -->
+        <div class="drag-area" id="ordLetrasI3">
+            <strong>Juego 5 – Ordena las letras</strong>
+            <p>Ordena las letras para formar una palabra relacionada con la forma como te ves y te sientes.</p>
+            <div class="drag-list" id="lettersI3"></div>
+            <div class="drop-list" id="slotsI3"></div>
+            <button class="btn small" onclick="checkOrderLetters('I3','IDENTIDAD')">Verificar intento</button>
+            <div id="feedback-ordLetrasI3" class="feedback"></div>
+        </div>
+
+        <!-- Juego ordenar palabras 3 -->
+        <div class="drag-area" id="ordPalabrasI3">
+            <strong>Juego 6 – Ordena las palabras</strong>
+            <p>Ordena las palabras para formar una frase que conecte el átomo con la vida en la vereda.</p>
+            <div class="drag-list" id="wordsI3"></div>
+            <div class="drop-list" id="wslotsI3"></div>
+            <button class="btn small" onclick="checkOrderWords('I3',['Cada','atomo','tambien','hace','parte','de','mi','territorio'])">Verificar intento</button>
+            <div id="feedback-ordPalI3" class="feedback"></div>
+        </div>
+
+        <!-- Juego ordenar letras 4 -->
+        <div class="drag-area" id="ordLetrasI4">
+            <strong>Juego 7 – Ordena las letras</strong>
+            <p>Ordena las letras para formar una palabra clave de la química.</p>
+            <div class="drag-list" id="lettersI4"></div>
+            <div class="drop-list" id="slotsI4"></div>
+            <button class="btn small" onclick="checkOrderLetters('I4','MATERIA')">Verificar intento</button>
+            <div id="feedback-ordLetrasI4" class="feedback"></div>
+        </div>
+    </div>
+
+    <!-- Pregunta tipo ICFES – indagar -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">🔎</span>Pregunta tipo ICFES – Competencia: indagar
+        </div>
+        <div class="icfes-intro">
+            Un grupo de estudiantes de grado 7 de Pueblo Rico se pregunta si todos los materiales que usan a diario en la finca y en la casa están formados por átomos. 
+            Para indagar, eligen cuatro objetos: un grano de café, agua de un jarro, una herramienta de metal y el aire del corral de las vacas. 
+            Luego consultan con su docente y construyen la siguiente tabla de hipótesis:
+        </div>
+        <div class="icfes-graphic">
+            <strong>Tabla 1. Hipótesis de estudiantes sobre “¿Tiene átomos?”</strong>
+            <table>
+                <tr>
+                    <th>Objeto</th>
+                    <th>¿Creen que tiene átomos?</th>
+                    <th>Justificación breve de los estudiantes</th>
+                </tr>
+                <tr>
+                    <td>Grano de café</td>
+                    <td>Sí</td>
+                    <td>Es materia que se puede pesar y tocar.</td>
+                </tr>
+                <tr>
+                    <td>Agua del jarro</td>
+                    <td>Sí</td>
+                    <td>Tiene masa y ocupa un lugar en el jarro.</td>
+                </tr>
+                <tr>
+                    <td>Herramienta de metal</td>
+                    <td>Sí</td>
+                    <td>Es sólida y resistente.</td>
+                </tr>
+                <tr>
+                    <td>Aire del corral</td>
+                    <td>Dudoso</td>
+                    <td>No se ve, algunos creen que no es materia.</td>
+                </tr>
+            </table>
+            <p style="font-size:0.86rem;">
+                Después de discutir con el docente, deben decidir qué conclusión general pueden formular sobre la relación entre átomos y materia en estos ejemplos.
+            </p>
+        </div>
+        <div class="question-block" data-question="icfes1">
+            <h3>Pregunta ICFES – Indagar</h3>
+            <p>
+                A partir de la tabla y de la discusión con el docente, ¿cuál de las siguientes conclusiones ayuda mejor a responder la pregunta de investigación 
+                “¿Están todos los materiales que usamos en la vereda formados por átomos?”?
+            </p>
+            <div class="options">
+                <label><input type="radio" name="icfes1" value="a">
+                    a) Solo los materiales sólidos como el grano de café y la herramienta tienen átomos; el agua y el aire no, porque son fluidos.
+                </label>
+                <label><input type="radio" name="icfes1" value="b">
+                    b) Todos los objetos analizados (grano de café, agua, metal y aire) están formados por átomos, aunque algunos no se vean ni se puedan tocar fácilmente.
+                </label>
+                <label><input type="radio" name="icfes1" value="c">
+                    c) Los átomos solo están presentes en los materiales que son productos de laboratorio, no en la vida diaria de la vereda.
+                </label>
+            </div>
+            <button class="btn small" onclick="checkSingleICFES()">Responder y ver explicación</button>
+            <div id="feedback-icfes1" class="feedback"></div>
+        </div>
+    </div>
+
+    <!-- Texto deductivo: estructura del átomo + 5 actividades cuaderno + 3 HTML + 3 SM + 4 letras + 3 palabras -->
+    <div class="section">
+        <div class="section-title">
+            <span class="icon">📚</span>Texto deductivo: organizando la estructura del átomo
+        </div>
+        <p>
+            Después de imaginar el viaje hacia el interior de un grano de café, ahora organizarás de forma más <strong>deductiva</strong> lo que sabes sobre el átomo. 
+            Partiremos de una definición clara y avanzaremos hacia la descripción de sus partes, relacionándolas con ejemplos de tu entorno en Pueblo Rico. 
+            Recuerda: la idea no es que veas literalmente los átomos, sino que entiendas un modelo que te ayuda a explicar la realidad.
+        </p>
+        <p>
+            Un átomo es la unidad básica de la materia. 
+            Aunque es extremadamente pequeño, podemos describirlo mediante un modelo sencillo: un <strong>núcleo</strong> central y unas <strong>partículas</strong> que se mueven alrededor. 
+            En el núcleo se encuentran los <strong>protones</strong> (con carga positiva) y los <strong>neutrones</strong> (sin carga). 
+            Alrededor, en regiones llamadas “niveles de energía” o “órbitas” en modelos simples, se mueven los <strong>electrones</strong> (con carga negativa). 
+            Cuando un átomo tiene la misma cantidad de protones y electrones, se dice que es un átomo neutro, porque las cargas se equilibran.
+        </p>
+
+        <!-- Actividad cuaderno 6 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 6 (cuaderno – dibujo de átomo)</h3>
+            <p>En tu cuaderno, dibuja un átomo sencillo con núcleo y electrones alrededor. Señala con colores diferentes protones, neutrones y electrones, y escribe una leyenda.</p>
+            <textarea id="actC6" placeholder="Describe brevemente tu dibujo (colores y partes)."></textarea>
+            <button class="btn verify small" onclick="verifyCuaderno('actC6','verifC6')">Verificar actividad en cuaderno</button>
+            <div id="verifC6" class="verify-status"></div>
+        </div>
+
+        <p>
+            Observa la siguiente figura que resume la estructura básica de un átomo según un modelo sencillo tipo “Bohr”:
+        </p>
+        <div class="icfes-graphic">
+            <strong>Figura 1. Modelo sencillo de átomo</strong>
+            <svg class="svg-graph" viewBox="0 0 260 170">
+                <rect x="0" y="0" width="260" height="170" fill="#ffffff"/>
+                <!-- Núcleo -->
+                <circle cx="130" cy="85" r="18" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+                <text x="130" y="80" text-anchor="middle" font-size="7">p+</text>
+                <text x="130" y="92" text-anchor="middle" font-size="7">n°</text>
+                <!-- Órbitas -->
+                <circle cx="130" cy="85" r="35" fill="none" stroke="#6366f1" stroke-width="1"/>
+                <circle cx="130" cy="85" r="55" fill="none" stroke="#6366f1" stroke-width="1"/>
+                <!-- Electrones -->
+                <circle cx="130" cy="50" r="4" fill="#22c55e"/>
+                <circle cx="95" cy="85" r="4" fill="#22c55e"/>
+                <circle cx="165" cy="85" r="4" fill="#22c55e"/>
+                <circle cx="130" cy="140" r="4" fill="#22c55e"/>
+                <!-- Leyenda -->
+                <rect x="20" y="120" width="8" height="8" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1"/>
+                <text x="33" y="127" font-size="7">Núcleo (protones y neutrones)</text>
+                <rect x="20" y="135" width="8" height="8" fill="none" stroke="#6366f1" stroke-width="1"/>
+                <text x="33" y="142" font-size="7">Órbitas o niveles de energía</text>
+                <circle cx="24" cy="152" r="4" fill="#22c55e"/>
+                <text x="33" y="155" font-size="7">Electrones (carga negativa)</text>
+            </svg>
+            <p style="font-size:0.85rem;">
+                El núcleo contiene protones (p+) y neutrones (n°). Los electrones (e–) se mueven alrededor en niveles de energía.
+            </p>
+        </div>
+
+        <!-- Actividad HTML 1 (deductivo) -->
+        <div class="question-block">
+            <h3>💻 Actividad interactiva 1</h3>
+            <p>Escribe con tus palabras qué entiendes por núcleo del átomo y qué tipo de partículas hay allí.</p>
+            <textarea id="actHTMLD1" placeholder="Ejemplo: El núcleo es..."></textarea>
+            <button class="btn verify small" onclick="verifyAntiIA('actHTMLD1','verifHTMLD1',true)">Verificar respuesta</button>
+            <div id="verifHTMLD1" class="verify-status"></div>
+        </div>
+
+        <p>
+            Para relacionar el modelo de átomo con el mundo del café y la vereda, puedes imaginar el núcleo como el “corazón” del átomo, 
+            parecido a cómo el grano es el corazón de la planta de café. 
+            Los electrones, que se mueven alrededor, podrían compararse con las personas que se desplazan por la finca, 
+            por la escuela y por las rutas del turismo: siempre en movimiento, pero formando parte del mismo sistema. 
+            El equilibrio entre protones y electrones recuerda la necesidad de equilibrio en una familia campesina: 
+            si hay demasiada carga de un lado (demasiada responsabilidad, demasiado trabajo en pocas personas), el sistema se vuelve inestable.
+        </p>
+
+        <!-- Actividad cuaderno 7 -->
+        <div class="question-block">
+            <h3>✏️ Actividad 7 (cuaderno – analogía)</h3>
+            <p>En tu cuaderno, escribe una analogía (comparación) entre la estructura del átomo y algo de tu vida en la vereda (por ejemplo, la organización de tu familia, la finca o la escuela).</p>
+            <textarea id="actC7" placeholder="Escribe el resumen de tu analogía."></textarea>
+            <button class="btn verify small" onclick="verifyCuaderno('actC7','verifC7')">Verificar actividad en cuaderno</button>
+            <div id="verifC7" class="verify-status"></div>
+        </div>
+
+        <!-- Juego ordenar palabras 4 -->
+        <div class="drag-area" id="ordPalabrasD1">
+            <strong>Juego 8 – Ordena las palabras</strong>
+            <p>Ordena las palabras para formar una frase sobre el núcleo.</p>
+            <div class="drag-list" id="wordsD1"></div>
+            <div class="drop-list" id="wslotsD1"></div>
+            <button class="btn small" onclick="checkOrderWords('D1',['El','nucleo','tiene','protones','y','neutrones'])">Verificar intento</button>
+            <div id="feedback-ordPalD1" class="feedback"></div>
+        </div>
+
+        <p>
+            Observa esta tabla que resume las partículas subatómicas principales:
+        </p>
+        <table>
+            <tr>
+                <th>Partícula</th>
+                <th>Símbolo</th>
+                <th>Carga eléctrica</th>
+                <th>Ubicación en el átomo</th>
+            </tr>
+            <tr>
+                <td>Protón</td>
+                <td>p+</td>
+                <td>Positiva</td>
+                <td>Núcleo</td>
+            </tr>
+            

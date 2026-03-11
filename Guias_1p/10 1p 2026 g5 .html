@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Ley de Conservación de la Materia</title>
+    <style>
+        :root {
+            --primary: #2C3E50; /* Azul Pizarra Oscuro (Seriedad/Ciencia) */
+            --secondary: #3498DB; /* Azul Brillante (Foco) */
+            --accent: #E74C3C; /* Rojo (Puntos clave) */
+            --success: #27AE60; /* Verde (Verificación) */
+            --bg: #ECF0F1; /* Gris muy claro (Fondo descansado) */
+            --text: #2C3E50;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.8;
+        }
+
+        /* --- LOGIN SCREEN --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 62, 80, 0.98);
+            z-index: 3000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+
+        .login-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            color: var(--text);
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        /* --- HEADER & PROGRESS --- */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-wrapper {
+            flex-grow: 1;
+            margin: 0 2rem;
+            background: rgba(255,255,255,0.2);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--secondary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .level-indicator {
+            background: var(--accent);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            padding-bottom: 120px;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            border-left: 6px solid var(--primary);
+        }
+
+        h1, h2, h3 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        /* --- VISUALS --- */
+        .diagram-box {
+            background: #F8F9F9;
+            border: 1px dashed var(--secondary);
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+        th, td {
+            border: 1px solid #BDC3C7;
+            padding: 12px;
+            text-align: left;
+        }
+        th { background: var(--primary); color: white; }
+        tr:nth-child(even) { background: #F2F4F4; }
+
+        /* --- ACTIVITIES --- */
+        .notebook-task {
+            background: #FEF5E7; /* Soft Orange/Yellow for notebook feel */
+            border: 2px dashed #F39C12;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+            position: relative;
+        }
+        .notebook-task::before {
+            content: "📓 Actividad en Cuaderno";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #F39C12;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        /* --- CONTROLS --- */
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        .btn-check { background: var(--secondary); }
+        .btn-check:hover { background: #2980B9; }
+
+        .btn-disabled {
+            background: #95A5A6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #BDC3C7;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        /* --- FEEDBACK --- */
+        .feedback-box {
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct { background: #D5F5E3; color: #145A32; border: 1px solid #145A32; }
+        .incorrect { background: #FADBD8; color: #7B241C; border: 1px solid #7B241C; }
+
+        /* --- ICFES --- */
+        .icfes-option {
+            display: block;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .icfes-option:hover { background: #EAEDED; }
+
+        /* --- CHEMICAL FORMULAS --- */
+        .chem { font-family: 'Georgia', serif; font-style: italic; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>⚛️ Laboratorio Virtual Grado 10</h2>
+            <p><strong>Tema:</strong> Ley de Conservación de la Materia</p>
+            <p>Ingresa tus datos para iniciar el registro de progreso.</p>
+            <input type="text" id="student-name" placeholder="Nombres y Apellidos Completos">
+            <button onclick="login()">Iniciar Sesión</button>
+        </div>
+    </div>
+
+    <header>
+        <div>
+            <strong>Estudiante:</strong> <span id="display-name">Invitado</span>
+        </div>
+        <div class="progress-wrapper">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="level-indicator" id="level-badge">H (0)</div>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2>🎯 Objetivo de Aprendizaje</h2>
+            <p>Verificar experimental y teóricamente que la materia no se crea ni se destruye, sino que se transforma, analizando reacciones en sistemas cerrados (vinagre + bicarbonato) y estableciendo una analogía de coherencia ética sobre "lo que damos versus lo que recibimos".</p>
+        </div>
+
+        <div class="card">
+            <h3>🧠 Activando Pre-saberes</h3>
+            <p>Selecciona la respuesta correcta para calibrar tus conocimientos previos.</p>
+
+            <div class="quiz-item">
+                <p><strong>1. Si quemas un trozo de madera hasta que solo quedan cenizas, ¿la masa desapareció?</strong></p>
+                <select id="pre1"><option value="0">Selecciona...</option><option value="a">Sí, el fuego destruye la materia.</option><option value="b">No, se transformó en gases (humo) y cenizas.</option><option value="c">La masa se convirtió en energía pura.</option></select>
+            </div>
+
+            <div class="quiz-item">
+                <p><strong>2. ¿Qué es un "Sistema Cerrado" en química?</strong></p>
+                <select id="pre2"><option value="0">Selecciona...</option><option value="a">Un laboratorio con la puerta cerrada.</option><option value="b">Un recipiente que permite salida de energía pero no de materia.</option><option value="c">Un recipiente que no permite entrar ni salir nada.</option></select>
+            </div>
+
+            <div class="quiz-item">
+                <p><strong>3. En la vida, si siembras odio, ¿qué es lógico esperar cosechar según la coherencia?</strong></p>
+                <select id="pre3"><option value="0">Selecciona...</option><option value="a">Odio o rechazo.</option><option value="b">Amor incondicional.</option><option value="c">Nada, las acciones no tienen consecuencias.</option></select>
+            </div>
+
+            <button class="btn-check" onclick="checkPresaberes()">Verificar</button>
+            <div id="pre-feedback" class="feedback-box"></div>
+        </div>
+
+        <div class="card">
+            <h3>📜 De la Alquimia a la Balanza: Una Historia de Verdad</h3>
+            <p>Durante siglos, los alquimistas creyeron que podían crear materia de la nada o transmutar plomo en oro mediante piedras filosofales. Vivían en un mundo de "magia aparente". Sin embargo, en el siglo XVIII, un cobrador de impuestos y científico francés llamado <strong>Antoine Lavoisier</strong> cambió el juego con una herramienta simple pero poderosa: <strong>La Balanza</strong>.</p>
+            
+            <p>Lavoisier estaba obsesionado con pesar todo. Su gran descubrimiento surgió al calentar metales en recipientes cerrados. Notó que, aunque el metal cambiaba de aspecto (se oxidaba), la masa total del recipiente <strong>nunca cambiaba</strong>. Esto mató a la alquimia y dio luz a la Química Moderna: <em>"En la naturaleza nada se crea, nada se destruye, todo se transforma"</em>.</p>
+
+            <div class="notebook-task">
+                <p><strong>Actividad #1 (Dibujar):</strong> Dibuja en tu cuaderno el experimento de Lavoisier: Una balanza con un matraz cerrado antes de la reacción y la misma balanza con el matraz después. Muestra que el peso es igual.</p>
+                <button class="btn-check" onclick="markActivity(1)">¡Dibujo completado!</button>
+            </div>
+
+            
+
+            <h4>El Experimento Mental: El Cohete de Cocina</h4>
+            <p>Imagina que tienes una botella de plástico, vinagre (ácido acético) y bicarbonato de sodio. Si mezclas esto en un vaso abierto, verás burbujas (Dióxido de Carbono, CO<sub>2</sub>) escapar al aire. Si pesas el vaso después, pesará menos. ¿Falló la ley? No. El gas se fue al "sistema abierto" (el salón).</p>
+            
+            <p>Pero, si haces la mezcla dentro de una botella y le pones rápidamente un globo en la boca:</p>
+            
+            <div class="diagram-box">
+                <strong>Simulación de Sistema Cerrado</strong><br><br>
+                Botella (Vinagre) + Globo (Bicarbonato) = 200g<br>
+                ⬇️ <em>Reacción (El globo se infla solo)</em> ⬇️<br>
+                Botella (Líquido nuevo) + Globo inflado (Gas CO<sub>2</sub>) = 200g
+            </div>
+
+            <p>La masa se conserva porque atrapamos al "fugitivo" (el gas) dentro del globo. Esto es un <strong>Sistema Cerrado</strong>.</p>
+
+            <div class="notebook-task">
+                <p><strong>Actividad #2 (Contestar):</strong> Define con tus propias palabras qué es un "Sistema Abierto" y un "Sistema Cerrado". Da un ejemplo cotidiano de cada uno (ej: una olla sopera).</p>
+                <button class="btn-check" onclick="markActivity(2)">¡Definiciones listas!</button>
+            </div>
+
+            <p>Esta ley física tiene una resonancia profunda en nuestra ética personal. A esto le llamamos <strong>Coherencia</strong>. En un sistema cerrado de relaciones humanas, no puedes introducir insultos y esperar extraer amabilidad. La energía emocional también se conserva y transforma. Si das respeto, el sistema (tu entorno) transforma esa energía en confianza.</p>
+
+            <div class="notebook-task">
+                <p><strong>Actividad #3 (Tabla Comparativa):</strong> Crea una tabla de dos columnas. Izquierda: "Reacción Química" (Reactivos -> Productos). Derecha: "Reacción Humana" (Acción -> Consecuencia). Escribe 3 paralelos.</p>
+                <button class="btn-check" onclick="markActivity(3)">¡Tabla comparativa hecha!</button>
+            </div>
+
+            <div class="notebook-task">
+                <p><strong>Actividad #4 (Mapa Mental):</strong> Título central: LEY DE CONSERVACIÓN. Ramas: Lavoisier, Balanza, Sistemas (Abierto/Cerrado), Transformación.</p>
+                <button class="btn-check" onclick="markActivity(4)">¡Mapa mental creado!</button>
+            </div>
+
+            <div class="notebook-task">
+                <p><strong>Actividad #5 (Mapa Conceptual):</strong> Conecta los conceptos: Masa, Átomos, Reacción Química, Productos, Reactivos. Usa flechas para indicar el flujo de transformación.</p>
+                <button class="btn-check" onclick="markActivity(5)">¡Mapa conceptual listo!</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🕵️ Ponte a Prueba: Competencia INDAGAR</h3>
+            
+            <div style="background: #EAF2F8; padding: 20px; border-radius: 8px; border: 1px solid #3498DB;">
+                <h4>El Misterio de la Lana de Acero</h4>
+                <p>Un estudiante de grado 10 coloca un trozo de lana de acero (hierro) sobre una balanza de alta precisión. La balanza marca <strong>50.0 gramos</strong>. Luego, con mucho cuidado, enciende la lana de acero con un encendedor. La lana arde brillante y se convierte en una masa oscura y quebradiza.</p>
+                <p>Al mirar la balanza nuevamente, el estudiante se sorprende: ahora marca <strong>52.5 gramos</strong>.</p>
+                <div style="text-align: center; font-size: 2rem;">⚖️ 🔥 📈</div>
+            </div>
+
+            <p><strong>Pregunta:</strong> El estudiante quiere indagar por qué la masa aumentó en lugar de disminuir (como pasa con el papel). Basándote en la Ley de Conservación, ¿cuál es la explicación científica más precisa?</p>
+
+            <div id="icfes-options">
+                <label class="icfes-option"><input type="radio" name="icfes" value="A"> <strong>A.</strong> La balanza se dañó por el calor del fuego, generando un error de medición positivo.</label>
+                <label class="icfes-option"><input type="radio" name="icfes" value="B"> <strong>B.</strong> El fuego tiene masa propia y al tocar el hierro se quedó pegado a él, aumentando el peso.</label>
+                <label class="icfes-option"><input type="radio" name="icfes" value="C"> <strong>C.</strong> El hierro reaccionó con el oxígeno del aire. Los átomos de oxígeno se unieron al hierro, sumando su masa a la del sólido.</label>
+                <label class="icfes-option"><input type="radio" name="icfes" value="D"> <strong>D.</strong> La lana de acero se compactó al quemarse, y los objetos más densos siempre pesan más que los expandidos.</label>
+            </div>
+
+            <button onclick="checkICFES()">Enviar Respuesta</button>
+            <div id="icfes-feedback" class="feedback-box"></div>
+        </div>
+
+        <div class="card">
+            <h3>🧮 La Matemática de la Reacción: Balanceo</h3>
+            <p>A partir del experimento de la lana de acero, <strong>deducimos</strong> que una reacción química no es más que un reordenamiento de átomos. Imagina un juego de LEGO. Si construyes un castillo con 100 piezas y luego lo desarmas para hacer un barco, el barco tendrá las mismas 100 piezas. No sobra ni falta ninguna.</p>
+            
+            <p>Para representar esto en papel, usamos <strong>Ecuaciones Químicas</strong>. Pero una ecuación debe cumplir la ley de Lavoisier. Si entran 4 átomos de Hidrógeno, deben salir 4. A esto le llamamos <strong>Balanceo de Ecuaciones</strong>.</p>
+
+            <div class="diagram-box">
+                <h4>Ejemplo: Formación de Agua</h4>
+                <p class="chem">H<sub>2</sub> + O<sub>2</sub> ➡️ H<sub>2</sub>O (Incorrecto)</p>
+                <p><em>Aquí entran 2 oxígenos y sale 1. ¡Violamos la ley!</em></p>
+                <hr>
+                <p class="chem">2H<sub>2</sub> + O<sub>2</sub> ➡️ 2H<sub>2</sub>O (Correcto)</p>
+                <p><em>Entran 4 H y 2 O. Salen 4 H y 2 O. ¡La balanza está equilibrada!</em></p>
+            </div>
+
+            
+
+            <p>Esto se aplica industrialmente. Si una fábrica quiere producir 100 toneladas de jabón, debe calcular exactamente cuánta grasa y sosa cáustica necesita. Si calcula mal, pierde dinero (desperdicio) o el producto queda peligroso (exceso de sosa). La química es la contabilidad de la naturaleza.</p>
+
+            <div class="notebook-task">
+                <p><strong>Actividad #6 (Ejercitar):</strong> Balancea la siguiente ecuación en tu cuaderno por tanteo: <br><span class="chem">N<sub>2</sub> + H<sub>2</sub> ➡️ NH<sub>3</sub></span></p>
+                <button class="btn-check" onclick="markActivity(6)">¡Ecuación balanceada!</button>
+            </div>
+
+            <p>Profundizando más, deducimos que lo que realmente se conserva es la suma de <strong>Masa-Energía</strong> (Einstein, $E=mc^2$), pero en las reacciones químicas del colegio, los cambios de masa por energía son tan infinitesimales que asumimos la conservación de la masa como absoluta. Es una verdad práctica.</p>
+
+            <div class="notebook-task">
+                <p><strong>Actividad #7 (Dibujar):</strong> Dibuja modelos moleculares (bolitas de colores) para la reacción del metano: <span class="chem">CH<sub>4</sub> + 2O<sub>2</sub> ➡️ CO<sub>2</sub> + 2H<sub>2</sub>O</span>. Verifica contando las bolitas.</p>
+                <button class="btn-check" onclick="markActivity(7)">¡Modelos dibujados!</button>
+            </div>
+
+            <p>Volviendo a la coherencia humana: Nuestras acciones tienen "Estequiometría". No siempre es 1 a 1 (un saludo no siempre devuelve un saludo inmediato), pero en el balance global de la vida, lo que pones en el sistema, tarde o temprano, se transforma en tu realidad circundante.</p>
+
+            <div class="notebook-task">
+                <p><strong>Actividad #8 (Tabla Comparativa):</strong> Haz una tabla comparando "Masa de Reactivos" vs "Masa de Productos" para el experimento del vinagre en sistema abierto vs cerrado.</p>
+                <button class="btn-check" onclick="markActivity(8)">¡Comparación lista!</button>
+            </div>
+
+            <div class="notebook-task">
+                <p><strong>Actividad #9 (Cálculo):</strong> Si tienes 10g de Reactivo A y reaccionan totalmente con 5g de Reactivo B en un sistema cerrado, ¿cuántos gramos pesará el Producto final? (Justifica).</p>
+                <button class="btn-check" onclick="markActivity(9)">¡Cálculo realizado!</button>
+            </div>
+
+            <div class="notebook-task">
+                <p><strong>Actividad #10 (Reflexión):</strong> Escribe un párrafo deductivo: "Si la materia no se destruye, ¿qué pasa con los átomos de mi cuerpo cuando muero? ¿A dónde van?"</p>
+                <button class="btn-check" onclick="markActivity(10)">¡Reflexión profunda!</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📝 Taller Final: Validación del Conocimiento</h3>
+            <p>A continuación, responde el taller. El sistema validará que tus respuestas abiertas sean creación tuya (control de longitud).</p>
+
+            <h4>Selección Múltiple</h4>
+            <div id="final-mc-quiz"></div>
+
+            <h4>Preguntas Abiertas (Anti-Copy/Paste)</h4>
+            <p><em>Instrucción: Respuestas concisas entre 10 y 15 palabras. Escríbelas, no las copies.</em></p>
+            <div id="final-open-quiz"></div>
+
+            <button onclick="downloadReport()" style="width:100%; margin-top:20px; background:var(--secondary);">📥 Descargar Reporte (.txt)</button>
+        </div>
+
+    </main>
+
+    <script>
+        // --- LOGIC ENGINE ---
+        const state = {
+            user: "Invitado",
+            score: 0, // 0-5
+            progress: 0, // 0-100
+            activities: [],
+            answers: {},
+            elements: ["H", "He", "Li", "Be", "B", "C"]
+        };
+
+        window.onload = function() {
+            const saved = localStorage.getItem('ovaConservacion_10');
+            if(saved) {
+                Object.assign(state, JSON.parse(saved));
+                if(state.user !== "Invitado") {
+                    document.getElementById('login-overlay').style.display = 'none';
+                    updateUI();
+                }
+            }
+            renderFinalQuiz();
+        };
+
+        function login() {
+            const name = document.getElementById('student-name').value.trim();
+            if(name.length > 4) {
+                state.user = name;
+                saveState();
+                document.getElementById('login-overlay').style.display = 'none';
+                updateUI();
+            } else {
+                alert("Por favor ingresa tu nombre completo.");
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('ovaConservacion_10', JSON.stringify(state));
+        }
+
+        function updateUI() {
+            document.getElementById('display-name').innerText = state.user;
+            document.getElementById('progress-bar').style.width = state.progress + "%";
+            
+            let lvl = Math.floor(state.score);
+            if(lvl > 5) lvl = 5;
+            document.getElementById('level-badge').innerText = `${state.elements[lvl]} (${lvl})`;
+
+            // Restore buttons
+            state.activities.forEach(id => {
+                const btn = document.querySelector(`button[onclick="markActivity(${id})"]`);
+                if(btn) disableBtn(btn);
+            });
+        }
+
+        function addProgress(pts, prog) {
+            state.score = Math.min(5, state.score + pts);
+            state.progress = Math.min(100, state.progress + prog);
+            saveState();
+            updateUI();
+        }
+
+        function disableBtn(btn) {
+            btn.className = "btn-disabled";
+            btn.innerHTML = "✅ Verificado";
+            btn.disabled = true;
+        }
+
+        // --- PRE-SABERES ---
+        function checkPresaberes() {
+            const a1 = document.getElementById('pre1').value;
+            const a2 = document.getElementById('pre2').value;
+            const a3 = document.getElementById('pre3').value;
+            const fb = document.getElementById('pre-feedback');
+
+            if(a1 == 0 || a2 == 0 || a3 == 0) { alert("Responde todas."); return; }
+
+            let correct = 0;
+            if(a1 == 'b') correct++;
+            if(a2 == 'b') correct++; // Trick: Open accepts energy/matter, Closed accepts energy NOT matter, Isolated accepts neither. User prompt says Closed. Standard definition: Closed allows energy transfer but not mass. Option b is correct.
+            if(a3 == 'a') correct++;
+
+            fb.style.display = 'block';
+            if(correct === 3) {
+                fb.className = "feedback-box correct";
+                fb.innerHTML = "¡Excelente! Entiendes que la materia se transforma y las consecuencias de los actos.";
+                addProgress(0.5, 5);
+            } else {
+                fb.className = "feedback-box incorrect";
+                fb.innerHTML = `Resultado: ${correct}/3. Recuerda: La ceniza es solo una parte, el resto es humo. Un sistema cerrado no deja salir materia.`;
+                addProgress(0.2, 5);
+            }
+            state.answers.pre = correct;
+        }
+
+        // --- ACTIVITIES ---
+        function markActivity(id) {
+            if(!state.activities.includes(id)) {
+                state.activities.push(id);
+                addProgress(0.35, 6); 
+                const btn = document.querySelector(`button[onclick="markActivity(${id})"]`);
+                disableBtn(btn);
+            }
+        }
+
+        // --- ICFES ---
+        function checkICFES() {
+            const opts = document.getElementsByName('icfes');
+            let val = null;
+            for(let o of opts) if(o.checked) val = o.value;
+
+            if(!val) { alert("Selecciona una opción"); return; }
+            
+            const fb = document.getElementById('icfes-feedback');
+            fb.style.display = 'block';
+
+            if(val === 'C') {
+                fb.className = "feedback-box correct";
+                fb.innerHTML = "<strong>¡Correcto!</strong> Has indagado exitosamente. La masa adicional proviene de los átomos de oxígeno del aire que se combinaron químicamente con el hierro para formar óxido de hierro. La balanza pesa ahora Hierro + Oxígeno.";
+                addProgress(1.0, 10);
+            } else {
+                fb.className = "feedback-box incorrect";
+                let exp = "";
+                if(val === 'A') exp = "El calor no altera la masa medida de esa forma tan drástica.";
+                if(val === 'B') exp = "El fuego es energía (plasma/luz/calor), no tiene masa apreciable.";
+                if(val === 'D') exp = "La densidad cambia el volumen, no la masa. 1kg de plomo pesa igual que 1kg de plumas.";
+                fb.innerHTML = `<strong>Incorrecto.</strong> ${exp} La respuesta es la C (Oxígeno agregado).`;
+                addProgress(0.1, 10);
+            }
+            
+            for(let o of opts) o.disabled = true;
+            state.answers.icfes = val;
+            saveState();
+        }
+
+        // --- FINAL QUIZ ---
+        const mcqs = [
+            {q: "¿Quién enunció la Ley de Conservación de la Materia?", ops: ["Newton", "Lavoisier", "Einstein", "Dalton"], c: 1},
+            {q: "En una reacción química, la masa de los reactivos es...", ops: ["Mayor a los productos", "Menor a los productos", "Igual a los productos", "Variable"], c: 2},
+            {q: "Si escapa gas de un vaso abierto, es un sistema...", ops: ["Cerrado", "Abierto", "Aislado", "Inestable"], c: 1},
+            {q: "Balancear una ecuación significa...", ops: ["Igualar átomos a ambos lados", "Pesar los reactivos", "Mezclar rápido", "Calentar la solución"], c: 0},
+            {q: "El vinagre y bicarbonato producen...", ops: ["Oxígeno", "Dióxido de Carbono", "Hidrógeno", "Nitrógeno"], c: 1}
+        ];
+
+        const openQs = [
+            "Explica la frase: 'La materia no se crea ni destruye'.",
+            "¿Por qué aumentó la masa de la lana de acero?",
+            "¿Qué sucede con los átomos en una reacción química?",
+            "Diferencia entre sistema abierto y sistema cerrado brevemente.",
+            "Relaciona la ley de conservación con tus acciones diarias."
+        ];
+
+        function renderFinalQuiz() {
+            // MC
+            let h = "";
+            mcqs.forEach((m, i) => {
+                h += `<div style="margin-bottom:15px"><p><strong>${i+1}. ${m.q}</strong></p>`;
+                m.ops.forEach((o, j) => {
+                    h += `<label style="margin-right:15px"><input type="radio" name="fq_${i}" value="${j}"> ${o}</label>`;
+                });
+                h += `</div>`;
+            });
+            document.getElementById('final-mc-quiz').innerHTML = h;
+
+            // Open
+            let ho = "";
+            openQs.forEach((q, i) => {
+                ho += `<div style="margin-bottom:15px">
+                    <p><strong>${i+1}. ${q}</strong></p>
+                    <textarea id="oq_${i}" rows="2" placeholder="Entre 10 y 15 palabras..." onpaste="return false"></textarea>
+                    <button class="btn-check" id="btn_oq_${i}" onclick="checkOpen(${i})">Validar Texto</button>
+                    <span id="msg_oq_${i}" style="margin-left:10px; font-weight:bold"></span>
+                </div>`;
+            });
+            document.getElementById('final-open-quiz').innerHTML = ho;
+        }
+
+        function checkOpen(i) {
+            const txt = document.getElementById(`oq_${i}`).value.trim();
+            const msg = document.getElementById(`msg_oq_${i}`);
+            const words = txt.split(/\s+/).filter(w => w.length > 0).length;
+
+            if(words < 10) {
+                msg.style.color = "red"; msg.innerText = `Muy corto (${words}). Mínimo 10.`;
+            } else if(words > 15) {
+                msg.style.color = "red"; msg.innerText = `Muy largo (${words}). Máximo 15.`;
+            } else {
+                msg.style.color = "green"; msg.innerText = "¡Válido! Guardado.";
+                document.getElementById(`btn_oq_${i}`).disabled = true;
+                document.getElementById(`oq_${i}`).disabled = true;
+                state.answers[`open_${i}`] = txt;
+                addProgress(0.1, 5);
+            }
+        }
+
+        function downloadReport() {
+            let mcScore = 0;
+            let log = `REPORTE OVA: LEY DE CONSERVACIÓN\nEstudiante: ${state.user}\nNivel: ${state.score.toFixed(2)}/5\nProgreso: ${state.progress}%\n\n`;
+            
+            mcqs.forEach((m, i) => {
+                const opts = document.getElementsByName(`fq_${i}`);
+                let ans = "N/A";
+                for(let o of opts) {
+                    if(o.checked) {
+                        ans = m.ops[o.value];
+                        if(parseInt(o.value) === m.c) mcScore++;
+                    }
+                }
+                log += `P${i+1} MC: ${ans}\n`;
+            });
+            log += `\nAciertos MC: ${mcScore}/5\n\nRespuestas Abiertas:\n`;
+            openQs.forEach((q, i) => {
+                log += `${i+1}. ${state.answers['open_'+i] || 'Sin responder'}\n`;
+            });
+
+            const blob = new Blob([log], {type: "text/plain"});
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Reporte_Conservacion_${state.user.replace(/\s+/g,'_')}.txt`;
+            link.click();
+        }
+
+    </script>
+</body>
+</html>

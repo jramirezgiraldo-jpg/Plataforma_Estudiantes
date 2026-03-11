@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Metales y Recursos del Quindío - Grado 7</title>
+    <style>
+        :root {
+            --primary: #2e7d32; /* Verde Quindío */
+            --secondary: #81c784; /* Verde claro */
+            --accent: #fdd835; /* Amarillo Oro */
+            --bg: #fafafa;
+            --text: #263238;
+            --card: #ffffff;
+            --metal: #90caf9;
+            --nometal: #fff59d;
+            --metaloide: #a5d6a7;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* --- Login Overlay --- */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(46, 125, 50, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .login-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        /* --- Header & Progress --- */
+        header {
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .progress-track {
+            flex-grow: 1;
+            height: 12px;
+            background: #eee;
+            border-radius: 6px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .user-info { font-weight: bold; color: var(--primary); }
+        .score-badge {
+            background: var(--accent);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.6s forwards;
+        }
+
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+        h1, h2, h3 { color: var(--primary); }
+        
+        /* --- Gráficos SVG Integrados --- */
+        .svg-container {
+            width: 100%;
+            background: #e8f5e9;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 20px 0;
+            text-align: center;
+            border: 1px solid #c8e6c9;
+        }
+        svg { max-width: 100%; height: auto; }
+
+        /* --- Tablas --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th { background-color: var(--secondary); color: white; }
+
+        /* --- Actividades --- */
+        .activity-card {
+            background: #fff9c4; /* Amarillo suave */
+            border: 2px dashed var(--accent);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            position: relative;
+        }
+        .activity-card::before {
+            content: "📓 Actividad en Cuaderno";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--accent);
+            padding: 2px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* --- Controles --- */
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        button:hover { background: #1b5e20; }
+        button:disabled { background: #bdbdbd; cursor: not-allowed; }
+
+        /* --- ICFES & Quiz --- */
+        .question-block { margin-bottom: 20px; }
+        .options label {
+            display: block;
+            padding: 8px;
+            margin: 5px 0;
+            background: #f1f8e9;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .options label:hover { background: #dcedc8; }
+        
+        .feedback {
+            display: none;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 5px;
+            font-size: 0.95rem;
+        }
+        .feedback.correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .feedback.incorrect { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .hidden { display: none; }
+        
+        /* Contador de palabras */
+        .word-count { font-size: 0.8rem; text-align: right; color: #666; }
+        .download-btn { width: 100%; background: #00acc1; margin-top: 20px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2 style="color:var(--primary)">Laboratorio Virtual Quindío</h2>
+            <p>Bienvenido al módulo de Propiedades de la Materia.</p>
+            <input type="text" id="student-name" placeholder="Ingresa tus Nombres y Apellidos" autocomplete="off">
+            <br><br>
+            <button onclick="login()">Iniciar Sesión</button>
+        </div>
+    </div>
+
+    <header id="app-header" class="hidden">
+        <div class="user-info" id="display-name">Estudiante</div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progress-bar"></div>
+        </div>
+        <div class="score-badge" id="level-badge">
+            <span>H</span> 0.0 pts
+        </div>
+    </header>
+
+    <div class="container hidden" id="main-content">
+
+        <div class="section">
+            <h2>Objetivo de Aprendizaje</h2>
+            <p>Clasificar elementos químicos en <strong>metales, no metales y metaloides</strong> basándose en sus propiedades físicas (conductividad térmica y eléctrica, brillo y maleabilidad), mediante la observación de materiales del entorno cafetero y la valoración de los recursos minerales del departamento del Quindío.</p>
+        </div>
+
+        <div class="section">
+            <h3>🔍 Fase 0: ¿Qué tanto sabemos?</h3>
+            <div id="prequiz">
+                <div class="question-block">
+                    <p>1. Cuando en la finca ponemos una olla al fuego, el mango suele ser de madera o plástico porque:</p>
+                    <div class="options">
+                        <label><input type="radio" name="pre1" value="A"> A) Son más bonitos.</label>
+                        <label><input type="radio" name="pre1" value="B"> B) No conducen el calor y evitan quemaduras.</label>
+                        <label><input type="radio" name="pre1" value="C"> C) Se calientan más rápido que el metal.</label>
+                    </div>
+                </div>
+                <div class="question-block">
+                    <p>2. ¿Cuál de estos materiales usarías para fabricar un cable eléctrico?</p>
+                    <div class="options">
+                        <label><input type="radio" name="pre2" value="A"> A) Cobre (Cu).</label>
+                        <label><input type="radio" name="pre2" value="B"> B) Azufre (S).</label>
+                        <label><input type="radio" name="pre2" value="C"> C) Madera.</label>
+                    </div>
+                </div>
+                <div class="question-block">
+                    <p>3. Si golpeas un trozo de carbón con un martillo, este se rompe en pedazos. Esto significa que es:</p>
+                    <div class="options">
+                        <label><input type="radio" name="pre3" value="A"> A) Maleable.</label>
+                        <label><input type="radio" name="pre3" value="B"> B) Dúctil.</label>
+                        <label><input type="radio" name="pre3" value="C"> C) Frágil.</label>
+                    </div>
+                </div>
+                <button onclick="checkPreQuiz(this)">Verificar Pre-saberes</button>
+                <div id="pre-feedback" class="feedback"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Fase 1: Un Recorrido por la Finca (Inducción)</h2>
+            <p>Imagina que estamos caminando por una finca cafetera tradicional en el municipio de <strong>Calarcá</strong> o <strong>Salento</strong>. Es una mañana fresca y el sol empieza a iluminar el paisaje. Al acercarnos al beneficiadero, notamos una cerca que divide los potreros.</p>
+            
+            <p>Observa detenidamente la cerca. Está compuesta por postes de madera clavados en la tierra y un alambre de púas que los une. Aquí tenemos nuestro primer encuentro con la clasificación de la materia. El alambre, hecho generalmente de acero (una aleación de hierro) y recubierto de zinc, brilla bajo el sol. Si lo tocas al mediodía, estará caliente. En cambio, el poste de madera, aunque esté bajo el mismo sol, no se calienta tanto y no brilla.</p>
+
+            <div class="svg-container">
+                <svg viewBox="0 0 500 200">
+                    <rect x="0" y="0" width="500" height="150" fill="#e3f2fd" />
+                    <rect x="0" y="150" width="500" height="50" fill="#795548" />
+                    <rect x="50" y="80" width="20" height="100" fill="#5d4037" stroke="black" />
+                    <rect x="200" y="80" width="20" height="100" fill="#5d4037" stroke="black" />
+                    <rect x="350" y="80" width="20" height="100" fill="#5d4037" stroke="black" />
+                    <text x="50" y="70" font-size="12" fill="#3e2723">Madera (Aislante)</text>
+                    <line x1="50" y1="100" x2="370" y2="100" stroke="#78909c" stroke-width="2" />
+                    <line x1="50" y1="120" x2="370" y2="120" stroke="#78909c" stroke-width="2" />
+                    <text x="250" y="95" font-size="12" fill="#455a64">Alambre (Conductor)</text>
+                    <circle cx="430" cy="160" r="20" fill="#ef5350" opacity="0.7" /> <rect x="410" y="130" width="40" height="30" fill="#bcaaa4" /> <path d="M410 130 Q430 150 450 130" fill="#ff7043" /> <text x="400" y="120" font-size="12" fill="#bf360c">Cobre (Metal)</text>
+                    <circle cx="470" cy="170" r="10" fill="#212121" />
+                    <text x="460" y="190" font-size="12" fill="black">Carbón</text>
+                </svg>
+                <p><em>Fig 1. Elementos cotidianos en la finca y sus materiales.</em></p>
+            </div>
+
+            <p>Más adelante, vemos un fogón de leña donde están preparando el almuerzo. La paila grande donde se hace la natilla suele ser de <strong>cobre</strong> o aluminio. ¿Por qué? Porque estos materiales son excelentes <strong>conductores térmicos</strong>; permiten que el calor del fuego pase rápidamente a los alimentos. Sin embargo, la cuchara con la que revuelven tiene un mango largo de madera. La madera es un <strong>aislante térmico</strong>, protegiendo las manos de quien cocina.</p>
+
+            <div class="activity-card">
+                <h4>Actividad #1: Observación</h4>
+                <p>Dibuja en tu cuaderno dos objetos de tu casa: uno hecho de metal y otro de plástico o madera. Escribe para qué sirve cada uno y por qué crees que se escogió ese material.</p>
+                <button onclick="verifyActivity(1, this)">¡Listo! Ya dibujé</button>
+            </div>
+
+            <p>Si miramos los restos del fogón, encontramos <strong>carbón</strong>. El carbón es carbono, un elemento esencial para la vida. A diferencia del cobre de la paila, el carbón es opaco (negro mate) y si intentas aplanarlo con un martillo para hacer una lámina, se hará polvo. No es maleable, es <strong>frágil</strong>. Estas diferencias físicas son la clave para clasificar los elementos en la Tabla Periódica.</p>
+
+            <div class="activity-card">
+                <h4>Actividad #2: Tabla Comparativa</h4>
+                <p>Copia y completa la siguiente tabla en tu cuaderno comparando el Cobre (alambre/paila) y el Carbón (leña quemada):</p>
+                <table style="font-size:0.9rem">
+                    <tr><th>Propiedad</th><th>Cobre</th><th>Carbón</th></tr>
+                    <tr><td>¿Tiene brillo?</td><td>...</td><td>...</td></tr>
+                    <tr><td>¿Se rompe o se dobla?</td><td>...</td><td>...</td></tr>
+                    <tr><td>¿Conduce calor?</td><td>...</td><td>...</td></tr>
+                </table>
+                <button onclick="verifyActivity(2, this)">¡Tabla completada!</button>
+            </div>
+
+            <h3>Experimento: ¿Quién deja pasar la corriente?</h3>
+            <p>Para comprobar esto científicamente, montamos un circuito eléctrico simple usando una batería y una bombilla. Probamos tres materiales encontrados en la finca: un trozo de alambre de cobre, una astilla de madera seca y un trozo de carbón.</p>
+
+            <div class="svg-container">
+                <svg viewBox="0 0 400 150">
+                    <rect x="50" y="50" width="40" height="60" fill="#ffe082" stroke="black" />
+                    <text x="60" y="85" font-size="10">Pila</text>
+                    <line x1="70" y1="50" x2="70" y2="40" stroke="black" stroke-width="2"/>
+                    <line x1="70" y1="110" x2="70" y2="120" stroke="black" stroke-width="2"/>
+                    
+                    <polyline points="70,40 150,40 150,60" fill="none" stroke="black" stroke-width="2"/>
+                    <polyline points="70,120 150,120 150,100" fill="none" stroke="black" stroke-width="2"/>
+                    
+                    <circle cx="250" cy="80" r="15" fill="#fff9c4" stroke="#fbc02d" stroke-width="2" id="bulb-graphic"/>
+                    <path d="M245 95 L255 95 L250 80 Z" fill="#757575"/> 
+                    
+                    <line x1="250" y1="65" x2="250" y2="40" stroke="black" stroke-width="2"/> <line x1="250" y1="95" x2="250" y2="120" stroke="black" stroke-width="2"/> <line x1="250" y1="40" x2="300" y2="40" stroke="black" stroke-width="2"/>
+                    <line x1="250" y1="120" x2="300" y2="120" stroke="black" stroke-width="2"/>
+                    
+                    <rect x="300" y="40" width="10" height="80" fill="#ddd" stroke="black" stroke-dasharray="4"/>
+                    <text x="320" y="80" font-size="12" fill="#d32f2f">Zona de Prueba</text>
+                </svg>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad #3: Predicción</h4>
+                <p>Antes de leer el resultado: Dibuja el circuito en tu cuaderno. Colorea la bombilla encendida si crees que el material conduce electricidad, o apagada si no. Hazlo para: 1. Cobre, 2. Madera, 3. Carbón.</p>
+                <button onclick="verifyActivity(3, this)">¡Predicción hecha!</button>
+            </div>
+
+            <p><strong>Resultados del Experimento:</strong> Al conectar el cobre, la bombilla se encendió intensamente (Conductor). Al poner la madera, no pasó nada (Aislante). Al poner el carbón, la bombilla no encendió (aunque el grafito de un lápiz sí conduce, el carbón de leña es amorfo y muy mal conductor).</p>
+
+            <div class="activity-card">
+                <h4>Actividad #4: Mapa Mental</h4>
+                <p>Crea un mapa mental con el título "Propiedades Físicas". Ramas principales: Conductividad, Brillo, Maleabilidad. Agrega dibujos en cada rama.</p>
+                <button onclick="verifyActivity(4, this)">¡Mapa creado!</button>
+            </div>
+             <div class="activity-card">
+                <h4>Actividad #5: Reflexión</h4>
+                <p>Responde en el cuaderno: ¿Por qué crees que los cables de alta tensión que ves en la carretera están hechos de aluminio o cobre y no de plástico?</p>
+                <button onclick="verifyActivity(5, this)">¡Reflexión escrita!</button>
+            </div>
+        </div>
+
+        <div class="section" style="border-left-color: var(--accent);">
+            <h3>🧠 Entrenamiento Tipo ICFES (Competencia: Indagar)</h3>
+            <p><strong>Contexto:</strong> Un grupo de estudiantes del grado 7 realizó pruebas a cuatro materiales desconocidos (W, X, Y, Z) para ver si servían para fabricar herramientas. Los resultados se muestran en la siguiente gráfica:</p>
+            
+            <div class="svg-container">
+                <svg viewBox="0 0 400 200">
+                    <line x1="50" y1="180" x2="350" y2="180" stroke="black" stroke-width="2"/> <line x1="50" y1="180" x2="50" y2="20" stroke="black" stroke-width="2"/> <text x="10" y="100" font-size="10" transform="rotate(-90 10,100)">Capacidad de Conducción</text>
+                    
+                    <rect x="70" y="50" width="40" height="130" fill="#42a5f5" /> <text x="80" y="195" font-size="12">W</text>
+                    <rect x="140" y="178" width="40" height="2" fill="#ef5350" /> <text x="150" y="195" font-size="12">X</text>
+                    <rect x="210" y="60" width="40" height="120" fill="#42a5f5" /> <text x="220" y="195" font-size="12">Y</text>
+                    <rect x="280" y="178" width="40" height="2" fill="#ef5350" /> <text x="290" y="195" font-size="12">Z</text>
+                    
+                    <text x="100" y="30" font-size="10" fill="#555">Nota: W y Y se deformaron al golpearlos. X y Z se rompieron.</text>
+                </svg>
+            </div>
+            
+            <p><strong>Pregunta:</strong> De acuerdo con la información de la gráfica y la nota adjunta, ¿cuál de las siguientes conclusiones es válida?</p>
+            
+            <form id="icfes-form">
+                <div class="options">
+                    <label><input type="radio" name="icfes" value="A"> A. Los materiales X y Z son metales porque no conducen electricidad y se rompen.</label>
+                    <label><input type="radio" name="icfes" value="B"> B. Los materiales W y Y son metales porque conducen electricidad y son maleables (se deforman).</label>
+                    <label><input type="radio" name="icfes" value="C"> C. Todos los materiales son metaloides porque presentan propiedades mixtas.</label>
+                    <label><input type="radio" name="icfes" value="D"> D. El material W es el único aislante térmico.</label>
+                </div>
+            </form>
+            <button onclick="checkICFES()">Enviar Respuesta</button>
+
+            <div id="icfes-feedback" class="feedback">
+                <h4>Retroalimentación:</h4>
+                <p id="icfes-text"></p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Fase 2: La Ciencia detrás de los Materiales (Deductivo)</h2>
+            <p>Lo que observamos en la finca no es casualidad; todo depende de cómo están organizados los átomos. En la <strong>Tabla Periódica</strong>, los elementos se dividen en tres grandes grupos según sus propiedades físicas y químicas.</p>
+            
+            <div class="svg-container">
+                <svg viewBox="0 0 500 250">
+                    <rect x="10" y="10" width="300" height="200" fill="#90caf9" rx="5" />
+                    <text x="100" y="110" font-size="20" fill="#0d47a1" font-weight="bold">METALES</text>
+                    <text x="80" y="130" font-size="12" fill="#0d47a1">(Conductores, Brillantes)</text>
+                    
+                    <polygon points="310,10 350,10 350,50 390,50 390,90 430,90 430,210 310,210" fill="#a5d6a7" stroke="white"/>
+                    <text x="330" y="150" font-size="10" fill="#1b5e20" transform="rotate(-90 330,150)">Metaloides</text>
+                    
+                    <polygon points="350,10 490,10 490,210 430,210 430,90 390,90 390,50 350,50" fill="#fff59d" stroke="white"/>
+                    <text x="400" y="60" font-size="14" fill="#fbc02d" font-weight="bold">NO METALES</text>
+                    
+                    <rect x="10" y="10" width="40" height="40" fill="#fff59d" stroke="white"/>
+                    <text x="20" y="35" font-size="12">H</text>
+                </svg>
+            </div>
+
+            <ul>
+                <li><strong>Metales:</strong> (Zona Azul) Ocupan la mayor parte de la tabla (izquierda y centro). Son buenos conductores porque sus electrones se mueven libremente ("mar de electrones"). Son dúctiles (hacen hilos) y maleables (hacen láminas). Ejemplo: Oro (Au), Hierro (Fe), Aluminio (Al).</li>
+                <li><strong>No Metales:</strong> (Zona Amarilla) Están a la derecha (más el Hidrógeno). Son opacos, frágiles y malos conductores (aislantes). Ejemplo: Oxígeno (O), Carbono (C).</li>
+                <li><strong>Metaloides:</strong> (Zona Verde) Están en la frontera, como una escalera. Tienen propiedades intermedias; pueden conducir electricidad bajo ciertas condiciones (semiconductores). Ejemplo: Silicio (Si), usado en computadores.</li>
+            </ul>
+
+            <h3>Recursos Minerales del Quindío</h3>
+            <p>Nuestro departamento es rico geológicamente. Aunque somos conocidos por el café, el suelo del Quindío contiene <strong>Arcillas</strong>. Las arcillas son silicatos (compuestos de Silicio y Oxígeno, No Metales) fundamentales para la fabricación de ladrillos y tejas, una industria muy fuerte en municipios como <strong>Pijao</strong> y <strong>Quimbaya</strong>.</p>
+            <p>También existe la minería de <strong>Oro de Aluvión</strong> (oro que se encuentra en los ríos, arrastrado por el agua). El Oro (Au) es un metal precioso, muy denso y no se oxida. Históricamente, los Quimbayas eran maestros orfebres, aprovechando la maleabilidad del oro para crear poporos y figuras. Hoy en día, debemos valorar estos recursos pero también proteger nuestros ríos, ya que la extracción irresponsable puede dañarlos.</p>
+
+            <div class="activity-card">
+                <h4>Actividad #6: Ubicación</h4>
+                <p>Dibuja un croquis de la tabla periódica y colorea: Azul (Metales), Amarillo (No Metales), Verde (Metaloides). Ubica aproximadamente dónde estaría el Oro (Au) y el Oxígeno (O).</p>
+                <button onclick="verifyActivity(6, this)">¡Croquis hecho!</button>
+            </div>
+            
+            <div class="activity-card">
+                <h4>Actividad #7: Mapa Conceptual</h4>
+                <p>Realiza un mapa conceptual que conecte los términos: "Quindío", "Arcillas", "Oro", "Metales", "No Metales" y "Construcción".</p>
+                <button onclick="verifyActivity(7, this)">¡Mapa conceptual listo!</button>
+            </div>
+            
+            <div class="activity-card">
+                <h4>Actividad #8: Densidad</h4>
+                <p>Dibuja un río y en el fondo pepitas de oro. Escribe al lado: ¿Por qué el oro se va al fondo y la arena se mueve más fácil? (Investiga sobre la densidad).</p>
+                <button onclick="verifyActivity(8, this)">¡Dibujo realizado!</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad #9: Comparación Histórica</h4>
+                <p>Dibuja un Poporo Quimbaya. Escribe qué propiedades del oro permitieron a los indígenas darle esa forma (Pista: ¿es frágil o maleable?).</p>
+                <button onclick="verifyActivity(9, this)">¡Actividad lista!</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad #10: Conciencia Ambiental</h4>
+                <p>Escribe 3 renglones sobre cómo podemos proteger los ríos del Quindío de la minería ilegal.</p>
+                <button onclick="verifyActivity(10, this)">¡Reflexión escrita!</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Taller de Evaluación Final</h2>
+            <p>Para terminar, demuestra lo que has aprendido. Las preguntas abiertas verifican que no uses copiar-pegar (mínimo 10 palabras, máximo 15).</p>
+
+            <h4>Parte A: Selección Múltiple</h4>
+            <div id="final-mcq">
+                <div class="question-block">
+                    <p>1. ¿Qué elemento es un metaloide usado en chips de computadora?</p>
+                    <div class="options">
+                        <label><input type="radio" name="fm1" value="0"> A) Oro</label>
+                        <label><input type="radio" name="fm1" value="1"> B) Silicio</label>
+                        <label><input type="radio" name="fm1" value="0"> C) Hierro</label>
+                        <label><input type="radio" name="fm1" value="0"> D) Oxígeno</label>
+                    </div>
+                </div>
+                <div class="question-block">
+                    <p>2. La propiedad de estirarse en hilos (como el cobre) se llama:</p>
+                    <div class="options">
+                        <label><input type="radio" name="fm2" value="0"> A) Fragilidad</label>
+                        <label><input type="radio" name="fm2" value="1"> B) Ductilidad</label>
+                        <label><input type="radio" name="fm2" value="0"> C) Dureza</label>
+                        <label><input type="radio" name="fm2" value="0"> D) Brillo</label>
+                    </div>
+                </div>
+                <div class="question-block">
+                    <p>3. Las arcillas del Quindío están compuestas principalmente por:</p>
+                    <div class="options">
+                        <label><input type="radio" name="fm3" value="0"> A) Metales puros</label>
+                        <label><input type="radio" name="fm3" value="1"> B) No metales (Silicatos)</label>
+                        <label><input type="radio" name="fm3" value="0"> C) Oro sólido</label>
+                        <label><input type="radio" name="fm3" value="0"> D) Plástico</label>
+                    </div>
+                </div>
+                <div class="question-block">
+                    <p>4. Un material que NO conduce electricidad se llama:</p>
+                    <div class="options">
+                        <label><input type="radio" name="fm4" value="1"> A) Aislante</label>
+                        <label><input type="radio" name="fm4" value="0"> B) Conductor</label>
+                        <label><input type="radio" name="fm4" value="0"> C) Magnético</label>
+                        <label><input type="radio" name="fm4" value="0"> D) Metálico</label>
+                    </div>
+                </div>
+                <div class="question-block">
+                    <p>5. ¿Dónde se ubican los NO metales en la tabla periódica?</p>
+                    <div class="options">
+                        <label><input type="radio" name="fm5" value="0"> A) A la izquierda</label>
+                        <label><input type="radio" name="fm5" value="0"> B) En la parte inferior</label>
+                        <label><input type="radio" name="fm5" value="1"> C) A la derecha</label>
+                        <label><input type="radio" name="fm5" value="0"> D) En el centro</label>
+                    </div>
+                </div>
+                <button onclick="checkFinalMCQ()">Calificar Parte A</button>
+            </div>
+
+            <hr>
+
+            <h4>Parte B: Preguntas Abiertas (Anti-Fraude)</h4>
+            <div id="open-questions">
+                <div class="question-block">
+                    <p>6. Define qué es la maleabilidad con tus palabras.</p>
+                    <input type="text" id="oq1" onpaste="return false" oninput="checkCount(this, 'wc1', 'btn1')">
+                    <div class="word-count" id="wc1">0 palabras</div>
+                    <button id="btn1" disabled onclick="saveOpenAnswer(1, this)">Guardar Respuesta</button>
+                </div>
+                <div class="question-block">
+                    <p>7. Explica por qué el mango de la sartén no quema.</p>
+                    <input type="text" id="oq2" onpaste="return false" oninput="checkCount(this, 'wc2', 'btn2')">
+                    <div class="word-count" id="wc2">0 palabras</div>
+                    <button id="btn2" disabled onclick="saveOpenAnswer(2, this)">Guardar Respuesta</button>
+                </div>
+                <div class="question-block">
+                    <p>8. Describe la diferencia visual entre el cobre y el carbón.</p>
+                    <input type="text" id="oq3" onpaste="return false" oninput="checkCount(this, 'wc3', 'btn3')">
+                    <div class="word-count" id="wc3">0 palabras</div>
+                    <button id="btn3" disabled onclick="saveOpenAnswer(3, this)">Guardar Respuesta</button>
+                </div>
+                <div class="question-block">
+                    <p>9. ¿Qué recurso mineral se usa para hacer ladrillos en el Quindío?</p>
+                    <input type="text" id="oq4" onpaste="return false" oninput="checkCount(this, 'wc4', 'btn4')">
+                    <div class="word-count" id="wc4">0 palabras</div>
+                    <button id="btn4" disabled onclick="saveOpenAnswer(4, this)">Guardar Respuesta</button>
+                </div>
+                <div class="question-block">
+                    <p>10. ¿Por qué el oro es considerado un metal precioso?</p>
+                    <input type="text" id="oq5" onpaste="return false" oninput="checkCount(this, 'wc5', 'btn5')">
+                    <div class="word-count" id="wc5">0 palabras</div>
+                    <button id="btn5" disabled onclick="saveOpenAnswer(5, this)">Guardar Respuesta</button>
+                </div>
+            </div>
+
+            <button class="download-btn" onclick="downloadReport()">📥 Descargar Mis Resultados (.txt)</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- LÓGICA JAVASCRIPT ---
+
+        let state = {
+            name: "",
+            score: 0,
+            completed: [], // IDs de actividades hechas
+            answers: {} // Respuestas abiertas
+        };
+
+        const levels = ["H (Hidrógeno)", "He (Helio)", "Li (Litio)", "Be (Berilio)", "B (Boro)", "C (Carbono)"];
+
+        // Inicio
+        window.onload = function() {
+            if(localStorage.getItem('ova_quindio_v1')) {
+                state = JSON.parse(localStorage.getItem('ova_quindio_v1'));
+                if(state.name) {
+                    showApp();
+                }
+            }
+        };
+
+        function login() {
+            const name = document.getElementById('student-name').value;
+            if(name.length > 3) {
+                state.name = name;
+                saveState();
+                showApp();
+            } else {
+                alert("Por favor escribe tu nombre completo.");
+            }
+        }
+
+        function showApp() {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('app-header').style.display = 'flex';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('display-name').innerText = state.name;
+            updateUI();
+        }
+
+        function saveState() {
+            localStorage.setItem('ova_quindio_v1', JSON.stringify(state));
+            updateUI();
+        }
+
+        function updateUI() {
+            // Calcular progreso
+            // Total items: 10 actividades + 1 prequiz + 1 icfes + 1 finalMCQ + 5 openQs = 18 total
+            const total = 18;
+            const done = state.completed.length;
+            const pct = (done / total) * 100;
+            
+            document.getElementById('progress-bar').style.width = pct + "%";
+            
+            // Calcular nivel
+            let lvlIdx = Math.floor(state.score);
+            if(lvlIdx > 5) lvlIdx = 5;
+            document.getElementById('level-badge').innerHTML = `<span>${levels[lvlIdx].split(' ')[0]}</span> ${state.score.toFixed(1)} pts`;
+
+            // Deshabilitar botones ya hechos
+            state.completed.forEach(id => {
+                // Lógica genérica para buscar botones por contexto si fuera necesario
+                // Aquí confiamos en que al recargar, el usuario ve su progreso en la barra
+            });
+        }
+
+        // --- Actividades ---
+        function verifyActivity(num, btn) {
+            const id = 'act'+num;
+            if(state.completed.includes(id)) return;
+            
+            state.completed.push(id);
+            addPoints(0.3);
+            btn.innerText = "¡Completado! ✓";
+            btn.disabled = true;
+            saveState();
+        }
+
+        function addPoints(pts) {
+            state.score += pts;
+            if(state.score > 5) state.score = 5;
+        }
+
+        // --- Pre-Saberes ---
+        function checkPreQuiz(btn) {
+            if(state.completed.includes('prequiz')) return;
+            
+            // Respuestas correctas: 1B, 2A, 3C
+            const r1 = document.querySelector('input[name="pre1"]:checked')?.value;
+            const r2 = document.querySelector('input[name="pre2"]:checked')?.value;
+            const r3 = document.querySelector('input[name="pre3"]:checked')?.value;
+
+            if(!r1 || !r2 || !r3) { alert("Responde las 3 preguntas"); return; }
+
+            let correct = 0;
+            if(r1 === 'B') correct++;
+            if(r2 === 'A') correct++;
+            if(r3 === 'C') correct++;
+
+            const fb = document.getElementById('pre-feedback');
+            fb.style.display = 'block';
+            fb.className = "feedback " + (correct===3 ? "correct" : "incorrect");
+            fb.innerHTML = `Acertaste ${correct}/3. <br>1. Madera/Plástico aíslan calor. <br>2. Cobre conduce electricidad. <br>3. Carbón es frágil.`;
+
+            addPoints(correct * 0.1);
+            state.completed.push('prequiz');
+            btn.disabled = true;
+            saveState();
+        }
+
+        // --- ICFES ---
+        function checkICFES() {
+            if(state.completed.includes('icfes')) return;
+            
+            const ans = document.querySelector('input[name="icfes"]:checked')?.value;
+            if(!ans) { alert("Selecciona una opción"); return; }
+
+            const fbText = document.getElementById('icfes-text');
+            const fbBox = document.getElementById('icfes-feedback');
+            fbBox.style.display = 'block';
+
+            if(ans === 'B') {
+                fbBox.className = "feedback correct";
+                fbText.innerHTML = "<strong>¡Correcto!</strong> La competencia es INDAGAR. Al observar la gráfica, W y Y tienen barras altas de conducción y la nota dice que se deforman (maleables). Estas son propiedades de metales.";
+                addPoints(0.5);
+            } else {
+                fbBox.className = "feedback incorrect";
+                fbText.innerHTML = "<strong>Incorrecto.</strong> Analicemos:<br>A: Falso, X y Z no conducen (barras bajas) y se rompen, eso es de NO metales.<br>C: Falso, hay dos grupos claros, no todos son mixtos.<br>D: Falso, W es conductor (barra alta).<br>La respuesta correcta es B: W y Y conducen y son maleables (Metales).";
+            }
+            
+            state.completed.push('icfes');
+            state.answers['icfes'] = ans;
+            saveState();
+        }
+
+        // --- Final MCQ ---
+        function checkFinalMCQ() {
+            if(state.completed.includes('finalmcq')) return;
+            
+            // Correctas: 1:B(1), 2:B(1), 3:B(1), 4:A(1), 5:C(1) -> Values puestos como 1 o 0 en HTML
+            const groups = ['fm1','fm2','fm3','fm4','fm5'];
+            let score = 0;
+            let allAnswered = true;
+
+            groups.forEach(g => {
+                const el = document.querySelector(`input[name="${g}"]:checked`);
+                if(!el) allAnswered = false;
+                else score += parseInt(el.value);
+            });
+
+            if(!allAnswered) { alert("Responde todas las preguntas de selección múltiple."); return; }
+
+            alert(`Obtuviste ${score}/5 en la Parte A.`);
+            addPoints(score * 0.1); // Max 0.5 total
+            state.completed.push('finalmcq');
+            saveState();
+        }
+
+        // --- Preguntas Abiertas ---
+        function checkCount(input, countId, btnId) {
+            const txt = input.value.trim();
+            // Contar palabras reales (no espacios vacíos)
+            const words = txt.length === 0 ? 0 : txt.split(/\s+/).length;
+            
+            document.getElementById(countId).innerText = `${words} palabras`;
+            const btn = document.getElementById(btnId);
+            
+            if(words >= 10 && words <= 15) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        function saveOpenAnswer(num, btn) {
+            const id = 'oq'+num;
+            if(state.completed.includes(id)) return;
+            
+            const input = document.getElementById('oq'+num);
+            state.answers[id] = input.value;
+            state.completed.push(id);
+            addPoints(0.2);
+            
+            btn.innerText = "Guardado ✓";
+            btn.disabled = true;
+            input.disabled = true;
+            saveState();
+        }
+
+        // --- Descarga ---
+        function downloadReport() {
+            let txt = `REPORTE DE OVA - CIENCIAS (QUINDÍO)\n`;
+            txt += `Estudiante: ${state.name}\n`;
+            txt += `Fecha: ${new Date().toLocaleDateString()}\n`;
+            txt += `Nivel Alcanzado: ${document.getElementById('level-badge').innerText}\n`;
+            txt += `------------------------------------\n`;
+            txt += `RESPUESTAS PREGUNTAS ABIERTAS:\n`;
+            
+            for(let i=1; i<=5; i++) {
+                txt += `P${i}: ${state.answers['oq'+i] || 'Sin responder'}\n`;
+            }
+
+            txt += `\nCertifico que he realizado las actividades en mi cuaderno.`;
+            
+            const blob = new Blob([txt], {type: 'text/plain'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Reporte_${state.name.replace(/\s+/g,'_')}.txt`;
+            link.click();
+        }
+
+    </script>
+</body>
+</html>

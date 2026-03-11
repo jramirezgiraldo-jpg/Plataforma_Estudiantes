@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Lípidos y Proteínas - Bioquímica y Vida</title>
+    <style>
+        :root {
+            --primary: #4A235A; /* Morado Profundo (Proteínas/Biuret) */
+            --secondary: #D4AC0D; /* Dorado Aceite (Lípidos) */
+            --accent: #1ABC9C; /* Turquesa (Ciencia/Reactivo) */
+            --bg: #F4F6F7;
+            --text: #212F3C;
+            --card: #FFFFFF;
+            --success: #27AE60;
+            --error: #C0392B;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding-bottom: 80px;
+            line-height: 1.7;
+        }
+
+        /* --- UI: Login Overlay --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), #2C3E50);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
+            color: white;
+            transition: opacity 0.5s;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            text-align: center;
+            color: var(--text);
+            max-width: 400px;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 2px solid #BDC3C7;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: border 0.3s;
+        }
+        input[type="text"]:focus { border-color: var(--primary); outline: none; }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        button:hover { background: #5B2C6F; transform: translateY(-2px); }
+
+        /* --- Barra Superior --- */
+        #top-bar {
+            position: sticky;
+            top: 0;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            z-index: 1000;
+            padding: 10px 20px;
+            display: none; /* Se activa tras login */
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--accent);
+        }
+
+        .gamification-panel {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-grow: 1;
+            max-width: 600px;
+            margin-left: 20px;
+        }
+
+        .progress-track {
+            flex-grow: 1;
+            height: 10px;
+            background: #E5E7E9;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+            transition: width 0.5s ease;
+        }
+
+        .element-badge {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--text);
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+            font-weight: bold;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+        }
+
+        /* --- Contenido --- */
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: none;
+        }
+
+        section {
+            background: var(--card);
+            padding: 35px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            border-left: 6px solid var(--secondary);
+        }
+
+        h1, h2, h3 { color: var(--primary); }
+        h2 { border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
+        /* --- Actividades --- */
+        .activity-box {
+            background: #FCF3CF; /* Tono crema suave */
+            border: 1px dashed var(--secondary);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            font-size: 0.95em;
+        }
+        .correct { background: #D4EFDF; color: #145A32; border-left: 5px solid var(--success); }
+        .incorrect { background: #FADBD8; color: #7B241C; border-left: 5px solid var(--error); }
+
+        .mcq-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 10px;
+            background: #F8F9F9;
+            color: var(--text);
+            border: 1px solid #D5DBDB;
+            padding: 12px;
+            transition: background 0.2s;
+        }
+        .mcq-option:hover { background: #EAEDED; }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: inherit;
+            resize: vertical;
+            margin-top: 10px;
+        }
+
+        /* --- Gráficos y Tablas --- */
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+        th, td { border: 1px solid #D5DBDB; padding: 12px; text-align: left; }
+        th { background-color: var(--primary); color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h1 style="color: var(--primary);">Biomoléculas: Grado 11</h1>
+            <p>Estructura, Función y Diversidad</p>
+            <input type="text" id="username" placeholder="Ingresa tus Nombres y Apellidos">
+            <button onclick="login()">Ingresar al Laboratorio Virtual</button>
+        </div>
+    </div>
+
+    <div id="top-bar">
+        <div style="font-weight: bold; color: var(--primary);">
+            🧬 <span id="display-name">Estudiante</span>
+        </div>
+        <div class="gamification-panel">
+            <span>Nivel:</span>
+            <div class="element-badge" id="badge">
+                <span style="font-size: 0.8em;" id="badge-num">1</span>
+                <span style="font-size: 1.4em; color: var(--text);" id="badge-sym">H</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="main-content">
+
+        <section id="inicio">
+            <h2>🎯 Objetivo de Aprendizaje</h2>
+            <p>Diferenciar lípidos y proteínas según su estructura química y función biológica, aplicar virtualmente técnicas de identificación (Biuret y extracción de lípidos) y reflexionar críticamente sobre el papel de estas moléculas en la diversidad corporal humana.</p>
+            
+            <h3>🧠 Pre-saberes: ¿Qué traes en tu "mochila química"?</h3>
+
+            <div class="activity-box">
+                <p>1. Si mezclas aceite de cocina y agua en un vaso, ¿qué sucede?</p>
+                <button class="mcq-option" onclick="checkMCQ('pre1', 'b', true)">Se separan en dos fases (el aceite flota).</button>
+                <button class="mcq-option" onclick="checkMCQ('pre1', 'a', false)">Se mezclan perfectamente (solución homogénea).</button>
+                <button class="mcq-option" onclick="checkMCQ('pre1', 'c', false)">El agua disuelve el aceite y cambia de color.</button>
+                <div id="fb-pre1" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>2. ¿Cuál de los siguientes alimentos es conocido por su alto contenido proteico?</p>
+                <button class="mcq-option" onclick="checkMCQ('pre2', 'a', false)">Arroz blanco.</button>
+                <button class="mcq-option" onclick="checkMCQ('pre2', 'b', true)">Lentejas y carne.</button>
+                <button class="mcq-option" onclick="checkMCQ('pre2', 'c', false)">Mantequilla.</button>
+                <div id="fb-pre2" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>3. ¿Para qué utiliza el cuerpo principalmente las grasas (lípidos)?</p>
+                <button class="mcq-option" onclick="checkMCQ('pre3', 'a', false)">Para transporte de oxígeno urgente.</button>
+                <button class="mcq-option" onclick="checkMCQ('pre3', 'b', true)">Como reserva de energía a largo plazo y aislamiento.</button>
+                <button class="mcq-option" onclick="checkMCQ('pre3', 'c', false)">Para catalizar reacciones rápidas.</button>
+                <div id="fb-pre3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>🥑 Parte 1: Del Campo al Laboratorio (Inducción)</h2>
+            
+            <p>Imagina que estamos en una finca en el Quindío. Tenemos cultivos de <strong>frijol</strong> (leguminosa) y árboles de <strong>aguacate</strong>. A simple vista, un frijol es duro y seco, mientras que el aguacate es cremoso. Esta diferencia textural nos habla de su química interna.</p>
+            
+            <p><strong>El Misterio de la Reserva vs. la Estructura:</strong><br>
+            Las plantas, al igual que nosotros, necesitan guardar energía para tiempos difíciles y construir sus estructuras.
+            <br>1. <strong>Lípidos (Aguacate):</strong> Son la "cuenta de ahorros" energética. Son hidrofóbicos (odian el agua), lo que permite almacenarlos de forma compacta sin cargar peso extra de agua.
+            <br>2. <strong>Proteínas (Frijol):</strong> Son los "ladrillos" y los "obreros". Forman estructuras y realizan funciones. En las leguminosas, se almacenan para nutrir al embrión de la planta.</p>
+
+            <h3>Simulación: Extracción y Prueba de Biuret</h3>
+            <p>En el laboratorio, usamos propiedades químicas para identificarlas. Para los lípidos, usamos su solubilidad en solventes orgánicos (como alcohol o éter). Para las proteínas, usamos la <strong>Prueba de Biuret</strong>, que detecta enlaces peptídicos.</p>
+
+            <div class="svg-container">
+                <svg width="500" height="250" viewBox="0 0 500 250">
+                    <rect x="50" y="50" width="60" height="150" rx="10" fill="white" stroke="#333" stroke-width="2"/>
+                    <rect x="55" y="100" width="50" height="90" rx="5" fill="#AED6F1"/> <text x="80" y="220" text-anchor="middle" font-size="12">Agua + Biuret</text>
+                    <text x="80" y="240" text-anchor="middle" font-weight="bold" fill="#2980B9">(Negativo: Azul)</text>
+
+                    <rect x="200" y="50" width="60" height="150" rx="10" fill="white" stroke="#333" stroke-width="2"/>
+                    <rect x="205" y="100" width="50" height="90" rx="5" fill="#8E44AD"/> <text x="230" y="220" text-anchor="middle" font-size="12">Clara de Huevo + Biuret</text>
+                    <text x="230" y="240" text-anchor="middle" font-weight="bold" fill="#8E44AD">(Positivo: Violeta)</text>
+
+                    <g transform="translate(350, 80)">
+                        <text x="0" y="0" font-size="14" font-weight="bold">El Reactivo:</text>
+                        <text x="0" y="20" font-size="12">Sulfato de Cobre (CuSO₄)</text>
+                        <text x="0" y="40" font-size="12">en medio alcalino (NaOH).</text>
+                        <text x="0" y="70" font-size="12">Reacciona con los</text>
+                        <text x="0" y="90" font-weight="bold" fill="#C0392B">Enlaces Peptídicos</text>
+                    </g>
+                </svg>
+            </div>
+            
+
+[Image of protein structure diagram]
+
+
+            <p><strong>Diversidad Biológica y Corporal:</strong><br>
+            A menudo, la sociedad demoniza los lípidos ("la grasa es mala"). Sin embargo, biológicamente, la grasa es un triunfo evolutivo que permitió a nuestros ancestros sobrevivir hambrunas. Del mismo modo, la estructura muscular (proteína) varía genéticamente entre etnias y sexos. <strong>Entender la bioquímica es entender que no hay un "cuerpo ideal", sino cuerpos adaptados a funciones biológicas.</strong></p>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 1: Observación de Campo</h3>
+                <p>Piensa en una semilla de girasol y una papa. Si las aplastas contra un papel, ¿cuál deja una mancha traslúcida (grasa)? Escribe tu hipótesis.</p>
+                <textarea id="act1" rows="1"></textarea>
+                <button onclick="verifyNotebook('act1')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 2: Diagrama de Flujo</h3>
+                <p>Dibuja o describe los pasos para extraer aceite de una semilla (Triturar -> Agregar solvente -> Filtrar -> Evaporar solvente). Escribe "Diagrama listo".</p>
+                <textarea id="act2" rows="1"></textarea>
+                <button onclick="verifyNotebook('act2')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 3: Tabla de Colores</h3>
+                <p>Haz una tabla para la prueba de Biuret. Columna 1: Sustancia (Leche, Agua, Aceite, Carne). Columna 2: Color esperado (Violeta o Azul). Escribe "Tabla hecha".</p>
+                <textarea id="act3" rows="1"></textarea>
+                <button onclick="verifyNotebook('act3')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 4: Mapa Conceptual</h3>
+                <p>Conceptos: Biomoléculas, Lípidos (Reserva), Proteínas (Estructura), Biuret (Detector). Conéctalos. Escribe "Mapa completado".</p>
+                <textarea id="act4" rows="1"></textarea>
+                <button onclick="verifyNotebook('act4')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 5: Reflexión Ética</h3>
+                <p>¿Por qué crees que biológicamente es incorrecto decir que un cuerpo con reservas lipídicas (grasa) es un cuerpo "enfermo" o "incorrecto"? Responde brevemente.</p>
+                <textarea id="act5" rows="2"></textarea>
+                <button onclick="verifyNotebook('act5')">Verificar</button>
+            </div>
+        </section>
+
+        <section id="icfes">
+            <h2>🕵️ Competencia: Indagar</h2>
+            <div style="background: #EBF5FB; padding: 25px; border-radius: 8px; border: 1px solid #AED6F1;">
+                <h3>El Experimento de los Tubos Desconocidos</h3>
+                <p>Un estudiante recibe tres tubos de ensayo marcados como A, B y C. Sabe que contienen: Agua destilada, Solución de Albúmina (huevo) y Aceite vegetal, pero no sabe cuál es cuál. Realiza la prueba de Biuret a los tres y obtiene los siguientes resultados visuales:</p>
+                
+                <div class="svg-container" style="margin: 10px 0; padding: 10px;">
+                    <svg width="300" height="100" viewBox="0 0 300 100">
+                        <circle cx="50" cy="50" r="30" fill="#AED6F1" stroke="#333"/>
+                        <text x="50" y="55" text-anchor="middle" fill="white" font-weight="bold">A (Azul)</text>
+                        <circle cx="150" cy="50" r="30" fill="#8E44AD" stroke="#333"/>
+                        <text x="150" y="55" text-anchor="middle" fill="white" font-weight="bold">B (Violeta)</text>
+                        <circle cx="250" cy="50" r="30" fill="#AED6F1" stroke="#333"/>
+                        <text x="250" y="55" text-anchor="middle" fill="white" font-weight="bold">C (Azul)</text>
+                        <rect x="230" y="30" width="40" height="10" fill="#F1C40F" opacity="0.8"/>
+                        <text x="250" y="90" text-anchor="middle" font-size="10">C tiene dos fases</text>
+                    </svg>
+                </div>
+
+                <p><strong>Pregunta:</strong> Basándose en los resultados, ¿cuál es la identificación correcta de las sustancias?</p>
+
+                <button class="mcq-option" onclick="checkICFES('a')">A. Tubo A: Albúmina, Tubo B: Agua, Tubo C: Aceite.</button>
+                <button class="mcq-option" onclick="checkICFES('b')">B. Tubo A: Agua, Tubo B: Albúmina, Tubo C: Aceite.</button>
+                <button class="mcq-option" onclick="checkICFES('c')">C. Tubo A: Aceite, Tubo B: Agua, Tubo C: Albúmina.</button>
+                <button class="mcq-option" onclick="checkICFES('d')">D. Tubo A: Albúmina, Tubo B: Aceite, Tubo C: Agua.</button>
+
+                <div id="fb-icfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>🧪 Parte 2: La Química Profunda (Deducción)</h2>
+            
+            <p>Hemos visto cómo se comportan, ahora veamos <strong>por qué</strong>. Todo está en la estructura molecular.</p>
+            
+            <h3>1. Lípidos: Cadenas de Hidrocarburos</h3>
+            <p>La mayoría de los lípidos alimentarios son <strong>Triglicéridos</strong>. Imagina una letra "E". La barra vertical es el glicerol, y las tres barras horizontales son ácidos grasos. Estas barras son largas cadenas de Carbono e Hidrógeno (C-H). Como el enlace C-H es no polar, no le gusta el agua (hidrofóbico).</p>
+            
+            <h3>2. Proteínas: Collares de Perlas (Aminoácidos)</h3>
+            <p>Las proteínas son polímeros. La unidad básica (monómero) es el aminoácido. Estos se unen mediante <strong>Enlaces Peptídicos</strong> (Carbono-Nitrógeno).
+            <br>La magia de las proteínas es que no se quedan como hilos; se pliegan sobre sí mismas formando estructuras complejas 3D. Si calientas una proteína (como al freír un huevo), rompes esa estructura 3D (desnaturalización) y se vuelve sólida y blanca.</p>
+
+            <div class="svg-container">
+                <svg width="500" height="200" viewBox="0 0 500 200">
+                    <g transform="translate(50, 30)">
+                        <text x="50" y="-10" text-anchor="middle" font-weight="bold">Triglicérido</text>
+                        <rect x="0" y="0" width="20" height="100" fill="#F1C40F"/> <line x1="20" y1="20" x2="120" y2="20" stroke="#D35400" stroke-width="5"/> <line x1="20" y1="50" x2="120" y2="50" stroke="#D35400" stroke-width="5"/>
+                        <line x1="20" y1="80" x2="120" y2="80" stroke="#D35400" stroke-width="5"/>
+                    </g>
+                    
+                    <g transform="translate(300, 30)">
+                        <text x="50" y="-10" text-anchor="middle" font-weight="bold">Proteína</text>
+                        <path d="M 0,100 Q 20,0 50,50 T 100,50 T 150,10" fill="none" stroke="#8E44AD" stroke-width="5"/>
+                        <circle cx="20" cy="80" r="5" fill="#2ECC71"/>
+                        <circle cx="50" cy="50" r="5" fill="#E74C3C"/>
+                        <circle cx="80" cy="20" r="5" fill="#3498DB"/>
+                        <text x="50" y="120" text-anchor="middle" font-size="12">Aminoácidos plegados</text>
+                    </g>
+                </svg>
+            </div>
+
+            <p><strong>Comparación Estructural:</strong></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Característica</th>
+                        <th>Lípidos</th>
+                        <th>Proteínas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Unidad Básica</td>
+                        <td>Ácidos Grasos + Glicerol</td>
+                        <td>Aminoácidos</td>
+                    </tr>
+                    <tr>
+                        <td>Elemento Clave</td>
+                        <td>C, H, O (Poco oxígeno)</td>
+                        <td>C, H, O, <strong>Nitrógeno (N)</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Prueba Identificación</td>
+                        <td>Solubilidad / Sudán III</td>
+                        <td>Biuret (Detecta enlaces peptídicos)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 6: Dibujo Molecular</h3>
+                <p>Dibuja esquemáticamente un Triglicérido (forma de E) y una Proteína (cadena plegada). Escribe "Dibujo realizado".</p>
+                <textarea id="act6" rows="1"></textarea>
+                <button onclick="verifyNotebook('act6')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 7: Análisis Químico</h3>
+                <p>Si una muestra contiene mucho Nitrógeno en su análisis elemental, ¿es más probable que sea un lípido o una proteína? Justifica.</p>
+                <textarea id="act7" rows="2"></textarea>
+                <button onclick="verifyNotebook('act7')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 8: Desnaturalización</h3>
+                <p>Explica qué pasa con las proteínas de la carne cuando la cocinas (cambio de textura y color) usando el concepto de "estructura 3D".</p>
+                <textarea id="act8" rows="2"></textarea>
+                <button onclick="verifyNotebook('act8')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 9: Comparación Energética</h3>
+                <p>Los lípidos dan 9 kcal/g y las proteínas 4 kcal/g. Si fueras un explorador polar, ¿cuál llevarías más en tu mochila para ahorrar peso? Responde.</p>
+                <textarea id="act9" rows="1"></textarea>
+                <button onclick="verifyNotebook('act9')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 10: Síntesis</h3>
+                <p>Escribe una frase que resuma la diferencia principal entre la función de un lípido y una proteína.</p>
+                <textarea id="act10" rows="1"></textarea>
+                <button onclick="verifyNotebook('act10')">Verificar</button>
+            </div>
+        </section>
+
+        <section id="final">
+            <h2>🏆 Taller Final: Bioquímica Avanzada</h2>
+            
+            <h3>Parte A: Selección Múltiple</h3>
+            
+            <div class="activity-box">
+                <p>1. El reactivo de Biuret cambia a color violeta en presencia de:</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'a', false)">Azúcares reductores.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'b', true)">Enlaces peptídicos (Proteínas).</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'c', false)">Ácidos grasos libres.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'd', false)">Almidón.</button>
+            </div>
+
+            <div class="activity-box">
+                <p>2. ¿Cuál es la característica física principal de los lípidos?</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'a', false)">Son solubles en agua.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'b', false)">Conducen electricidad.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'c', true)">Son hidrofóbicos (insolubles en agua).</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'd', false)">Siempre son sólidos.</button>
+            </div>
+
+            <div class="activity-box">
+                <p>3. Los monómeros (unidades) de las proteínas son:</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'a', false)">Monosacáridos.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'b', false)">Nucleótidos.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'c', true)">Aminoácidos.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'd', false)">Gliceroles.</button>
+            </div>
+
+            <div class="activity-box">
+                <p>4. ¿Qué elemento químico es distintivo de las proteínas comparado con los lípidos?</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'a', false)">Carbono</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'b', false)">Hidrógeno</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'c', false)">Oxígeno</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'd', true)">Nitrógeno</button>
+            </div>
+
+            <div class="activity-box">
+                <p>5. Una función biológica clave de los lípidos es:</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'a', false)">Catalizar reacciones (Enzimas).</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'b', true)">Formar membranas celulares y reservar energía.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'c', false)">Transportar información genética.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'd', false)">Contraer los músculos.</button>
+            </div>
+
+            <h3>Parte B: Preguntas Abiertas (Responder entre 10 y 15 palabras)</h3>
+            <p><em>El sistema validará que tu respuesta sea concisa y precisa.</em></p>
+
+            <div class="activity-box">
+                <p>6. Define qué es un enlace peptídico.</p>
+                <textarea id="open1"></textarea>
+                <button onclick="validateOpen('open1')">Validar Respuesta</button>
+                <div id="fb-open1" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>7. Explica por qué el aceite flota sobre el agua.</p>
+                <textarea id="open2"></textarea>
+                <button onclick="validateOpen('open2')">Validar Respuesta</button>
+                <div id="fb-open2" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>8. ¿Qué sucede molecularmente al desnaturalizar una proteína?</p>
+                <textarea id="open3"></textarea>
+                <button onclick="validateOpen('open3')">Validar Respuesta</button>
+                <div id="fb-open3" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>9. Menciona la diferencia estructural entre grasas saturadas e insaturadas.</p>
+                <textarea id="open4"></textarea>
+                <button onclick="validateOpen('open4')">Validar Respuesta</button>
+                <div id="fb-open4" class="feedback"></div>
+            </div>
+
+            <div class="activity-box">
+                <p>10. ¿Por qué es importante respetar la diversidad corporal biológica?</p>
+                <textarea id="open5"></textarea>
+                <button onclick="validateOpen('open5')">Validar Respuesta</button>
+                <div id="fb-open5" class="feedback"></div>
+            </div>
+        </section>
+
+        <section style="text-align: center;">
+            <h2>🎉 ¡Laboratorio Completado!</h2>
+            <p>Has analizado la vida a nivel molecular.</p>
+            <button onclick="downloadResults()" style="background-color: var(--secondary); padding: 15px 30px; font-size: 1.1em;">📥 Descargar Informe Técnico (.txt)</button>
+        </section>
+
+    </div>
+
+    <script>
+        // --- ESTADO Y GAMIFICACIÓN ---
+        const gameState = {
+            user: "",
+            score: 0,
+            answers: {},
+            progress: 0,
+            totalItems: 21 // 3 Pre + 10 Act + 1 Icfes + 5 MCQ + 5 Open
+        };
+
+        const levels = [
+            {min:0, s:"H", n:1}, 
+            {min:20, s:"He", n:2}, 
+            {min:40, s:"Li", n:3}, 
+            {min:60, s:"Be", n:4}, 
+            {min:80, s:"B", n:5}
+        ];
+
+        // 1. Inicialización
+        window.onload = function() {
+            const saved = localStorage.getItem('OVA_Bio_G11');
+            if(saved) {
+                const parsed = JSON.parse(saved);
+                gameState.user = parsed.user;
+                gameState.score = parsed.score;
+                gameState.answers = parsed.answers;
+                gameState.progress = Object.keys(gameState.answers).length;
+                if(gameState.user) showApp();
+            }
+        };
+
+        function login() {
+            const name = document.getElementById('username').value.trim();
+            if(name.length > 2) {
+                gameState.user = name;
+                saveGame();
+                showApp();
+            } else {
+                alert("Por favor ingresa un nombre válido.");
+            }
+        }
+
+        function showApp() {
+            document.getElementById('login-overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-overlay').style.display = 'none';
+            }, 500);
+            document.getElementById('top-bar').style.display = 'flex';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('display-name').textContent = gameState.user;
+            updateUI();
+        }
+
+        function saveGame() {
+            localStorage.setItem('OVA_Bio_G11', JSON.stringify(gameState));
+            updateUI();
+        }
+
+        function updateUI() {
+            let pct = (gameState.progress / gameState.totalItems) * 100;
+            if(pct > 100) pct = 100;
+            document.getElementById('progress-bar').style.width = pct + "%";
+
+            let lvl = levels[0];
+            for(let l of levels) {
+                if(pct >= l.min) lvl = l;
+            }
+            document.getElementById('badge-sym').textContent = lvl.s;
+            document.getElementById('badge-num').textContent = lvl.n;
+        }
+
+        // --- LÓGICA PREGUNTAS ---
+
+        // MCQ Pre-saberes
+        window.checkMCQ = function(id, option, isCorrect) {
+            if(gameState.answers[id]) return;
+
+            const fb = document.getElementById('fb-' + id);
+            fb.style.display = 'block';
+            if(isCorrect) {
+                fb.className = 'feedback correct';
+                fb.innerHTML = "<strong>¡Correcto!</strong> Buen fundamento biológico.";
+                gameState.score += 2;
+            } else {
+                fb.className = 'feedback incorrect';
+                fb.innerHTML = "<strong>Incorrecto.</strong> Revisa el concepto en la sección inductiva.";
+            }
+            gameState.answers[id] = option;
+            gameState.progress++;
+            saveGame();
+        }
+
+        // Actividades Cuaderno
+        window.verifyNotebook = function(id) {
+            const txt = document.getElementById(id).value.trim();
+            if(txt.length < 2) {
+                alert("Escribe algo válido antes de verificar.");
+                return;
+            }
+            if(!gameState.answers[id]) {
+                gameState.answers[id] = txt;
+                gameState.progress++;
+                gameState.score += 1;
+                alert("Actividad registrada. ¡Excelente!");
+                saveGame();
+            } else {
+                alert("Ya registraste esta actividad.");
+            }
+        }
+
+        // ICFES
+        window.checkICFES = function(option) {
+            if(gameState.answers['icfes']) return;
+            const fb = document.getElementById('fb-icfes');
+            fb.style.display = 'block';
+
+            if(option === 'b') {
+                fb.className = 'feedback correct';
+                fb.innerHTML = "<strong>¡Excelente! (Indagar)</strong><br>Interpretaste correctamente los resultados: El tubo A dio negativo (Azul = Agua), el B dio positivo (Violeta = Proteína/Albúmina) y el C mostró dos fases inmiscibles y negativo al Biuret (Aceite).";
+                gameState.score += 5;
+            } else {
+                fb.className = 'feedback incorrect';
+                let reason = "";
+                if(option === 'a') reason = "El Tubo A dio azul (negativo), así que no puede ser albúmina.";
+                if(option === 'c') reason = "El aceite no es miscible en agua y formaría dos fases, cosa que no se describe para el Tubo A.";
+                if(option === 'd') reason = "El Tubo B dio violeta, indicando presencia de proteína, no de aceite.";
+                fb.innerHTML = "<strong>Incorrecto.</strong> " + reason;
+            }
+            gameState.answers['icfes'] = option;
+            gameState.progress++;
+            saveGame();
+        }
+
+        // Final MCQ
+        window.checkFinalMCQ = function(id, option, isCorrect) {
+            if(gameState.answers[id]) return;
+            const btn = event.target;
+            if(isCorrect) {
+                btn.style.backgroundColor = "var(--success)";
+                btn.style.color = "white";
+                gameState.score += 3;
+            } else {
+                btn.style.backgroundColor = "var(--error)";
+                btn.style.color = "white";
+            }
+            gameState.answers[id] = option;
+            gameState.progress++;
+            saveGame();
+        }
+
+        // Open Questions (10-15 Words)
+        window.validateOpen = function(id) {
+            const txt = document.getElementById(id).value.trim();
+            const words = txt.split(/\s+/).filter(w => w.length > 0).length;
+            const fb = document.getElementById('fb-' + id);
+            fb.style.display = 'block';
+
+            if(words >= 10 && words <= 15) {
+                fb.className = 'feedback correct';
+                fb.innerHTML = `<strong>Perfecto.</strong> ${words} palabras. Respuesta válida.`;
+                if(!gameState.answers[id]) {
+                    gameState.answers[id] = txt;
+                    gameState.progress++;
+                    gameState.score += 3;
+                    saveGame();
+                }
+            } else {
+                fb.className = 'feedback incorrect';
+                fb.innerHTML = `Tienes <strong>${words}</strong> palabras. Debes usar entre 10 y 15. Sé preciso.`;
+            }
+        }
+
+        // Download
+        window.downloadResults = function() {
+            let t = `REPORTE: BIOMOLÉCULAS G11\nEstudiante: ${gameState.user}\nPuntaje: ${gameState.score}\n\nRESPUESTAS:\n`;
+            for(let [k,v] of Object.entries(gameState.answers)) t += `[${k}]: ${v}\n`;
+            
+            const b = new Blob([t],{type:'text/plain'});
+            const u = window.URL.createObjectURL(b);
+            const a = document.createElement('a');
+            a.href = u;
+            a.download = `Bioquimica_${gameState.user.replace(/\s+/g,'_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+</html>

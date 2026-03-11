@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Mezclas Heterogéneas en la Finca</title>
+    <style>
+        :root {
+            --primary: #2C3E50;
+            --secondary: #3498DB;
+            --accent: #27AE60;
+            --bg-color: #F0F4F8;
+            --text-color: #333333;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            padding-bottom: 50px;
+        }
+
+        /* --- Login Screen --- */
+        #login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: center;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .login-box input {
+            padding: 12px;
+            width: 80%;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover { background-color: #219653; }
+        .btn:disabled { background-color: #95a5a6; cursor: not-allowed; }
+
+        /* --- Top Bar & Progress --- */
+        #top-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+        }
+
+        .progress-container {
+            width: 40%;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 20px;
+            margin: 0 15px;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--accent);
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        #user-info { font-weight: bold; }
+        
+        #gamification-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .element-badge {
+            background: #f39c12;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1.2em;
+        }
+
+        /* --- Main Content --- */
+        #main-content {
+            display: none;
+            max-width: 900px;
+            margin: 80px auto 20px;
+            padding: 20px;
+        }
+
+        section {
+            background: var(--card-bg);
+            margin-bottom: 30px;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h1, h2, h3 { color: var(--primary); }
+        h1 { border-bottom: 3px solid var(--secondary); padding-bottom: 10px; }
+
+        .activity-box {
+            background-color: #e8f4f8;
+            border-left: 5px solid var(--secondary);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .question-box {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .options label {
+            display: block;
+            margin: 8px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .options label:hover { background: #eef2f5; }
+        
+        input[type="radio"] { margin-right: 10px; }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            font-weight: bold;
+        }
+        .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        .word-count { font-size: 0.85em; color: #666; text-align: right; display: block; }
+
+        /* --- Graphics --- */
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .table-custom {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .table-custom th, .table-custom td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .table-custom th { background-color: var(--primary); color: white; }
+
+        /* --- Final Results --- */
+        #results-section { display: none; }
+        .reinforcement-box {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>Bienvenido a tu Clase de Ciencias</h2>
+            <p>Descubriendo el mundo de las Mezclas</p>
+            <input type="text" id="student-name" placeholder="Escribe tus Nombres y Apellidos" autocomplete="off">
+            <br>
+            <button class="btn" onclick="iniciarOVA()">Ingresar al OVA</button>
+        </div>
+    </div>
+
+    <div id="top-bar" style="display: none;">
+        <div id="user-info">Estudiante: <span id="display-name"></span></div>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="gamification-status">
+            <span>Puntaje: <span id="score-display">0.0</span>/5.0</span>
+            <span class="element-badge" id="element-display">H (Hidrógeno)</span>
+        </div>
+    </div>
+
+    <div id="main-content">
+        
+        <section id="sec-inicio">
+            <h1>1. Inicio: El Misterio de las Sustancias</h1>
+            <div class="activity-box">
+                <strong>Objetivo de Aprendizaje:</strong> Identificar y diferenciar las mezclas heterogéneas reconociendo sus fases visibles, relacionando este conocimiento con procesos cotidianos y productivos como el lavado del café, mientras fortalecemos el trabajo en equipo y la escucha activa.
+            </div>
+
+            <h3>Pre-saberes: ¿Qué tanto conoces?</h3>
+            <p>Responde estas preguntas para calentar motores (la retroalimentación es inmediata):</p>
+            
+            <div class="question-box" id="pre-1">
+                <p>1. Cuando mezclas agua y arena, ¿puedes ver la arena en el fondo del recipiente?</p>
+                <div class="options">
+                    <label><input type="radio" name="q_pre1" value="si" onclick="checkPre(1, 'si')"> Sí, se distinguen claramente.</label>
+                    <label><input type="radio" name="q_pre1" value="no" onclick="checkPre(1, 'no')"> No, desaparece por completo.</label>
+                </div>
+                <div class="feedback" id="fb-pre1"></div>
+            </div>
+
+            <div class="question-box" id="pre-2">
+                <p>2. ¿El agua de un río caudaloso que arrastra lodo se ve de un solo color transparente?</p>
+                <div class="options">
+                    <label><input type="radio" name="q_pre1" value="si" onclick="checkPre(2, 'si')"> Sí, siempre es transparente.</label>
+                    <label><input type="radio" name="q_pre1" value="no" onclick="checkPre(2, 'no')"> No, se ve turbia por las partículas de tierra.</label>
+                </div>
+                <div class="feedback" id="fb-pre2"></div>
+            </div>
+
+            <div class="question-box" id="pre-3">
+                <p>3. Al preparar un jugo con agua y aceite (¡qué raro!), ¿qué sucede?</p>
+                <div class="options">
+                    <label><input type="radio" name="q_pre1" value="mezcla" onclick="checkPre(3, 'mezcla')"> Se unen y forman un solo líquido.</label>
+                    <label><input type="radio" name="q_pre1" value="separa" onclick="checkPre(3, 'separa')"> El aceite se queda arriba y el agua abajo.</label>
+                </div>
+                <div class="feedback" id="fb-pre3"></div>
+            </div>
+        </section>
+
+        <section id="sec-inductivo">
+            <h1>2. Construyendo el Concepto: Un Día en la Finca</h1>
+            
+            <p>Imagina que nos encontramos en una hermosa finca cafetera de nuestra región, rodeados del intenso verde de las montañas. Es época de cosecha y el trabajo en equipo es fundamental. Desde muy temprano, los recolectores se comunican constantemente, practicando la <strong>escucha activa</strong> para saber en qué surco recolectar, evitando accidentes y garantizando que solo los granos maduros lleguen al beneficio.</p>
+
+            <p>Una vez recolectado el café, pasamos a una de las etapas más importantes: <strong>el lavado del café</strong>. Aquí es donde la ciencia se hace visible ante nuestros ojos. En los tanques de lavado, el café despulpadodo se sumerge en grandes cantidades de agua para retirar el mucílago (esa capa babosa que recubre el grano). Si observas con atención el tanque, no verás un líquido uniforme. Podrás distinguir claramente el agua turbia, los granos de café en el fondo, y algunas basuritas o granos defectuosos flotando en la superficie. A esta capacidad de ver los distintos componentes a simple vista la llamamos identificar <strong>fases</strong>.</p>
+
+            <p>Lo que estás observando en ese tanque es una <strong>mezcla heterogénea</strong>. Las mezclas heterogéneas son aquellas donde sus componentes no se integran de manera uniforme y, por lo tanto, podemos distinguir sus diferentes partes o fases a simple vista o con un microscopio simple.</p>
+
+            <p>Para entender mejor esto, llevemos la observación de la finca a nuestro propio entorno. Imagina dos experimentos sencillos que puedes replicar: el primero, mezclar <strong>agua y aceite</strong>; el segundo, mezclar <strong>tierra y agua</strong>. Cuando viertes aceite en un vaso con agua, por más que agites vigorosamente, notarás que en cuestión de segundos el aceite sube a la superficie. Tienes una fase líquida superior (aceite) y una fase líquida inferior (agua). Cuando mezclas un puñado de tierra del jardín en un frasco con agua, verás que el agua se torna oscura inicialmente, pero si la dejas reposar, la tierra (fase sólida) caerá al fondo y el agua (fase líquida) quedará arriba. Estas observaciones directas nos confirman que las sustancias conservan sus propiedades individuales dentro de la mezcla.</p>
+
+            <p>En el trabajo de campo y en el laboratorio, la observación detallada es tan importante como la comunicación. Cuando un compañero describe lo que ve en un experimento, tu capacidad de escuchar activamente (prestar atención plena sin interrumpir) permite que el equipo llegue a conclusiones correctas sobre el número de fases presentes en una mezcla.</p>
+
+            <div class="svg-container">
+                <svg width="300" height="250" viewBox="0 0 300 250">
+                    <rect x="100" y="50" width="100" height="180" rx="10" fill="none" stroke="#2C3E50" stroke-width="4"/>
+                    <rect x="102" y="130" width="96" height="98" rx="8" fill="#3498DB" opacity="0.7"/>
+                    <text x="150" y="180" font-family="Arial" font-size="14" fill="white" text-anchor="middle">Agua (Fase 1)</text>
+                    <rect x="102" y="70" width="96" height="60" fill="#F1C40F" opacity="0.8"/>
+                    <text x="150" y="105" font-family="Arial" font-size="14" fill="#333" text-anchor="middle">Aceite (Fase 2)</text>
+                    <text x="150" y="30" font-family="Arial" font-size="16" font-weight="bold" fill="#2C3E50" text-anchor="middle">Mezcla Heterogénea (Agua y Aceite)</text>
+                </svg>
+            </div>
+
+            <h3>Actividades para tu Cuaderno (Parte 1)</h3>
+            <p>Realiza estas actividades en tu cuaderno de Ciencias Naturales. Haz clic en el botón al terminar cada una para registrar tu progreso.</p>
+            
+            <div class="activity-box">1. Dibuja el tanque de lavado de café e identifica con flechas al menos tres componentes que puedas ver a simple vista. <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="marcarActividad(this)">¡Terminado!</button></div>
+            <div class="activity-box">2. Escribe con tus propias palabras qué significa el término "fase" en una mezcla. <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="marcarActividad(this)">¡Terminado!</button></div>
+            <div class="activity-box">3. Dibuja un vaso con agua y tierra después de dejarlo reposar 10 minutos. Etiqueta la fase sólida y la fase líquida. <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="marcarActividad(this)">¡Terminado!</button></div>
+            <div class="activity-box">4. Haz una lista de 3 mezclas heterogéneas que encuentres en tu cocina (ejemplo: sopa de verduras). <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="marcarActividad(this)">¡Terminado!</button></div>
+            <div class="activity-box">5. Escribe un párrafo corto explicando por qué la escucha activa es vital para evitar accidentes en una finca o en el laboratorio. <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="marcarActividad(this)">¡Terminado!</button></div>
+
+            <h3>Pregunta Tipo ICFES (Competencia: Indagar)</h3>
+            <p>Analiza la siguiente gráfica que muestra el tiempo que tardan en separarse tres mezclas de agua con diferentes tipos de tierra (A, B y C) al dejarlas en reposo (proceso de decantación).</p>
+            
+            <div class="svg-container">
+                <svg width="400" height="250" viewBox="0 0 400 250">
+                    <line x1="50" y1="200" x2="350" y2="200" stroke="black" stroke-width="2"/>
+                    <line x1="50" y1="50" x2="50" y2="200" stroke="black" stroke-width="2"/>
+                    <rect x="80" y="150" width="50" height="50" fill="#e67e22"/>
+                    <text x="105" y="220" font-family="Arial" font-size="14" text-anchor="middle">Tierra A</text>
+                    <text x="105" y="145" font-family="Arial" font-size="12" text-anchor="middle">5 min</text>
+
+                    <rect x="180" y="100" width="50" height="100" fill="#d35400"/>
+                    <text x="205" y="220" font-family="Arial" font-size="14" text-anchor="middle">Tierra B</text>
+                    <text x="205" y="95" font-family="Arial" font-size="12" text-anchor="middle">10 min</text>
+
+                    <rect x="280" y="60" width="50" height="140" fill="#8e44ad"/>
+                    <text x="305" y="220" font-family="Arial" font-size="14" text-anchor="middle">Tierra C</text>
+                    <text x="305" y="55" font-family="Arial" font-size="12" text-anchor="middle">14 min</text>
+
+                    <text x="20" y="130" font-family="Arial" font-size="12" transform="rotate(-90 20,130)">Tiempo de separación</text>
+                </svg>
+            </div>
+
+            <div class="question-box" id="icfes-1">
+                <p>De acuerdo con la gráfica y sabiendo que las partículas más pesadas y grandes caen más rápido al fondo, ¿qué se puede concluir sobre las mezclas?</p>
+                <div class="options">
+                    <label><input type="radio" name="q_icfes" value="A"> A. La Tierra C tiene las partículas más grandes y pesadas de todas.</label>
+                    <label><input type="radio" name="q_icfes" value="B"> B. La Tierra A forma una mezcla homogénea con el agua.</label>
+                    <label><input type="radio" name="q_icfes" value="C"> C. La Tierra A tiene partículas más grandes y pesadas que caen al fondo más rápido.</label>
+                    <label><input type="radio" name="q_icfes" value="D"> D. Todas las tierras se demoran lo mismo en separarse del agua.</label>
+                </div>
+                <button class="btn" onclick="checkICFES()">Verificar Respuesta</button>
+                <div class="feedback" id="fb-icfes"></div>
+            </div>
+
+        </section>
+
+        <section id="sec-deductivo">
+            <h1>3. Formalizando el Conocimiento: La Ciencia detrás de la Finca</h1>
+            
+            <p>A partir de nuestras observaciones en la finca y con los experimentos caseros, podemos establecer los principios científicos formales que rigen el comportamiento de la materia. La materia se clasifica principalmente en sustancias puras y mezclas. Nos estamos enfocando en las mezclas, específicamente las <strong>mezclas heterogéneas</strong>.</p>
+
+            <p>Una mezcla heterogénea se define formalmente como la unión física de dos o más sustancias que no están distribuidas de manera uniforme. La característica principal de estas mezclas es la presencia de <strong>fases</strong>. Una fase es una porción del sistema material que tiene propiedades uniformes. En el sistema de agua y aceite, el agua es una fase y el aceite es otra fase separada por un límite físico visible (interfaz). La razón por la que el aceite flota sobre el agua se debe a una propiedad física llamada densidad; el aceite es menos denso que el agua.</p>
+
+            <p>Dentro de las mezclas heterogéneas encontramos categorías específicas. Por ejemplo, las <strong>suspensiones</strong>. La mezcla de agua y tierra del río o de la lavada del café es una suspensión. Las suspensiones son mezclas heterogéneas formadas por un sólido en polvo o pequeñas partículas no solubles (fase dispersa) que se dispersan en un medio líquido (fase dispersante). Con el tiempo y gracias a la gravedad, estas partículas se asientan en el fondo.</p>
+
+            <p>Para separar estas fases, la ciencia utiliza métodos físicos. En la finca cafetera, cuando los granos buenos se hunden y los defectuosos flotan, los caficultores retiran los flotantes manualmente. Esto es un principio básico de separación por densidad. En el laboratorio usamos métodos como la <strong>decantación</strong> (dejar reposar la mezcla de agua y tierra para que el sólido caiga y luego verter el líquido suavemente) y la <strong>filtración</strong> (pasar la mezcla por un material poroso, como papel filtro, que retiene el sólido y deja pasar el líquido).</p>
+
+            <p>Es fundamental recordar que la ciencia no se hace en aislamiento. Al igual que los procesos de beneficio del café requieren que los trabajadores coordinen sus acciones, el trabajo científico exige <strong>trabajo en equipo y escucha activa</strong>. Cuando realizas un experimento de filtración con tu grupo, escuchar atentamente las observaciones de tus compañeros asegura que se sigan los pasos correctamente, se eviten derrames y se obtengan resultados confiables. La escucha activa construye conocimiento colectivo.</p>
+
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Método de Separación</th>
+                        <th>Se usa para separar...</th>
+                        <th>Ejemplo Cotidiano</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Filtración</td>
+                        <td>Sólido de un líquido (usando un filtro)</td>
+                        <td>Preparar café en la greca o colador</td>
+                    </tr>
+                    <tr>
+                        <td>Decantación</td>
+                        <td>Líquidos de diferente densidad / Sólido de líquido</td>
+                        <td>Separar agua y aceite / Dejar asentar lodo</td>
+                    </tr>
+                    <tr>
+                        <td>Tamizado</td>
+                        <td>Sólidos de diferente tamaño</td>
+                        <td>Separar arena de piedras usando una zaranda</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Actividades para tu Cuaderno (Parte 2)</h3>
+            <div class="activity-box">6. Construye un mapa conceptual que incluya los términos: Mezcla Heterogénea, Fases, Suspensiones, Decantación y Filtración. <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="marcarActividad(this)">¡Terminado!</button></div>
+            <div class="activity-box">7. Explica con tus palabras: ¿Qué propiedad física permite que el aceite flote sobre el agua? <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="marcarActividad(this)">¡Terminado!</button></div>
+            <div class="activity-box">8. Dibuja un montaje de filtración de laboratorio (embudo, papel filtro, matraz) y compáralo con el colador de café de tu casa. <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="marcarActividad(this)">¡Terminado!</button></div>
+            <div class="activity-box">9. Si tuvieras una mezcla de arena, agua y corcho picado. Escribe los pasos (y los métodos) que usarías para separar los tres componentes. <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="marcarActividad(this)">¡Terminado!</button></div>
+            <div class="activity-box">10. Escribe una regla de oro sobre cómo aplicar la "escucha activa" cuando trabajas en equipo en el laboratorio de ciencias. <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="marcarActividad(this)">¡Terminado!</button></div>
+
+        </section>
+
+        <section id="sec-evaluacion">
+            <h1>4. Taller Final de Conocimientos</h1>
+            <p>Responde cuidadosamente. Este taller define tu elemento en la tabla periódica de progreso.</p>
+
+            <h3>Selección Múltiple</h3>
+            
+            <div class="question-box MCQ" data-type="inductivo">
+                <p>1. Cuando observamos el tanque de lavado de café con agua, granos y hojas flotando, decimos que es una mezcla heterogénea porque:</p>
+                <div class="options">
+                    <label><input type="radio" name="eval_1" value="A"> A. Tiene un solo color uniforme.</label>
+                    <label><input type="radio" name="eval_1" value="B"> B. Podemos distinguir a simple vista sus diferentes fases o componentes.</label>
+                    <label><input type="radio" name="eval_1" value="C"> C. El agua disuelve todo el café y las hojas.</label>
+                    <label><input type="radio" name="eval_1" value="D"> D. No está en estado líquido.</label>
+                </div>
+            </div>
+
+            <div class="question-box MCQ" data-type="inductivo">
+                <p>2. Al mezclar agua y aceite en un vaso, ¿cuántas fases líquidas puedes observar después de un minuto de reposo?</p>
+                <div class="options">
+                    <label><input type="radio" name="eval_2" value="A"> A. Una sola fase.</label>
+                    <label><input type="radio" name="eval_2" value="B"> B. Dos fases bien definidas.</label>
+                    <label><input type="radio" name="eval_2" value="C"> C. Tres fases.</label>
+                    <label><input type="radio" name="eval_2" value="D"> D. Ninguna fase.</label>
+                </div>
+            </div>
+
+            <div class="question-box MCQ" data-type="deductivo">
+                <p>3. ¿Qué método de separación físico sería el más adecuado para separar completamente una mezcla de agua y tierra fina del fondo de un tanque?</p>
+                <div class="options">
+                    <label><input type="radio" name="eval_3" value="A"> A. Filtración.</label>
+                    <label><input type="radio" name="eval_3" value="B"> B. Imantación.</label>
+                    <label><input type="radio" name="eval_3" value="C"> C. Cortar con tijeras.</label>
+                    <label><input type="radio" name="eval_3" value="D"> D. Mezclar más rápido.</label>
+                </div>
+            </div>
+
+            <div class="question-box MCQ" data-type="deductivo">
+                <p>4. Una suspensión es un tipo de mezcla heterogénea. Un ejemplo clásico de suspensión es:</p>
+                <div class="options">
+                    <label><input type="radio" name="eval_4" value="A"> A. Agua pura.</label>
+                    <label><input type="radio" name="eval_4" value="B"> B. Aceite puro.</label>
+                    <label><input type="radio" name="eval_4" value="C"> C. Agua mezclada con tierra o arena fina.</label>
+                    <label><input type="radio" name="eval_4" value="D"> D. Aire limpio.</label>
+                </div>
+            </div>
+
+            <div class="question-box MCQ" data-type="deductivo">
+                <p>5. En el laboratorio de ciencias, la escucha activa es fundamental en el trabajo en equipo porque:</p>
+                <div class="options">
+                    <label><input type="radio" name="eval_5" value="A"> A. Permite escuchar música mientras trabajamos.</label>
+                    <label><input type="radio" name="eval_5" value="B"> B. Ayuda a ignorar las instrucciones del docente.</label>
+                    <label><input type="radio" name="eval_5" value="C"> C. Evita accidentes, asegura que todos entiendan los pasos y valora los aportes de los demás.</label>
+                    <label><input type="radio" name="eval_5" value="D"> D. Hace que el experimento se haga más rápido saltando pasos.</label>
+                </div>
+            </div>
+
+            <h3>Preguntas Abiertas</h3>
+            <p>Responde en tus propias palabras. <strong>(Regla estricta: tu respuesta debe tener entre 10 y 15 palabras).</strong></p>
+
+            <div class="question-box OPEN">
+                <p>6. Define con tus palabras qué es una mezcla heterogénea.</p>
+                <textarea id="open_1" onkeyup="countWords(this, 'count_1')"></textarea>
+                <span class="word-count">Palabras: <span id="count_1">0</span>/15 (Mínimo 10)</span>
+            </div>
+
+            <div class="question-box OPEN">
+                <p>7. Menciona dos fases visibles durante el lavado del café en la finca.</p>
+                <textarea id="open_2" onkeyup="countWords(this, 'count_2')"></textarea>
+                <span class="word-count">Palabras: <span id="count_2">0</span>/15 (Mínimo 10)</span>
+            </div>
+
+            <div class="question-box OPEN">
+                <p>8. ¿Por qué el aceite no se mezcla con el agua y queda arriba?</p>
+                <textarea id="open_3" onkeyup="countWords(this, 'count_3')"></textarea>
+                <span class="word-count">Palabras: <span id="count_3">0</span>/15 (Mínimo 10)</span>
+            </div>
+
+            <div class="question-box OPEN">
+                <p>9. ¿En qué consiste el método de decantación usado en el laboratorio?</p>
+                <textarea id="open_4" onkeyup="countWords(this, 'count_4')"></textarea>
+                <span class="word-count">Palabras: <span id="count_4">0</span>/15 (Mínimo 10)</span>
+            </div>
+
+            <div class="question-box OPEN">
+                <p>10. ¿Cómo beneficia la escucha activa a tu equipo de trabajo en ciencias?</p>
+                <textarea id="open_5" onkeyup="countWords(this, 'count_5')"></textarea>
+                <span class="word-count">Palabras: <span id="count_5">0</span>/15 (Mínimo 10)</span>
+            </div>
+
+            <button class="btn" style="width: 100%; font-size: 18px; padding: 15px;" onclick="evaluarFinal()">Finalizar y Evaluar</button>
+
+            <div id="results-section">
+                <h2 style="text-align: center; margin-top: 30px;">Resultados de tu Evaluación</h2>
+                <div style="text-align: center; font-size: 24px;">
+                    Nota Final: <strong id="final-score"></strong>/5.0 <br>
+                    Nivel Alcanzado: <strong class="element-badge" id="final-element" style="display:inline-block; margin-top:10px;"></strong>
+                </div>
+
+                <div class="reinforcement-box" id="ruta-fortalecimiento">
+                    <h3>Ruta de Fortalecimiento Personalizada</h3>
+                    <p style="color: red; font-weight: bold;">Instrucción Pedagógica: De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno de ciencias naturales para fortalecer tus debilidades.</p>
+                    <div id="feedback-text"></div>
+                </div>
+
+                <button class="btn" style="width: 100%; margin-top: 20px; background-color: #8e44ad;" onclick="descargarReporte()">📥 Descargar Reporte (.txt)</button>
+            </div>
+
+        </section>
+
+    </div>
+
+    <script>
+        // --- ESTADO Y PERSISTENCIA ---
+        let userData = {
+            name: "",
+            progress: 0,
+            activitiesDone: 0,
+            score: 0.0,
+            element: "H (Hidrógeno)",
+            evaluado: false,
+            reportText: ""
+        };
+
+        const LOCAL_KEY = 'ova_mezclas_sexto';
+
+        window.onload = function() {
+            const savedData = localStorage.getItem(LOCAL_KEY);
+            if (savedData) {
+                userData = JSON.parse(savedData);
+                if (userData.name !== "") {
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('top-bar').style.display = 'flex';
+                    document.getElementById('main-content').style.display = 'block';
+                    document.getElementById('display-name').innerText = userData.name;
+                    updateUIProgress();
+                    if(userData.evaluado){
+                        document.getElementById('results-section').style.display = 'block';
+                        document.getElementById('final-score').innerText = userData.score;
+                        document.getElementById('final-element').innerText = userData.element;
+                        document.getElementById('feedback-text').innerHTML = "<em>(Ya fuiste evaluado. Consulta tu archivo de reporte descargado anteriormente o contacta al docente)</em>";
+                        document.querySelectorAll('button').forEach(b => { if(!b.innerText.includes("Descargar")) b.disabled = true; });
+                    }
+                }
+            }
+        };
+
+        function saveData() {
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(userData));
+        }
+
+        // --- LÓGICA DE INTERFAZ ---
+        function iniciarOVA() {
+            const nameInput = document.getElementById('student-name').value.trim();
+            if (nameInput.length < 3) {
+                alert("Por favor ingresa tus Nombres y Apellidos completos.");
+                return;
+            }
+            userData.name = nameInput;
+            saveData();
+            
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('top-bar').style.display = 'flex';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('display-name').innerText = userData.name;
+        }
+
+        function updateUIProgress() {
+            // Progreso general basado en las 10 actividades del cuaderno
+            let p = (userData.activitiesDone / 10) * 100;
+            document.getElementById('progress-bar').style.width = p + '%';
+            document.getElementById('score-display').innerText = userData.score.toFixed(1);
+            document.getElementById('element-display').innerText = userData.element;
+        }
+
+        function marcarActividad(btn) {
+            btn.disabled = true;
+            btn.innerText = "Registrado ✓";
+            btn.style.backgroundColor = "var(--accent)";
+            if (userData.activitiesDone < 10) {
+                userData.activitiesDone++;
+                saveData();
+                updateUIProgress();
+            }
+        }
+
+        function getElemento(score) {
+            if (score <= 1.0) return "H (Hidrógeno)";
+            if (score <= 2.0) return "He (Helio)";
+            if (score <= 3.0) return "Li (Litio)";
+            if (score <= 4.0) return "Be (Berilio)";
+            return "B (Boro)";
+        }
+
+        // --- PREGUNTAS INTERACTIVAS ---
+        function checkPre(num, val) {
+            const fb = document.getElementById('fb-pre' + num);
+            fb.style.display = 'block';
+            if (num === 1) {
+                if(val === 'si'){ fb.className = 'feedback correct'; fb.innerText = '¡Correcto! En una mezcla heterogénea como agua y arena, las fases son visibles.'; }
+                else { fb.className = 'feedback incorrect'; fb.innerText = 'Incorrecto. La arena no se disuelve, se va al fondo y puedes verla claramente.'; }
+            } else if (num === 2) {
+                if(val === 'no'){ fb.className = 'feedback correct'; fb.innerText = '¡Muy bien! Las partículas de tierra hacen que la mezcla sea turbia y heterogénea.'; }
+                else { fb.className = 'feedback incorrect'; fb.innerText = 'Cuidado, cuando un río arrastra lodo, el agua deja de ser transparente porque lleva partículas en suspensión.'; }
+            } else if (num === 3) {
+                if(val === 'separa'){ fb.className = 'feedback correct'; fb.innerText = '¡Exacto! Forman dos capas o fases distintas porque no se pueden mezclar uniformemente.'; }
+                else { fb.className = 'feedback incorrect'; fb.innerText = 'Piénsalo bien, el agua y el aceite nunca se unen formando un solo líquido homogéneo.'; }
+            }
+        }
+
+        function checkICFES() {
+            const r = document.querySelector('input[name="q_icfes"]:checked');
+            const fb = document.getElementById('fb-icfes');
+            fb.style.display = 'block';
+            if (!r) {
+                fb.className = 'feedback incorrect';
+                fb.innerText = 'Selecciona una opción primero.';
+                return;
+            }
+            if (r.value === 'C') {
+                fb.className = 'feedback correct';
+                fb.innerHTML = '<strong>¡Correcto! (Opción C):</strong> Al demorar solo 5 minutos en caer al fondo, podemos inferir que la Tierra A tiene partículas más grandes y pesadas que la gravedad atrae más rápido. Competencia Indagar superada.';
+            } else if (r.value === 'A') {
+                fb.className = 'feedback incorrect';
+                fb.innerHTML = 'Incorrecto. Si las partículas fueran más grandes y pesadas, caerían más rápido. La Tierra C es la que más demora (14 min).';
+            } else if (r.value === 'B') {
+                fb.className = 'feedback incorrect';
+                fb.innerHTML = 'Incorrecto. Si se separan y caen al fondo, por definición es una mezcla heterogénea (suspensión), no homogénea.';
+            } else if (r.value === 'D') {
+                fb.className = 'feedback incorrect';
+                fb.innerHTML = 'Incorrecto. La gráfica muestra tiempos diferentes (5, 10 y 14 minutos).';
+            }
+        }
+
+        function countWords(textarea, countId) {
+            let text = textarea.value.trim();
+            let numWords = text === "" ? 0 : text.split(/\s+/).length;
+            document.getElementById(countId).innerText = numWords;
+            if (numWords >= 10 && numWords <= 15) {
+                document.getElementById(countId).style.color = "green";
+            } else {
+                document.getElementById(countId).style.color = "red";
+            }
+        }
+
+        // --- EVALUACIÓN Y RETROALIMENTACIÓN ---
+        function evaluarFinal() {
+            if(userData.evaluado){ alert("Ya has enviado la evaluación."); return; }
+
+            // Respuestas correctas
+            const correctasMCQ = { eval_1: 'B', eval_2: 'B', eval_3: 'A', eval_4: 'C', eval_5: 'C' };
+            let aciertos = 0;
+            let fallasInductivas = false;
+            let fallasDeductivas = false;
+
+            // Revisar Selección Múltiple
+            for(let i=1; i<=5; i++){
+                let name = 'eval_'+i;
+                let elem = document.querySelector('input[name="'+name+'"]:checked');
+                if(!elem){ alert("Falta responder la pregunta de selección múltiple #" + i); return; }
+                
+                if(elem.value === correctasMCQ[name]){
+                    aciertos++;
+                } else {
+                    // Determinar tipo de falla
+                    if(i <= 2) fallasInductivas = true;
+                    if(i >= 3) fallasDeductivas = true;
+                }
+            }
+
+            // Revisar Abiertas (Solo por extensión para la demostración técnica)
+            for(let i=1; i<=5; i++){
+                let val = document.getElementById('open_'+i).value.trim();
+                let words = val === "" ? 0 : val.split(/\s+/).length;
+                if(words < 10 || words > 15) {
+                    alert("La respuesta abierta #" + (i+5) + " no cumple con la restricción de palabras (entre 10 y 15). Tienes " + words + " palabras.");
+                    return;
+                }
+                // Si cumple el formato, suma como correcta
+                aciertos++;
+            }
+
+            // Calcular nota (10 preguntas = 0.5 cada una)
+            let nota = aciertos * 0.5;
+            userData.score = nota;
+            userData.element = getElemento(nota);
+            userData.evaluado = true;
+
+            // Generar Retroalimentación de Fortalecimiento (Dinámica)
+            let refuerzoHTML = "";
+            let textoTxt = "";
+
+            if(nota === 5.0){
+                refuerzoHTML = "<p>¡Excelente trabajo! Has dominado todos los conceptos. Como retroalimentación, escribe en tu cuaderno: 'Comprendo perfectamente las mezclas heterogéneas, la identificación de fases y los métodos de separación. Además, reconozco el valor de la escucha activa.'</p>";
+                textoTxt = "¡Excelente trabajo! Has dominado todos los conceptos. Comprendo perfectamente las mezclas heterogéneas, la identificación de fases y los métodos de separación.";
+            } else {
+                refuerzoHTML += "<ul>";
+                if(fallasInductivas){
+                    refuerzoHTML += "<li><strong>Aspecto Inductivo:</strong> Debo recordar que las mezclas heterogéneas se caracterizan porque puedo distinguir a simple vista sus fases (como el agua y los granos en el lavado del café, o el agua y el aceite).</li>";
+                    textoTxt += "- Aspecto Inductivo: Debo recordar que las mezclas heterogéneas se caracterizan porque puedo distinguir a simple vista sus fases.\n";
+                }
+                if(fallasDeductivas){
+                    refuerzoHTML += "<li><strong>Aspecto Deductivo:</strong> Debo repasar que los métodos físicos como la filtración y decantación sirven para separar fases. Las suspensiones (como agua y tierra) son ejemplos donde las partículas sólidas caen al fondo o se filtran.</li>";
+                    textoTxt += "- Aspecto Deductivo: Debo repasar que los métodos físicos como la filtración y decantación sirven para separar fases.\n";
+                }
+                if(!fallasInductivas && !fallasDeductivas){
+                     refuerzoHTML += "<li><strong>Competencia Comunicativa:</strong> Debo mejorar mi precisión al escribir y sintetizar información científica.</li>";
+                     textoTxt += "- Competencia Comunicativa: Debo mejorar mi precisión al escribir y sintetizar información científica.\n";
+                }
+                refuerzoHTML += "</ul>";
+            }
+
+            userData.reportText = textoTxt;
+
+            // Mostrar Resultados
+            document.getElementById('final-score').innerText = nota.toFixed(1);
+            document.getElementById('final-element').innerText = userData.element;
+            document.getElementById('feedback-text').innerHTML = refuerzoHTML;
+            document.getElementById('results-section').style.display = 'block';
+            
+            saveData();
+            updateUIProgress();
+
+            // Deshabilitar inputs
+            document.querySelectorAll('input, textarea, button').forEach(el => {
+                if(!el.innerText.includes("Descargar")) el.disabled = true;
+            });
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        // --- EXPORTACIÓN ---
+        function descargarReporte() {
+            let contenido = "=== REPORTE OVA: MEZCLAS HETEROGENEAS ===\n\n";
+            contenido += "Estudiante: " + userData.name + "\n";
+            contenido += "Nota Final: " + userData.score.toFixed(1) + " / 5.0\n";
+            contenido += "Elemento Alcanzado: " + userData.element + "\n\n";
+            contenido += "--- RUTA DE FORTALECIMIENTO PERSONALIZADA ---\n";
+            contenido += "La siguiente retroalimentación debe ser copiada en tu cuaderno:\n\n";
+            contenido += userData.reportText + "\n\n";
+            
+            contenido += "--- RESPUESTAS ABIERTAS ENTREGADAS ---\n";
+            for(let i=1; i<=5; i++){
+                let resp = document.getElementById('open_'+i).value.replace(/\n/g, " ");
+                contenido += "P" + (i+5) + ": " + resp + "\n";
+            }
+            contenido += "\nFirma Docente: ___________________________";
+
+            const blob = new Blob([contenido], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "Reporte_OVA_" + userData.name.replace(/\s+/g, '_') + ".txt";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Comando Ciencia: Misión Elementos 🏎️</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --militar-green: #4b5320;
+            --car-red: #cc0000;
+            --egg-yellow: #facc15;
+            --bg-color: #e2e8f0;
+            --accent: #1e40af;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: #1e293b; line-height: 1.4; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        
+        /* Cabecera Gamificada */
+        .header { background: linear-gradient(135deg, var(--militar-green), #1e293b); color: white; padding: 30px; border-radius: 0 0 30px 30px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; }
+        .rank-badge { background: var(--egg-yellow); color: black; padding: 10px 20px; border-radius: 50px; font-weight: bold; display: inline-block; margin-top: 10px; border: 2px solid #000; }
+        .points-display { position: absolute; top: 10px; right: 20px; font-size: 1.2em; font-weight: bold; }
+
+        .session-card { background: white; border-radius: 20px; padding: 30px; margin: 25px 0; border-left: 12px solid var(--accent); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .hour-badge { background: #000; color: #fff; padding: 5px 15px; border-radius: 10px; font-size: 0.9em; font-weight: bold; text-transform: uppercase; }
+
+        /* Actividades Cuaderno */
+        .notebook-zone { background: #fffbeb; border: 3px dashed #d97706; padding: 20px; border-radius: 15px; margin-top: 20px; }
+        .notebook-zone h3 { color: #92400e; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px; }
+
+        /* Juegos Interactivos */
+        .game-box { background: #f0f9ff; border: 2px solid #bae6fd; border-radius: 15px; padding: 20px; margin: 20px 0; }
+        .btn { background: var(--accent); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-size: 1em; cursor: pointer; margin-top: 10px; font-weight: bold; transition: 0.3s; }
+        .btn:hover { background: #1d4ed8; transform: scale(1.05); }
+        
+        .feedback { display: none; margin-top: 15px; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; }
+        .correct { background: #dcfce7; color: #166534; border: 2px solid #16a34a; }
+
+        /* Estilos específicos de Juegos */
+        .drag-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; min-height: 50px; padding: 10px; background: #fff; border-radius: 10px; }
+        .letter-tile, .word-tile { padding: 10px 15px; background: #fff; border: 2px solid var(--accent); border-radius: 8px; cursor: pointer; font-weight: bold; user-select: none; }
+        .slot { width: 45px; height: 45px; border: 2px dashed #94a3b8; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2em; }
+        .phrase-slot { min-width: 80px; height: 45px; border: 2px dashed #94a3b8; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 10px; }
+
+        /* Sopa de Letras */
+        .word-search-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; max-width: 400px; margin: 20px auto; }
+        .grid-cell { width: 35px; height: 35px; background: white; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .grid-cell.selected { background: var(--egg-yellow); }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="points-display">⭐ Puntos: <span id="pts">0</span></div>
+    <h1>¡Hola, Santiago! 🫡</h1>
+    <p>Comandante, tu misión esta semana es descubrir los elementos secretos en tus juguetes y tu comida.</p>
+    <div class="rank-badge" id="rank">Rango: Recluta de Ciencias</div>
+</div>
+
+<div class="container">
+
+    <div class="session-card">
+        <span class="hour-badge">Hora 1: El Escuadrón de Juguetes</span>
+        <h2>1. Sustancias Puras</h2>
+        <p>Santiago, una <strong>Sustancia Pura</strong> es como un batallón de tus soldados donde todos son idénticos. Tienen la misma forma, el mismo color y el mismo poder. No están mezclados con nada más.</p>
+        
+        <div class="notebook-zone">
+            <h3>✏️ Actividad en Cuaderno</h3>
+            <p>1. Escribe el título: <b>MI BATALLÓN PURO</b>.</p>
+            <p>2. Dibuja 4 soldados de plástico verde. </p>
+            <p>3. Escribe debajo: "Son puros porque son iguales".</p>
+        </div>
+
+        <div class="game-box">
+            <strong>🎮 Juego 1: ¿Cómo es tu batallón?</strong>
+            <div class="drag-container" id="l1-drag"></div>
+            <div class="drag-container" id="l1-slots"></div>
+            <button class="btn" onclick="checkAnagram('l1', 'PURO')">Verificar</button>
+            <div id="fb-l1" class="feedback">¡Exacto! Es una sustancia pura. +10 puntos.</div>
+        </div>
+
+        <div class="game-box">
+            <strong>🎮 Juego 2: ¿De qué están hechos tus soldados?</strong>
+            <div class="drag-container" id="l2-drag"></div>
+            <div class="drag-container" id="l2-slots"></div>
+            <button class="btn" onclick="checkAnagram('l2', 'HIERRO')">Verificar</button>
+            <div id="fb-l2" class="feedback">¡Brillante! El hierro es un elemento puro. +10 puntos.</div>
+        </div>
+    </div>
+
+    <div class="session-card">
+        <span class="hour-badge">Hora 2: Laboratorio de Cocina</span>
+        <h2>2. Los Elementos en tu Comida</h2>
+        <p>Los <strong>Elementos</strong> son las piezas más pequeñas (átomos). Tú los comes para ser fuerte:</p>
+        <ul>
+            <li><strong>Hierro (Fe):</strong> Está en tus frijoles y lentejas. ¡Te da fuerza de soldado!</li>
+            <li><strong>Calcio (Ca):</strong> Está en tu huevito. ¡Hace tus huesos duros como metal!</li>
+        </ul>
+
+        <div class="game-box">
+            <strong>🎮 Juego 3: Elemento del huevito</strong>
+            <div class="drag-container" id="l3-drag"></div>
+            <div class="drag-container" id="l3-slots"></div>
+            <button class="btn" onclick="checkAnagram('l3', 'CALCIO')">Verificar</button>
+            <div id="fb-l3" class="feedback">¡Muy bien! El calcio fortalece tus huesos. +10 puntos.</div>
+        </div>
+
+        <div class="game-box">
+            <strong>🎮 Juego 4: La pieza más pequeña</strong>
+            <div class="drag-container" id="l4-drag"></div>
+            <div class="drag-container" id="l4-slots"></div>
+            <button class="btn" onclick="checkAnagram('l4', 'ATOMO')">Verificar</button>
+            <div id="fb-l4" class="feedback">¡Correcto! Todo está hecho de átomos. +10 puntos.</div>
+        </div>
+
+        <div class="game-box">
+            <strong>🎮 Juego 5: Misión de nutrición</strong>
+            <div class="drag-container" id="f1-drag"></div>
+            <div class="drag-container" id="f1-slots"></div>
+            <button class="btn" onclick="checkPhrase('f1', 'El hierro da fuerza')">Verificar</button>
+            <div id="fb-f1" class="feedback">¡Eres un campeón, Santiago! +20 puntos.</div>
+        </div>
+
+        <div class="notebook-zone">
+            <h3>✏️ Actividad en Cuaderno</h3>
+            <p>1. Dibuja un plato de <b>arroz con frijoles y huevo</b>.</p>
+            <p>2. Señala el huevo y escribe: <b>CALCIO</b>.</p>
+            <p>3. Señala los frijoles y escribe: <b>HIERRO</b>.</p>
+        </div>
+    </div>
+
+    <div class="session-card">
+        <span class="hour-badge">Hora 3: Pista de Carreras Científica</span>
+        <h2>3. Metales y Brillo</h2>
+        <p>Santiago, tus <strong>carros de juguete</strong> son brillantes y fríos porque son de <strong>Metal</strong>. Los metales son elementos que conducen energía.</p>
+
+        <div class="game-box">
+            <strong>🎮 Juego 6: Material de tus carros</strong>
+            <div class="drag-container" id="l5-drag"></div>
+            <div class="drag-container" id="l5-slots"></div>
+            <button class="btn" onclick="checkAnagram('l5', 'METAL')">Verificar</button>
+            <div id="fb-l5" class="feedback">¡Increíble! Los metales brillan como tus carros. +10 puntos.</div>
+        </div>
+
+        <div class="game-box">
+            <strong>🎮 Juego 7: Gran premio</strong>
+            <div class="drag-container" id="f2-drag"></div>
+            <div class="drag-container" id="f2-slots"></div>
+            <button class="btn" onclick="checkPhrase('f2', 'Los carros son de metal')">Verificar</button>
+            <div id="fb-f2" class="feedback">¡Cruzaste la meta! +20 puntos.</div>
+        </div>
+
+        <div class="game-box">
+            <strong>🎮 Juego 8: Definición final</strong>
+            <div class="drag-container" id="f3-drag"></div>
+            <div class="drag-container" id="f3-slots"></div>
+            <button class="btn" onclick="checkPhrase('f3', 'Los elementos son sustancias puras')">Verificar</button>
+            <div id="fb-f3" class="feedback">¡Eres un experto científico! +20 puntos.</div>
+        </div>
+
+        <div class="game-box">
+            <strong>🔍 Juego 9: Sopa de Letras - Comando Santiago</strong>
+            <p>Encuentra estas 10 palabras: HIERRO, COBRE, CALCIO, OXIGENO, CARBONO, ARROZ, FRIJOL, SOLDADO, CARRO, ATOMO.</p>
+            <div class="word-search-grid" id="sopa"></div>
+            <button class="btn" onclick="finishSopa()">¡Encontré todas!</button>
+        </div>
+
+        <div class="notebook-zone">
+            <h3>✏️ Actividad en Cuaderno</h3>
+            <p>1. Escribe: <b>LOS METALES SON ELEMENTOS</b>.</p>
+            <p>2. Busca en tu casa algo de metal y dibújalo.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let points = 0;
+
+    // Configuración de Juegos
+    const setup = {
+        l1: { word: 'PURO', picked: null },
+        l2: { word: 'HIERRO', picked: null },
+        l3: { word: 'CALCIO', picked: null },
+        l4: { word: 'ATOMO', picked: null },
+        l5: { word: 'METAL', picked: null },
+        f1: { phrase: 'El hierro da fuerza', picked: null },
+        f2: { phrase: 'Los carros son de metal', picked: null },
+        f3: { phrase: 'Los elementos son sustancias puras', picked: null }
+    };
+
+    function initGames() {
+        // Init Anagrams
+        ['l1','l2','l3','l4','l5'].forEach(id => {
+            const word = setup[id].word;
+            const shuffled = word.split('').sort(() => Math.random() - 0.5);
+            shuffled.forEach(c => {
+                const tile = createTile(c, id);
+                document.getElementById(id+'-drag').appendChild(tile);
+            });
+            for(let i=0; i<word.length; i++) {
+                document.getElementById(id+'-slots').appendChild(createSlot(id));
+            }
+        });
+
+        // Init Phrases
+        ['f1','f2','f3'].forEach(id => {
+            const words = setup[id].phrase.split(' ').sort(() => Math.random() - 0.5);
+            words.forEach(w => {
+                const tile = createTile(w, id, true);
+                document.getElementById(id+'-drag').appendChild(tile);
+            });
+            for(let i=0; i<setup[id].phrase.split(' ').length; i++) {
+                document.getElementById(id+'-slots').appendChild(createSlot(id, true));
+            }
+        });
+
+        // Init Sopa
+        const letters = "HIERROABCDCALCIOEFGHATOMOIJKLFRIJOLMNOSOLDADOPQRSCARROSTUVWXYZOXIGENOCARBONOARROZ";
+        const grid = document.getElementById('sopa');
+        for(let i=0; i<100; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            cell.textContent = letters[i] || 'X';
+            cell.onclick = () => cell.classList.toggle('selected');
+            grid.appendChild(cell);
+        }
+    }
+
+    function createTile(content, gameId, isWord = false) {
+        const div = document.createElement('div');
+        div.className = isWord ? 'word-tile' : 'letter-tile';
+        div.textContent = content;
+        div.onclick = () => { setup[gameId].picked = div; };
+        return div;
+    }
+
+    function createSlot(gameId, isWord = false) {
+        const div = document.createElement('div');
+        div.className = isWord ? 'phrase-slot' : 'slot';
+        div.onclick = () => {
+            if(setup[gameId].picked) {
+                div.textContent = setup[gameId].picked.textContent;
+                setup[gameId].picked.style.visibility = 'hidden';
+                setup[gameId].picked = null;
+            }
+        };
+        return div;
+    }
+
+    function checkAnagram(id, correct) {
+        const slots = document.querySelectorAll('#'+id+'-slots .slot');
+        let res = "";
+        slots.forEach(s => res += s.textContent);
+        if(res === correct) {
+            document.getElementById('fb-'+id).style.display = 'block';
+            document.getElementById('fb-'+id).classList.add('correct');
+            addPoints(10);
+        } else {
+            alert("¡Casi! Inténtalo de nuevo, Santiago.");
+            resetGame(id);
+        }
+    }
+
+    function checkPhrase(id, correct) {
+        const slots = document.querySelectorAll('#'+id+'-slots .phrase-slot');
+        let res = [];
+        slots.forEach(s => res.push(s.textContent));
+        if(res.join(' ') === correct) {
+            document.getElementById('fb-'+id).style.display = 'block';
+            document.getElementById('fb-'+id).classList.add('correct');
+            addPoints(20);
+        } else {
+            alert("Ordena las piezas otra vez, comandante.");
+            resetGame(id);
+        }
+    }
+
+    function resetGame(id) {
+        document.getElementById(id+'-slots').childNodes.forEach(c => c.textContent = '');
+        document.getElementById(id+'-drag').childNodes.forEach(c => c.style.visibility = 'visible');
+    }
+
+    function addPoints(p) {
+        points += p;
+        document.getElementById('pts').textContent = points;
+        const rank = document.getElementById('rank');
+        if(points >= 50) rank.textContent = "Sargento de Ciencias 🎖️";
+        if(points >= 100) rank.textContent = "Capitán de Elementos 🎖️";
+        if(points >= 150) rank.textContent = "General de la Materia 🏆";
+    }
+
+    function finishSopa() {
+        addPoints(50);
+        alert("¡Misión cumplida! Encontraste todos los tesoros.");
+    }
+
+    window.onload = initGames;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Agua, Solvente Universal y Bioética</title>
+    <style>
+        :root {
+            --primary: #0077b6; /* Azul Océano */
+            --secondary: #90e0ef; /* Azul Claro */
+            --accent: #00b4d8; /* Cian */
+            --text: #333333;
+            --bg: #fdfdfd; /* Blanco hueso para evitar fatiga */
+            --success: #2a9d8f;
+            --error: #e76f51;
+            --warning: #e9c46a;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- Login Overlay --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 119, 182, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            flex-direction: column;
+            color: white;
+        }
+
+        #login-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        #login-box input {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid var(--primary);
+            border-radius: 5px;
+            width: 80%;
+            margin-bottom: 10px;
+        }
+
+        /* --- Barra de Progreso y Header --- */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .progress-container {
+            flex-grow: 1;
+            margin: 0 20px;
+            background: rgba(255,255,255,0.3);
+            height: 20px;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            height: 100%;
+            background: var(--warning);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .periodic-score {
+            display: flex;
+            gap: 5px;
+        }
+
+        .element-badge {
+            width: 30px;
+            height: 30px;
+            background: white;
+            color: var(--text);
+            border: 2px solid var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 12px;
+            border-radius: 4px;
+            opacity: 0.3;
+        }
+
+        .element-badge.active {
+            background: var(--warning);
+            border-color: #bfa148;
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* --- Contenedor Principal --- */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary);
+        }
+
+        .section {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--accent);
+        }
+
+        /* --- Tablas y Gráficos --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .graphic-placeholder {
+            background: #eef9fb;
+            border: 2px dashed var(--accent);
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        /* --- Actividades Cuaderno --- */
+        .notebook-activity {
+            background: #fff8e1;
+            border: 2px solid #ffe082;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .notebook-activity::before {
+            content: "📓 Actividad en Cuaderno";
+            position: absolute;
+            top: -12px;
+            left: 10px;
+            background: #ffe082;
+            padding: 2px 10px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* --- Botones --- */
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #005f8b;
+        }
+
+        button.verify-btn {
+            background: var(--success);
+            margin-top: 10px;
+        }
+
+        /* --- ICFES Question Style --- */
+        .icfes-container {
+            border: 2px solid var(--text);
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
+        .icfes-options label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .icfes-options label:hover {
+            background: #f0f0f0;
+        }
+
+        .feedback {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        /* --- Inputs Finales --- */
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+
+        .warning-text {
+            color: var(--error);
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* --- Chemistry --- */
+        sub {
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div id="login-box">
+            <h2>Bienvenido a tu Clase de Ciencias</h2>
+            <p>Por favor, ingresa tu nombre completo para comenzar.</p>
+            <input type="text" id="student-name-input" placeholder="Nombres y Apellidos">
+            <br>
+            <button onclick="login()">Comenzar Aventura</button>
+        </div>
+    </div>
+
+    <header>
+        <div id="student-display">Estudiante: Invitado</div>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div class="periodic-score">
+            <div class="element-badge" id="score-0">H</div>
+            <div class="element-badge" id="score-1">He</div>
+            <div class="element-badge" id="score-2">Li</div>
+            <div class="element-badge" id="score-3">Be</div>
+            <div class="element-badge" id="score-4">B</div>
+            <div class="element-badge" id="score-5">C</div>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <div class="section" id="sec-intro">
+            <h2>🎯 Objetivo de Aprendizaje</h2>
+            <p>Comprender la importancia del agua como solvente universal en los ecosistemas y analizar, desde una perspectiva bioética, las consecuencias de la contaminación por jabones y abonos en nuestras fuentes hídricas locales (quebradas).</p>
+            
+            <hr>
+            
+            <h3>🧠 Pre-saberes: ¿Qué tanto conoces?</h3>
+            <div id="pre-test">
+                <div class="question-block">
+                    <p>1. ¿Qué fórmula química representa al agua?</p>
+                    <select id="pre-q1">
+                        <option value="0">Selecciona...</option>
+                        <option value="a">CO2</option>
+                        <option value="b">H2O</option>
+                        <option value="c">NaCl</option>
+                    </select>
+                </div>
+                <div class="question-block">
+                    <p>2. Cuando decimos que el agua "disuelve", nos referimos a:</p>
+                    <select id="pre-q2">
+                        <option value="0">Selecciona...</option>
+                        <option value="a">Que congela las cosas</option>
+                        <option value="b">Que incorpora sustancias sólidas en ella</option>
+                        <option value="c">Que evapora los líquidos</option>
+                    </select>
+                </div>
+                <div class="question-block">
+                    <p>3. ¿Qué es una quebrada?</p>
+                    <select id="pre-q3">
+                        <option value="0">Selecciona...</option>
+                        <option value="a">Un cuerpo de agua corriente pequeño</option>
+                        <option value="b">Un océano grande</option>
+                        <option value="c">Un lago sin movimiento</option>
+                    </select>
+                </div>
+                <button onclick="checkPreTest()" class="verify-btn">Verificar Pre-saberes</button>
+                <div id="pre-feedback" class="feedback"></div>
+            </div>
+        </div>
+
+        <div class="section" id="sec-inductive">
+            <h2>💧 El Agua: Mucho más que un líquido (Fase Inductiva)</h2>
+            
+            <p>Imaginen por un momento que pueden reducirse al tamaño de una hormiga y caminar sobre la hoja de una planta cerca de la quebrada de nuestra vereda. Debajo de sus pies, la planta se siente fresca. Esto se debe a que, en su interior, fluye continuamente un líquido vital: el agua. Pero, ¿por qué el agua es tan especial? No es solo porque nos quita la sed. La magia comienza con su estructura invisible a simple vista.</p>
+
+            <div class="graphic-placeholder">
+                [GRÁFICO: Molécula de agua tipo "Mickey Mouse"]<br>
+                Un átomo de Oxígeno (Cabeza) y dos de Hidrógeno (Orejas).<br>
+                El lado del Oxígeno es ligeramente negativo (-), el lado del Hidrógeno es positivo (+).
+            </div>
+
+            <p>Cada molécula de agua (H<sub>2</sub>O) se comporta como un pequeño imán. Tiene un lado positivo y uno negativo. A esto lo llamamos <strong>polaridad</strong>. Gracias a esta propiedad, el agua es "sociable"; le encanta pegarse a otras sustancias y separarlas. Por eso la llamamos el <strong>Solvente Universal</strong>. En la naturaleza, el agua nunca está pura del todo; siempre lleva "pasajeros" disueltos: minerales del suelo, oxígeno del aire y nutrientes.</p>
+
+            <div class="notebook-activity">
+                <strong>Actividad 1 (Dibujar):</strong><br>
+                En tu cuaderno, dibuja la molécula de agua. Usa el color rojo para el oxígeno y azul para el hidrógeno. Marca con un (+) y un (-) sus polos.
+                <br><button onclick="markActivity(1)" class="verify-btn">¡Ya lo dibujé!</button>
+            </div>
+
+            <p>Piensen ahora en la quebrada. El agua que corre allí no solo es H<sub>2</sub>O. Mientras baja desde la montaña, el agua "lava" las rocas y disuelve sales minerales. Sin esta capacidad de disolver, las plantas acuáticas y los peces no tendrían nutrientes. Es como si el agua fuera un camión de repartos que lleva la comida a cada célula de los seres vivos. Si el agua no pudiera disolver cosas, la sangre en nuestro cuerpo (que es mayormente agua) no podría llevar el azúcar ni el oxígeno a nuestro cerebro.</p>
+
+            <div class="notebook-activity">
+                <strong>Actividad 2 (Mapa Mental):</strong><br>
+                Crea un mapa mental con la palabra central "AGUA". Saca tres ramas principales: "Estructura" (H2O), "Propiedad" (Polaridad), "Función" (Transporte).
+                <br><button onclick="markActivity(2)" class="verify-btn">¡Mapa listo!</button>
+            </div>
+
+            <p>Sin embargo, esta capacidad de disolverlo "casi todo" es un arma de doble filo. Así como disuelve los nutrientes buenos, también disuelve los venenos fácilmente. Cuando observamos un ecosistema sano, vemos un equilibrio perfecto de sustancias disueltas.</p>
+
+            <table border="1">
+                <caption>Tabla 1: Sustancias en el Agua de una Quebrada Sana</caption>
+                <thead>
+                    <tr>
+                        <th>Sustancia</th>
+                        <th>Estado</th>
+                        <th>Función en el ecosistema</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Oxígeno</td>
+                        <td>Disuelto (Gas)</td>
+                        <td>Permite respirar a los peces.</td>
+                    </tr>
+                    <tr>
+                        <td>Sales Minerales</td>
+                        <td>Disueltas (Iones)</td>
+                        <td>Nutrición de plantas y algas.</td>
+                    </tr>
+                    <tr>
+                        <td>Arcilla/Arena</td>
+                        <td>Suspensión (No disuelto)</td>
+                        <td>Forma el lecho del río.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="notebook-activity">
+                <strong>Actividad 3 (Contestar):</strong><br>
+                Basado en la tabla anterior, responde en tu cuaderno: ¿Qué pasaría con los peces si el agua perdiera la capacidad de disolver el oxígeno?
+                <br><button onclick="markActivity(3)" class="verify-btn">¡Respuesta escrita!</button>
+            </div>
+
+            <p>El agua también tiene una "piel" elástica llamada <strong>tensión superficial</strong>. ¿Han visto esos insectos zapateros que caminan sobre el agua de la quebrada sin hundirse? Ellos aprovechan que las moléculas de agua se agarran fuerte entre ellas en la superficie. Esta propiedad es vital para muchos insectos y plantas pequeñas.</p>
+
+            <div class="notebook-activity">
+                <strong>Actividad 4 (Experimento Mental/Dibujo):</strong><br>
+                Dibuja un insecto caminando sobre el agua. Dibuja debajo de sus patas unas pequeñas "flechas" que representen la fuerza del agua sosteniéndolo (Tensión Superficial).
+                <br><button onclick="markActivity(4)" class="verify-btn">¡Dibujo completado!</button>
+            </div>
+
+            <p>Para cerrar esta primera parte, debemos entender que el agua conecta todo. Lo que se disuelve en la parte alta de la montaña, llegará inevitablemente a la parte baja. El agua es el medio de comunicación de la naturaleza.</p>
+
+            <div class="notebook-activity">
+                <strong>Actividad 5 (Tabla Comparativa):</strong><br>
+                Haz una tabla con dos columnas: "Lo que el agua debe llevar" (ej: oxígeno) y "Lo que NO debe llevar" (ej: basura). Escribe 3 ejemplos en cada una.
+                <br><button onclick="markActivity(5)" class="verify-btn">¡Tabla terminada!</button>
+            </div>
+        </div>
+
+        <div class="section icfes-container" id="sec-icfes">
+            <h3>🧩 Desafío de Indagación (Tipo Saber Pro)</h3>
+            <p><strong>Contexto:</strong> Un grupo de estudiantes de grado sexto decidió investigar por qué los peces estaban muriendo en una parte de la quebrada cercana a un cultivo de papa. Ellos midieron la cantidad de Oxígeno Disuelto en el agua en cuatro puntos diferentes del río. Los resultados se muestran en la siguiente gráfica.</p>
+            
+            <div class="graphic-placeholder" style="background: white; border: 1px solid #333;">
+                <div style="display:flex; align-items:flex-end; height: 200px; gap: 20px; padding:10px; border-left: 2px solid black; border-bottom: 2px solid black;">
+                    <div style="height: 80%; width: 50px; background: #2a9d8f; text-align:center; color:white;">Punto 1<br>(Nacimiento)</div>
+                    <div style="height: 75%; width: 50px; background: #2a9d8f; text-align:center; color:white;">Punto 2<br>(Antes del cultivo)</div>
+                    <div style="height: 20%; width: 50px; background: #e76f51; text-align:center; color:white;">Punto 3<br>(Después del cultivo)</div>
+                    <div style="height: 30%; width: 50px; background: #e9c46a; text-align:center; color:white;">Punto 4<br>(Lejos del cultivo)</div>
+                </div>
+                <p><em>Eje Y: Cantidad de Oxígeno - Eje X: Puntos de muestreo</em></p>
+                <p><strong>Nota:</strong> En el Punto 3, los estudiantes observaron que el agua tenía mucha espuma y color verde oscuro.</p>
+            </div>
+
+            <p><strong>Pregunta:</strong> Teniendo en cuenta la gráfica y la observación de los estudiantes, ¿cuál de las siguientes hipótesis explica mejor la disminución drástica del oxígeno en el Punto 3?</p>
+
+            <div class="icfes-options">
+                <label><input type="radio" name="icfes1" value="A"> A. El agua se volvió más cristalina en el Punto 3, lo que asustó a las moléculas de oxígeno.</label>
+                <label><input type="radio" name="icfes1" value="B"> B. El cultivo vertió sustancias (abonos) que aumentaron las algas, las cuales al descomponerse consumieron el oxígeno disponible.</label>
+                <label><input type="radio" name="icfes1" value="C"> C. La temperatura del agua bajó demasiado en el Punto 3, congelando el oxígeno y haciéndolo desaparecer.</label>
+                <label><input type="radio" name="icfes1" value="D"> D. Los peces se bebieron todo el oxígeno en el Punto 2, por eso no llegó nada al Punto 3.</label>
+            </div>
+            
+            <button onclick="checkICFES()" class="verify-btn">Enviar Respuesta</button>
+            <div id="icfes-feedback"></div>
+        </div>
+
+        <div class="section" id="sec-deductive">
+            <h2>🧪 Consecuencias y Ética: ¿Qué estamos haciendo? (Fase Deductiva)</h2>
+            
+            <p>Ahora que sabemos cómo funciona el agua, podemos deducir qué pasa cuando intervenimos en ella. Retomemos el caso de la quebrada. ¿Qué sucede cuando el agua, en su afán de disolver, se encuentra con <strong>jabones</strong> y <strong>abonos</strong> químicos?</p>
+            
+            <p>Primero, hablemos de los <strong>abonos (fertilizantes)</strong>. Estos contienen Nitrógeno y Fósforo. Para las plantas, esto es comida pura. Si estos abonos caen al agua (por la lluvia o vertidos directos), las algas microscópicas de la quebrada "comen" en exceso y se reproducen descontroladamente. El agua se pone verde. A esto se le llama <strong>Eutrofización</strong>. </p>
+            
+            <div class="notebook-activity">
+                <strong>Actividad 6 (Mapa Conceptual):</strong><br>
+                Crea un mapa conceptual pequeño. Inicio: "Exceso de Abonos". Conectores: "provoca", "causa", "resulta en". Final: "Muerte de peces".
+                <br><button onclick="markActivity(6)" class="verify-btn">¡Mapa conceptual listo!</button>
+            </div>
+
+            <p>El problema no es que las algas crezcan, sino que cuando mueren, las bacterias las descomponen. Este proceso de descomposición <strong>consume todo el oxígeno del agua</strong> (como vimos en la pregunta tipo ICFES). Resultado: Peces asfixiados. El agua, queriendo nutrir, termina matando por exceso.</p>
+
+            <p>Segundo, los <strong>jabones y detergentes</strong>. ¿Recuerdan la tensión superficial, esa "piel" del agua? Los jabones son "rompedores de tensión". Están diseñados químicamente para romper la fuerza que une a las moléculas de agua para poder sacar la grasa de la ropa.</p>
+
+            <div class="notebook-activity">
+                <strong>Actividad 7 (Dibujar):</strong><br>
+                Dibuja qué le pasa al insecto zapatero (el que dibujaste en la Actividad 4) si alguien echa agua con jabón en la quebrada. ¿Sigue flotando o se hunde?
+                <br><button onclick="markActivity(7)" class="verify-btn">¡Dibujo hecho!</button>
+            </div>
+
+            <p>Si el jabón llega a la quebrada, rompe la tensión superficial. Los insectos se hunden y mueren. Además, los detergentes dañan las branquias de los peces, impidiéndoles respirar. Aquí entra la <strong>Bioética</strong> y la Ética del Cuidado.</p>
+
+            <table border="1">
+                <caption>Tabla 2: Impacto Humano vs. Bioética</caption>
+                <thead>
+                    <tr>
+                        <th>Acción Humana</th>
+                        <th>Consecuencia Química</th>
+                        <th>Reflexión Bioética (Lo correcto)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Lavar ropa en el río</td>
+                        <td>Rompe tensión superficial, aporta fosfatos.</td>
+                        <td>Usar baldes y verter el agua sucia lejos del cauce, filtrada por tierra.</td>
+                    </tr>
+                    <tr>
+                        <td>Abonar cerca a la orilla</td>
+                        <td>Eutrofización (exceso de algas).</td>
+                        <td>Dejar una barrera de vegetación nativa que filtre antes del río.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="notebook-activity">
+                <strong>Actividad 8 (Contestar):</strong><br>
+                Escribe en tu cuaderno: ¿Qué significa para ti ser un "Guardián del Agua"? Usa el concepto de Bioética en tu respuesta.
+                <br><button onclick="markActivity(8)" class="verify-btn">¡Reflexión escrita!</button>
+            </div>
+
+            <p>La Bioética nos enseña que no somos dueños de la naturaleza, sino parte de ella. Lo que le hacemos al agua, nos lo hacemos a nosotros mismos. Si contaminamos la quebrada arriba, el vecino de abajo recibirá veneno. El cuidado ambiental no es solo "no tirar basura", es entender la química del agua para no alterar su equilibrio invisible.</p>
+
+            <div class="notebook-activity">
+                <strong>Actividad 9 (Lista de Chequeo):</strong><br>
+                Haz una lista de 3 cosas que se usan en tu casa (cocina o limpieza) que podrían dañar el agua si se tiran por el desagüe sin cuidado.
+                <br><button onclick="markActivity(9)" class="verify-btn">¡Lista creada!</button>
+            </div>
+
+            <div class="notebook-activity">
+                <strong>Actividad 10 (Compromiso):</strong><br>
+                Dibuja una mano (tu mano) y dentro de ella escribe un compromiso personal para cuidar la quebrada de tu vereda o el agua de tu ciudad.
+                <br><button onclick="markActivity(10)" class="verify-btn">¡Compromiso sellado!</button>
+            </div>
+        </div>
+
+        <div class="section" id="sec-final">
+            <h2>📝 Taller Final de Evaluación</h2>
+            <p>Demuestra lo que aprendiste. Recuerda: En las preguntas abiertas, no puedes copiar y pegar. Debes escribir con tus propias palabras.</p>
+
+            <h3>Selección Múltiple</h3>
+            <div id="final-mcq">
+                <div class="question-block">
+                    <p>1. La eutrofización es causada principalmente por el exceso de:</p>
+                    <select id="fq1"><option value="0">...</option><option value="a">Oxígeno</option><option value="b">Nitrógeno y Fósforo (Abonos)</option><option value="c">Peces</option><option value="d">Piedras</option></select>
+                </div>
+                <div class="question-block">
+                    <p>2. ¿Qué propiedad del agua rompen los jabones?</p>
+                    <select id="fq2"><option value="0">...</option><option value="a">La temperatura</option><option value="b">La tensión superficial</option><option value="c">El color</option><option value="d">El sabor</option></select>
+                </div>
+                <div class="question-block">
+                    <p>3. ¿Por qué llamamos al agua "Solvente Universal"?</p>
+                    <select id="fq3"><option value="0">...</option><option value="a">Porque es barata</option><option value="b">Porque disuelve muchas sustancias por su polaridad</option><option value="c">Porque viene del universo</option><option value="d">Porque es transparente</option></select>
+                </div>
+                <div class="question-block">
+                    <p>4. Bioéticamente, ¿qué actitud es correcta?</p>
+                    <select id="fq4"><option value="0">...</option><option value="a">Tirar aceite al lavaplatos</option><option value="b">Reconocer que mis acciones afectan a otros seres vivos</option><option value="c">Lavar el carro en el río</option><option value="d">Usar más jabón del necesario</option></select>
+                </div>
+                <div class="question-block">
+                    <p>5. Si disminuye el oxígeno en el agua, ¿qué proceso ocurrió antes?</p>
+                    <select id="fq5"><option value="0">...</option><option value="a">Fotosíntesis excesiva</option><option value="b">Descomposición bacteriana de algas muertas</option><option value="c">Enfriamiento del agua</option><option value="d">Lluvia limpia</option></select>
+                </div>
+            </div>
+
+            <hr>
+
+            <h3>Preguntas Abiertas (Anti-IA / Anti-CopyPaste)</h3>
+            <p><em>Regla: Mínimo 10 palabras, máximo 15 palabras por respuesta. Escribe tú mismo/a.</em></p>
+            
+            <div class="open-q">
+                <p>1. Explica con tus palabras qué es la polaridad del agua.</p>
+                <textarea id="oq1" onpaste="return false;" placeholder="Escribe aquí..."></textarea>
+                <div id="oq1-msg" class="warning-text"></div>
+                <button onclick="verifyOpenQ('oq1')" class="verify-btn">Verificar extensión</button>
+            </div>
+
+            <div class="open-q">
+                <p>2. ¿Por qué es malo que un insecto se hunda en el agua por el jabón?</p>
+                <textarea id="oq2" onpaste="return false;" placeholder="Escribe aquí..."></textarea>
+                <div id="oq2-msg" class="warning-text"></div>
+                <button onclick="verifyOpenQ('oq2')" class="verify-btn">Verificar extensión</button>
+            </div>
+
+            <div class="open-q">
+                <p>3. Describe brevemente qué es la eutrofización.</p>
+                <textarea id="oq3" onpaste="return false;" placeholder="Escribe aquí..."></textarea>
+                <div id="oq3-msg" class="warning-text"></div>
+                <button onclick="verifyOpenQ('oq3')" class="verify-btn">Verificar extensión</button>
+            </div>
+
+            <div class="open-q">
+                <p>4. ¿Cómo afecta la contaminación del agua a tu comunidad?</p>
+                <textarea id="oq4" onpaste="return false;" placeholder="Escribe aquí..."></textarea>
+                <div id="oq4-msg" class="warning-text"></div>
+                <button onclick="verifyOpenQ('oq4')" class="verify-btn">Verificar extensión</button>
+            </div>
+
+            <div class="open-q">
+                <p>5. Define Bioética en relación con el agua.</p>
+                <textarea id="oq5" onpaste="return false;" placeholder="Escribe aquí..."></textarea>
+                <div id="oq5-msg" class="warning-text"></div>
+                <button onclick="verifyOpenQ('oq5')" class="verify-btn">Verificar extensión</button>
+            </div>
+
+            <br><br>
+            <button onclick="downloadData()" style="background-color: #2a9d8f; font-size: 1.2rem;">📥 Descargar Mis Respuestas (.txt)</button>
+
+        </div>
+
+    </div>
+
+    <script>
+        // --- LÓGICA DEL OVA ---
+        
+        let studentName = "";
+        let progress = 0; // 0 a 100
+        let score = 0; // 0 a 5
+        let activitiesDone = new Set();
+        let openAnswersValid = {oq1: false, oq2: false, oq3: false, oq4: false, oq5: false};
+
+        // Inicialización
+        window.onload = function() {
+            if(localStorage.getItem('studentName')) {
+                studentName = localStorage.getItem('studentName');
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('student-display').innerText = "Estudiante: " + studentName;
+                loadProgress();
+            }
+        };
+
+        function login() {
+            const input = document.getElementById('student-name-input').value;
+            if(input.trim().length > 3) {
+                studentName = input;
+                localStorage.setItem('studentName', studentName);
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('student-display').innerText = "Estudiante: " + studentName;
+                initProgress();
+            } else {
+                alert("Por favor escribe tu nombre completo.");
+            }
+        }
+
+        // --- SISTEMA DE PROGRESO Y PUNTOS ---
+        
+        function initProgress() {
+            // Si ya existía, se carga, si no, empieza en 0
+            if(localStorage.getItem('ovaProgress')) {
+                loadProgress();
+            } else {
+                updateVisuals();
+            }
+        }
+
+        function loadProgress() {
+            const savedData = JSON.parse(localStorage.getItem('ovaProgress'));
+            if(savedData) {
+                progress = savedData.progress;
+                score = savedData.score;
+                // Recuperar actividades hechas (convertir array a Set)
+                activitiesDone = new Set(savedData.activities);
+                updateVisuals();
+                
+                // Restaurar botones deshabilitados si ya se hicieron
+                activitiesDone.forEach(id => {
+                   // Lógica visual para marcar como hecho
+                });
+            }
+        }
+
+        function saveProgress() {
+            const data = {
+                progress: progress,
+                score: score,
+                activities: Array.from(activitiesDone)
+            };
+            localStorage.setItem('ovaProgress', JSON.stringify(data));
+            updateVisuals();
+        }
+
+        function updateVisuals() {
+            document.getElementById('progress-bar').style.width = progress + "%";
+            
+            // Actualizar elementos de la tabla periódica (Puntos)
+            for(let i=0; i<=5; i++) {
+                const el = document.getElementById('score-' + i);
+                if(i <= score) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            }
+        }
+
+        function addScore(points) {
+            if(score < 5) {
+                score += points;
+                if(score > 5) score = 5;
+                saveProgress();
+            }
+        }
+
+        function addProgress(percent) {
+            if(progress < 100) {
+                progress += percent;
+                if(progress > 100) progress = 100;
+                saveProgress();
+            }
+        }
+
+        // --- FUNCIONES ESPECÍFICAS DE ACTIVIDADES ---
+
+        function checkPreTest() {
+            const q1 = document.getElementById('pre-q1').value;
+            const q2 = document.getElementById('pre-q2').value;
+            const q3 = document.getElementById('pre-q3').value;
+            const fb = document.getElementById('pre-feedback');
+
+            if(q1 === 'b' && q2 === 'b' && q3 === 'a') {
+                fb.className = "feedback correct";
+                fb.innerHTML = "<strong>¡Excelente!</strong> Tienes buenos conocimientos previos sobre el agua.";
+                addProgress(10);
+            } else {
+                fb.className = "feedback incorrect";
+                fb.innerHTML = "<strong>Casi...</strong> <br>1. El agua es H2O.<br>2. Disolver es incorporar sólidos (solutos) en el líquido.<br>3. Una quebrada es un cuerpo de agua pequeño corriente.";
+                addProgress(5); // Damos algo de progreso por intentar
+            }
+        }
+
+        function markActivity(num) {
+            if(!activitiesDone.has(num)) {
+                activitiesDone.add(num);
+                alert("¡Actividad " + num + " registrada! Buen trabajo en tu cuaderno.");
+                addProgress(5); // 10 actividades * 5 = 50% del progreso total
+                // Cada 2 actividades sube 1 punto de score (H -> He -> Li...)
+                if(activitiesDone.size % 2 === 0) {
+                    addScore(1);
+                }
+                saveProgress();
+            } else {
+                alert("Ya registraste esta actividad.");
+            }
+        }
+
+        function checkICFES() {
+            const options = document.getElementsByName('icfes1');
+            let selected = null;
+            for(let op of options) {
+                if(op.checked) selected = op.value;
+            }
+
+            const fb = document.getElementById('icfes-feedback');
+            
+            if(!selected) {
+                alert("Selecciona una opción.");
+                return;
+            }
+
+            if(selected === 'B') {
+                fb.className = "feedback correct";
+                fb.innerHTML = `
+                    <h3>✅ ¡Correcto!</h3>
+                    <p><strong>Justificación:</strong> La gráfica muestra una caída drástica de oxígeno en el Punto 3. El enunciado menciona abonos (nutrientes).
+                    El proceso lógico es: Exceso de nutrientes -> Crecimiento explosivo de algas (agua verde) -> Muerte de algas -> Descomposición por bacterias -> Consumo total del oxígeno. Esto explica perfectamente los datos.</p>
+                `;
+                addProgress(10);
+            } else {
+                fb.className = "feedback incorrect";
+                fb.innerHTML = `
+                    <h3>❌ Incorrecto</h3>
+                    <p>Analicemos por qué:</p>
+                    <ul>
+                        <li><strong>A:</strong> El oxígeno no "se asusta". Es un término no científico. Además, el agua turbia (verde) indica lo contrario a cristalina.</li>
+                        <li><strong>C:</strong> La gráfica no muestra datos de temperatura, y el congelamiento en una quebrada en cultivo no es la causa común de falta de oxígeno en este contexto.</li>
+                        <li><strong>D:</strong> Los peces consumen oxígeno, pero no pueden agotarlo "todo" súbitamente solo por beber; la disminución tan brusca en el Punto 3 indica un factor contaminante externo (eutrofización).</li>
+                    </ul>
+                `;
+            }
+        }
+
+        // --- VALIDACIÓN TALLER FINAL ---
+
+        function verifyOpenQ(id) {
+            const txt = document.getElementById(id).value.trim();
+            // Contar palabras (separando por espacios)
+            const words = txt.split(/\s+/).filter(word => word.length > 0);
+            const msg = document.getElementById(id + "-msg");
+
+            if(words.length >= 10 && words.length <= 15) {
+                msg.style.color = "green";
+                msg.innerText = "Longitud correcta (" + words.length + " palabras).";
+                openAnswersValid[id] = true;
+            } else {
+                msg.style.color = "red";
+                msg.innerText = "Error: Tienes " + words.length + " palabras. Deben ser entre 10 y 15.";
+                openAnswersValid[id] = false;
+            }
+        }
+
+        function downloadData() {
+            // Recopilar respuestas MCQ Finales
+            const fq1 = document.getElementById('fq1').value;
+            const fq2 = document.getElementById('fq2').value;
+            const fq3 = document.getElementById('fq3').value;
+            const fq4 = document.getElementById('fq4').value;
+            const fq5 = document.getElementById('fq5').value;
+
+            // Recopilar Abiertas
+            const oq1 = document.getElementById('oq1').value;
+            const oq2 = document.getElementById('oq2').value;
+            const oq3 = document.getElementById('oq3').value;
+            const oq4 = document.getElementById('oq4').value;
+            const oq5 = document.getElementById('oq5').value;
+
+            // Validar que todo esté lleno
+            let allOpenValid = true;
+            for(let key in openAnswersValid) {
+                if(!openAnswersValid[key]) allOpenValid = false;
+            }
+
+            if(!allOpenValid) {
+                alert("Por favor verifica que todas las preguntas abiertas tengan entre 10 y 15 palabras.");
+                return;
+            }
+
+            let puntajeFinalMCQ = 0;
+            if(fq1 === 'b') puntajeFinalMCQ++;
+            if(fq2 === 'b') puntajeFinalMCQ++;
+            if(fq3 === 'b') puntajeFinalMCQ++;
+            if(fq4 === 'b') puntajeFinalMCQ++;
+            if(fq5 === 'b') puntajeFinalMCQ++;
+
+            // Generar texto
+            const fecha = new Date().toLocaleString();
+            let contenido = `RESULTADOS OVA - EL AGUA\n`;
+            contenido += `Estudiante: ${studentName}\n`;
+            contenido += `Fecha: ${fecha}\n`;
+            contenido += `--------------------------------\n`;
+            contenido += `Progreso General: ${progress}%\n`;
+            contenido += `Nivel Alcanzado (Tabla Periódica): ${score}/5\n`;
+            contenido += `--------------------------------\n`;
+            contenido += `RESPUESTAS SELECCIÓN MÚLTIPLE FINAL (Aciertos: ${puntajeFinalMCQ}/5):\n`;
+            contenido += `1: ${fq1}, 2: ${fq2}, 3: ${fq3}, 4: ${fq4}, 5: ${fq5}\n`;
+            contenido += `--------------------------------\n`;
+            contenido += `RESPUESTAS ABIERTAS:\n`;
+            contenido += `1. Polaridad: ${oq1}\n`;
+            contenido += `2. Jabón/Insecto: ${oq2}\n`;
+            contenido += `3. Eutrofización: ${oq3}\n`;
+            contenido += `4. Comunidad: ${oq4}\n`;
+            contenido += `5. Bioética: ${oq5}\n`;
+            
+            // Crear blob y descargar
+            const blob = new Blob([contenido], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Respuestas_${studentName.replace(/\s+/g, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+</html>

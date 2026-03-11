@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Secreto del Fogón: Alquimia de Carbohidratos</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --secondary: #fbc02d;
+            --bg: #f1f8e9;
+            --text: #333;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; }
+        #game-container { max-width: 800px; width: 95%; background: white; margin: 20px; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 4px solid var(--primary); }
+        .header { text-align: center; border-bottom: 2px solid var(--primary); margin-bottom: 20px; }
+        .mission { display: none; animation: fadeIn 0.5s; }
+        .active { display: block; }
+        .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        .btn:hover { background: #1b5e20; transform: scale(1.05); }
+        .drop-zone { border: 2px dashed #999; padding: 15px; min-height: 50px; margin: 10px 0; border-radius: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .item { background: var(--secondary); padding: 8px; border-radius: 5px; cursor: move; font-weight: bold; }
+        .feedback { margin-top: 15px; font-weight: bold; color: #d32f2f; }
+        .success { color: #2e7d32; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .lab-box { display: flex; justify-content: space-around; margin-top: 20px; }
+        .tube { width: 60px; height: 150px; border: 3px solid #ccc; border-radius: 0 0 30px 30px; position: relative; overflow: hidden; }
+        .liquid { position: absolute; bottom: 0; width: 100%; height: 0%; transition: height 1s, background-color 1s; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="header">
+        <h1>🍯 El Secreto del Fogón</h1>
+        <p><i>Misión: Domina los Carbohidratos para el Gran Banquete</i></p>
+        <div id="progress">Misión 1 de 5</div>
+    </div>
+
+    <div id="m1" class="mission active">
+        <h3>Misión 1: El Almacén de la Abuela</h3>
+        <p>Clasifica los azúcares según su complejidad para organizar la despensa. Arrastra a la caja de <b>Monosacáridos</b> los que son energía inmediata.</p>
+        <div class="drop-zone" id="dz1" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="item" draggable="true" ondragstart="drag(event)" id="glucosa">Glucosa</div>
+            <div class="item" draggable="true" ondragstart="drag(event)" id="almidon">Almidón</div>
+            <div class="item" draggable="true" ondragstart="drag(event)" id="fructosa">Fructosa</div>
+            <div class="item" draggable="true" ondragstart="drag(event)" id="celulosa">Celulosa</div>
+        </div>
+        <p>Caja: Monosacáridos</p>
+        <div class="drop-zone" id="target1" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        <button class="btn" onclick="checkM1()">Verificar Despensa</button>
+        <div id="f1" class="feedback"></div>
+    </div>
+
+    <div id="m2" class="mission">
+        <h3>Misión 2: El Taller de las Frutas</h3>
+        <p>Para crear un sabor perfecto, debemos diferenciar la <b>Fructosa</b> (fruta) de la <b>Glucosa</b>. ¿Qué grupo funcional hace que la Fructosa sea una <i>Cetohexosa</i>?</p>
+        <button class="btn" onclick="answerM2('Aldehído')">Aldehído (-CHO)</button>
+        <button class="btn" onclick="answerM2('Cetona')">Cetona (=O interior)</button>
+        <button class="btn" onclick="answerM2('Hidroxilo')">Hidroxilo (-OH)</button>
+        <div id="f2" class="feedback"></div>
+    </div>
+
+    <div id="m3" class="mission">
+        <h3>Misión 3: Energía para mis Metas</h3>
+        <p>Santiago quiere subir al Alto de la Línea en bicicleta. ¿Qué carbohidrato le dará energía sostenida (lenta) para no desfallecer?</p>
+        <button class="btn" onclick="answerM3('Dulce')">Un bombón (Sacarosa)</button>
+        <button class="btn" onclick="answerM3('Platano')">Plátano asado (Almidón)</button>
+        <div id="f3" class="feedback"></div>
+    </div>
+
+    <div id="m4" class="mission">
+        <h3>Misión 4: El Laboratorio de la Cocina</h3>
+        <p>Añade <b>Lugol</b> al extracto de <b>Yuca</b>. ¿Qué color indica la presencia de Almidón?</p>
+        <div class="lab-box">
+            <div class="tube"><div id="lq1" class="liquid"></div></div>
+        </div>
+        <br>
+        <button class="btn" onclick="runLab('azul')">Azul-Violeta Oscuro</button>
+        <button class="btn" onclick="runLab('rojo')">Rojo Ladrillo</button>
+        <div id="f4" class="feedback"></div>
+    </div>
+
+    <div id="m5" class="mission">
+        <h3>Misión 5: El Toque Final</h3>
+        <p>Mamá dice que si dejas hervir mucho la panela con limón, el dulce cambia. Químicamente, estamos rompiendo la sacarosa en glucosa y fructosa. ¿Cómo se llama este proceso?</p>
+        <input type="text" id="i5" placeholder="Escribe tu respuesta...">
+        <button class="btn" onclick="checkM5()">Terminar Banquete</button>
+        <div id="f5" class="feedback"></div>
+    </div>
+
+    <div id="final" class="mission">
+        <h2 class="success">¡Felicidades, Maestre de Energía!</h2>
+        <p>Has completado el banquete. Ahora comprendes que la química no está solo en los libros, sino en cada bocado de nuestra tierra.</p>
+        <button class="btn" onclick="location.reload()">Jugar de nuevo</button>
+    </div>
+</div>
+
+<script>
+    // Lógica de navegación y validación
+    function showMission(id) {
+        document.querySelectorAll('.mission').forEach(m => m.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id !== 'final') document.getElementById('progress').innerText = "Misión " + id.charAt(1) + " de 5";
+    }
+
+    // Drag and Drop M1
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        ev.target.appendChild(document.getElementById(data));
+    }
+
+    function checkM1() {
+        const target = document.getElementById('target1');
+        const items = target.querySelectorAll('.item');
+        let ids = Array.from(items).map(i => i.id);
+        if(ids.includes('glucosa') && ids.includes('fructosa') && ids.length === 2) {
+            document.getElementById('f1').innerHTML = "<span class='success'>¡Correcto! Energía inmediata organizada.</span>";
+            setTimeout(() => showMission('m2'), 1500);
+        } else {
+            document.getElementById('f1').innerText = "Revisa bien. Los polisacáridos (grandes) no van ahí.";
+        }
+    }
+
+    function answerM2(ans) {
+        if(ans === 'Cetona') {
+            document.getElementById('f2').innerHTML = "<span class='success'>¡Exacto! Por eso es una cetohexosa.</span>";
+            setTimeout(() => showMission('m3'), 1500);
+        } else {
+            document.getElementById('f2').innerText = "Intenta de nuevo. Mira la estructura del carbono 2.";
+        }
+    }
+
+    function answerM3(ans) {
+        if(ans === 'Platano') {
+            document.getElementById('f3').innerHTML = "<span class='success'>¡Gran elección! El almidón del plátano se libera lentamente.</span>";
+            setTimeout(() => showMission('m4'), 1500);
+        } else {
+            document.getElementById('f3').innerText = "El dulce le dará un 'subidón' y luego un bajón de energía.";
+        }
+    }
+
+    function runLab(color) {
+        const liq = document.getElementById('lq1');
+        liq.style.height = "80%";
+        if(color === 'azul') {
+            liq.style.backgroundColor = "#00008b";
+            document.getElementById('f4').innerHTML = "<span class='success'>¡Positivo para Almidón! La yuca está lista.</span>";
+            setTimeout(() => showMission('m5'), 2000);
+        } else {
+            liq.style.backgroundColor = "#b22222";
+            document.getElementById('f4').innerText = "Ese color sería para azúcares reductores (Benedict).";
+        }
+    }
+
+    function checkM5() {
+        const val = document.getElementById('i5').value.toLowerCase();
+        if(val.includes('hidrolisis') || val.includes('hidrólisis')) {
+            showMission('final');
+        } else {
+            document.getElementById('f5').innerText = "Pista: Comienza con 'Hidro' y significa romper con agua.";
+        }
+    }
+</script>
+
+</body>
+</html>

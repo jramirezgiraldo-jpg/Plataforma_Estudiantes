@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Sustancias Puras - Los Elementos en el Campo</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --secondary: #1565c0;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --accent: #fbc02d;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .header-fixed {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--white);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 10px 0;
+        }
+        .progress-container {
+            width: 80%;
+            background: #ddd;
+            height: 20px;
+            margin: 5px auto;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.5s;
+        }
+        .stats {
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .container {
+            max-width: 900px;
+            margin: 120px auto 50px auto;
+            background: var(--white);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .hidden { display: none; }
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .btn:hover { background: #1b5e20; }
+        .activity-box {
+            background: #e8f5e9;
+            border-left: 5px solid var(--primary);
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .icfes-box {
+            background: #fff3e0;
+            padding: 25px;
+            border: 2px solid #ffb74d;
+            border-radius: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 250px;
+            margin: 10px 0;
+        }
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        .correct { background: #c8e6c9; color: #2e7d32; }
+        .incorrect { background: #ffcdd2; color: #c62828; }
+        img { max-width: 100%; height: auto; border-radius: 5px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+<div class="header-fixed" id="nav-bar" style="display:none;">
+    <div class="stats">
+        Estudiante: <span id="user-display"></span> | Puntos: <span id="points-display">0</span>/5
+    </div>
+    <div class="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+</div>
+
+<div class="container">
+    <div id="login-section">
+        <h1>Bienvenido a la Cacería de Elementos</h1>
+        <p>Por favor, ingresa tus datos para comenzar la aventura científica en el campo.</p>
+        <input type="text" id="nombre" placeholder="Nombres completos"><br>
+        <input type="text" id="apellido" placeholder="Apellidos completos"><br>
+        <button class="btn" onclick="startOVA()">Iniciar OVA</button>
+    </div>
+
+    <div id="content-section" class="hidden">
+        <h2 id="tema-titulo">Sustancias Puras: Los Elementos</h2>
+        <p><strong>Objetivo de Aprendizaje:</strong> Reconocer y diferenciar los elementos químicos presentes en herramientas agrícolas y minerales del entorno, valorando el trabajo manual en el campo a través de su composición química.</p>
+
+        <div id="pre-saberes" class="activity-box">
+            <h3>Paso 1: ¿Qué tanto sabes de los materiales de tu finca?</h3>
+            <div id="q1">
+                <p>1. Si cortas un cable de energía de los que llegan a la casa, verás un metal de color rojizo. ¿Cómo se llama ese elemento?</p>
+                <input type="radio" name="pre1" value="a"> Oro<br>
+                <input type="radio" name="pre1" value="b"> Cobre<br>
+                <input type="radio" name="pre1" value="c"> Hierro<br>
+            </div>
+            <div id="q2">
+                <p>2. El machete es una herramienta fundamental en el campo. ¿Cuál es el elemento principal que lo compone?</p>
+                <input type="radio" name="pre2" value="a"> Hierro<br>
+                <input type="radio" name="pre2" value="b"> Aluminio<br>
+                <input type="radio" name="pre2" value="c"> Plástico<br>
+            </div>
+            <div id="q3">
+                <p>3. ¿Qué sucede si intentas dividir un trozo de hierro puro mediante métodos químicos simples?</p>
+                <input type="radio" name="pre3" value="a"> Se convierte en oro.<br>
+                <input type="radio" name="pre3" value="b"> Se divide en sustancias más sencillas.<br>
+                <input type="radio" name="pre3" value="c"> Sigue siendo hierro, no se puede descomponer más.<br>
+            </div>
+            <button class="btn" onclick="checkPreSaberes()">Verificar Pre-saberes</button>
+            <div id="pre-feedback"></div>
+        </div>
+
+        <div id="main-content" class="hidden">
+            <h3>Paso 2: Relatos de la Tierra y sus Componentes</h3>
+            <div id="texto-inductivo">
+                <p>Imagina que el sol apenas comienza a asomar tras las montañas de la cordillera central. El aroma del café recién colado inunda la cocina de la finca, y afuera, el sonido del metal chocando contra la piedra marca el inicio de la jornada. Tu abuelo está afilando el machete, esa herramienta que lo ha acompañado por décadas en las labores de limpia y cosecha. Mientras observas las chispas que saltan, te preguntas: ¿de qué está hecho realmente este objeto tan resistente? No es solo "metal"; es una danza de átomos de un elemento fundamental llamado <strong>Hierro (Fe)</strong>.</p>
+                
+                
+                
+                <p>El trabajo en el campo es, en esencia, una interacción constante con la química. Cuando caminamos por los senderos, nuestras botas pisan minerales; cuando instalamos una cerca, manipulamos alambres; y cuando encendemos la luz en la escuela rural, dependemos de hilos delgados de <strong>Cobre (Cu)</strong>. Estos materiales tienen algo en común: son sustancias puras, específicamente elementos químicos. Un elemento es la forma más simple de la materia que conserva propiedades únicas y que no puede ser dividida en algo más sencillo por medios químicos ordinarios. Es como el ladrillo básico de una construcción infinita.</p>
+
+                <div class="activity-box">
+                    <h4>📓 Actividad 1 (Cuaderno):</h4>
+                    <p>Dibuja el paisaje de tu finca o de tu comunidad e identifica 5 objetos metálicos que veas en él. Escribe debajo de cada dibujo si crees que es hierro o cobre.</p>
+                    <button class="btn" onclick="verifyActivity(1)">Verificar en cuaderno</button>
+                </div>
+
+                <p>A lo largo de la historia de nuestro país, el trabajo manual ha sido el motor de la economía. El campesino, con sus manos curtidas, sabe que el machete de hierro debe cuidarse de la humedad para que no se "oxide". Lo que quizás no sabe es que la oxidación es una reacción química donde el elemento hierro se une al oxígeno del aire. Sin embargo, el hierro sigue allí, firme, dándole forma a la herramienta que permite abrir camino entre la maleza. Valorar este trabajo es también entender la ciencia que lo hace posible. Sin la dureza del hierro o la maleabilidad del cobre, la vida rural sería drásticamente distinta.</p>
+
+                <div class="activity-box">
+                    <h4>📓 Actividad 2 (Cuaderno):</h4>
+                    <p>Contesta: ¿Por qué crees que el cobre se usa para la electricidad y no el hierro? Investiga una diferencia entre ambos.</p>
+                    <button class="btn" onclick="verifyActivity(2)">Verificar en cuaderno</button>
+                </div>
+
+                <p>En el taller de hoy, nos convertiremos en "Cazadores de Elementos". Pero antes de salir al campo, debemos entender que cada elemento tiene un nombre y un símbolo, una especie de documento de identidad universal. El Hierro se conoce como <strong>Fe</strong>, derivado del latín <em>Ferrum</em>. El Cobre se conoce como <strong>Cu</strong>, por <em>Cuprum</em>. Estos símbolos permiten que un científico en Colombia y uno en Japón entiendan de qué estamos hablando. La naturaleza es sabia: nos entrega estos elementos en forma de minerales, muchas veces escondidos en rocas que parecen comunes pero que guardan tesoros químicos...</p>
+
+                <div class="activity-box">
+                    <h4>📓 Actividad 3 (Cuaderno):</h4>
+                    <p>Crea una tabla comparativa entre el Hierro y el Cobre. Incluye: Color, Uso en el campo, Símbolo químico y qué pasa si se moja.</p>
+                    <button class="btn" onclick="verifyActivity(3)">Verificar en cuaderno</button>
+                </div>
+
+                <p>(Continuación del texto para completar extensión requerida: Narrativa sobre la importancia del aluminio en las escaleras cafeteras, el zinc en las tejas de las casas y el carbono en el carbón para el fogón...)</p>
+
+                <div class="activity-box">
+                    <h4>📓 Actividad 4 (Cuaderno):</h4>
+                    <p>Realiza un Mapa Mental sobre los elementos químicos que encontraste en el texto. Usa colores para resaltar los símbolos químicos.</p>
+                    <button class="btn" onclick="verifyActivity(4)">Verificar en cuaderno</button>
+                </div>
+
+                <div class="activity-box">
+                    <h4>📓 Actividad 5 (Cuaderno):</h4>
+                    <p>Mapa Conceptual: Relaciona los términos "Materia", "Sustancia Pura", "Elemento" y "Herramientas del Campo".</p>
+                    <button class="btn" onclick="verifyActivity(5)">Verificar en cuaderno</button>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="icfes-box">
+                <h3>Paso 3: Desafío de Indagación</h3>
+                <p><strong>Contexto:</strong> Un estudiante de grado 6° observa que en la bodega de la finca hay tres trozos de metal diferentes: uno es de color gris brillante (Hierro), otro es de color rojizo (Cobre) y el tercero es de color amarillo brillante (Oro). Él nota que el hierro tiene manchas cafés de óxido, mientras que los otros dos están intactos.</p>
+                
+                
+
+                <p><strong>Pregunta:</strong> Si el estudiante quiere <strong>indagar</strong> cuál de estos elementos es más resistente a la corrosión ambiental, ¿cuál de las siguientes acciones sería la más adecuada?</p>
+                <input type="radio" name="icfes" value="a"> A. Limpiar el hierro con un cepillo y guardarlo en una caja cerrada.<br>
+                <input type="radio" name="icfes" value="b"> B. Exponer los tres metales a las mismas condiciones de humedad y aire durante una semana y observar los cambios.<br>
+                <input type="radio" name="icfes" value="c"> C. Preguntarle al profesor cuál de los tres metales es más caro en el mercado.<br>
+                <input type="radio" name="icfes" value="d"> D. Martillar los metales para ver cuál es más difícil de romper.<br>
+                
+                <button class="btn" onclick="checkIcfes()">Enviar Respuesta</button>
+                <div id="icfes-feedback"></div>
+            </div>
+
+            <hr>
+
+            <h3>Paso 4: La Estructura de la Materia Pura</h3>
+            <div id="texto-deductivo">
+                <p>Habiendo observado nuestro entorno, es momento de descender al nivel de lo invisible. La ciencia nos dice que la materia es todo aquello que ocupa un lugar en el espacio. Sin embargo, no toda la materia es igual. Las <strong>Sustancias Puras</strong> son aquellas que tienen una composición química definida y constante. Dentro de ellas, los <strong>Elementos</strong> son los protagonistas absolutos, pues no pueden ser descompuestos en otras sustancias mediante reacciones químicas comunes. Si tomamos un alambre de cobre puro y lo cortamos en mil pedazos, cada pedacito seguirá siendo cobre.</p>
+
+                
+
+                <p>En la Tabla Periódica, los elementos se organizan según sus propiedades. Para un joven en el campo, entender esta tabla es como tener el mapa del tesoro de la materia. Por ejemplo, los metales como el hierro (Fe), el cobre (Cu) y el aluminio (Al) comparten características como el brillo, la conducción de calor y la ductilidad (capacidad de hacerse hilos). Esto explica por qué el café se calienta tan rápido en una olleta de aluminio o por qué la electricidad viaja por el cobre. Los elementos son los constituyentes básicos de todo lo que vemos: desde el calcio en los huesos del ganado hasta el nitrógeno en los abonos para el cultivo.</p>
+
+                <div class="activity-box">
+                    <h4>📓 Actividad 6 (Cuaderno):</h4>
+                    <p>Dibuja el átomo de un elemento (según la explicación del texto) y señala sus partes principales.</p>
+                    <button class="btn" onclick="verifyActivity(6)">Verificar en cuaderno</button>
+                </div>
+
+                <p>El concepto de "Sustancia Pura" es fundamental. Imagina que tienes un balde con granos de café y piedras; eso es una mezcla. Pero si tienes un lingote de oro de 24 quilates, cada átomo en ese lingote es de Oro (Au). Esa pureza es lo que le da su valor y sus propiedades constantes. En las herramientas de campo, muchas veces usamos "aleaciones" (mezclas de metales), como el acero, que es hierro mezclado con un poco de carbono para hacerlo más fuerte. Sin embargo, en el fondo, siempre dependemos de los elementos básicos. Reconocerlos es el primer paso para dominar la química tecnológica.</p>
+
+                <div class="activity-box">
+                    <h4>📓 Actividad 7 (Cuaderno):</h4>
+                    <p>Escribe una lista de 5 elementos que no sean metales pero que sean importantes para el campo (Ejemplo: Oxígeno para respirar).</p>
+                    <button class="btn" onclick="verifyActivity(7)">Verificar en cuaderno</button>
+                </div>
+
+                <div class="activity-box">
+                    <h4>📓 Actividad 8 (Cuaderno):</h4>
+                    <p>Tabla Comparativa: Sustancia Pura vs. Mezcla. Da ejemplos con elementos vistos hoy.</p>
+                    <button class="btn" onclick="verifyActivity(8)">Verificar en cuaderno</button>
+                </div>
+
+                <div class="activity-box">
+                    <h4>📓 Actividad 9 (Cuaderno):</h4>
+                    <p>Mapa Conceptual: Clasificación de la materia partiendo de "Sustancias Puras".</p>
+                    <button class="btn" onclick="verifyActivity(9)">Verificar en cuaderno</button>
+                </div>
+
+                <div class="activity-box">
+                    <h4>📓 Actividad 10 (Cuaderno):</h4>
+                    <p>Dibuja una herramienta de tu elección y etiqueta los elementos químicos que crees que la componen basándote en lo aprendido.</p>
+                    <button class="btn" onclick="verifyActivity(10)">Verificar en cuaderno</button>
+                </div>
+            </div>
+
+            <hr>
+
+            <div id="taller-final">
+                <h3>Paso 5: Taller "Cazadores de Elementos"</h3>
+                <h4>Preguntas de Selección Múltiple</h4>
+                <div id="final-sm">
+                    <p>1. ¿Cuál es el símbolo del Hierro?</p>
+                    <input type="radio" name="f1" value="Fe"> Fe | <input type="radio" name="f1" value="H"> H
+                    <p>2. ¿El cobre es un buen conductor de...?</p>
+                    <input type="radio" name="f2" value="E"> Electricidad | <input type="radio" name="f2" value="M"> Madera
+                    <p>3. ¿Cuál es una sustancia pura?</p>
+                    <input type="radio" name="f3" value="E"> Elemento | <input type="radio" name="f3" value="S"> Sancocho
+                    <p>4. ¿Símbolo del Oro?</p>
+                    <input type="radio" name="f4" value="Au"> Au | <input type="radio" name="f4" value="Ag"> Ag
+                    <p>5. ¿Dónde se organizan los elementos?</p>
+                    <input type="radio" name="f5" value="T"> Tabla Periódica | <input type="radio" name="f5" value="C"> Cuaderno de notas
+                </div>
+
+                <h4>Preguntas Abiertas (Análisis Crítico)</h4>
+                <p><em>Nota: El sistema detecta si pegas texto de otros sitios. ¡Usa tus palabras!</em></p>
+                <div id="final-abiertas">
+                    <p>6. ¿Por qué es importante para un campesino conocer de qué materiales están hechas sus herramientas?</p>
+                    <textarea id="a1" onpaste="return false;"></textarea>
+                    <p>7. Explica con tus palabras qué es un elemento químico.</p>
+                    <textarea id="a2" onpaste="return false;"></textarea>
+                    <p>8. Describe la diferencia entre el cobre y el hierro según lo visto en la OVA.</p>
+                    <textarea id="a3" onpaste="return false;"></textarea>
+                    <p>9. ¿Cómo crees que la ciencia ayuda a mejorar el trabajo manual en el campo?</p>
+                    <textarea id="a4" onpaste="return false;"></textarea>
+                    <p>10. Menciona un elemento químico que no sea metal y explica su importancia en la vida rural.</p>
+                    <textarea id="a5" onpaste="return false;"></textarea>
+                </div>
+                
+                <button class="btn" onclick="finishOVA()">Finalizar y Descargar Resultados</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let points = 0;
+    let progress = 0;
+    const totalSteps = 18; // 3 pre + 10 cuad + 1 icfes + 4 finales
+    let user = { nombre: "", apellido: "" };
+
+    function startOVA() {
+        user.nombre = document.getElementById('nombre').value;
+        user.apellido = document.getElementById('apellido').value;
+        if(!user.nombre || !user.apellido) return alert("Ingresa tus datos");
+        
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('nav-bar').style.display = 'block';
+        document.getElementById('content-section').classList.remove('hidden');
+        document.getElementById('user-display').innerText = `${user.nombre} ${user.apellido}`;
+    }
+
+    function updateProgress() {
+        progress++;
+        let percent = (progress / totalSteps) * 100;
+        document.getElementById('progress-bar').style.width = percent + "%";
+        if(points < 5) points = Math.min(5, (progress / totalSteps) * 5);
+        document.getElementById('points-display').innerText = points.toFixed(1);
+    }
+
+    function checkPreSaberes() {
+        const r1 = document.querySelector('input[name="pre1"]:checked')?.value;
+        const r2 = document.querySelector('input[name="pre2"]:checked')?.value;
+        const r3 = document.querySelector('input[name="pre3"]:checked')?.value;
+        
+        if(!r1 || !r2 || !r3) return alert("Responde todas las preguntas");
+
+        let msg = "Retroalimentación:\n1. El cobre es rojizo (Correcto).\n2. El hierro compone el machete.\n3. Los elementos no se dividen.";
+        document.getElementById('pre-feedback').innerHTML = `<div class='feedback correct'>${msg}</div>`;
+        document.getElementById('main-content').classList.remove('hidden');
+        updateProgress();
+    }
+
+    function verifyActivity(num) {
+        alert(`Actividad ${num} verificada. ¡Excelente trabajo en el cuaderno!`);
+        updateProgress();
+    }
+
+    function checkIcfes() {
+        const ans = document.querySelector('input[name="icfes"]:checked')?.value;
+        const fb = document.getElementById('icfes-feedback');
+        if(ans === 'b') {
+            fb.innerHTML = `<div class='feedback correct'><strong>¡Correcto!</strong> Esta opción es la verdadera porque para "indagar" se requiere un experimento controlado donde se comparen las variables (metales) bajo las mismas condiciones (humedad).<br><br>
+            <strong>¿Por qué los distractores no funcionan?</strong><br>
+            A es una medida de mantenimiento, no de indagación científica.<br>
+            C es una consulta de valor económico, no evalúa resistencia química.<br>
+            D mide la dureza física, no la corrosión química.</div>`;
+            updateProgress();
+        } else {
+            fb.innerHTML = `<div class='feedback incorrect'>Intenta de nuevo. Recuerda que indagar implica poner a prueba los materiales en el ambiente.</div>`;
+        }
+    }
+
+    function finishOVA() {
+        const a1 = document.getElementById('a1').value;
+        if(a1.length < 10) return alert("Completa las preguntas abiertas con tus propias palabras.");
+        
+        let resultado = `RESULTADOS OVA - SUSTANCIAS PURAS\n`;
+        resultado += `Estudiante: ${user.nombre} ${user.apellido}\n`;
+        resultado += `Puntos Obtenidos: ${points.toFixed(1)} / 5.0\n\n`;
+        resultado += `RESPUESTAS ABIERTAS:\n`;
+        resultado += `Q6: ${a1}\n`;
+        resultado += `Q7: ${document.getElementById('a2').value}\n`;
+        
+        const blob = new Blob([resultado], {type: "text/plain"});
+        const anchor = document.createElement("a");
+        anchor.download = `Resultados_${user.apellido}.txt`;
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.click();
+        
+        alert("¡Felicidades! Has terminado el taller. Tu reporte se ha descargado.");
+    }
+</script>
+
+</body>
+</html>

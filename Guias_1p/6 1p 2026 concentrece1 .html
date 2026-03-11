@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Concentrece: ¿De qué está hecho mi mundo?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    :root{
+        --bg:#020617;
+        --c1:#0f172a;
+        --c2:#22c55e;
+        --c3:#38bdf8;
+        --c4:#facc15;
+        --c5:#f97316;
+        --c6:#e11d48;
+        --text:#e5e7eb;
+    }
+    *{box-sizing:border-box;}
+    body{
+        margin:0;
+        font-family:'Segoe UI',system-ui,Arial,sans-serif;
+        background:radial-gradient(circle at top,var(--c1),var(--bg));
+        color:var(--text);
+        min-height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    }
+    .wrapper{
+        max-width:1100px;
+        width:100%;
+        padding:20px;
+        display:grid;
+        grid-template-columns:1.05fr 1.25fr;
+        gap:20px;
+    }
+    @media (max-width:900px){
+        .wrapper{grid-template-columns:1fr;}
+    }
+    .panel{
+        background:linear-gradient(145deg,rgba(15,23,42,0.96),rgba(15,23,42,0.9));
+        border-radius:18px;
+        padding:16px 18px;
+        box-shadow:0 0 25px rgba(0,0,0,0.6);
+        position:relative;
+        overflow:hidden;
+    }
+    h1{
+        margin:0 0 6px;
+        font-size:1.4rem;
+    }
+    h2{
+        margin:10px 0 6px;
+        font-size:1.02rem;
+    }
+    p{margin:4px 0;}
+    .badge{
+        display:inline-block;
+        padding:3px 8px;
+        border-radius:999px;
+        background:linear-gradient(135deg,var(--c3),var(--c4));
+        font-size:0.75rem;
+        color:#0f172a;
+        font-weight:600;
+        margin-bottom:6px;
+    }
+    .info-small{
+        font-size:0.8rem;
+        opacity:0.92;
+    }
+
+    .stats{
+        display:flex;
+        gap:8px;
+        margin-top:8px;
+        font-size:0.85rem;
+        flex-wrap:wrap;
+    }
+    .pill{
+        padding:3px 8px;
+        border-radius:999px;
+        background:rgba(15,23,42,0.9);
+        border:1px solid rgba(148,163,184,0.6);
+    }
+    .highlight{color:var(--c4); font-weight:600;}
+
+    .grid{
+        display:grid;
+        grid-template-columns:repeat(6,1fr);
+        gap:8px;
+        margin-top:4px;
+    }
+    .card{
+        position:relative;
+        width:100%;
+        padding-top:100%;
+        perspective:800px;
+        cursor:pointer;
+    }
+    .inner{
+        position:absolute;
+        inset:0;
+        border-radius:12px;
+        transform-style:preserve-3d;
+        transition:transform 0.4s ease;
+    }
+    .card.flipped .inner{
+        transform:rotateY(180deg);
+    }
+    .face{
+        position:absolute;
+        inset:0;
+        backface-visibility:hidden;
+        border-radius:12px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        padding:6px;
+    }
+    .front{
+        background:radial-gradient(circle at 20% 0%,var(--c3),#0b1120);
+        box-shadow:0 0 12px rgba(56,189,248,0.7);
+        border:1px solid rgba(191,219,254,0.35);
+        font-size:1.5rem;
+    }
+    .front span{
+        font-size:0.7rem;
+        opacity:0.8;
+        position:absolute;
+        bottom:4px;
+    }
+    .back{
+        transform:rotateY(180deg);
+        background:radial-gradient(circle at 10% 0%,var(--c2),var(--c5));
+        box-shadow:0 0 14px rgba(34,197,94,0.7);
+        color:#0f172a;
+        border:1px solid rgba(254,243,199,0.8);
+        font-size:0.8rem;
+        font-weight:600;
+        line-height:1.1;
+    }
+    .back .symbol{
+        font-size:1.6rem;
+        margin-bottom:2px;
+    }
+    .back .big-word{
+        font-size:1rem;
+        margin-bottom:2px;
+    }
+
+    .matched .inner{
+        box-shadow:0 0 18px rgba(34,197,94,0.9);
+    }
+    .matched{
+        cursor:default;
+    }
+
+    .btn-reset{
+        margin-top:10px;
+        padding:6px 12px;
+        border-radius:999px;
+        border:none;
+        background:linear-gradient(135deg,var(--c6),var(--c3));
+        color:#f9fafb;
+        font-weight:600;
+        cursor:pointer;
+        font-size:0.85rem;
+    }
+    .btn-reset:hover{
+        box-shadow:0 0 10px rgba(248,113,113,0.7);
+        transform:translateY(-1px);
+    }
+
+    .hint{
+        font-size:0.8rem;
+        margin-top:8px;
+        opacity:0.9;
+    }
+
+    .legend{
+        margin-top:4px;
+        font-size:0.78rem;
+        display:flex;
+        flex-wrap:wrap;
+        gap:4px;
+    }
+    .tag{
+        padding:2px 6px;
+        border-radius:999px;
+        border:1px solid rgba(148,163,184,0.7);
+        background:rgba(15,23,42,0.9);
+    }
+
+    .glow-orbit{
+        position:absolute;
+        width:190px;
+        height:190px;
+        border-radius:50%;
+        border:1px dashed rgba(148,163,184,0.4);
+        top:-55px;
+        right:-45px;
+        animation:spin 18s linear infinite;
+        pointer-events:none;
+    }
+    .glow-dot{
+        width:10px;
+        height:10px;
+        border-radius:50%;
+        background:var(--c2);
+        position:absolute;
+        top:-5px;
+        left:50%;
+        transform:translateX(-50%);
+        box-shadow:0 0 10px rgba(34,197,94,0.9);
+    }
+    @keyframes spin{
+        from{transform:rotate(0deg);}
+        to{transform:rotate(360deg);}
+    }
+</style>
+</head>
+<body>
+<div class="wrapper">
+    <section class="panel">
+        <span class="badge">Concentrece 6x6 – ¿De qué está hecho mi mundo?</span>
+        <h1>Memoria: Materia, elementos y territorio</h1>
+        <p class="info-small">
+            Une parejas sobre <span class="highlight">materia y estados</span>, elementos en la vereda Pueblo Rico (Fe, Cu, Al, O, C), herramientas, cables y trabajo en el campo.
+        </p>
+        <div class="stats">
+            <div class="pill" id="movesBox">Movimientos: 0</div>
+            <div class="pill" id="pairsBox">Parejas encontradas: 0 / 18</div>
+        </div>
+        <button class="btn-reset" onclick="initGame()">Reiniciar juego</button>
+        <p class="hint">
+            💡 Piensa en el recorrido por la vereda: tierra, agua, aire, árboles, herramientas, cables, piedras y personas que trabajan el territorio.
+        </p>
+        <h2>¿Qué trabajas con este juego?</h2>
+        <ul class="info-small">
+            <li>Identificar materia y estados (sólido, líquido, gas) en el entorno rural.</li>
+            <li>Reconocer elementos químicos y sus símbolos en herramientas y minerales.</li>
+            <li>Valorar el trabajo manual en el campo y el vínculo con el territorio.</li>
+        </ul>
+        <div class="legend">
+            <span class="tag">Materia – todo lo que ocupa lugar</span>
+            <span class="tag">Sólido / Líquido / Gas</span>
+            <span class="tag">Fe – herramientas</span>
+            <span class="tag">Cu – cables</span>
+            <span class="tag">Al – latas, tejas</span>
+            <span class="tag">O – aire</span>
+            <span class="tag">C – lápiz</span>
+            <span class="tag">Trabajo manual y vereda</span>
+        </div>
+        <div class="glow-orbit"><div class="glow-dot"></div></div>
+    </section>
+
+    <section class="panel">
+        <div id="grid" class="grid"></div>
+    </section>
+</div>
+
+<script>
+/*
+   18 parejas (36 cartas) relacionadas con:
+   - materia y estados
+   - entorno rural Pueblo Rico
+   - cobre, hierro, aluminio, oxígeno, carbono y símbolos
+   - trabajo manual y herramientas
+*/
+
+const basePairs = [
+    // Materia
+    {id:"mat-1", type:"title", text:"Materia", theme:"materia"},
+    {id:"mat-2", type:"text", text:"Todo lo que tiene masa y ocupa espacio", theme:"materia"},
+
+    // Estados de la materia
+    {id:"est-sol1", type:"title", text:"Sólido", theme:"solido"},
+    {id:"est-sol2", type:"text", text:"Herramientas, piedras, troncos", theme:"solido"},
+
+    {id:"est-liq1", type:"title", text:"Líquido", theme:"liquido"},
+    {id:"est-liq2", type:"text", text:"Agua del río, lluvia, leche", theme:"liquido"},
+
+    {id:"est-gas1", type:"title", text:"Gas", theme:"gas"},
+    {id:"est-gas2", type:"text", text:"Aire que respiramos en la vereda", theme:"gas"},
+
+    // Contexto vereda / territorio
+    {id:"vereda-1", type:"text", text:"Vereda Pueblo Rico", theme:"vereda"},
+    {id:"vereda-2", type:"text", text:"Caminos, cultivos y casas rurales", theme:"vereda"},
+
+    {id:"terr-1", type:"text", text:"Identidad y territorio", theme:"territorio"},
+    {id:"terr-2", type:"text", text:"Lo que somos y cuidamos donde vivimos", theme:"territorio"},
+
+    // Elementos – hierro
+    {id:"fe-sim", type:"symbol", text:"Fe", info:"Hierro", theme:"Fe"},
+    {id:"fe-desc", type:"text", text:"Herramientas de hierro en el campo", theme:"Fe"},
+
+    // Elementos – cobre
+    {id:"cu-sim", type:"symbol", text:"Cu", info:"Cobre", theme:"Cu"},
+    {id:"cu-desc", type:"text", text:"Cables de luz y enchufes", theme:"Cu"},
+
+    // Elementos – aluminio
+    {id:"al-sim", type:"symbol", text:"Al", info:"Aluminio", theme:"Al"},
+    {id:"al-desc", type:"text", text:"Latas, papel aluminio, algunas tejas", theme:"Al"},
+
+    // Elementos – oxígeno
+    {id:"o-sim", type:"symbol", text:"O", info:"Oxígeno", theme:"O"},
+    {id:"o-desc", type:"text", text:"Parte del aire que respiramos", theme:"O"},
+
+    // Elementos – carbono
+    {id:"c-sim", type:"symbol", text:"C", info:"Carbono", theme:"C"},
+    {id:"c-desc", type:"text", text:"Mina del lápiz (grafito)", theme:"C"},
+
+    // Sustancia pura / elemento
+    {id:"elem-1", type:"text", text:"Sustancia pura: elemento", theme:"elem"},
+    {id:"elem-2", type:"text", text:"Un solo tipo de átomo (Fe, Cu...)", theme:"elem"},
+
+    // Metales vs no metales
+    {id:"metal-1", type:"text", text:"Metales", theme:"metal"},
+    {id:"metal-2", type:"text", text:"Conductores, brillantes, maleables", theme:"metal"},
+
+    {id:"nometal-1", type:"text", text:"No metales", theme:"nometal"},
+    {id:"nometal-2", type:"text", text:"Poco conductores, frágiles", theme:"nometal"},
+
+    // Trabajo manual y herramientas
+    {id:"trab-1", type:"text", text:"Trabajo manual en el campo", theme:"trabajo"},
+    {id:"trab-2", type:"text", text:"Azadón, pala, machete, manos que cuidan", theme:"trabajo"}
+];
+
+let cards = [];
+let firstCard = null;
+let lockBoard = false;
+let moves = 0;
+let pairsFound = 0;
+
+function shuffle(array){
+    for(let i = array.length -1; i>0; i--){
+        const j = Math.floor(Math.random() * (i+1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function createCard(data){
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.theme = data.theme;
+
+    const inner = document.createElement("div");
+    inner.className = "inner";
+
+    const front = document.createElement("div");
+    front.className = "face front";
+    front.innerHTML = "¿?" + '<span>Haz clic</span>';
+
+    const back = document.createElement("div");
+    back.className = "face back";
+
+    if(data.type === "symbol"){
+        back.innerHTML = `<div>
+            <div class="symbol">${data.text}</div>
+            <div>${data.info}</div>
+        </div>`;
+    }else if(data.type === "title"){
+        back.innerHTML = `<div class="big-word">${data.text}</div>`;
+    }else{
+        back.innerHTML = `<div>${data.text}</div>`;
+    }
+
+    inner.appendChild(front);
+    inner.appendChild(back);
+    card.appendChild(inner);
+
+    card.addEventListener("click", ()=>handleClick(card));
+
+    return card;
+}
+
+function initGame(){
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+    firstCard = null;
+    lockBoard = false;
+    moves = 0;
+    pairsFound = 0;
+    document.getElementById("movesBox").textContent = "Movimientos: 0";
+    document.getElementById("pairsBox").textContent = "Parejas encontradas: 0 / 18";
+
+    const fullSet = basePairs.slice(0,36); // por si se amplía el arreglo
+    cards = shuffle(fullSet.map(c => ({...c})));
+
+    cards.forEach(c=>{
+        const cardEl = createCard(c);
+        grid.appendChild(cardEl);
+    });
+}
+
+function handleClick(card){
+    if(lockBoard) return;
+    if(card.classList.contains("flipped") || card.classList.contains("matched")) return;
+
+    card.classList.add("flipped");
+
+    if(!firstCard){
+        firstCard = card;
+        return;
+    }
+
+    const secondCard = card;
+    moves++;
+    document.getElementById("movesBox").textContent = "Movimientos: " + moves;
+
+    const isMatch = firstCard.dataset.theme === secondCard.dataset.theme;
+
+    if(isMatch){
+        firstCard.classList.add("matched");
+        secondCard.classList.add("matched");
+        pairsFound++;
+        document.getElementById("pairsBox").textContent =
+            "Parejas encontradas: " + pairsFound + " / 18";
+        firstCard = null;
+
+        if(pairsFound === 18){
+            setTimeout(()=>{
+                alert("¡Muy bien! Relacionaste materia, elementos y territorio de tu vereda.");
+            },400);
+        }
+    }else{
+        lockBoard = true;
+        setTimeout(()=>{
+            firstCard.classList.remove("flipped");
+            secondCard.classList.remove("flipped");
+            firstCard = null;
+            lockBoard = false;
+        },800);
+    }
+}
+
+initGame();
+</script>
+</body>
+</html>

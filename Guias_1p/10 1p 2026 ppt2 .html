@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Óxidos e Hidróxidos - Prof. Juan Felipe Ramírez Giraldo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root{
+            --c1:#141e30;
+            --c2:#243b55;
+            --c3:#ffcc00;
+            --c4:#ff6b6b;
+            --c5:#4ecdc4;
+            --c6:#45aaf2;
+        }
+        *{box-sizing:border-box;}
+        body{
+            margin:0;
+            font-family:'Segoe UI', Arial, sans-serif;
+            background:radial-gradient(circle at top,#0f172a,#020617);
+            color:#fff;
+            overflow:hidden;
+        }
+        h1,h2,h3{margin:0 0 10px;}
+        .container{
+            width:100vw;
+            height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            position:relative;
+        }
+        .slide{
+            width:90%;
+            max-width:1000px;
+            height:85vh;
+            background:linear-gradient(135deg,rgba(20,30,48,0.96),rgba(36,59,85,0.94));
+            border-radius:20px;
+            box-shadow:0 0 25px rgba(0,0,0,0.8);
+            padding:20px 30px 70px;
+            display:none;
+            position:relative;
+            overflow:hidden;
+        }
+        .slide.active{
+            display:block;
+            animation:fadeIn 0.6s ease;
+        }
+        @keyframes fadeIn{
+            from{opacity:0; transform:scale(0.96) translateY(10px);}
+            to{opacity:1; transform:scale(1) translateY(0);}
+        }
+
+        .top-bar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:10px;
+        }
+        .tag{
+            font-size:0.85rem;
+            padding:4px 10px;
+            border-radius:20px;
+            background:rgba(255,255,255,0.1);
+        }
+        .progress{
+            width:180px;
+            height:8px;
+            background:rgba(255,255,255,0.15);
+            border-radius:10px;
+            overflow:hidden;
+        }
+        .progress-inner{
+            height:100%;
+            width:0%;
+            background:linear-gradient(90deg,var(--c5),var(--c3));
+            transition:width 0.3s;
+        }
+        .points{
+            font-size:0.9rem;
+            padding:4px 12px;
+            border-radius:20px;
+            background:rgba(0,0,0,0.4);
+            border:1px solid rgba(255,255,255,0.2);
+        }
+
+        .nav-buttons{
+            position:absolute;
+            bottom:15px;
+            left:0;
+            width:100%;
+            display:flex;
+            justify-content:space-between;
+            padding:0 25px;
+            align-items:center;
+        }
+        button{
+            padding:8px 16px;
+            border:none;
+            border-radius:20px;
+            cursor:pointer;
+            font-weight:bold;
+            transition:transform 0.2s, box-shadow 0.2s, background 0.3s;
+        }
+        .btn-prev{background:#555; color:#fff;}
+        .btn-next{background:linear-gradient(135deg,var(--c3),var(--c4)); color:#000;}
+        button:hover{transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,0.4);}
+        button:disabled{opacity:0.3; cursor:not-allowed; box-shadow:none; transform:none;}
+
+        .points-pop{
+            position:absolute;
+            top:10px;
+            right:210px;
+            font-size:0.9rem;
+            padding:4px 8px;
+            border-radius:10px;
+            background:rgba(0,0,0,0.7);
+            border:1px solid rgba(255,255,255,0.5);
+            display:none;
+            animation:pop 0.8s ease-out forwards;
+        }
+        @keyframes pop{
+            from{opacity:0; transform:translateY(-10px) scale(0.8);}
+            to{opacity:1; transform:translateY(0) scale(1);}
+        }
+
+        .columns{
+            display:grid;
+            grid-template-columns:1.3fr 1fr;
+            gap:20px;
+            height:calc(100% - 70px);
+        }
+        .full{
+            height:calc(100% - 70px);
+            overflow-y:auto;
+        }
+        .card{
+            background:rgba(255,255,255,0.06);
+            border-radius:15px;
+            padding:12px 15px;
+            margin-bottom:10px;
+            border:1px solid rgba(255,255,255,0.1);
+        }
+        ul{padding-left:18px; margin-top:5px;}
+        li{margin-bottom:4px;}
+
+        .badge{
+            display:inline-block;
+            background:linear-gradient(135deg,var(--c3),var(--c4));
+            color:#000;
+            padding:4px 10px;
+            border-radius:15px;
+            font-size:0.8rem;
+            font-weight:bold;
+            margin-bottom:8px;
+        }
+        .highlight{color:var(--c3); font-weight:bold;}
+        .pill{
+            display:inline-block;
+            padding:4px 10px;
+            border-radius:999px;
+            background:rgba(0,0,0,0.5);
+            margin-right:6px;
+            font-size:0.8rem;
+        }
+
+        .question-box{
+            margin-top:10px;
+            padding:10px;
+            background:rgba(0,0,0,0.6);
+            border-radius:10px;
+            border:1px solid rgba(255,255,255,0.15);
+        }
+        .question-box p{margin-bottom:8px;}
+        .question-box label{display:block; margin-bottom:4px; cursor:pointer;}
+        .feedback{
+            margin-top:6px;
+            padding:6px 8px;
+            border-radius:8px;
+            font-size:0.85rem;
+            display:none;
+        }
+        .feedback.ok{background:rgba(78,205,196,0.25); border:1px solid var(--c5);}
+        .feedback.bad{background:rgba(255,107,107,0.25); border:1px solid var(--c4);}
+
+        .full::-webkit-scrollbar{width:6px;}
+        .full::-webkit-scrollbar-thumb{
+            background:rgba(255,255,255,0.3);
+            border-radius:10px;
+        }
+        .full::-webkit-scrollbar-track{background:transparent;}
+
+        .metal-scene{
+            position:relative;
+            width:100%;
+            height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .gear{
+            width:120px;
+            height:120px;
+            border-radius:50%;
+            border:10px solid #9ca3af;
+            position:relative;
+            box-shadow:0 0 15px rgba(0,0,0,0.6);
+            animation:spin 12s linear infinite;
+            background:radial-gradient(circle,#6b7280,#111827);
+        }
+        .rust{
+            position:absolute;
+            width:40px;
+            height:40px;
+            border-radius:50%;
+            background:radial-gradient(circle,#b45309,#78350f);
+            box-shadow:0 0 10px rgba(0,0,0,0.6);
+        }
+        .rust.r1{top:-10px; left:10px;}
+        .rust.r2{bottom:-8px; right:5px;}
+        .rust.r3{top:35px; right:-12px;}
+        @keyframes spin{
+            from{transform:rotate(0deg);}
+            to{transform:rotate(360deg);}
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            font-size:0.9rem;
+        }
+        th,td{
+            border:1px solid rgba(255,255,255,0.3);
+            padding:4px 6px;
+            text-align:center;
+        }
+
+        .emoji-big{
+            font-size:3rem;
+            text-align:center;
+        }
+
+        @media (max-width:800px){
+            .columns{grid-template-columns:1fr;}
+            .slide{height:90vh;padding:15px 15px 75px;}
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="pointsPop" class="points-pop">+10 pts</div>
+
+    <!-- Diapositiva 1: Presentación -->
+    <div class="slide active" data-index="0">
+        <div class="top-bar">
+            <div class="tag">Grado 10° – Química</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner" id="progressBar"></div></div>
+                <div class="points" id="pointsBox">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <span class="badge">Funciones inorgánicas: Óxidos e Hidróxidos</span>
+                <h1>Óxidos e Hidróxidos<br>y su nomenclatura IUPAC</h1>
+                <p>
+                    Docente: <span class="highlight">Juan Felipe Ramírez Giraldo</span><br>
+                    Licenciado en Biología y Educación Ambiental.<br>
+                    Magíster en Recursos Digitales aplicados a la Educación.<br>
+                    Estudiante de Doctorado en Ciencias Biomédicas.
+                </p>
+                <div class="card">
+                    <h3>Objetivo de aprendizaje</h3>
+                    <ul>
+                        <li>Reconocer óxidos e hidróxidos como funciones inorgánicas básicas.</li>
+                        <li>Nombrar óxidos e hidróxidos según la nomenclatura IUPAC (sistemática/Stock).</li>
+                        <li>Relacionar óxidos con herramientas oxidadas y la cal como hidróxido de uso cotidiano.</li>
+                        <li>Valorar el trabajo físico en el campo y el cuidado de las herramientas.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Evidencias de aprendizaje</h3>
+                    <ul>
+                        <li>Taller escrito de nomenclatura de óxidos e hidróxidos.</li>
+                        <li>Identificación de compuestos en fotos de herramientas oxidadas y cal.</li>
+                        <li>Breve reflexión sobre la importancia del trabajo físico en el campo y el cuidado del entorno.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="metal-scene">
+                <div class="gear">
+                    <div class="rust r1"></div>
+                    <div class="rust r2"></div>
+                    <div class="rust r3"></div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev" disabled>&larr; Anterior</button>
+            <span>Diapositiva 1 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 2: ¿Qué son los óxidos? -->
+    <div class="slide" data-index="1">
+        <div class="top-bar">
+            <div class="tag">Conceptos básicos: óxidos</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>Óxidos: definición y tipos</h2>
+                <div class="card">
+                    <p>
+                        Un óxido es un compuesto binario formado por oxígeno y otro elemento.
+                    </p>
+                    <ul>
+                        <li><span class="highlight">Óxidos metálicos</span> (básicos): metal + oxígeno → óxido básico (ej. CaO, Fe₂O₃).</li>
+                        <li><span class="highlight">Óxidos no metálicos</span> (ácidos): no metal + oxígeno (ej. CO₂, SO₃).</li>
+                    </ul>
+                </div>
+                <div class="question-box" data-question="q1">
+                    <p><strong>Pregunta 1:</strong> ¿Cuál de estos es un óxido metálico?</p>
+                    <label><input type="radio" name="q1" value="a"> CaO</label>
+                    <label><input type="radio" name="q1" value="b"> CO₂</label>
+                    <label><input type="radio" name="q1" value="c"> H₂O</label>
+                    <button onclick="checkQuestion('q1','a')">Comprobar</button>
+                    <div class="feedback" id="fb-q1"></div>
+                </div>
+            </div>
+            <div class="metal-scene">
+                <div class="gear">
+                    <div class="rust r1"></div>
+                    <div class="rust r2"></div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 2 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 3: Nomenclatura IUPAC de óxidos -->
+    <div class="slide" data-index="2">
+        <div class="top-bar">
+            <div class="tag">Nomenclatura de óxidos (IUPAC)</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Cómo nombrar óxidos metálicos</h2>
+            <div class="card">
+                <p>
+                    Usaremos principalmente la nomenclatura de composición (sistemática) y la nomenclatura Stock recomendadas por IUPAC.
+                </p>
+                <ul>
+                    <li><span class="highlight">Sistemática</span>: prefijo + óxido de + nombre del metal.<br>
+                        Ejemplo: Fe₂O₃ → trióxido de dihierro.</li>
+                    <li><span class="highlight">Stock</span>: óxido de + nombre del metal (número de oxidación en números romanos).<br>
+                        Ejemplo: Fe₂O₃ → óxido de hierro (III).</li>
+                    <li>Si el metal solo tiene una valencia, no se escribe el número romano (ej. CaO → óxido de calcio).</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Ejemplos</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fórmula</th>
+                            <th>Sistemática</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CaO</td>
+                            <td>monóxido de calcio</td>
+                            <td>óxido de calcio</td>
+                        </tr>
+                        <tr>
+                            <td>FeO</td>
+                            <td>monóxido de hierro</td>
+                            <td>óxido de hierro (II)</td>
+                        </tr>
+                        <tr>
+                            <td>Fe₂O₃</td>
+                            <td>trióxido de dihierro</td>
+                            <td>óxido de hierro (III)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>
+                ✏️ En tu cuaderno: escribe dos óxidos metálicos más y nómbralos con ambas nomenclaturas.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 3 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 4: ¿Qué son los hidróxidos? -->
+    <div class="slide" data-index="3">
+        <div class="top-bar">
+            <div class="tag">Conceptos básicos: hidróxidos</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>Hidróxidos: definición</h2>
+                <div class="card">
+                    <p>
+                        Un hidróxido es un compuesto formado por un catión (generalmente metálico) y el anión hidróxido OH⁻.
+                    </p>
+                    <ul>
+                        <li>Fórmula general: M(OH)<sub>n</sub>, donde n es el número de oxidación del metal.</li>
+                        <li>Ejemplos: NaOH, Ca(OH)₂, Fe(OH)₃.</li>
+                    </ul>
+                </div>
+                <div class="question-box" data-question="q2">
+                    <p><strong>Pregunta 2:</strong> ¿Cuál de estos compuestos es un hidróxido?</p>
+                    <label><input type="radio" name="q2" value="a"> CaO</label>
+                    <label><input type="radio" name="q2" value="b"> NaOH</label>
+                    <label><input type="radio" name="q2" value="c"> CO₂</label>
+                    <button onclick="checkQuestion('q2','b')">Comprobar</button>
+                    <div class="feedback" id="fb-q2"></div>
+                </div>
+            </div>
+            <div class="emoji-big">
+                🧪<br>
+                <span style="font-size:1.4rem;">Bases e hidróxidos</span>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 4 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 5: Nomenclatura IUPAC de hidróxidos -->
+    <div class="slide" data-index="4">
+        <div class="top-bar">
+            <div class="tag">Nomenclatura de hidróxidos (IUPAC)</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Cómo nombrar hidróxidos</h2>
+            <div class="card">
+                <ul>
+                    <li><span class="highlight">Sistemática</span>: prefijo + hidróxido de + nombre del metal.<br>
+                        Ejemplo: Ca(OH)₂ → dihidróxido de calcio.</li>
+                    <li><span class="highlight">Stock</span>: hidróxido de + nombre del metal (número de oxidación en romanos si tiene más de uno).<br>
+                        Ejemplo: Fe(OH)₃ → hidróxido de hierro (III).</li>
+                    <li>Si el metal tiene un solo estado de oxidación, no se escribe el número romano (ej. NaOH → hidróxido de sodio).</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Ejemplos</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fórmula</th>
+                            <th>Sistemática</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>NaOH</td>
+                            <td>monohidróxido de sodio</td>
+                            <td>hidróxido de sodio</td>
+                        </tr>
+                        <tr>
+                            <td>Ca(OH)₂</td>
+                            <td>dihidróxido de calcio</td>
+                            <td>hidróxido de calcio</td>
+                        </tr>
+                        <tr>
+                            <td>Fe(OH)₃</td>
+                            <td>trihidróxido de hierro</td>
+                            <td>hidróxido de hierro (III)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>
+                ✏️ En tu cuaderno: escribe tres hidróxidos más y nómbralos con ambas nomenclaturas.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 5 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 6: Taller de herramientas oxidadas -->
+    <div class="slide" data-index="5">
+        <div class="top-bar">
+            <div class="tag">Taller: herramientas oxidadas</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>Óxidos en la vida cotidiana</h2>
+                <div class="card">
+                    <p>
+                        Cuando las herramientas de hierro se oxidan, se forman óxidos de hierro en su superficie.
+                    </p>
+                    <ul>
+                        <li>Óxido de hierro (II): FeO.</li>
+                        <li>Óxido de hierro (III): Fe₂O₃.</li>
+                        <li>La “herrumbre” es una mezcla de óxidos e hidróxidos de hierro.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Actividad escrita</h3>
+                    <p>
+                        En tu cuaderno dibuja tres herramientas del campo (azadón, pala, machete) y escribe al lado:
+                    </p>
+                    <ul>
+                        <li>Qué óxido metálico se forma al oxidarse el hierro.</li>
+                        <li>Su nombre según nomenclatura Stock.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="metal-scene">
+                <div class="gear">
+                    <div class="rust r1"></div>
+                    <div class="rust r2"></div>
+                    <div class="rust r3"></div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 6 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 7: Taller de cal (hidróxido) -->
+    <div class="slide" data-index="6">
+        <div class="top-bar">
+            <div class="tag">Taller: cal e hidróxidos</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>La cal como hidróxido</h2>
+                <div class="card">
+                    <p>
+                        La cal hidratada usada en construcción y en algunas prácticas agrícolas es principalmente hidróxido de calcio, Ca(OH)₂.
+                    </p>
+                    <ul>
+                        <li>Fórmula: Ca(OH)₂.</li>
+                        <li>Sistemática: dihidróxido de calcio.</li>
+                        <li>Stock: hidróxido de calcio.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Actividad</h3>
+                    <p>
+                        En tu cuaderno responde:
+                    </p>
+                    <ul>
+                        <li>¿En qué trabajos del campo o de la construcción has visto usar cal?</li>
+                        <li>¿Qué ventajas y cuidados se deben tener al manipularla?</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="emoji-big">
+                🧱<br>
+                <span style="font-size:1.4rem;">Cal, suelo y construcción</span>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 7 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 8: Taller de nomenclatura (ejercicios) -->
+    <div class="slide" data-index="7">
+        <div class="top-bar">
+            <div class="tag">Taller de nomenclatura</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Ejercicios: óxidos e hidróxidos</h2>
+            <div class="card">
+                <p>
+                    Escribe en tu cuaderno el nombre IUPAC (sistemática y/o Stock) de los siguientes compuestos:
+                </p>
+                <ol>
+                    <li>Al₂O₃</li>
+                    <li>MgO</li>
+                    <li>CuO</li>
+                    <li>NaOH</li>
+                    <li>Ba(OH)₂</li>
+                    <li>Fe(OH)₂</li>
+                </ol>
+            </div>
+            <div class="question-box" data-question="q3">
+                <p><strong>Pregunta 3:</strong> ¿Cuál es el nombre correcto de Ba(OH)₂ según Stock?</p>
+                <label><input type="radio" name="q3" value="a"> trihidróxido de bario</label>
+                <label><input type="radio" name="q3" value="b"> hidróxido de bario</label>
+                <label><input type="radio" name="q3" value="c"> hidróxido de bario (III)</label>
+                <button onclick="checkQuestion('q3','b')">Comprobar</button>
+                <div class="feedback" id="fb-q3"></div>
+            </div>
+            <p style="margin-top:10px;">
+                💡 Pista: el bario tiene un único estado de oxidación +2, por eso no se escribe el número romano.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 8 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 9: Valoración del trabajo físico en el campo -->
+    <div class="slide" data-index="8">
+        <div class="top-bar">
+            <div class="tag">Valoración del trabajo en el campo</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="columns">
+            <div>
+                <h2>Química y trabajo físico</h2>
+                <div class="card">
+                    <p>
+                        Detrás de una herramienta oxidada y de la cal que blanquea una pared hay horas de esfuerzo físico de personas que trabajan en el campo y en la construcción.
+                    </p>
+                    <ul>
+                        <li>La química ayuda a entender cómo cuidar mejor las herramientas y los materiales.</li>
+                        <li>Valorar el trabajo físico implica reconocer su importancia para la producción de alimentos y el cuidado de los espacios.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Actividad de reflexión</h3>
+                    <p>En tu cuaderno responde:</p>
+                    <ul>
+                        <li>¿Qué relación encuentras entre conocer la química de los óxidos/hidróxidos y cuidar el trabajo en el campo?</li>
+                        <li>¿Cómo puedes aportar al cuidado de herramientas y materiales en tu entorno?</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="emoji-big">
+                🌾<br>
+                <span style="font-size:1.4rem;">Manos, ciencia y territorio</span>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 9 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 10: Autoevaluación -->
+    <div class="slide" data-index="9">
+        <div class="top-bar">
+            <div class="tag">Autoevaluación final</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>¿Qué tanto aprendí?</h2>
+            <div class="card">
+                <p>En tu cuaderno responde:</p>
+                <ol>
+                    <li>Define con tus palabras qué es un óxido y qué es un hidróxido.</li>
+                    <li>Escribe la diferencia entre nomenclatura sistemática y Stock.</li>
+                    <li>Nombra correctamente dos óxidos y dos hidróxidos de tu elección.</li>
+                    <li>Menciona un ejemplo de cómo la química ayuda a cuidar el trabajo físico en el campo.</li>
+                </ol>
+            </div>
+            <div class="card">
+                <h3>Checklist personal</h3>
+                <p>Marca con ✔️ en tu cuaderno si:</p>
+                <ul>
+                    <li>Puedo reconocer rápidamente si una fórmula corresponde a un óxido o un hidróxido.</li>
+                    <li>Se nombrar óxidos e hidróxidos usando IUPAC.</li>
+                    <li>Valoro más el trabajo físico que hay detrás de las herramientas y materiales de mi entorno.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 10 / 11</span>
+            <button class="btn-next">Siguiente &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Diapositiva 11: Bibliografía -->
+    <div class="slide" data-index="10">
+        <div class="top-bar">
+            <div class="tag">Citas bibliográficas</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="progress"><div class="progress-inner"></div></div>
+                <div class="points">Puntos: 0</div>
+            </div>
+        </div>
+        <div class="full">
+            <h2>Bibliografía y recursos consultados</h2>
+            <div class="card">
+                <ul>
+                    <li>Portal Académico de Química. Reglas de nomenclatura de óxidos e hidróxidos.</li>
+                    <li>Recursos de formulación y nomenclatura de hidróxidos según IUPAC y Stock.</li>
+                    <li>Materiales de apoyo sobre óxidos metálicos u óxidos básicos y ejemplos cotidianos.</li>
+                    <li>Videos educativos sobre nomenclatura de óxidos e hidróxidos (sistemática, Stock y tradicional).</li>
+                    <li>Textos escolares de química inorgánica de educación media.</li>
+                </ul>
+            </div>
+            <p>
+                Puedes complementar esta presentación con fotografías reales de herramientas oxidadas y usos de cal en tu comunidad.
+            </p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-prev">&larr; Anterior</button>
+            <span>Diapositiva 11 / 11</span>
+            <button class="btn-next" disabled>Fin</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+    let points = 0;
+
+    function updateSlide(index){
+        slides.forEach((s,i)=>{
+            s.classList.toggle('active', i === index);
+            const pBar = s.querySelector('.progress-inner');
+            const pBox = s.querySelector('.points');
+            if(pBar){
+                const progress = ((index+1)/totalSlides)*100;
+                pBar.style.width = progress + '%';
+            }
+            if(pBox){
+                pBox.textContent = 'Puntos: ' + points;
+            }
+            const label = s.querySelector('.nav-buttons span');
+            if(label){
+                label.textContent = 'Diapositiva ' + (index+1) + ' / ' + totalSlides;
+            }
+            const prevBtn = s.querySelector('.btn-prev');
+            const nextBtn = s.querySelector('.btn-next');
+            if(prevBtn){
+                prevBtn.onclick = ()=>changeSlide(-1);
+                prevBtn.disabled = (index===0);
+            }
+            if(nextBtn){
+                nextBtn.onclick = ()=>changeSlide(1);
+                if(index===totalSlides-1){
+                    nextBtn.disabled = true;
+                }
+            }
+        });
+    }
+
+    function changeSlide(direction){
+        const newIndex = currentSlide + direction;
+        if(newIndex>=0 && newIndex<totalSlides){
+            currentSlide = newIndex;
+            updateSlide(currentSlide);
+        }
+    }
+
+    function showPointsPop(){
+        const pop = document.getElementById('pointsPop');
+        pop.style.display='block';
+        pop.style.animation='none';
+        void pop.offsetWidth;
+        pop.style.animation='pop 0.8s ease-out forwards';
+        setTimeout(()=>{ pop.style.display='none'; },800);
+    }
+
+    function checkQuestion(qId, correct){
+        const selected = document.querySelector('input[name="'+qId+'"]:checked');
+        const fb = document.getElementById('fb-'+qId);
+        if(!fb) return;
+        if(!selected){
+            fb.textContent = 'Primero selecciona una respuesta.';
+            fb.className = 'feedback bad';
+            fb.style.display='block';
+            return;
+        }
+        if(selected.value === correct){
+            fb.textContent = '¡Muy bien! Respuesta correcta.';
+            fb.className = 'feedback ok';
+            if(!fb.dataset.counted){
+                points += 10;
+                fb.dataset.counted = 'true';
+                showPointsPop();
+                updateSlide(currentSlide);
+            }
+        }else{
+            fb.textContent = 'No es correcto. Revisa la explicación de la diapositiva.';
+            fb.className = 'feedback bad';
+        }
+        fb.style.display='block';
+    }
+
+    updateSlide(currentSlide);
+</script>
+</body>
+</html>

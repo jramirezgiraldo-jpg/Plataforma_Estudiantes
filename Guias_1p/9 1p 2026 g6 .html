@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Escala de pH y pOH - Grado 9</title>
+    <style>
+        :root {
+            --primary: #2C5F2D; /* Verde bosque para concentración */
+            --secondary: #97BC62; /* Verde suave */
+            --accent: #FFD700; /* Dorado para puntos */
+            --text: #333333;
+            --bg: #F0F4F8; /* Azul grisáceo muy pálido, descansa la vista */
+            --card-bg: #FFFFFF;
+            --wrong: #D9534F;
+            --correct: #5CB85C;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* --- Barra Superior Fija --- */
+        #top-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .progress-container {
+            width: 40%;
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin: 0 15px;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--accent);
+            transition: width 0.5s ease;
+        }
+
+        .periodic-score {
+            border: 2px solid var(--accent);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            background: #fff;
+            color: #333;
+        }
+
+        .element-tile {
+            display: inline-block;
+            border: 1px solid #333;
+            padding: 2px 5px;
+            margin-right: 5px;
+            background: #eee;
+            font-family: serif;
+            font-weight: bold;
+        }
+
+        /* --- Contenedor Principal --- */
+        .container {
+            max-width: 900px;
+            margin: 80px auto 40px; /* Margen superior por la barra fija */
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary);
+        }
+
+        /* --- Login Modal --- */
+        #login-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        #login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #1e421f;
+        }
+
+        /* --- Gráficos SVG y Tablas --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .svg-container {
+            width: 100%;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        /* --- Actividades --- */
+        .activity-box {
+            border-left: 5px solid var(--accent);
+            background-color: #fff9e6;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .check-btn {
+            background-color: var(--secondary);
+            margin-top: 10px;
+        }
+
+        .check-btn.completed {
+            background-color: gray;
+            cursor: not-allowed;
+        }
+
+        /* --- Cuestionarios --- */
+        .question-block {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .feedback {
+            display: none;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .correct-fb { background-color: #dff0d8; color: #3c763d; }
+        .incorrect-fb { background-color: #f2dede; color: #a94442; }
+
+        /* --- Input Taller Final --- */
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-modal">
+        <div id="login-box">
+            <h2>Bienvenido</h2>
+            <p>Ingresa tus datos para comenzar.</p>
+            <input type="text" id="student-name" placeholder="Nombres y Apellidos Completos">
+            <button onclick="login()">Ingresar</button>
+        </div>
+    </div>
+
+    <div id="top-bar" style="display:none;">
+        <div id="student-display">Estudiante: <span></span></div>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div class="periodic-score">
+            <span class="element-tile">Pt</span> <span id="score-display">0</span> / 5.0
+        </div>
+    </div>
+
+    <div class="container" id="main-content" style="display:none;">
+
+        <div class="card">
+            <h2>Objetivo de Aprendizaje</h2>
+            <p>Comprender e interpretar la escala de pH y pOH como medidas cuantitativas de acidez y basicidad, aplicando fórmulas logarítmicas para resolver problemas y ubicando sustancias en la recta numérica química.</p>
+        </div>
+
+        <div class="card">
+            <h2>Actividad 1: Explorando tus Presaberes</h2>
+            <div id="presaberes-quiz">
+                </div>
+        </div>
+
+        <div class="card">
+            <h2>El Misterio del Número en el Jabón</h2>
+            
+            <p>Imagina que entras al baño y tomas un jabón especial para el rostro. En la etiqueta, ves un número grande: "5.5". Luego, vas a la cocina y ves un limpiador de hornos con una advertencia de peligro y un número técnico en su ficha de seguridad cercano a "13". ¿Qué significan realmente estos números? ¿Por qué el limón (que sabe ácido) y el jabón (que se siente resbaloso) parecen estar en lados opuestos de una historia química invisible?</p>
+
+            <p>Desde la antigüedad, los seres humanos clasificaron las sustancias por su sabor y tacto. Los "ácidos" (del latín <em>acidus</em>, agrio) como el vinagre, y las "bases" o álcalis (del árabe <em>al-qaly</em>, ceniza) que servían para limpiar. Pero no fue hasta 1909 que el químico danés S.P.L. Sørensen, trabajando en los laboratorios de la cervecería Carlsberg, propuso una forma matemática de medir esta potencia. Él no quería probar la cerveza para saber si estaba ácida; necesitaba un número.</p>
+
+            <div class="svg-container">
+                <svg width="400" height="200" viewBox="0 0 400 200">
+                    <rect x="50" y="50" width="100" height="100" fill="#e0f7fa" stroke="#00bcd4" stroke-width="2"/>
+                    <text x="100" y="110" text-anchor="middle" font-family="sans-serif" font-size="20">Agua H<sub>2</sub>O</text>
+                    <text x="100" y="180" text-anchor="middle" font-size="12">Estado Neutro</text>
+
+                    <line x1="160" y1="100" x2="240" y2="100" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+                    <circle cx="300" cy="80" r="30" fill="#ffcccb" stroke="#f44336"/>
+                    <text x="300" y="85" text-anchor="middle">H<sup>+</sup></text>
+                    
+                    <circle cx="300" cy="150" r="30" fill="#d1c4e9" stroke="#673ab7"/>
+                    <text x="300" y="155" text-anchor="middle">OH<sup>-</sup></text>
+                    
+                    <defs>
+                        <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+                          <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+                        </marker>
+                    </defs>
+                </svg>
+                <p><em>Fig 1. La disociación básica del agua.</em></p>
+            </div>
+
+            <div class="activity-box">
+                <h3>Actividad en Cuaderno #1 (Dibujar)</h3>
+                <p>Dibuja en tu cuaderno una botella de agua, una de limón y una barra de jabón. Debajo de cada una, escribe si crees que tienen muchos iones H<sup>+</sup> (ácidos) o muchos iones OH<sup>-</sup> (básicos).</p>
+                <button class="check-btn" onclick="verifyActivity(1)">¡Ya lo dibujé!</button>
+            </div>
+
+            <p>El agua pura es un caso fascinante. Aunque parece estable, una pequeñísima cantidad de sus moléculas se rompe (se disocia) en dos partes cargadas eléctricamente: el ion Hidrógeno (H<sup>+</sup>) y el ion Hidroxilo (OH<sup>-</sup>). En el agua pura, la cantidad de estos dos es exactamente igual. Es un empate químico. A esto lo llamamos <strong>NEUTRO</strong>.</p>
+            
+            <p>Sin embargo, si añadimos jugo de limón al agua, estamos inundando la mezcla con millones de iones H<sup>+</sup>. El equilibrio se rompe. Ahora ganan los H<sup>+</sup>. La sustancia se vuelve ácida. Por el contrario, si añadimos limpiador de desagües, añadimos iones OH<sup>-</sup>, y la sustancia se vuelve básica o alcalina.</p>
+
+            <div class="activity-box">
+                <h3>Actividad en Cuaderno #2 (Mapa Mental)</h3>
+                <p>Crea un mapa mental con la palabra central "Sustancias Químicas". Ramifica en "Ácidos", "Neutros" y "Bases". Escribe 2 ejemplos cotidianos para cada rama (no uses los ejemplos del texto).</p>
+                <button class="check-btn" onclick="verifyActivity(2)">¡Mapa mental listo!</button>
+            </div>
+
+            <p>El problema es que las cantidades de estos iones son números incomodísimos. Por ejemplo, la concentración de iones de hidrógeno en el agua pura es 0.0000001 moles por litro. ¡Nadie quiere escribir tantos ceros en una etiqueta de jabón! Aquí es donde entra la magia de las matemáticas para simplificar nuestra vida. Usamos una escala logarítmica.</p>
+            
+            <p>La escala de pH va generalmente de 0 a 14. Observa la siguiente tabla:</p>
+
+            <table>
+                <tr>
+                    <th>Sustancia</th>
+                    <th>Carácter</th>
+                    <th>Valor aproximado</th>
+                </tr>
+                <tr>
+                    <td>Ácido de batería</td>
+                    <td>Muy Ácido</td>
+                    <td>0 - 1</td>
+                </tr>
+                <tr>
+                    <td>Jugo gástrico</td>
+                    <td>Ácido</td>
+                    <td>1 - 2</td>
+                </tr>
+                <tr>
+                    <td>Agua Pura</td>
+                    <td>Neutro</td>
+                    <td>7</td>
+                </tr>
+                <tr>
+                    <td>Jabón de manos</td>
+                    <td>Básico</td>
+                    <td>9 - 10</td>
+                </tr>
+                <tr>
+                    <td>Blanqueador</td>
+                    <td>Muy Básico</td>
+                    <td>12 - 13</td>
+                </tr>
+            </table>
+
+            <div class="activity-box">
+                <h3>Actividad en Cuaderno #3 (Tabla Comparativa)</h3>
+                <p>Haz una tabla comparativa entre "Alimentos que consumo" y "Productos de aseo de mi casa". Clasifícalos intuitivamente como Ácidos o Bases.</p>
+                <button class="check-btn" onclick="verifyActivity(3)">¡Tabla terminada!</button>
+            </div>
+
+            <p>Como puedes ver en la tabla, el número 7 es el centro, el equilibrio. Cualquier número menor a 7 indica acidez (mientras más bajo, más ácido). Cualquier número mayor a 7 indica basicidad. ¿Por qué funciona al revés? ¿Por qué un número bajo significa "mucha" acidez? Eso se debe al signo negativo en la fórmula logarítmica que veremos más adelante. Es como un ranking: el número 1 es el "campeón" de los ácidos.</p>
+
+            <div class="activity-box">
+                <h3>Actividad en Cuaderno #4 (Contestar)</h3>
+                <p>Si el jabón de cara dice "pH 5.5", ¿es ácido, neutro o básico? ¿Por qué crees que un producto para la piel no debe ser extremadamente básico como el blanqueador? Responde en 3 renglones.</p>
+                <button class="check-btn" onclick="verifyActivity(4)">¡Respuesta escrita!</button>
+            </div>
+
+            <p>La escala de pOH es la hermana gemela "espejo" del pH. Si el pH mide la potencia del Hidrógeno (H), el pOH mide la potencia del Hidroxilo (OH). Son opuestos complementarios. Si el pH es bajo (mucho ácido), el pOH debe ser alto (poca base). La suma de ambos siempre debe dar 14.</p>
+
+             <div class="activity-box">
+                <h3>Actividad en Cuaderno #5 (Mapa Conceptual)</h3>
+                <p>Realiza un pequeño mapa conceptual que conecte los términos: pH, pOH, 14, Ácido, Base y Neutro.</p>
+                <button class="check-btn" onclick="verifyActivity(5)">¡Mapa conceptual listo!</button>
+            </div>
+        </div>
+
+        <div class="card" style="border-left: 5px solid #0056b3;">
+            <h2>Entrenamiento ICFES: Competencia Indagar</h2>
+            <p><strong>Contexto:</strong> Un estudiante de grado noveno decide investigar la calidad del agua de una laguna cercana a una zona industrial. Durante un mes, toma muestras diarias a la misma hora y registra el pH. Los resultados se muestran en la siguiente gráfica:</p>
+
+            <div class="svg-container">
+                <svg width="500" height="300" viewBox="0 0 500 300">
+                    <line x1="50" y1="250" x2="450" y2="250" stroke="black" stroke-width="2"/>
+                    <line x1="50" y1="250" x2="50" y2="20" stroke="black" stroke-width="2"/>
+                    <text x="250" y="290" text-anchor="middle">Días del mes</text>
+                    <text x="15" y="150" transform="rotate(-90 15,150)" text-anchor="middle">Valor de pH</text>
+                    <text x="30" y="250">0</text>
+                    <text x="30" y="135">7</text>
+                    <text x="30" y="20">14</text>
+                    <line x1="45" y1="135" x2="450" y2="135" stroke="green" stroke-dasharray="5,5"/>
+                    <text x="460" y="135" fill="green">Neutro</text>
+                    
+                    <polyline points="50,135 100,130 150,140 200,160 250,180 300,190 350,210 400,220" 
+                              fill="none" stroke="red" stroke-width="3"/>
+                    
+                    <circle cx="50" cy="135" r="4" fill="red"/>
+                    <circle cx="400" cy="220" r="4" fill="red"/>
+                </svg>
+            </div>
+
+            <p><strong>Pregunta:</strong> A partir de la tendencia observada en la gráfica, ¿qué conclusión puede establecer el estudiante sobre el agua de la laguna?</p>
+
+            <div id="icfes-question">
+                </div>
+        </div>
+
+        <div class="card">
+            <h2>La Matemática detrás de la Escala</h2>
+            
+            <p>Ahora que entendemos el concepto cualitativo, es hora de usar la herramienta matemática: <strong>los logaritmos</strong>. En química, la "p" minúscula en pH significa "menos logaritmo de" ($-\log$).</p>
+            
+            <p>Las fórmulas fundamentales que debes aprender y anotar en tu cuaderno son:</p>
+            
+            <div style="background: #e8f5e9; padding: 20px; border-radius: 10px; text-align: center; font-size: 1.2em;">
+                <p><strong>1.</strong> pH = -log [H<sup>+</sup>]</p>
+                <p><strong>2.</strong> pOH = -log [OH<sup>-</sup>]</p>
+                <p><strong>3.</strong> pH + pOH = 14</p>
+            </div>
+
+            <p>Donde <code>[H<sup>+</sup>]</code> significa "Concentración Molar de iones hidrógeno".</p>
+
+            <h3>Ejemplo Guiado 1: Calculando el pH</h3>
+            <p>Si tenemos una solución donde la concentración de iones hidrógeno es <code>1 x 10<sup>-4</sup> M</code>.</p>
+            <p>Aplicamos la fórmula:</p>
+            <ul>
+                <li>pH = -log (1 x 10<sup>-4</sup>)</li>
+                <li>Por propiedades de los logaritmos base 10: log(10<sup>-4</sup>) es -4.</li>
+                <li>El signo menos de afuera convierte el -4 en 4.</li>
+                <li><strong>Resultado: pH = 4</strong> (Es una sustancia ácida).</li>
+            </ul>
+
+            <div class="activity-box">
+                <h3>Actividad en Cuaderno #6 (Calcular)</h3>
+                <p>Calcula el pH de una sustancia cuya concentración de [H<sup>+</sup>] es 1 x 10<sup>-9</sup> M. Muestra el procedimiento paso a paso.</p>
+                <button class="check-btn" onclick="verifyActivity(6)">¡Cálculo realizado!</button>
+            </div>
+
+            <h3>La relación pH y pOH</h3>
+            <p>A veces, el laboratorio te da el dato de los iones OH<sup>-</sup> (base), pero tú necesitas saber el pH. Para esto usamos la "fórmula puente": <strong>pH + pOH = 14</strong>.</p>
+            
+            <p><em>Ejemplo:</em> Tienes una solución de hidróxido con un pOH de 3. ¿Cuál es su pH?</p>
+            <ul>
+                <li>Sabemos que: pH + 3 = 14</li>
+                <li>Despejamos: pH = 14 - 3</li>
+                <li><strong>Resultado: pH = 11</strong> (Es una sustancia básica).</li>
+            </ul>
+
+             <div class="activity-box">
+                <h3>Actividad en Cuaderno #7 (Tabla de Completar)</h3>
+                <p>Dibuja y completa la siguiente tabla en tu cuaderno:</p>
+                <table style="font-size: 0.9em;">
+                    <tr><td>[H+]</td><td>pH</td><td>pOH</td><td>¿Ácido o Base?</td></tr>
+                    <tr><td>10<sup>-3</sup></td><td>___</td><td>___</td><td>___</td></tr>
+                    <tr><td>___</td><td>8</td><td>___</td><td>___</td></tr>
+                </table>
+                <button class="check-btn" onclick="verifyActivity(7)">¡Tabla completada!</button>
+            </div>
+
+            <p>Es vital recordar que la escala logarítmica significa que cada salto de unidad es <strong>10 veces mayor</strong>. Un pH de 3 es diez veces más ácido que un pH de 4, y cien veces (10x10) más ácido que un pH de 5. No es una escala lineal como una regla escolar.</p>
+
+            <div class="svg-container">
+                <svg width="600" height="150">
+                    <rect x="10" y="50" width="50" height="50" fill="#ff0000"/>
+                    <text x="35" y="40" text-anchor="middle">pH 1</text>
+                    <text x="35" y="120" text-anchor="middle" font-size="10">x1000 fuerza</text>
+
+                    <rect x="80" y="60" width="40" height="40" fill="#ff4444"/>
+                    <text x="100" y="40" text-anchor="middle">pH 2</text>
+                    <text x="100" y="120" text-anchor="middle" font-size="10">x100 fuerza</text>
+
+                    <rect x="140" y="70" width="30" height="30" fill="#ff8888"/>
+                    <text x="155" y="40" text-anchor="middle">pH 3</text>
+                    <text x="155" y="120" text-anchor="middle" font-size="10">x10 fuerza</text>
+                </svg>
+            </div>
+
+            <div class="activity-box">
+                <h3>Actividad en Cuaderno #8 (Dibujar y Analizar)</h3>
+                <p>Dibuja una escalera de 3 escalones. En el de arriba escribe pH 4, en el medio pH 5, abajo pH 6. Escribe al lado de las flechas que bajan "x10 menos iones".</p>
+                <button class="check-btn" onclick="verifyActivity(8)">¡Escalera dibujada!</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>Actividad en Cuaderno #9 (Mapa Mental de Fórmulas)</h3>
+                <p>Crea un mapa mental exclusivo para las fórmulas matemáticas vistas. En el centro "Cálculos de pH". Ramas: "Calcular pH", "Calcular pOH", "Relación 14".</p>
+                <button class="check-btn" onclick="verifyActivity(9)">¡Mapa de fórmulas listo!</button>
+            </div>
+
+            <p>Para finalizar la parte teórica, recuerda que estas mediciones son esenciales en la vida real: para mantener una piscina limpia, para que la sangre transporte oxígeno (pH 7.4), o para la agricultura.</p>
+
+             <div class="activity-box">
+                <h3>Actividad en Cuaderno #10 (Contestar)</h3>
+                <p>Si tuvieras que explicarle a un niño de primaria por qué no debe mezclar productos de limpieza ácidos y básicos usando la palabra "reacción" y "calor", ¿qué escribirías? (Máximo 5 líneas).</p>
+                <button class="check-btn" onclick="verifyActivity(10)">¡Explicación lista!</button>
+            </div>
+
+        </div>
+
+        <div class="card">
+            <h2>Taller Evaluativo Final</h2>
+            <p>Demuestra lo que has aprendido. Tómate tu tiempo.</p>
+            
+            <h3>Parte A: Selección Múltiple</h3>
+            <div id="final-quiz">
+                </div>
+
+            <h3>Parte B: Preguntas Abiertas</h3>
+            <p><em>(Restricción: Mínimo 10 palabras, máximo 15 palabras. No copiar y pegar).</em></p>
+            <div id="open-questions">
+                </div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 50px;">
+            <button onclick="downloadAnswers()" style="background-color: #333; font-size: 1.2em;">📥 Descargar Mis Respuestas (.txt)</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA ESTADO ---
+        let state = {
+            studentName: "",
+            score: 0,
+            progress: 0,
+            activitiesDone: [], // IDs de actividades checkeadas
+            quizAnswers: {},
+            openAnswers: {}
+        };
+
+        // --- PREGUNTAS ---
+        const presaberesData = [
+            {
+                id: "pre1",
+                q: "¿Qué sabor asocias comúnmente con los ácidos?",
+                options: ["Amargo", "Agrio", "Salado", "Dulce"],
+                correct: 1,
+                feedback: "Correcto. El sabor agrio (como el limón) es característico de los ácidos. Lo amargo es típico de las bases."
+            },
+            {
+                id: "pre2",
+                q: "El agua pura se considera una sustancia:",
+                options: ["Ácida", "Básica", "Neutras", "Tóxica"],
+                correct: 2,
+                feedback: "Exacto. El agua pura tiene un equilibrio perfecto entre iones, por lo que es neutra (pH 7)."
+            },
+            {
+                id: "pre3",
+                q: "¿Cuál de estos productos crees que es una base (alcalino)?",
+                options: ["Jugo de naranja", "Vinagre", "Refresco con gas", "Jabón de manos"],
+                correct: 3,
+                feedback: "Correcto. Los jabones y detergentes son bases. Los otros ejemplos son ácidos."
+            }
+        ];
+
+        const icfesData = {
+            q: "A partir de la tendencia observada en la gráfica, ¿qué conclusión puede establecer el estudiante sobre el agua de la laguna?",
+            options: [
+                "El agua se está volviendo más básica debido a la falta de lluvia.",
+                "La acidez del agua está aumentando, lo que se refleja en la disminución del valor de pH.",
+                "El pH se mantiene constante, indicando que la fábrica no contamina.",
+                "El agua se está volviendo neutra, acercándose al valor de 14."
+            ],
+            correct: 1,
+            feedbackCorrect: "¡Excelente análisis! Al descender la línea en la gráfica hacia números menores (acercándose a 0), indica un aumento en la concentración de iones H+, es decir, mayor acidez.",
+            feedbackDistractors: [
+                "Incorrecto. Si se volviera básica, la línea subiría hacia el 14, no bajaría.",
+                "", // Correcta placeholder
+                "Incorrecto. La línea muestra una pendiente negativa clara, no es una línea recta horizontal.",
+                "Incorrecto. El valor neutro es 7. Acercarse a 14 sería volverse muy básico, no neutro."
+            ]
+        };
+
+        const finalQuizData = [
+            { id: "f1", q: "Si el pOH de una solución es 4, ¿cuál es su pH?", options: ["4", "10", "14", "7"], correct: 1 },
+            { id: "f2", q: "¿Qué fórmula define el pH?", options: ["log[H+]", "-log[OH-]", "-log[H+]", "14 + pOH"], correct: 2 },
+            { id: "f3", q: "Un pH de 2 es ___ veces más ácido que un pH de 3.", options: ["2", "10", "100", "5"], correct: 1 },
+            { id: "f4", q: "En la escala de pH, el rango 0-6.9 corresponde a:", options: ["Bases", "Neutros", "Ácidos", "Sales"], correct: 2 },
+            { id: "f5", q: "¿Cuál es la suma constante de pH + pOH?", options: ["10", "100", "7", "14"], correct: 3 }
+        ];
+
+        const openQuestionsData = [
+            "Define con tus palabras qué es el pH.",
+            "¿Qué sucede químicamente si mezclas un ácido fuerte y una base fuerte?",
+            "Explica la relación matemática entre pH y concentración de iones.",
+            "¿Por qué el agua pura tiene un pH de 7?",
+            "Nombra una importancia del pH en el cuerpo humano."
+        ];
+
+        // --- INICIALIZACIÓN ---
+        window.onload = function() {
+            loadState();
+            renderPresaberes();
+            renderICFES();
+            renderFinalQuiz();
+            renderOpenQuestions();
+            updateUI();
+        };
+
+        // --- LOGICA DE LOGIN Y ESTADO ---
+        function login() {
+            const name = document.getElementById("student-name").value;
+            if (name.trim() === "") return alert("Por favor ingresa tu nombre.");
+            
+            state.studentName = name;
+            document.getElementById("login-modal").style.display = "none";
+            document.getElementById("top-bar").style.display = "flex";
+            document.getElementById("main-content").style.display = "block";
+            saveState();
+            updateUI();
+        }
+
+        function saveState() {
+            localStorage.setItem("ova_ph_state", JSON.stringify(state));
+            updateUI();
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem("ova_ph_state");
+            if (saved) {
+                state = JSON.parse(saved);
+                if (state.studentName) {
+                    document.getElementById("login-modal").style.display = "none";
+                    document.getElementById("top-bar").style.display = "flex";
+                    document.getElementById("main-content").style.display = "block";
+                }
+                // Restaurar botones de actividad
+                state.activitiesDone.forEach(id => {
+                    const btn = document.querySelector(`button[onclick="verifyActivity(${id})"]`);
+                    if(btn) {
+                        btn.classList.add("completed");
+                        btn.innerText = "Completado ✓";
+                        btn.disabled = true;
+                    }
+                });
+            }
+        }
+
+        function updateUI() {
+            document.querySelector("#student-display span").innerText = state.studentName;
+            // Cálculo de puntaje (Máximo 5.0)
+            // Total items: 3 presaberes + 10 actividades + 1 ICFES + 5 final multi + 5 final open = 24 items
+            // Simplificamos: Score se basa en actividades y quizzes completados.
+            // Vamos a dar puntos fijos por acción para llegar a 5.0
+            // Actividades (10) * 0.2 = 2.0
+            // Presaberes (3) * 0.1 = 0.3
+            // ICFES (1) * 0.5 = 0.5
+            // Final Multi (5) * 0.24 = 1.2
+            // Final Open (5) * 0.2 = 1.0
+            
+            document.getElementById("score-display").innerText = state.score.toFixed(1);
+            
+            // Barra de progreso (Items completados / Total)
+            let totalItems = 3 + 10 + 1 + 5 + 5; 
+            let completed = state.activitiesDone.length + Object.keys(state.quizAnswers).length + Object.keys(state.openAnswers).length;
+            let percent = (completed / totalItems) * 100;
+            document.getElementById("progress-bar").style.width = percent + "%";
+        }
+
+        function addScore(points) {
+            state.score += points;
+            if (state.score > 5) state.score = 5;
+            saveState();
+        }
+
+        // --- LOGICA DE ACTIVIDADES ---
+        function verifyActivity(id) {
+            if (state.activitiesDone.includes(id)) return;
+            
+            const btn = document.querySelector(`button[onclick="verifyActivity(${id})"]`);
+            btn.classList.add("completed");
+            btn.innerText = "Completado ✓";
+            btn.disabled = true;
+            
+            state.activitiesDone.push(id);
+            addScore(0.2);
+            saveState();
+        }
+
+        // --- RENDERIZADORES ---
+        function renderPresaberes() {
+            const container = document.getElementById("presaberes-quiz");
+            let html = "";
+            presaberesData.forEach((item, index) => {
+                html += `<div class="question-block">
+                    <p><strong>${index + 1}. ${item.q}</strong></p>
+                    ${item.options.map((opt, i) => 
+                        `<label><input type="radio" name="pre_${item.id}" value="${i}" onclick="checkPresaber('${item.id}', ${i}, ${item.correct})"> ${opt}</label><br>`
+                    ).join('')}
+                    <div id="fb_${item.id}" class="feedback"></div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function checkPresaber(id, selected, correct) {
+            if (state.quizAnswers[id]) return; // Ya contestó
+            
+            const fbDiv = document.getElementById(`fb_${id}`);
+            const questionData = presaberesData.find(d => d.id === id);
+            
+            fbDiv.classList.add("show");
+            if (selected === correct) {
+                fbDiv.classList.add("correct-fb");
+                fbDiv.innerText = questionData.feedback;
+                addScore(0.1);
+            } else {
+                fbDiv.classList.add("incorrect-fb");
+                fbDiv.innerText = "Incorrecto. Intenta repasar el concepto.";
+            }
+            state.quizAnswers[id] = selected;
+            saveState();
+        }
+
+        function renderICFES() {
+            const container = document.getElementById("icfes-question");
+            let html = icfesData.options.map((opt, i) => 
+                `<label style="display:block; margin: 10px 0; padding: 10px; border: 1px solid #ddd; cursor:pointer;">
+                    <input type="radio" name="icfes_q" value="${i}" onclick="checkICFES(${i})"> 
+                    <strong>${String.fromCharCode(65+i)}.</strong> ${opt}
+                </label>`
+            ).join('');
+            html += `<div id="icfes_fb" class="feedback"></div>`;
+            container.innerHTML = html;
+        }
+
+        function checkICFES(selected) {
+            if (state.quizAnswers['icfes']) return;
+
+            const fbDiv = document.getElementById("icfes_fb");
+            fbDiv.classList.add("show");
+            
+            if (selected === icfesData.correct) {
+                fbDiv.classList.add("correct-fb");
+                fbDiv.innerHTML = `<strong>¡Correcto!</strong> ${icfesData.feedbackCorrect}`;
+                addScore(0.5);
+            } else {
+                fbDiv.classList.add("incorrect-fb");
+                fbDiv.innerHTML = `<strong>Incorrecto.</strong> ${icfesData.feedbackDistractors[selected]}`;
+            }
+            state.quizAnswers['icfes'] = selected;
+            saveState();
+        }
+
+        function renderFinalQuiz() {
+            const container = document.getElementById("final-quiz");
+            let html = "";
+            finalQuizData.forEach((item, index) => {
+                html += `<div class="question-block">
+                    <p><strong>${index + 1}. ${item.q}</strong></p>
+                    ${item.options.map((opt, i) => 
+                        `<label><input type="radio" name="final_${item.id}" value="${i}" onclick="checkFinal('${item.id}', ${i}, ${item.correct})"> ${opt}</label><br>`
+                    ).join('')}
+                    <div id="fb_final_${item.id}" class="feedback"></div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function checkFinal(id, selected, correct) {
+            if (state.quizAnswers[id]) return;
+            
+            const fbDiv = document.getElementById(`fb_final_${id}`);
+            fbDiv.classList.add("show");
+            
+            if (selected === correct) {
+                fbDiv.classList.add("correct-fb");
+                fbDiv.innerText = "¡Correcto!";
+                addScore(0.24);
+            } else {
+                fbDiv.classList.add("incorrect-fb");
+                fbDiv.innerText = "Incorrecto.";
+            }
+            state.quizAnswers[id] = selected;
+            saveState();
+        }
+
+        function renderOpenQuestions() {
+            const container = document.getElementById("open-questions");
+            let html = "";
+            openQuestionsData.forEach((q, index) => {
+                html += `<div class="question-block">
+                    <p><strong>${index + 1}. ${q}</strong></p>
+                    <textarea id="open_${index}" rows="3" placeholder="Escribe entre 10 y 15 palabras..."></textarea>
+                    <button class="check-btn" onclick="checkOpen(${index})">Verificar Respuesta</button>
+                    <div id="fb_open_${index}" class="feedback"></div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function checkOpen(index) {
+            if (state.openAnswers[`open_${index}`]) return;
+
+            const text = document.getElementById(`open_${index}`).value;
+            const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+            const fbDiv = document.getElementById(`fb_open_${index}`);
+            
+            fbDiv.classList.add("show");
+
+            if (words.length < 10) {
+                fbDiv.className = "feedback incorrect-fb show";
+                fbDiv.innerText = `Muy corto. Tienes ${words.length} palabras. Necesitas mínimo 10.`;
+            } else if (words.length > 15) {
+                fbDiv.className = "feedback incorrect-fb show";
+                fbDiv.innerText = `Muy largo. Tienes ${words.length} palabras. Máximo 15.`;
+            } else {
+                fbDiv.className = "feedback correct-fb show";
+                fbDiv.innerText = "Longitud correcta. Respuesta registrada.";
+                state.openAnswers[`open_${index}`] = text;
+                addScore(0.2);
+                document.querySelector(`button[onclick="checkOpen(${index})"]`).disabled = true;
+                saveState();
+            }
+        }
+
+        // --- DESCARGA ---
+        function downloadAnswers() {
+            let content = `REPORTE DE OVA - ESCALA pH y pOH\n`;
+            content += `Estudiante: ${state.studentName}\n`;
+            content += `Puntaje: ${state.score.toFixed(1)} / 5.0\n`;
+            content += `Fecha: ${new Date().toLocaleString()}\n\n`;
+            
+            content += `--- RESPUESTAS ABIERTAS ---\n`;
+            openQuestionsData.forEach((q, i) => {
+                const ans = state.openAnswers[`open_${i}`] || "Sin responder";
+                content += `P${i+1}: ${q}\nR: ${ans}\n\n`;
+            });
+
+            const blob = new Blob([content], { type: "text/plain" });
+            const anchor = document.createElement("a");
+            anchor.download = `Respuestas_${state.studentName.replace(/\s+/g, '_')}.txt`;
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.target = "_blank";
+            anchor.style.display = "none";
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+        }
+    </script>
+</body>
+</html>

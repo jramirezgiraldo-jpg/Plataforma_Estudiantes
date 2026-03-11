@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Propiedades Periódicas II - Grado 7</title>
+    <style>
+        :root {
+            --primary: #1a3a5f;
+            --secondary: #2d5a27;
+            --accent: #48c9b0;
+            --bg: #f0f4f8;
+            --text: #2c3e50;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* --- Pantalla de Logueo --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* --- Interfaz Principal --- */
+        #main-ui { display: none; }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .progress-container {
+            width: 100%;
+            background: #ddd;
+            height: 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .user-info { display: flex; justify-content: space-between; font-weight: bold; }
+
+        .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+
+        section {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h1, h2, h3 { color: var(--primary); }
+
+        .svg-box { text-align: center; margin: 2rem 0; background: #fafafa; padding: 1rem; border-radius: 8px; }
+
+        /* --- Elementos de Interacción --- */
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover { background: var(--accent); color: var(--primary); }
+
+        .activity-card {
+            border-left: 5px solid var(--accent);
+            background: #f9f9f9;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .correct { background: #d4edda; color: #155724; }
+        .incorrect { background: #f8d7da; color: #721c24; }
+
+        /* --- Evaluación --- */
+        .quiz-option {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: #eee;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #fortalecimiento-box {
+            display: none;
+            background: #fff3cd;
+            border: 2px solid #ffeeba;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="login-overlay">
+    <div class="login-card">
+        <h2>Laboratorio Virtual: Propiedades Periódicas</h2>
+        <p>Ingresa tus datos para comenzar la experiencia</p>
+        <input type="text" id="user-name" placeholder="Nombres y Apellidos completos">
+        <br><br>
+        <button class="btn" onclick="iniciarSesion()">Ingresar al OVA</button>
+    </div>
+</div>
+
+<div id="main-ui">
+    <header>
+        <div class="container">
+            <div class="user-info">
+                <span>Estudiante: <span id="display-name"></span></span>
+                <span>Rango: <span id="display-element">Hidrógeno (H)</span></span>
+            </div>
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <section id="inicio">
+            <h1>Bienvenido a la Unidad: Puntos de Ebullición y Fusión</h1>
+            <p><strong>Objetivo:</strong> Relacionar las temperaturas de cambio de estado con la posición de los elementos en la tabla periódica y reflexionar sobre la importancia de los cambios en la vida.</p>
+            
+            <h3>Pre-saberes</h3>
+            <div class="activity-card">
+                <p>1. ¿Qué ocurre con las moléculas de una sustancia cuando alcanza su punto de ebullición?</p>
+                <button class="btn" onclick="checkPre(1, true)">Se mueven más rápido y se separan</button>
+                <button class="btn" onclick="checkPre(1, false)">Se detienen por completo</button>
+                <div id="pre-fb-1" class="feedback"></div>
+            </div>
+            <div class="activity-card">
+                <p>2. Si un elemento funde a 1500 grados Celsius, ¿en qué estado estará a temperatura ambiente (25 grados)?</p>
+                <button class="btn" onclick="checkPre(2, true)">Sólido</button>
+                <button class="btn" onclick="checkPre(2, false)">Líquido</button>
+                <div id="pre-fb-2" class="feedback"></div>
+            </div>
+            <div class="activity-card">
+                <p>3. ¿La tabla periódica organiza los elementos al azar?</p>
+                <button class="btn" onclick="checkPre(3, false)">Sí</button>
+                <button class="btn" onclick="checkPre(3, true)">No, sigue patrones físicos y químicos</button>
+                <div id="pre-fb-3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>Cuerpo Inductivo: La Danza de los Estados</h2>
+            <div class="content-text">
+                <p>Desde que nos despertamos, el mundo nos muestra cambios de estado. El agua de la ducha que se convierte en vapor, o el hielo que se derrite en un vaso. Estos fenómenos, que parecen cotidianos, están regidos por las fuerzas invisibles de los átomos. En química, llamamos <strong>Punto de Fusión</strong> a la temperatura exacta en la que un sólido se transforma en líquido, y <strong>Punto de Ebullición</strong> cuando el líquido decide saltar al estado gaseoso.</p>
+                
+                <p>Pero, ¿por qué el Hierro necesita miles de grados para derretirse mientras que el Helio es un gas incluso en el frío más extremo del universo? La respuesta está en su estructura. Los elementos no son islas; su posición en la tabla periódica nos cuenta una historia de "atracción". En el sentido de vida, los cambios son necesarios para evolucionar, así como los elementos deben absorber energía para cambiar su forma.</p>
+                
+                <div class="svg-box">
+                    <svg width="400" height="250" viewBox="0 0 400 250">
+                        <text x="150" y="20" font-family="Arial" font-size="14" fill="#1a3a5f">Tendencia de Ebullición (Grupo 17)</text>
+                        <line x1="50" y1="200" x2="350" y2="200" stroke="#000" stroke-width="2"/>
+                        <line x1="50" y1="200" x2="50" y2="50" stroke="#000" stroke-width="2"/>
+                        <circle cx="80" cy="180" r="5" fill="red" /> <circle cx="150" cy="150" r="5" fill="red" /> <circle cx="220" cy="100" r="5" fill="red" /> <circle cx="290" cy="60" r="5" fill="red" /> <polyline points="80,180 150,150 220,100 290,60" fill="none" stroke="blue" stroke-width="2" />
+                        <text x="40" y="220" font-size="10">F</text>
+                        <text x="140" y="220" font-size="10">Cl</text>
+                        <text x="210" y="220" font-size="10">Br</text>
+                        <text x="280" y="220" font-size="10">I</text>
+                        <text x="360" y="205" font-size="10">Elemento</text>
+                        <text x="10" y="40" font-size="10" writing-mode="tb">Temp. Ebullición</text>
+                    </svg>
+                    <p><em>Gráfico 1: Aumento del punto de ebullición según el peso atómico en Halógenos.</em></p>
+                </div>
+
+                <p>Al observar la tabla anterior, notarás algo curioso: a medida que bajamos en un grupo (como los halógenos), los puntos de ebullición tienden a subir. ¿Por qué? Porque los átomos se hacen más grandes y pesados, y sus nubes de electrones generan fuerzas de atracción más fuertes (Fuerzas de London). Esto nos enseña que la madurez y la estructura nos permiten resistir mayores presiones y "calores" en la vida.</p>
+                
+                <p>Es vital entender que el punto de ebullición no es solo un número; es el reflejo de la cohesión interna de la materia. Si las fuerzas entre átomos son débiles, la sustancia será volátil. Si son fuertes, como en los metales de transición, tendremos materiales resistentes que construyen ciudades.</p>
+            </div>
+
+            <div class="activity-card">
+                <h3>Actividades para el Cuaderno I</h3>
+                <p>Realiza las siguientes tareas y presiona verificar al terminar cada una:</p>
+                <ul>
+                    <li>Dibuja el gráfico SVG anterior en tu cuaderno usando colores. <button onclick="marcarProgreso(10)">Verificar</button></li>
+                    <li>Escribe una lista de 3 sustancias sólidas y 3 gaseosas a temperatura ambiente. <button onclick="marcarProgreso(10)">Verificar</button></li>
+                    <li>Explica en un párrafo qué cambio de estado ocurre en el ciclo del agua. <button onclick="marcarProgreso(10)">Verificar</button></li>
+                    <li>Crea una tabla comparativa entre fusión y ebullición. <button onclick="marcarProgreso(10)">Verificar</button></li>
+                    <li>Redacta una reflexión corta: "¿Por qué los cambios son importantes para crecer como persona?". <button onclick="marcarProgreso(10)">Verificar</button></li>
+                </ul>
+            </div>
+
+            <div class="activity-card" style="border: 2px solid var(--primary);">
+                <h3>Pregunta ICFES: Competencia Indagar</h3>
+                <p>Un científico analiza dos elementos del Grupo 1 (Metales Alcalinos): el Litio (Li) y el Potasio (K). Al calentar ambos, observa que el Litio requiere más calor para fundirse que el Potasio. Basado en la tendencia de los metales donde el punto de fusión disminuye al bajar en el grupo debido al aumento del radio atómico, ¿cuál es la conclusión correcta?</p>
+                <div class="quiz-option" onclick="checkIcfes('a')">A. El Potasio tiene fuerzas de unión más fuertes que el Litio.</div>
+                <div class="quiz-option" onclick="checkIcfes('b')">B. A mayor tamaño del átomo metálico, menor es la temperatura necesaria para fundirlo.</div>
+                <div class="quiz-option" onclick="checkIcfes('c')">C. El Litio es un gas a temperatura ambiente porque está arriba en la tabla.</div>
+                <div class="quiz-option" onclick="checkIcfes('d')">D. Todos los metales del grupo 1 hierven a la misma temperatura.</div>
+                <div id="icfes-fb" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>Cuerpo Deductivo: Leyes y Patrones Periódicos</h2>
+            <div class="content-text">
+                <p>Después de observar ejemplos específicos, podemos deducir leyes generales. En la tabla periódica, las propiedades físicas como los puntos de ebullición no cambian al azar, sino de manera periódica. Para los elementos representativos, existen dos tendencias principales que debemos memorizar para predecir el comportamiento de la materia sin necesidad de un termómetro.</p>
+                
+                <p><strong>Deducción 1: En los Periodos (Filas).</strong> A medida que avanzamos hacia el centro de la tabla (Grupo 14, Carbono), los puntos de fusión y ebullición aumentan drásticamente. Esto se debe a que estos elementos pueden formar redes de enlaces covalentes muy fuertes (como el diamante). Sin embargo, al seguir avanzando hacia los gases nobles (Grupo 18), los puntos caen al mínimo. Deducción: La capacidad de enlace determina la resistencia térmica.</p>
+
+                <div class="svg-box">
+                    <svg width="400" height="150" viewBox="0 0 400 150">
+                        <rect x="50" y="50" width="60" height="60" fill="#add8e6" stroke="black"/>
+                        <text x="65" y="85" font-size="12">Baja</text>
+                        <rect x="170" y="30" width="60" height="80" fill="#48c9b0" stroke="black"/>
+                        <text x="180" y="75" font-size="12">ALTA</text>
+                        <rect x="290" y="50" width="60" height="60" fill="#add8e6" stroke="black"/>
+                        <text x="305" y="85" font-size="12">Baja</text>
+                        <text x="50" y="130" font-size="10">Metales (G1)</text>
+                        <text x="170" y="130" font-size="10">Semimetales (G14)</text>
+                        <text x="290" y="130" font-size="10">No metales (G18)</text>
+                    </svg>
+                    <p><em>Esquema 2: El "pico" de temperaturas en el centro de la tabla.</em></p>
+                </div>
+
+                <p><strong>Deducción 2: En los Grupos (Columnas).</strong> Aquí la ley varía según el tipo de elemento. En los metales (grupos 1 y 2), el punto de fusión disminuye al bajar. En los no metales (grupos 16 y 17), el punto de fusión aumenta al bajar. ¿Por qué esta contradicción? En los metales, átomos más grandes se alejan de los electrones que los mantienen unidos. En los no metales, átomos más grandes crean nubes electrónicas más "pegajosas".</p>
+                
+                <p>Aplicar este pensamiento deductivo nos permite entender por qué el Wolframio es el filamento de las bombillas (soporta el calor) y por qué el Nitrógeno se usa para congelar verrugas (hierve a temperaturas bajísimas). La ciencia es el arte de encontrar el orden en el caos de los datos.</p>
+            </div>
+
+            <div class="activity-card">
+                <h3>Actividades para el Cuaderno II</h3>
+                <ul>
+                    <li>Escribe la "Ley del Centro": Por qué el Grupo 14 tiene puntos tan altos. <button onclick="marcarProgreso(10)">Verificar</button></li>
+                    <li>Deduce: Si el Cloro es un gas y el Yodo es un sólido, ¿en qué estado estará el Bromo? <button onclick="marcarProgreso(10)">Verificar</button></li>
+                    <li>Investiga el punto de fusión del Hierro y el Oro. <button onclick="marcarProgreso(10)">Verificar</button></li>
+                    <li>Dibuja un mapa conceptual uniendo: Grupo, Periodo, Ebullición y Tamaño Atómico. <button onclick="marcarProgreso(10)">Verificar</button></li>
+                    <li>Explica cómo el punto de ebullición del agua ayuda a mantener la vida en el planeta. <button onclick="marcarProgreso(10)">Verificar</button></li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="evaluacion">
+            <h2>Evaluación Final: Taller de Maestría</h2>
+            <div id="quiz-final">
+                <div class="activity-card">
+                    <p>1. ¿Cuál grupo suele tener los puntos de ebullición más altos debido a sus enlaces covalentes en red?</p>
+                    <select id="f1">
+                        <option value="x">Seleccionar...</option>
+                        <option value="a">Grupo 1 (Alcalinos)</option>
+                        <option value="b">Grupo 14 (Carbonoideos)</option>
+                        <option value="c">Grupo 18 (Gases Nobles)</option>
+                    </select>
+                </div>
+
+                <div class="activity-card">
+                    <p>2. Al bajar en el grupo de los Halógenos (no metales), el punto de fusión:</p>
+                    <select id="f2">
+                        <option value="x">Seleccionar...</option>
+                        <option value="a">Aumenta</option>
+                        <option value="b">Disminuye</option>
+                        <option value="c">Se mantiene igual</option>
+                    </select>
+                </div>
+
+                <div class="activity-card">
+                    <p>3. El paso de sólido a líquido se denomina:</p>
+                    <select id="f3">
+                        <option value="x">Seleccionar...</option>
+                        <option value="a">Sublimación</option>
+                        <option value="b">Ebullición</option>
+                        <option value="c">Fusión</option>
+                    </select>
+                </div>
+
+                <div class="activity-card">
+                    <p>4. ¿Qué elemento tiene un punto de ebullición extremadamente bajo por ser un Gas Noble?</p>
+                    <select id="f4">
+                        <option value="x">Seleccionar...</option>
+                        <option value="a">Hierro</option>
+                        <option value="b">Helio</option>
+                        <option value="c">Silicio</option>
+                    </select>
+                </div>
+
+                <div class="activity-card">
+                    <p>5. Si avanzamos de izquierda a derecha en un periodo, el punto de ebullición generalmente:</p>
+                    <select id="f5">
+                        <option value="x">Seleccionar...</option>
+                        <option value="a">Sube y luego baja</option>
+                        <option value="b">Siempre baja</option>
+                        <option value="c">Siempre sube</option>
+                    </select>
+                </div>
+
+                <h3>Preguntas de Reflexión (10 a 15 palabras)</h3>
+                <div class="activity-card">
+                    <p>6. ¿Por qué es importante conocer el punto de fusión de los metales en la industria?</p>
+                    <input type="text" id="a1" placeholder="Tu respuesta aquí...">
+                    <small id="c1">Palabras: 0</small>
+                </div>
+                <div class="activity-card">
+                    <p>7. Relaciona el cambio de estado con un cambio importante que hayas tenido en tu vida.</p>
+                    <input type="text" id="a2" placeholder="Tu respuesta aquí...">
+                    <small id="c2">Palabras: 0</small>
+                </div>
+                <div class="activity-card">
+                    <p>8. ¿Qué sucede con la energía térmica durante el proceso de ebullición de una sustancia?</p>
+                    <input type="text" id="a3" placeholder="Tu respuesta aquí...">
+                    <small id="c3">Palabras: 0</small>
+                </div>
+                <div class="activity-card">
+                    <p>9. ¿Cómo predices si un elemento es sólido o gas mirando solo la tabla periódica?</p>
+                    <input type="text" id="a4" placeholder="Tu respuesta aquí...">
+                    <small id="c4">Palabras: 0</small>
+                </div>
+                <div class="activity-card">
+                    <p>10. Define con tus palabras qué es una tendencia periódica en las propiedades físicas.</p>
+                    <input type="text" id="a5" placeholder="Tu respuesta aquí...">
+                    <small id="c5">Palabras: 0</small>
+                </div>
+
+                <button class="btn" onclick="calificar()">Finalizar Evaluación</button>
+            </div>
+
+            <div id="fortalecimiento-box">
+                <h2 id="fort-titulo">Ruta de Fortalecimiento Personalizada</h2>
+                <p id="fort-instruccion" style="font-weight: bold; color: #d35400;"></p>
+                <p id="fort-contenido"></p>
+                <button class="btn" onclick="descargarReporte()">Descargar Reporte Final</button>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    let score = 0;
+    let totalProgress = 0;
+    const elements = ["Hidrógeno (H)", "Litio (Li)", "Sodio (Na)", "Potasio (K)", "Rubidio (Rb)", "Cesio (Cs)"];
+
+    // Gestión de Usuario y Persistencia
+    function iniciarSesion() {
+        const name = document.getElementById('user-name').value;
+        if (name.length < 5) {
+            alert("Por favor ingresa tu nombre completo.");
+            return;
+        }
+        localStorage.setItem('ova_user', name);
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('main-ui').style.display = 'block';
+        document.getElementById('display-name').innerText = name;
+        cargarProgreso();
+    }
+
+    function cargarProgreso() {
+        const saved = localStorage.getItem('ova_progress');
+        if (saved) {
+            totalProgress = parseInt(saved);
+            actualizarBarra();
+        }
+    }
+
+    function marcarProgreso(val) {
+        totalProgress = Math.min(totalProgress + val, 100);
+        localStorage.setItem('ova_progress', totalProgress);
+        actualizarBarra();
+        alert("Actividad registrada en el sistema.");
+    }
+
+    function actualizarBarra() {
+        document.getElementById('progress-bar').style.width = totalProgress + '%';
+        let idx = Math.floor(totalProgress / 20);
+        document.getElementById('display-element').innerText = elements[idx] || elements[5];
+    }
+
+    // Lógica de Preguntas
+    function checkPre(q, isCorrect) {
+        const fb = document.getElementById(`pre-fb-${q}`);
+        fb.style.display = 'block';
+        if(isCorrect) {
+            fb.innerText = "¡Correcto! Tienes bases sólidas.";
+            fb.className = "feedback correct";
+        } else {
+            fb.innerText = "No es exacto, pero lo aprenderemos aquí.";
+            fb.className = "feedback incorrect";
+        }
+    }
+
+    function checkIcfes(option) {
+        const fb = document.getElementById('icfes-fb');
+        fb.style.display = 'block';
+        if(option === 'b') {
+            fb.innerHTML = "<strong>¡Correcto!</strong> En metales, a mayor radio atómico, los núcleos atraen con menos fuerza a los electrones libres, facilitando la fusión.";
+            fb.className = "feedback correct";
+        } else if(option === 'a') {
+            fb.innerHTML = "Incorrecto. Si el potasio requiere menos calor, sus fuerzas son más débiles, no más fuertes.";
+            fb.className = "feedback incorrect";
+        } else {
+            fb.innerHTML = "Incorrecto. Revisa la relación entre tamaño y fuerza de atracción metálica.";
+            fb.className = "feedback incorrect";
+        }
+    }
+
+    // Contador de palabras dinámico
+    [1,2,3,4,5].forEach(i => {
+        document.getElementById(`a${i}`).addEventListener('input', function() {
+            let words = this.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+            document.getElementById(`c${i}`).innerText = `Palabras: ${words}`;
+            document.getElementById(`c${i}`).style.color = (words >= 10 && words <= 15) ? "green" : "red";
+        });
+    });
+
+    function calificar() {
+        let aciertosCerradas = 0;
+        let aciertosAbiertas = 0;
+        let erroresInductivos = 0;
+        let erroresDeductivos = 0;
+
+        // Validar Cerradas (1-5)
+        if(document.getElementById('f1').value === 'b') aciertosCerradas++; else erroresInductivos++;
+        if(document.getElementById('f2').value === 'a') aciertosCerradas++; else erroresDeductivos++;
+        if(document.getElementById('f3').value === 'c') aciertosCerradas++; else erroresInductivos++;
+        if(document.getElementById('f4').value === 'b') aciertosCerradas++; else erroresInductivos++;
+        if(document.getElementById('f5').value === 'a') aciertosCerradas++; else erroresDeductivos++;
+
+        // Validar Abiertas (6-10)
+        for(let i=1; i<=5; i++) {
+            let text = document.getElementById(`a${i}`).value.trim();
+            let words = text.split(/\s+/).filter(w => w.length > 0).length;
+            if(words >= 10 && words <= 15) aciertosAbiertas++;
+            else erroresDeductivos++;
+        }
+
+        let notaFinal = ((aciertosCerradas + aciertosAbiertas) / 10) * 5;
+        mostrarFortalecimiento(notaFinal, erroresInductivos, erroresDeductivos);
+    }
+
+    function mostrarFortalecimiento(nota, eInd, eDed) {
+        const box = document.getElementById('fortalecimiento-box');
+        const inst = document.getElementById('fort-instruccion');
+        const cont = document.getElementById('fort-contenido');
+        
+        box.style.display = 'block';
+        inst.innerText = "De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades:";
+        
+        let mensaje = `Tu nota final es ${nota.toFixed(1)}/5.0. `;
+        if(eInd > eDed) {
+            mensaje += "Tu debilidad principal está en la identificación de conceptos básicos y observación de cambios. Repasa la teoría de estados de la materia y cómo los halógenos cambian de gas a sólido.";
+        } else if(eDed >= eInd && eDed > 0) {
+            mensaje += "Tu debilidad está en la deducción de leyes y aplicación de patrones. Debes analizar mejor cómo el tamaño del átomo afecta la fuerza de sus enlaces.";
+        } else {
+            mensaje += "¡Excelente! Has dominado tanto la inducción como la deducción de las propiedades periódicas.";
+        }
+        
+        cont.innerText = mensaje;
+        localStorage.setItem('ova_final_msg', mensaje);
+        localStorage.setItem('ova_final_grade', nota.toFixed(1));
+    }
+
+    function descargarReporte() {
+        const name = localStorage.getItem('ova_user');
+        const grade = localStorage.getItem('ova_final_grade');
+        const element = document.getElementById('display-element').innerText;
+        const feedback = document.getElementById('fort-contenido').innerText;
+        
+        const content = `REPORTE DE PROGRESO - OVA QUÍMICA\n
+Estudiante: ${name}\n
+Nota Final: ${grade}/5.0\n
+Elemento Alcanzado: ${element}\n
+Retroalimentación:\n${feedback}\n
+-----------------------------------\n
+Generado el: ${new Date().toLocaleString()}`;
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Reporte_${name.replace(/\s/g, '_')}.txt`;
+        a.click();
+    }
+</script>
+
+</body>
+</html>

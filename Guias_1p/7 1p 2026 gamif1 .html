@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Modelos Atómicos - Grado 7</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --error: #c0392b;
+            --bg: #f4f6f7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 { text-align: center; color: var(--primary); }
+        h1 { border-bottom: 3px solid var(--accent); padding-bottom: 10px; }
+
+        /* Login Section */
+        .login-panel {
+            background: #e8f6f3;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid var(--accent);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 200px;
+        }
+
+        /* Game Containers */
+        .section-title {
+            background-color: var(--accent);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 40px;
+        }
+
+        .game-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .game-controls {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover { background-color: #2980b9; }
+        button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+
+        /* Scramble Styles */
+        .word-container {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            min-height: 40px;
+            padding: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        .letter-tile, .word-tile {
+            background: white;
+            border: 1px solid var(--primary);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 2px 2px 0px #bdc3c7;
+        }
+
+        .letter-tile:hover, .word-tile:hover { transform: translateY(-2px); }
+
+        /* Sopa de Letras */
+        #sopa-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 30px);
+            gap: 2px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+        .sopa-cell {
+            width: 30px;
+            height: 30px;
+            background: #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .sopa-cell.selected { background-color: var(--warning); color: white; }
+        .sopa-cell.found { background-color: var(--success); color: white; }
+
+        /* Crucigrama */
+        .crossword-grid {
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+        .cw-cell {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #333;
+            text-align: center;
+            padding: 0;
+        }
+        .cw-cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .cw-black { background-color: black; }
+
+        /* Resultados */
+        #final-score-panel {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            background: #fff3cd;
+            border: 2px solid #ffeeba;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .element-card {
+            width: 150px;
+            height: 150px;
+            border: 4px solid #333;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            background: white;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+        }
+        .atomic-number { align-self: flex-start; margin-left: 10px; font-size: 0.8em; }
+        .symbol { font-size: 3em; color: var(--error); }
+        .mass { font-size: 0.8em; }
+
+        .feedback-msg { font-weight: bold; margin-left: 10px; }
+        .success-text { color: var(--success); }
+        .error-text { color: var(--error); }
+        .attempts-count { font-size: 0.8em; color: #7f8c8d; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔬 Estructura Atómica y Enlaces 🧬</h1>
+    <p style="text-align: center;">Taller interactivo: Modelos de Bohr, Lewis y Tabla Periódica.</p>
+
+    <div class="login-panel">
+        <div>
+            <label>Nombre:</label>
+            <input type="text" id="fname" placeholder="Tu nombre">
+        </div>
+        <div>
+            <label>Apellido:</label>
+            <input type="text" id="lname" placeholder="Tu apellido">
+        </div>
+    </div>
+
+    <h2 class="section-title">1. Ordenar Letras (Conceptos Básicos)</h2>
+    <p>Haz clic en las letras desordenadas para formar la palabra correcta.</p>
+    <div id="container-letters"></div>
+
+    <h2 class="section-title">2. Ordenar Frases (Teoría)</h2>
+    <p>Haz clic en las palabras para formar una oración coherente sobre Bohr, Lewis o la Tabla Periódica.</p>
+    <div id="container-sentences"></div>
+
+    <h2 class="section-title">3. Sopa de Letras</h2>
+    <p>Encuentra las siguientes palabras: <b>PROTON, NEUTRON, ELECTRON, BOHR, LEWIS</b></p>
+    <div class="game-card">
+        <div id="sopa-grid"></div>
+        <div class="game-controls">
+            <span class="attempts-count" id="sopa-attempts">Intentos: 0/3</span>
+            <div>
+                <span id="sopa-feedback" class="feedback-msg"></span>
+                <button onclick="checkSopa()">Verificar Sopa</button>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="section-title">4. Crucigrama</h2>
+    <p>Completa las palabras.</p>
+    <ul style="font-size: 0.9em;">
+        <li><b>Horizontal 1:</b> Apellido del creador del modelo de "puntos".</li>
+        <li><b>Horizontal 2:</b> Partícula con carga negativa.</li>
+        <li><b>Vertical 1:</b> Trayectoria circular del electrón (Bohr).</li>
+        <li><b>Vertical 2:</b> Unión entre átomos.</li>
+    </ul>
+    
+    <div class="game-card" style="overflow-x: auto;">
+        <table class="crossword-grid" id="cw-table">
+            </table>
+        <div class="game-controls">
+            <span class="attempts-count" id="cw-attempts">Intentos: 0/3</span>
+            <div>
+                <span id="cw-feedback" class="feedback-msg"></span>
+                <button onclick="checkCrossword()">Verificar Crucigrama</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+        <button onclick="calculateFinalScore()" style="font-size: 1.2em; padding: 15px 30px; background-color: var(--success);">📊 ENTREGAR Y VER CALIFICACIÓN</button>
+    </div>
+
+    <div id="final-score-panel">
+        <h2 id="student-name-display"></h2>
+        <h3>Tu Calificación: <span id="final-score-value">0.0</span> / 5.0</h3>
+        <p id="reward-text"></p>
+        <div id="reward-badge"></div>
+    </div>
+
+</div>
+
+<script>
+    // --- DATOS DEL JUEGO ---
+    
+    // 10 Palabras para ordenar letras
+    const letterGamesData = [
+        { id: 'L1', word: 'ATOMO', hint: 'Unidad básica de la materia' },
+        { id: 'L2', word: 'BOHR', hint: 'Científico del modelo planetario' },
+        { id: 'L3', word: 'LEWIS', hint: 'Científico de la estructura de puntos' },
+        { id: 'L4', word: 'NUCLEO', hint: 'Centro del átomo' },
+        { id: 'L5', word: 'ORBITA', hint: 'Camino del electrón según Bohr' },
+        { id: 'L6', word: 'VALENCIA', hint: 'Capa externa de electrones' },
+        { id: 'L7', word: 'ENLACE', hint: 'Unión entre dos átomos' },
+        { id: 'L8', word: 'FAMILIA', hint: 'Grupo vertical en la tabla periódica' },
+        { id: 'L9', word: 'GASES', hint: 'Estado de la materia (y tipo de familia noble)' },
+        { id: 'L10', word: 'PERIODO', hint: 'Fila horizontal en la tabla' }
+    ];
+
+    // 10 Frases para ordenar palabras
+    const sentenceGamesData = [
+        { id: 'S1', sentence: 'EL ATOMO TIENE UN NUCLEO CENTRAL' },
+        { id: 'S2', sentence: 'LOS ELECTRONES GIRAN EN ORBITAS CIRCULARES' },
+        { id: 'S3', sentence: 'LEWIS USA PUNTOS PARA LOS ELECTRONES' },
+        { id: 'S4', sentence: 'LA TABLA PERIODICA ORGANIZA LOS ELEMENTOS' },
+        { id: 'S5', sentence: 'LOS GASES NOBLES SON MUY ESTABLES' },
+        { id: 'S6', sentence: 'LOS ELEMENTOS BUSCAN COMPLETAR SU OCTETO' },
+        { id: 'S7', sentence: 'EL NUMERO ATOMICO IDENTIFICA AL ELEMENTO' },
+        { id: 'S8', sentence: 'LOS GRUPOS TIENEN PROPIEDADES QUIMICAS SIMILARES' },
+        { id: 'S9', sentence: 'EL MODELO DE BOHR PARECE UN SISTEMA SOLAR' },
+        { id: 'S10', sentence: 'LOS ENLACES QUIMICOS FORMAN NUEVAS SUSTANCIAS' }
+    ];
+
+    // Estado Global
+    let gameState = {};
+    const MAX_ATTEMPTS = 3;
+
+    // Inicializar estado
+    function init() {
+        // Ordenar Letras
+        const lContainer = document.getElementById('container-letters');
+        letterGamesData.forEach(game => {
+            createScrambleGame(lContainer, game, 'letter');
+            gameState[game.id] = { attempts: 0, solved: false, score: 0 };
+        });
+
+        // Ordenar Frases
+        const sContainer = document.getElementById('container-sentences');
+        sentenceGamesData.forEach(game => {
+            createScrambleGame(sContainer, game, 'sentence');
+            gameState[game.id] = { attempts: 0, solved: false, score: 0 };
+        });
+
+        // Sopa y Crucigrama
+        initSopa();
+        initCrossword();
+        gameState['SOPA'] = { attempts: 0, solved: false, score: 0 };
+        gameState['CROSS'] = { attempts: 0, solved: false, score: 0 };
+    }
+
+    // --- GENERADOR DE JUEGOS DE ORDENAMIENTO (Letras y Frases) ---
+    function createScrambleGame(container, data, type) {
+        const div = document.createElement('div');
+        div.className = 'game-card';
+        div.innerHTML = `
+            <strong>${type === 'letter' ? 'Palabra:' : 'Frase:'}</strong> <span style="color:#7f8c8d; font-size:0.9em">${data.hint || ''}</span>
+            <div class="word-container" id="source-${data.id}"></div>
+            <div class="word-container" style="border-bottom: 2px solid #3498db; background:#fff;" id="target-${data.id}"></div>
+            <div class="game-controls">
+                <span class="attempts-count" id="att-${data.id}">Intentos: 0/3</span>
+                <div>
+                    <span id="msg-${data.id}" class="feedback-msg"></span>
+                    <button id="btn-${data.id}" onclick="checkScramble('${data.id}', '${type === 'letter' ? data.word : data.sentence}')">Verificar</button>
+                    <button onclick="resetScramble('${data.id}', '${type === 'letter' ? data.word : data.sentence}', '${type}')" style="background:#95a5a6">Reiniciar</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+        
+        resetScramble(data.id, type === 'letter' ? data.word : data.sentence, type);
+    }
+
+    function resetScramble(id, text, type) {
+        if (gameState[id] && gameState[id].solved) return; // No reiniciar si ya ganó
+
+        const source = document.getElementById(`source-${id}`);
+        const target = document.getElementById(`target-${id}`);
+        source.innerHTML = '';
+        target.innerHTML = '';
+
+        let parts = type === 'letter' ? text.split('') : text.split(' ');
+        
+        // Shuffle simple
+        parts.sort(() => Math.random() - 0.5);
+
+        parts.forEach(part => {
+            const span = document.createElement('span');
+            span.className = type === 'letter' ? 'letter-tile' : 'word-tile';
+            span.textContent = part;
+            span.onclick = function() {
+                if (gameState[id].solved) return;
+                // Mover entre source y target
+                if (this.parentNode === source) target.appendChild(this);
+                else source.appendChild(this);
+            };
+            source.appendChild(span);
+        });
+        
+        document.getElementById(`msg-${id}`).textContent = '';
+    }
+
+    function checkScramble(id, correctText) {
+        if (gameState[id].solved) return;
+        
+        const target = document.getElementById(`target-${id}`);
+        const currentText = Array.from(target.children).map(c => c.textContent).join(correctText.includes(' ') ? ' ' : '');
+        
+        gameState[id].attempts++;
+        document.getElementById(`att-${id}`).textContent = `Intentos: ${gameState[id].attempts}/3`;
+
+        const msg = document.getElementById(`msg-${id}`);
+        const btn = document.getElementById(`btn-${id}`);
+
+        if (currentText === correctText) {
+            msg.textContent = "¡Correcto!";
+            msg.className = "feedback-msg success-text";
+            gameState[id].solved = true;
+            gameState[id].score = getScore(gameState[id].attempts);
+            btn.disabled = true;
+        } else {
+            msg.textContent = "Incorrecto, intenta de nuevo.";
+            msg.className = "feedback-msg error-text";
+            if (gameState[id].attempts >= MAX_ATTEMPTS) {
+                msg.textContent = "Sin intentos. Respuesta: " + correctText;
+                btn.disabled = true;
+                gameState[id].score = 0;
+            }
+        }
+    }
+
+    // --- SOPA DE LETRAS SIMPLE ---
+    // Grilla 10x10 fija para asegurar que funcione sin algoritmos complejos en el cliente
+    const sopaLayout = [
+        "PXYBOHRMAL",
+        "RNEUTRONEK",
+        "OLEWISABOD",
+        "TELECTRONF",
+        "OXZAJLMPOR",
+        "NRTUVWYXAQ",
+        "QWERTYUIOP",
+        "ASDFGHJKLZ",
+        "ZXCVBNMASD",
+        "POIUYTREWQ"
+    ]; // Palabras: BOHR (H), NEUTRON (H), LEWIS (H), ELECTRON (H), PROTON (V en col 0)
+
+    function initSopa() {
+        const grid = document.getElementById('sopa-grid');
+        for(let r=0; r<10; r++) {
+            for(let c=0; c<10; c++) {
+                let cell = document.createElement('div');
+                cell.className = 'sopa-cell';
+                cell.textContent = sopaLayout[r][c];
+                cell.dataset.r = r;
+                cell.dataset.c = c;
+                cell.onclick = function() {
+                    if(gameState['SOPA'].solved || gameState['SOPA'].attempts >=3) return;
+                    this.classList.toggle('selected');
+                }
+                grid.appendChild(cell);
+            }
+        }
+    }
+
+    function checkSopa() {
+        if(gameState['SOPA'].solved) return;
+
+        // Definimos coordenadas correctas manualmente para este layout fijo
+        // PROTON: (0,0) a (5,0)
+        // BOHR: (0,3) a (0,6)
+        // NEUTRON: (1,1) a (1,7)
+        // LEWIS: (2,1) a (2,5)
+        // ELECTRON: (3,1) a (3,8)
+        
+        const correctCoords = new Set([
+            "0,0","1,0","2,0","3,0","4,0","5,0", // PROTON
+            "0,3","0,4","0,5","0,6", // BOHR
+            "1,1","1,2","1,3","1,4","1,5","1,6","1,7", // NEUTRON
+            "2,1","2,2","2,3","2,4","2,5", // LEWIS
+            "3,1","3,2","3,3","3,4","3,5","3,6","3,7","3,8" // ELECTRON
+        ]);
+
+        const cells = document.querySelectorAll('.sopa-cell.selected');
+        let correctCount = 0;
+        let errorCount = 0;
+
+        cells.forEach(cell => {
+            const key = `${cell.dataset.r},${cell.dataset.c}`;
+            if(correctCoords.has(key)) correctCount++;
+            else errorCount++;
+        });
+
+        // Total letras a encontrar = 6+4+7+5+8 = 30
+        gameState['SOPA'].attempts++;
+        document.getElementById('sopa-attempts').textContent = `Intentos: ${gameState['SOPA'].attempts}/3`;
+        
+        const msg = document.getElementById('sopa-feedback');
+        
+        if (correctCount === 30 && errorCount === 0) {
+            msg.textContent = "¡Excelente! Todas encontradas.";
+            msg.className = "feedback-msg success-text";
+            gameState['SOPA'].solved = true;
+            gameState['SOPA'].score = getScore(gameState['SOPA'].attempts);
+            
+            // Marcar verde
+            cells.forEach(c => c.classList.add('found'));
+        } else {
+            msg.textContent = `Faltan letras o hay errores.`;
+            msg.className = "feedback-msg error-text";
+             if (gameState['SOPA'].attempts >= MAX_ATTEMPTS) {
+                msg.textContent = "Fin de intentos en Sopa.";
+                gameState['SOPA'].score = 0;
+            }
+        }
+    }
+
+    // --- CRUCIGRAMA ESTATICO ---
+    /*
+      H1: LEWIS
+      H2: ELECTRON
+      V1: ORBITA
+      V2: ENLACE
+      
+      Layout 8x8 aprox
+          O
+      LEWIS
+          B
+          I
+          T
+      ELECTRON
+      N   A
+      L   C
+      A   E
+      C
+      E
+    */
+    // Mapeo simple de celdas activas
+    const cwData = [
+        {r:1, c:1, l:'L', type:'h1'}, {r:1, c:2, l:'E', type:'h1'}, {r:1, c:3, l:'W', type:'h1'}, {r:1, c:4, l:'I', type:'h1'}, {r:1, c:5, l:'S', type:'h1'},
+        {r:5, c:1, l:'E', type:'h2'}, {r:5, c:2, l:'L', type:'h2'}, {r:5, c:3, l:'E', type:'h2'}, {r:5, c:4, l:'C', type:'h2'}, {r:5, c:5, l:'T', type:'h2'}, {r:5, c:6, l:'R', type:'h2'}, {r:5, c:7, l:'O', type:'h2'}, {r:5, c:8, l:'N', type:'h2'},
+        {r:0, c:4, l:'O', type:'v1'}, /* I en (1,4) ya existe */ {r:2, c:4, l:'B', type:'v1'}, {r:3, c:4, l:'I', type:'v1'}, {r:4, c:4, l:'T', type:'v1'}, {r:6, c:4, l:'A', type:'v1'},
+        {r:5, c:1, l:'E', type:'v2'}, {r:6, c:1, l:'N', type:'v2'}, {r:7, c:1, l:'L', type:'v2'}, {r:8, c:1, l:'A', type:'v2'}, {r:9, c:1, l:'C', type:'v2'}, {r:10, c:1, l:'E', type:'v2'}
+    ];
+
+    function initCrossword() {
+        const table = document.getElementById('cw-table');
+        // Crear grid 11x9
+        for(let r=0; r<11; r++) {
+            let row = table.insertRow();
+            for(let c=0; c<9; c++) {
+                let cell = row.insertCell();
+                cell.className = 'cw-cell cw-black';
+                
+                // Buscar si esta celda tiene letra
+                let match = cwData.find(d => d.r === r && d.c === c);
+                if(match) {
+                    cell.className = 'cw-cell';
+                    let input = document.createElement('input');
+                    input.maxLength = 1;
+                    input.dataset.letter = match.l;
+                    cell.appendChild(input);
+                }
+            }
+        }
+    }
+
+    function checkCrossword() {
+        if(gameState['CROSS'].solved) return;
+
+        const inputs = document.querySelectorAll('.cw-cell input');
+        let allCorrect = true;
+
+        inputs.forEach(inp => {
+            if(inp.value.toUpperCase() !== inp.dataset.letter) {
+                allCorrect = false;
+            }
+        });
+
+        gameState['CROSS'].attempts++;
+        document.getElementById('cw-attempts').textContent = `Intentos: ${gameState['CROSS'].attempts}/3`;
+        const msg = document.getElementById('cw-feedback');
+
+        if(allCorrect) {
+            msg.textContent = "¡Crucigrama Correcto!";
+            msg.className = "feedback-msg success-text";
+            gameState['CROSS'].solved = true;
+            gameState['CROSS'].score = getScore(gameState['CROSS'].attempts);
+            inputs.forEach(i => i.disabled = true);
+        } else {
+            msg.textContent = "Hay errores.";
+            msg.className = "feedback-msg error-text";
+            if (gameState['CROSS'].attempts >= MAX_ATTEMPTS) {
+                msg.textContent = "Fin de intentos. La respuesta se mostrará.";
+                gameState['CROSS'].score = 0;
+                inputs.forEach(i => {
+                    i.value = i.dataset.letter;
+                    i.disabled = true;
+                });
+            }
+        }
+    }
+
+    // --- UTILIDADES DE PUNTUACIÓN ---
+    function getScore(attempts) {
+        if (attempts === 1) return 1.0; // 100%
+        if (attempts === 2) return 0.7; // 70%
+        if (attempts === 3) return 0.4; // 40%
+        return 0;
+    }
+
+    function calculateFinalScore() {
+        const fname = document.getElementById('fname').value;
+        const lname = document.getElementById('lname').value;
+
+        if(!fname || !lname) {
+            alert("Por favor ingresa tu Nombre y Apellido al inicio de la página.");
+            window.scrollTo(0,0);
+            return;
+        }
+
+        // Total Actividades = 10 (letras) + 10 (frases) + 1 (sopa) + 1 (cruci) = 22
+        let totalPoints = 0;
+        let maxPointsPossible = 22; 
+
+        // Sumar scores
+        Object.values(gameState).forEach(state => {
+            totalPoints += state.score;
+        });
+
+        // Regla de tres: totalPoints / 22 = x / 5.0
+        let finalGrade = (totalPoints / maxPointsPossible) * 5.0;
+        finalGrade = finalGrade.toFixed(1); // 1 decimal
+
+        // Mostrar
+        const panel = document.getElementById('final-score-panel');
+        const nameDisplay = document.getElementById('student-name-display');
+        const scoreDisplay = document.getElementById('final-score-value');
+        const rewardText = document.getElementById('reward-text');
+        const rewardBadge = document.getElementById('reward-badge');
+
+        panel.style.display = 'block';
+        nameDisplay.textContent = `Estudiante: ${fname} ${lname}`;
+        scoreDisplay.textContent = finalGrade;
+
+        // Determinar Recompensa (Elemento)
+        let element = {};
+        if(finalGrade >= 4.6) element = { n: 79, s: 'Au', m: 'Oro', desc: '¡Excelente! Brillante y valioso como el Oro.' };
+        else if(finalGrade >= 4.0) element = { n: 47, s: 'Ag', m: 'Plata', desc: '¡Muy bien! Un metal precioso y conductor.' };
+        else if(finalGrade >= 3.0) element = { n: 29, s: 'Cu', m: 'Cobre', desc: 'Buen trabajo. Útil y funcional.' };
+        else if(finalGrade >= 2.0) element = { n: 6, s: 'C', m: 'Carbono', desc: 'Aprobado. La base de la vida, pero falta presión para ser diamante.' };
+        else element = { n: 1, s: 'H', m: 'Hidrógeno', desc: 'El inicio. Necesitas ganar más masa (estudiar más).' };
+
+        rewardText.textContent = element.desc;
+        rewardBadge.innerHTML = `
+            <div class="element-card">
+                <span class="atomic-number">${element.n}</span>
+                <span class="symbol">${element.s}</span>
+                <span class="mass">${element.m}</span>
+            </div>
+        `;
+
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    // Arrancar
+    init();
+
+</script>
+
+</body>
+</html>

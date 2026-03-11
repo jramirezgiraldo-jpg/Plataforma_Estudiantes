@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: El Reactor Estequiométrico</title>
+    <style>
+        /* ================= ESTILOS CSS INMERSIVOS (INDUSTRIAL NEÓN) ================= */
+        :root {
+            --bg-color: #0c0a09; /* Fondo negro asfalto */
+            --panel-bg: #1c1917;
+            --text-main: #f5f5f4;
+            --neon-orange: #f97316; /* Fuego/Calor de Reacción */
+            --neon-yellow: #eab308; /* Electrones/REDOX */
+            --neon-alert: #ef4444;
+            --font-mono: 'Courier New', Courier, monospace;
+            --font-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding-bottom: 60px;
+            background-image: 
+                linear-gradient(45deg, #1c1917 25%, transparent 25%, transparent 75%, #1c1917 75%, #1c1917), 
+                linear-gradient(45deg, #1c1917 25%, transparent 25%, transparent 75%, #1c1917 75%, #1c1917);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        /* HUD - Cabecera e Inventario */
+        header {
+            background: rgba(12, 10, 9, 0.95);
+            border-bottom: 3px solid var(--neon-orange);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(249, 115, 22, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 { 
+            font-size: 1.3rem; 
+            color: #fff;
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            text-shadow: 0 0 10px var(--neon-orange); 
+        }
+
+        #inventory-panel {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: #292524;
+            padding: 10px 20px;
+            border-radius: 4px;
+            border: 1px solid #44403c;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--neon-yellow);
+            font-weight: bold;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            animation: pulseIn 0.5s ease-out;
+            text-shadow: 0 0 5px var(--neon-yellow);
+        }
+
+        /* Estructura de Habitaciones */
+        .room-container { max-width: 950px; margin: 40px auto; padding: 20px; }
+
+        .room {
+            background-color: var(--panel-bg);
+            border: 1px solid #292524;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            opacity: 0.3;
+            pointer-events: none;
+            transition: all 0.6s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .room::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: #44403c; transition: background 0.6s;
+        }
+
+        .room.active { opacity: 1; pointer-events: auto; border-color: #44403c; }
+        .room.active::before { background: linear-gradient(90deg, var(--neon-orange), var(--neon-yellow)); box-shadow: 0 0 15px var(--neon-orange); }
+
+        .room-header {
+            font-size: 1.6rem;
+            color: #fff;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .room-header::before { content: '>'; color: var(--neon-orange); font-family: var(--font-mono); font-weight: bold; }
+
+        /* Cajas de Acertijos */
+        .puzzle-box {
+            background: #0c0a09;
+            border-left: 3px solid #44403c;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 0 6px 6px 0;
+            position: relative;
+        }
+
+        .puzzle-box.solved {
+            border-left-color: var(--neon-yellow);
+            background: rgba(234, 179, 8, 0.05);
+        }
+
+        .puzzle-title { 
+            font-family: var(--font-mono); 
+            font-weight: bold; 
+            color: var(--neon-orange); 
+            margin-bottom: 15px; 
+            font-size: 1.1rem;
+        }
+
+        .reading-block {
+            font-family: var(--font-sans);
+            background: #000;
+            padding: 20px;
+            border: 1px solid #292524;
+            border-radius: 4px;
+            color: #d6d3d1;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            box-shadow: inset 0 0 20px rgba(249, 115, 22, 0.05);
+            border-left: 4px solid var(--neon-yellow);
+        }
+
+        /* Controles (Inputs y Botones) */
+        .input-group { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+
+        input[type="text"] {
+            padding: 12px 15px;
+            border: 1px solid #44403c;
+            border-radius: 4px;
+            background-color: #1c1917;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            flex-grow: 1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        input:focus { outline: none; border-color: var(--neon-orange); box-shadow: 0 0 10px rgba(249, 115, 22, 0.2); }
+        input:disabled { opacity: 0.6; cursor: not-allowed; border-color: var(--neon-yellow); color: var(--neon-yellow); }
+
+        button {
+            padding: 12px 25px;
+            background-color: transparent;
+            color: var(--neon-orange);
+            border: 1px solid var(--neon-orange);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        button:hover { background-color: rgba(249, 115, 22, 0.1); box-shadow: 0 0 15px rgba(249, 115, 22, 0.4); }
+        button:disabled { border-color: #44403c; color: #78716c; background: transparent; cursor: not-allowed; box-shadow: none; }
+        
+        button.solved-btn { 
+            background-color: rgba(234, 179, 8, 0.1); 
+            color: var(--neon-yellow); 
+            border-color: var(--neon-yellow);
+            box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
+        }
+
+        .error-msg {
+            color: var(--neon-alert);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+            padding: 8px;
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 2px solid var(--neon-alert);
+        }
+
+        /* Modal / Alertas del Sistema */
+        #custom-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(12, 10, 9, 0.9); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #1c1917; padding: 40px; border-radius: 4px;
+            border: 1px solid var(--neon-orange); max-width: 500px; text-align: center;
+            box-shadow: 0 0 40px rgba(249, 115, 22, 0.2);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .modal-title { font-size: 1.5rem; color: #fff; margin-bottom: 15px; font-family: var(--font-mono); }
+        .modal-btn { margin-top: 25px; background: var(--neon-orange); color: #000; border:none; padding: 10px 20px; cursor:pointer; font-weight:bold; border-radius:2px;}
+        .modal-btn:hover { background: #fdba74; box-shadow: 0 0 15px rgba(249, 115, 22, 0.5);}
+
+        /* Arte CSS / Contenedores de Imagen */
+        .img-placeholder-container {
+            border: 1px dashed #44403c; padding: 20px; margin: 20px 0;
+            background: #000; border-radius: 4px; text-align: center; overflow: auto;
+        }
+
+        /* Simulador CSS Tabla de Solubilidad */
+        .css-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.85rem; color: #d6d3d1; }
+        .css-table th { background: rgba(249, 115, 22, 0.1); color: var(--neon-orange); padding: 10px; border: 1px solid #44403c; }
+        .css-table td { padding: 10px; border: 1px solid #44403c; text-align: center; }
+
+        /* Simulador CSS Mecanismo de Reacción */
+        .css-mechanism { font-family: var(--font-mono); font-weight: bold; font-size: 1.2rem; color: #fff; background: #0c0a09; padding: 15px; border-radius: 4px; border-left: 4px solid var(--neon-orange);}
+        .chem-arrow { color: var(--neon-yellow); margin: 0 15px; }
+
+        /* Animaciones */
+        @keyframes pulseIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        @media (max-width: 650px) {
+            header { flex-direction: column; gap: 15px; text-align: center; }
+            .css-mechanism { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🏭 Reactor Estequiométrico</h1>
+        <div id="inventory-panel">
+            <span style="color:#78716c; font-family:var(--font-mono);">EQUIPO_EPP:</span>
+            <span id="empty-inv" style="color: #44403c; font-size: 0.9rem;">[Vacío]</span>
+        </div>
+    </header>
+
+    <div class="room-container">
+        
+        <!-- ================= FASE 1: SALA DE PREPARACIÓN ================= -->
+        <section class="room active" id="room-1">
+            <h2 class="room-header">Fase 1: La Ley de Lavoisier</h2>
+            <p style="margin-bottom: 20px;">Estás en la cámara de mezclas. Las válvulas están descalibradas. La materia no se crea ni se destruye, solo se transforma. Debes asegurar que los átomos que entran sean iguales a los que salen.</p>
+
+            <div class="puzzle-box" id="box-p1">
+                <div class="puzzle-title">TERMINAL 01: Balanceo por Tanteo Básico</div>
+                <p>La síntesis de agua gaseosa está desbalanceada: <strong>_ H2 + _ O2  &rarr;  _ H2O</strong>.</p>
+                <p>Aplica la ley de conservación de la masa. Ingresa los 3 coeficientes estequiométricos correctos en orden para balancear la ecuación (usa números enteros, incluso si es 1).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p1" placeholder="Ej: 3, 2, 4 (separados por coma)...">
+                    <button id="btn-p1" onclick="checkAnswer('p1')">Balancear Presión</button>
+                </div>
+                <div class="error-msg" id="error-p1"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p2">
+                <div class="puzzle-title">TERMINAL 02: Bitácora de Precipitación</div>
+                <p>Lee detenidamente el siguiente informe del ingeniero jefe para encontrar el PIN de anulación manual de 4 dígitos oculto en los eventos de la reacción.</p>
+                <div class="reading-block">"Informe de Turno 89B - Ing. Torres.
+Hoy estuvimos evaluando una reacción de doble desplazamiento. El objetivo era aislar un precipitado sólido en el fondo del matraz. Para comenzar el protocolo, agregué exactamente 4 matraces del reactivo A (Nitrato de Bario acuoso) en el tanque principal. La solución se mantuvo transparente, así que el contador de precipitación registró 0 sólidos formados.
+
+Posteriormente, añadimos Sulfato de Sodio. Al instante, la solución se tornó de un color blanco lechoso intenso. La masa comenzó a descender. Según la estequiometría teórica de la reacción, deberíamos haber obtenido más de diez gramos, pero tras pesar el papel filtro con el Sulfato de Bario sólido y seco (BaSO4), la balanza digital marcó exactamente 9 gramos. Fue un rendimiento inferior al esperado, perdimos material durante el filtrado. Al final, solo quedé yo, 1 operario en la sala para limpiar el derrame salino."</div>
+                <div class="input-group">
+                    <input type="text" id="input-p2" placeholder="PIN de 4 dígitos...">
+                    <button id="btn-p2" onclick="checkAnswer('p2')">Ingresar PIN</button>
+                </div>
+                <div class="error-msg" id="error-p2"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p3">
+                <div class="puzzle-title">TERMINAL 03: Protocolo de Seguridad (Premio: Guantes)</div>
+                <p>Las siguientes fases contienen ácidos puros. Necesitas Equipo de Protección Personal. El casillero está cifrado. La regla dice: <em>"Avanza 1 letra en el abecedario para cifrar. Retrocede 1 para descifrar. Mensaje cifrado: <strong>H V B O U F T</strong>"</em></p>
+                <p style="font-size: 0.85rem; color: #78716c; margin-top: 5px;">(Pista: Si la primera letra es H, retrocede una posición en el alfabeto...).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p3" placeholder="Objeto desencriptado...">
+                    <button id="btn-p3" onclick="checkAnswer('p3')">Abrir Casillero</button>
+                </div>
+                <div class="error-msg" id="error-p3"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 2: REDOX Y ESTADOS DE OXIDACIÓN ================= -->
+        <section class="room" id="room-2">
+            <h2 class="room-header">Fase 2: El Flujo de Electrones</h2>
+            <p style="margin-bottom: 20px;">Has entrado a la zona de reacciones REDOX (Oxidorreducción). Aquí, la química es impulsada por el robo y transferencia de electrones entre átomos.</p>
+
+            <div class="puzzle-box" id="box-p4">
+                <div class="puzzle-title">TERMINAL 04: Estado de Oxidación Múltiple</div>
+                <p>Para encender el panel, debes calcular el estado de oxidación del elemento central del Permanganato de Potasio (<strong>KMnO4</strong>).</p>
+                <p>Reglas: El Potasio (K) siempre es +1. El Oxígeno (O) casi siempre es -2 (tienes 4 átomos de O, total -8). La suma de todos los estados de oxidación en una molécula neutra debe ser CERO. ¿Cuál es el estado de oxidación matemático del Manganeso (Mn)?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p4" placeholder="Ingresa el número con su signo (ej: +5)...">
+                    <button id="btn-p4" onclick="checkAnswer('p4')">Calcular Carga Central</button>
+                </div>
+                <div class="error-msg" id="error-p4"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p5">
+                <div class="puzzle-title">TERMINAL 05: Definición del Fenómeno</div>
+                <p>En la reacción química que estamos monitoreando, el átomo de Hierro pasa de Fe(0) sólido a Fe(+3) disuelto. Su carga se volvió más positiva. ¿Qué proceso químico acaba de sufrir el átomo de Hierro al perder esos 3 electrones negativos?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p5" placeholder="Oxidación o Reducción...">
+                    <button id="btn-p5" onclick="checkAnswer('p5')">Identificar Proceso</button>
+                </div>
+                <div class="error-msg" id="error-p5"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p6">
+                <div class="puzzle-title">TERMINAL 06: Semi-reacción (Premio: Calculadora Estequiométrica)</div>
+                <p>Tienes que manipular la válvula de transferencia electrónica. Revisa tu <strong>INVENTARIO</strong>: Solo puedes manipularla si obtuviste los elementos de protección en la Fase 1.</p>
+                <p>Para balancear la semi-reacción de oxidación de Cobre: <strong>Cu(0) &rarr; Cu(+2)</strong>. Matemáticamente, ¿cuántos electrones (e-) debes colocar en el lado derecho de los productos para que las cargas se balanceen a cero?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p6" placeholder="Ingresa solo el número...">
+                    <button id="btn-p6" onclick="checkAnswer('p6')">Transferir Electrones</button>
+                </div>
+                <div class="error-msg" id="error-p6"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 3: MECANISMOS Y PRECIPITACIÓN ================= -->
+        <section class="room" id="room-3">
+            <h2 class="room-header">Fase 3: Cinética y Solubilidad</h2>
+            <p style="margin-bottom: 20px;">Las reacciones no ocurren mágicamente de golpe. Ocurren en pasos, y a veces, los productos no se disuelven.</p>
+
+            <div class="puzzle-box" id="box-p7">
+                <div class="puzzle-title">TERMINAL 07: El Intermediario Oculto</div>
+                <div class="img-placeholder-container">
+                    <p style="color: #78716c; font-size:0.8rem; margin-bottom:10px;">[Marcador: <code style="color:#d6d3d1">&lt;img src="mecanismo_reaccion.png"&gt;</code>]</p>
+                    <p><strong>Simulador CSS de Mecanismo de Reacción Compleja:</strong></p>
+                    <div class="css-mechanism">
+                        Paso 1 (Lento): <span style="color:#fff">NO2 (g) + NO2 (g)</span> <span class="chem-arrow">&rarr;</span> <span style="color:var(--neon-orange)">NO3 (g)</span> + <span style="color:#fff">NO (g)</span><br><br>
+                        Paso 2 (Rápido): <span style="color:var(--neon-orange)">NO3 (g)</span> + <span style="color:#fff">CO (g)</span> <span class="chem-arrow">&rarr;</span> <span style="color:#fff">NO2 (g) + CO2 (g)</span><br><br>
+                        ---------------------------------------------------------<br>
+                        Reacción Global: NO2 (g) + CO (g) <span class="chem-arrow">&rarr;</span> NO (g) + CO2 (g)
+                    </div>
+                </div>
+                <p>Al observar los pasos del mecanismo, hay una sustancia que se forma en el Paso 1 y se consume inmediatamente en el Paso 2 (por eso no aparece en la Reacción Global final). ¿Cuál es la fórmula química de este "Intermediario de reacción"?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p7" placeholder="Fórmula del intermediario...">
+                    <button id="btn-p7" onclick="checkAnswer('p7')">Identificar Intermediario</button>
+                </div>
+                <div class="error-msg" id="error-p7"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p8">
+                <div class="puzzle-title">TERMINAL 08: Reglas de Solubilidad</div>
+                <p>Se mezclan dos soluciones acuosas transparentes: Nitrato de Plata (AgNO3) y Cloruro de Sodio (NaCl).</p>
+                <div class="img-placeholder-container" style="padding: 0;">
+                    <table class="css-table">
+                        <tr><th>Ión Negativo</th><th>Solubilidad General</th><th>Excepciones (¡Forman Precipitado!)</th></tr>
+                        <tr><td>Nitratos (NO3-)</td><td>Siempre Solubles</td><td>Ninguna</td></tr>
+                        <tr><td>Cloruros (Cl-)</td><td>Solubles</td><td>Plata (Ag+), Plomo (Pb+2), Mercurio (Hg2+2)</td></tr>
+                        <tr><td>Sodios (Na+)</td><td>Siempre Solubles</td><td>Ninguna</td></tr>
+                    </table>
+                </div>
+                <p>Según la tabla de datos, al ocurrir la doble sustitución, uno de los productos será sólido e insoluble en agua (formará un precipitado). Escribe la fórmula química exacta de ese precipitado.</p>
+                <div class="input-group">
+                    <input type="text" id="input-p8" placeholder="Fórmula del precipitado (ej. NaCl)...">
+                    <button id="btn-p8" onclick="checkAnswer('p8')">Filtrar Sólido</button>
+                </div>
+                <div class="error-msg" id="error-p8"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p9">
+                <div class="puzzle-title">TERMINAL 09: Cálculo Molar (Uso de Inventario)</div>
+                <p>Revisa tu inventario. Necesitas usar tu <strong>Calculadora Estequiométrica</strong> adquirida en la Fase 2.</p>
+                <p>Ecuación: <strong>2 H2 + O2 &rarr; 2 H2O</strong>. La proporción estequiométrica dice que 2 moles de Hidrógeno producen 2 moles de Agua (Relación 1:1). Si tienes un suministro excesivo de Oxígeno y haces reaccionar exactamente <strong>4.5 moles</strong> de Hidrógeno (H2), ¿cuántos moles de agua (H2O) vas a producir?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p9" placeholder="Ingresa solo el número (ej. 1.5)...">
+                    <button id="btn-p9" onclick="checkAnswer('p9')">Calcular Rendimiento Molar</button>
+                </div>
+                <div class="error-msg" id="error-p9"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 4: ZONA DE ESTEQUIOMETRÍA ================= -->
+        <section class="room" id="room-4">
+            <h2 class="room-header">Fase 4: El Reactivo Limitante</h2>
+            <p style="margin-bottom: 20px;">En la industria real, rara vez tenemos los reactivos en proporciones perfectas. Uno se acaba primero y detiene toda la reacción.</p>
+
+            <div class="puzzle-box" id="box-p10">
+                <div class="puzzle-title">TERMINAL 10: La Receta Química</div>
+                <div class="reading-block" style="border-left-color: var(--neon-alert);">
+Proceso Haber-Bosch para sintetizar Amoníaco:
+Ecuación balanceada: N2 + 3 H2 -> 2 NH3
+Interpretación: Para que la reacción sea perfecta, necesitas TRES veces más moles de Hidrógeno (H2) que de Nitrógeno (N2).
+                </div>
+                <p>En el reactor actualmente tienes: <strong>2 moles de N2</strong> y <strong>3 moles de H2</strong>. <br>Si el N2 requiere el triple de H2 (necesitaría 6 moles de H2, pero solo tienes 3), ¿cuál de los dos reactivos se va a agotar primero, deteniendo la reacción?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p10" placeholder="Escribe 'N2' o 'H2'...">
+                    <button id="btn-p10" onclick="checkAnswer('p10')">Identificar Limitante</button>
+                </div>
+                <div class="error-msg" id="error-p10"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p11">
+                <div class="puzzle-title">TERMINAL 11: Rendimiento Porcentual</div>
+                <p>Calculaste que teóricamente, basado en el reactivo limitante, deberías producir <strong>10 gramos</strong> del producto final. Sin embargo, al pesar el producto en el laboratorio, obtuviste solamente <strong>8 gramos</strong> reales (debido a pérdidas o reacciones secundarias).</p>
+                <p>El porcentaje de rendimiento se calcula como: (Rendimiento Real / Rendimiento Teórico) x 100. ¿Cuál es el porcentaje de rendimiento de esta reacción?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p11" placeholder="Solo el número (ej. 50)...">
+                    <button id="btn-p11" onclick="checkAnswer('p11')">Evaluar Eficiencia</button>
+                </div>
+                <div class="error-msg" id="error-p11"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 5: EL ESCAPE ================= -->
+        <section class="room" id="room-5">
+            <h2 class="room-header">Fase 5: El Reactor Principal</h2>
+            <p style="margin-bottom: 20px;">Última barrera. Sintetiza todo lo aprendido sobre balanceo, REDOX y masa molecular para estabilizar la presión y abrir la puerta de escape.</p>
+
+            <div class="puzzle-box" id="box-p12">
+                <div class="puzzle-title">TERMINAL 12: Deducción de Masa Molar Múltiple</div>
+                <p>Necesitas inyectar exactamente 2 moles de un compuesto para neutralizar el reactor. El manual dice: "Utilice agua pura (H2O)".</p>
+                <p><strong>Paso 1:</strong> Calcula la Masa Molar del H2O (Hidrógeno = 1 g/mol x 2; Oxígeno = 16 g/mol). <br><strong>Paso 2:</strong> Convierte los 2 moles a masa (Gramos = Moles x Masa Molar).</p>
+                <p>¿Cuántos <strong>gramos exactos</strong> de agua debes introducir en la balanza del reactor para cumplir con el requisito de 2 moles?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p12" placeholder="Ingresa solo el número en gramos...">
+                    <button id="btn-p12" onclick="checkAnswer('p12')">Inyectar Masa</button>
+                </div>
+                <div class="error-msg" id="error-p12"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p13" style="border-left-color: var(--neon-orange); box-shadow: 0 0 20px rgba(249, 115, 22, 0.15);">
+                <div class="puzzle-title" style="color: var(--neon-orange); font-size: 1.25rem;">TERMINAL 13: El Panel Holográfico (Acertijo Final)</div>
+                
+                <p style="margin-bottom:15px;">La presión estequiométrica es estable. Para anular el bloqueo de las puertas blindadas, observa la imagen generada por la IA del panel de control central. En esta compleja red de mecanismos moleculares 3D y ecuaciones REDOX, hay 11 letras luminosas ocultas entre los tubos y las proyecciones de neón. Encuéntralas y forma la palabra que representa aquella sustancia que acelera un mecanismo de reacción sin consumirse en el proceso.</p>
+                
+                <div class="img-placeholder-container" style="border-color: var(--neon-orange); background: rgba(249, 115, 22, 0.05); padding: 0;">
+                    <!-- IMAGEN GENERADA POR IA INSERTADA AQUÍ (Acertijo Visual Complejo) -->
+                    <img src="http://googleusercontent.com/image_generation_content/4" alt="Panel de Control REDOX" style="width: 100%; border-radius: 4px; display: block;">
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="input-p13" placeholder="Ingresa la palabra oculta de 11 letras..." style="border-color: var(--neon-orange);">
+                    <button id="btn-p13" onclick="checkAnswer('p13')" style="background-color: var(--neon-orange); color: #000; border-color: var(--neon-orange);">¡APAGAR REACTOR Y ESCAPAR!</button>
+                </div>
+                <div class="error-msg" id="error-p13"></div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODAL PERSONALIZADO -->
+    <div id="custom-modal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modal-title">SISTEMA DEL REACTOR</h3>
+            <p id="modal-text" style="margin-bottom: 20px; color: #d6d3d1;"></p>
+            <button class="modal-btn" onclick="closeModal()">CONFIRMAR</button>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT LÓGICA ================= -->
+    <script>
+        // Diccionario de respuestas (evaluadas en mayúsculas sin tildes)
+        const answers = {
+            p1: ["2,1,2", "2, 1, 2", "2 1 2"],
+            p2: "4091", 
+            p3: "GUANTES", // Clave H V B O U F T -> -1 -> G U A N T E S
+            p4: ["+7", "7"],
+            p5: "OXIDACION",
+            p6: "2", // Fe? No, Cu(0) a Cu(+2). Electrones transferidos = 2.
+            p7: "NO3",
+            p8: ["AGCL", "CLORURO DE PLATA"],
+            p9: ["4.5", "4,5"], // Relación 1:1, así que 4.5 moles de H2 generan 4.5 moles de H2O.
+            p10: ["H2", "HIDROGENO"],
+            p11: "80",
+            p12: "36", // Masa molar agua 18. 18 * 2 = 36g.
+            p13: "CATALIZADOR"
+        };
+        
+        let gameState = {
+            solvedPuzzles: [],
+            inventory: [],
+            activeRoom: 1
+        };
+
+        // Lógica de Modales
+        function showModal(title, text) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').style.display = 'none';
+        }
+
+        // Normalización
+        function normalizeString(str) {
+            return str.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        // Validación principal
+        function checkAnswer(puzzleId) {
+            const inputEl = document.getElementById(`input-${puzzleId}`);
+            const btnEl = document.getElementById(`btn-${puzzleId}`);
+            const errorEl = document.getElementById(`error-${puzzleId}`);
+            
+            const userAnswer = normalizeString(inputEl.value);
+            let isCorrect = false;
+            
+            const correctAnswer = answers[puzzleId];
+            if(Array.isArray(correctAnswer)) {
+                isCorrect = correctAnswer.includes(userAnswer);
+            } else {
+                isCorrect = (userAnswer === normalizeString(correctAnswer));
+            }
+
+            // Dependencias de Inventario Estrictas
+            if(puzzleId === 'p6' && !gameState.inventory.includes('Guantes')) {
+                showModal("FALTA EQUIPO (EPP)", "¡Peligro! Ácido corrosivo detectado en la válvula electrónica. Necesitas encontrar Equipo de Protección (Guantes) en la Fase 1 antes de manipular este terminal.");
+                return;
+            }
+            if(puzzleId === 'p9' && !gameState.inventory.includes('Calculadora Est.')) {
+                showModal("FALTA EQUIPO", "El cálculo estequiométrico requiere precisión de punto flotante. Necesitas desbloquear la 'Calculadora Estequiométrica' en la Fase 2.");
+                return;
+            }
+
+            if(isCorrect) {
+                handleSuccess(puzzleId, inputEl, btnEl, errorEl);
+            } else {
+                handleFailure(puzzleId, inputEl, btnEl, errorEl);
+            }
+        }
+
+        function handleSuccess(puzzleId, inputEl, btnEl, errorEl) {
+            inputEl.disabled = true;
+            btnEl.disabled = true;
+            btnEl.classList.add('solved-btn');
+            btnEl.innerText = 'CALIBRADO';
+            errorEl.style.display = 'none';
+            document.getElementById(`box-${puzzleId}`).classList.add('solved');
+
+            if (!gameState.solvedPuzzles.includes(puzzleId)) {
+                gameState.solvedPuzzles.push(puzzleId);
+                
+                // Recompensas de Inventario
+                if(puzzleId === 'p3') addInventoryItem('Guantes', '🧤');
+                if(puzzleId === 'p6') addInventoryItem('Calculadora Est.', '🧮');
+                
+                checkRoomProgress();
+                saveProgress();
+                
+                if(puzzleId === 'p13') {
+                    setTimeout(() => {
+                        showModal("¡PLANTA ESTABILIZADA!", "¡Excelente trabajo Ingeniero Químico! Has dominado el balanceo por tanteo, las reacciones REDOX, la estequiometría avanzada y los mecanismos de reacción. El reactor es seguro y las puertas están abiertas.");
+                    }, 500);
+                }
+            }
+        }
+
+        function handleFailure(puzzleId, inputEl, btnEl, errorEl) {
+            inputEl.disabled = true;
+            btnEl.disabled = true;
+            let timeLeft = 7; // Penalización antifuerza bruta de 7 segundos
+            
+            errorEl.style.display = 'block';
+            errorEl.innerText = `FALLO MATEMÁTICO. Bloqueo térmico: ${timeLeft}s`;
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                errorEl.innerText = `FALLO MATEMÁTICO. Bloqueo térmico: ${timeLeft}s`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    inputEl.disabled = false;
+                    btnEl.disabled = false;
+                    inputEl.value = "";
+                    errorEl.style.display = 'none';
+                    inputEl.focus();
+                }
+            }, 1000);
+        }
+
+        // Sistema de Inventario
+        function addInventoryItem(itemName, icon) {
+            if (!gameState.inventory.includes(itemName)) {
+                gameState.inventory.push(itemName);
+                renderInventory();
+                showModal("INVENTARIO ACTUALIZADO", `Has recolectado material crítico: ${icon} ${itemName}. Asegúrate de usarlo en fases avanzadas del reactor.`);
+            }
+        }
+
+        function renderInventory() {
+            const panel = document.getElementById('inventory-panel');
+            const emptySpan = document.getElementById('empty-inv');
+            
+            if (gameState.inventory.length > 0 && emptySpan) {
+                emptySpan.style.display = 'none';
+            }
+
+            const existingItems = panel.querySelectorAll('.inventory-item');
+            existingItems.forEach(item => item.remove());
+
+            gameState.inventory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'inventory-item';
+                let icon = item === 'Guantes' ? '🧤' : '🧮';
+                div.innerHTML = `${icon} ${item}`;
+                panel.appendChild(div);
+            });
+        }
+
+        // Progreso de Habitaciones
+        function checkRoomProgress() {
+            const r1 = ['p1', 'p2', 'p3'].every(p => gameState.solvedPuzzles.includes(p));
+            const r2 = ['p4', 'p5', 'p6'].every(p => gameState.solvedPuzzles.includes(p));
+            const r3 = ['p7', 'p8', 'p9'].every(p => gameState.solvedPuzzles.includes(p));
+            const r4 = ['p10', 'p11'].every(p => gameState.solvedPuzzles.includes(p));
+
+            if (r1 && gameState.activeRoom < 2) activateRoom(2);
+            if (r1 && r2 && gameState.activeRoom < 3) activateRoom(3);
+            if (r1 && r2 && r3 && gameState.activeRoom < 4) activateRoom(4);
+            if (r1 && r2 && r3 && r4 && gameState.activeRoom < 5) activateRoom(5);
+        }
+
+        function activateRoom(roomNumber) {
+            gameState.activeRoom = roomNumber;
+            const roomEl = document.getElementById(`room-${roomNumber}`);
+            if(roomEl && !roomEl.classList.contains('active')) {
+                roomEl.classList.add('active');
+                setTimeout(() => roomEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 500);
+            }
+        }
+
+        // Persistencia (localStorage)
+        function saveProgress() {
+            try { localStorage.setItem('escapeEstequiometria_Grado10', JSON.stringify(gameState)); } 
+            catch (e) { console.error("Error guardando progreso", e); }
+        }
+
+        function loadProgress() {
+            try {
+                const savedData = localStorage.getItem('escapeEstequiometria_Grado10');
+                if (savedData) {
+                    gameState = JSON.parse(savedData);
+                    
+                    gameState.solvedPuzzles.forEach(puzzleId => {
+                        const inputEl = document.getElementById(`input-${puzzleId}`);
+                        const btnEl = document.getElementById(`btn-${puzzleId}`);
+                        const errorEl = document.getElementById(`error-${puzzleId}`);
+                        
+                        if(inputEl && btnEl) {
+                            let ans = answers[puzzleId];
+                            inputEl.value = Array.isArray(ans) ? ans[0] : ans;
+                            handleSuccess(puzzleId, inputEl, btnEl, errorEl);
+                        }
+                    });
+
+                    renderInventory();
+                    
+                    for(let i = 1; i <= gameState.activeRoom; i++) {
+                        const roomEl = document.getElementById(`room-${i}`);
+                        if(roomEl) roomEl.classList.add('active');
+                    }
+                }
+            } catch (e) { console.error("Error cargando progreso", e); }
+        }
+
+        window.onload = () => {
+            loadProgress();
+        };
+    </script>
+</body>
+</html>

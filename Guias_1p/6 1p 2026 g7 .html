@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Mundo Mágico de los Coloides</title>
+    <style>
+        :root {
+            --primary: #2E86C1;
+            --secondary: #AED6F1;
+            --accent: #F1C40F;
+            --text: #2C3E50;
+            --bg: #F4F6F7;
+            --success: #27AE60;
+            --error: #E74C3C;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding-bottom: 50px;
+        }
+
+        /* --- Barra de Progreso y Login --- */
+        #top-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 10px 0;
+            display: none; /* Se muestra tras el login */
+        }
+
+        .progress-container {
+            width: 90%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .progress-track {
+            flex-grow: 1;
+            height: 10px;
+            background: #ddd;
+            border-radius: 5px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .element-badge {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--text);
+            background: var(--accent);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 5px;
+            font-size: 0.8em;
+            box-shadow: 2px 2px 0px var(--text);
+        }
+
+        /* --- Contenedor Principal --- */
+        .container {
+            max-width: 800px;
+            margin: 80px auto 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+
+        /* --- Pantalla de Login --- */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: white;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            margin-bottom: 10px;
+            width: 300px;
+        }
+
+        button {
+            background: var(--accent);
+            color: var(--text);
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        /* --- Componentes Educativos --- */
+        h1, h2, h3 { color: var(--primary); }
+        
+        .card {
+            background: #fff;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .activity-box {
+            background: #E8F8F5;
+            border: 1px dashed var(--success);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            font-size: 0.9em;
+        }
+
+        .feedback.correct { background: #D5F5E3; color: #196F3D; }
+        .feedback.incorrect { background: #FADBD8; color: #943126; }
+
+        .svg-illustration {
+            display: block;
+            margin: 20px auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* --- Tablas --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th { background-color: var(--secondary); }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .hidden-section { display: none; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <h1>Bienvenidos al Laboratorio de Coloides</h1>
+        <p>Por favor, ingresa tu nombre para comenzar la misión científica.</p>
+        <input type="text" id="student-name" placeholder="Nombres y Apellidos">
+        <button onclick="login()">Ingresar al Laboratorio</button>
+    </div>
+
+    <div id="top-bar">
+        <div class="progress-container">
+            <div id="user-display" style="font-weight: bold;">Estudiante</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="prog-bar"></div>
+            </div>
+            <div class="element-badge" id="element-badge">
+                <span id="atomic-number">1</span>
+                <span id="atomic-symbol" style="font-size:1.4em;">H</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container hidden-section" id="main-content">
+        
+        <section id="inicio">
+            <h1>Coloides en la Vida Diaria</h1>
+            <p><strong>Objetivo de Aprendizaje:</strong> Reconocer la importancia industrial de los coloides, observar sus propiedades en la cocina (gelatina y leche) y despertar la creatividad científica.</p>
+            
+            <h3>🔍 Pre-saberes: ¿Qué tanto sabes de mezclas?</h3>
+            
+            <div class="card" id="q1">
+                <p>1. Si mezclas agua y piedras, ¿qué tipo de mezcla obtienes?</p>
+                <button onclick="checkMCQ('q1', 'b')">Homogénea</button>
+                <button onclick="checkMCQ('q1', 'a')">Heterogénea</button>
+                <button onclick="checkMCQ('q1', 'c')">Una solución química</button>
+                <div class="feedback" id="fb-q1"></div>
+            </div>
+
+            <div class="card" id="q2">
+                <p>2. ¿Qué pasa si intentas ver un rayo de luz a través de un vaso con leche?</p>
+                <button onclick="checkMCQ('q2', 'b')">La luz pasa sin verse (transparente)</button>
+                <button onclick="checkMCQ('q2', 'a')">El rayo de luz se ve brillante dentro de la leche</button>
+                <button onclick="checkMCQ('q2', 'c')">La leche se evapora</button>
+                <div class="feedback" id="fb-q2"></div>
+            </div>
+
+            <div class="card" id="q3">
+                <p>3. ¿La gelatina es un líquido o un sólido?</p>
+                <button onclick="checkMCQ('q3', 'a')">Es solo líquido</button>
+                <button onclick="checkMCQ('q3', 'c')">Es solo sólido</button>
+                <button onclick="checkMCQ('q3', 'b')">Tiene características de ambos (semisólido)</button>
+                <div class="feedback" id="fb-q3"></div>
+            </div>
+        </section>
+
+        <hr>
+
+        <section id="inductivo">
+            <h2>🧪 Parte 1: El Misterio de la Gelatina y la Niebla</h2>
+            
+            <p>Imagina que despiertas una mañana fría en Armenia, Quindío. Miras por la ventana y todo está blanco; es la <strong>niebla</strong>. No es lluvia (líquido cayendo), pero tampoco es aire puro (gas). Son pequeñas gotitas de agua flotando en el aire. ¡Bienvenido al mundo de los coloides!</p>
+            
+            <p>En el grado 6, a veces pensamos que la materia solo es sólida, líquida o gaseosa. Pero existe un estado "ninja", un estado intermedio y fascinante llamado <strong>Estado Coloidal</strong>.</p>
+
+            <svg width="400" height="200" viewBox="0 0 400 200" class="svg-illustration">
+                <path d="M 100,100 Q 200,200 300,100" fill="#FF5733" fill-opacity="0.2" stroke="#C0392B" stroke-width="5"/>
+                <ellipse cx="200" cy="100" rx="100" ry="20" fill="#FF5733" fill-opacity="0.3" stroke="none"/>
+                <path d="M 110,100 Q 150,80 200,100 T 290,100" fill="none" stroke="#C0392B" stroke-width="2" stroke-dasharray="5,5"/>
+                <text x="200" y="180" text-anchor="middle" fill="#555" font-size="14">Figura 1: La gelatina (un coloide sabroso)</text>
+            </svg>
+
+            <p>Pensemos en la <strong>Gelatina</strong>. Cuando compras el polvo en la tienda, es sólido. Cuando le echas agua caliente, se vuelve líquido. Pero cuando la metes a la nevera... se vuelve algo mágico. Tiembla si la mueves, pero mantiene su forma. Esto sucede porque las proteínas de la gelatina atrapan el agua en una red tridimensional, como una esponja microscópica.</p>
+            
+            <p>Los coloides están en todas partes en nuestra vida diaria:</p>
+            <ul>
+                <li><strong>En el desayuno:</strong> La leche, la mantequilla y el queso.</li>
+                <li><strong>En el baño:</strong> La espuma de afeitar, el gel para el cabello y la pasta dental.</li>
+                <li><strong>En la naturaleza:</strong> La sangre, la niebla y el humo.</li>
+            </ul>
+
+            <div class="activity-box">
+                <h3>📓 Actividad para el Cuaderno 1: Observación</h3>
+                <p>Ve a la cocina (con permiso de tus padres) y observa la leche. ¿Puedes ver a través de ella como en el agua? Escribe tu observación.</p>
+                <textarea id="act1" rows="2" placeholder="Escribe aquí..."></textarea>
+                <button onclick="verifyNotebook('act1')">Verificar Actividad</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad para el Cuaderno 2: Dibujo</h3>
+                <p>Dibuja en tu cuaderno un plato de gelatina y unas nubes. En el recuadro abajo, escribe "Listo" cuando lo hayas hecho.</p>
+                <textarea id="act2" rows="1" placeholder="Escribe 'Listo'"></textarea>
+                <button onclick="verifyNotebook('act2')">Verificar Actividad</button>
+            </div>
+            
+            <p>Pero, ¿cómo diferenciamos una mezcla normal de un coloide? La clave está en el tamaño de las partículas. En una solución de agua con sal, la sal se disuelve tanto que desaparece a la vista. En un coloide, las partículas son más grandes que en una solución, pero más pequeñas que en una mezcla grosera (como arena y agua).</p>
+
+            <table>
+                <caption>Tabla 1: Comparación de Mezclas</caption>
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Tamaño de Partícula</th>
+                        <th>Ejemplo</th>
+                        <th>¿Se asienta?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Solución</td>
+                        <td>Muy pequeña (Invisible)</td>
+                        <td>Agua con azúcar</td>
+                        <td>No</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Coloide</strong></td>
+                        <td><strong>Mediana</strong></td>
+                        <td><strong>Gelatina / Leche</strong></td>
+                        <td><strong>No (generalmente)</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Suspensión</td>
+                        <td>Grande (Visible)</td>
+                        <td>Agua con tierra</td>
+                        <td>Sí (la tierra baja)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>La industria alimentaria aprovecha estas propiedades. Imagina un helado. Si fuera solo hielo y leche congelada, sería duro como una roca. Pero el helado es un coloide: tiene burbujas de aire, grasa y cristales de hielo mezclados. ¡Gracias a la ciencia de los coloides el helado es suave!</p>
+
+            <div class="activity-box">
+                <h3>📓 Actividad para el Cuaderno 3: Tabla Comparativa</h3>
+                <p>Copia la Tabla 1 en tu cuaderno. Escribe "Copiado" abajo.</p>
+                <textarea id="act3" rows="1"></textarea>
+                <button onclick="verifyNotebook('act3')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad para el Cuaderno 4: Mapa Mental</h3>
+                <p>Crea un mapa mental con la palabra central "COLOIDES" y tres ramas: "Cocina", "Aseo", "Naturaleza". Pon ejemplos. Escribe "Hecho".</p>
+                <textarea id="act4" rows="1"></textarea>
+                <button onclick="verifyNotebook('act4')">Verificar</button>
+            </div>
+
+             <div class="activity-box">
+                <h3>📓 Actividad para el Cuaderno 5: La Pregunta</h3>
+                <p>Si la leche es blanca, ¿por qué no podemos ver los componentes separados (agua y grasa) a simple vista? Responde en tu cuaderno.</p>
+                <textarea id="act5" rows="2" placeholder="Tu hipótesis..."></textarea>
+                <button onclick="verifyNotebook('act5')">Verificar</button>
+            </div>
+        </section>
+
+        <hr>
+
+        <section id="icfes">
+            <h2>🕵️ Competencia: Indagar</h2>
+            <div class="card" style="border-left-color: var(--accent);">
+                <h3>El Experimento del Láser</h3>
+                <p>Juan y María están en el laboratorio oscuro. Tienen dos vasos de precipitados:</p>
+                <ul>
+                    <li><strong>Vaso A:</strong> Agua con mucha sal disuelta.</li>
+                    <li><strong>Vaso B:</strong> Agua con unas gotas de leche.</li>
+                </ul>
+                <p>Al pasar un puntero láser rojo a través de ambos vasos, observan lo siguiente:</p>
+
+                <svg width="500" height="200" viewBox="0 0 500 200" class="svg-illustration">
+                    <rect x="10" y="90" width="40" height="20" fill="#333"/>
+                    <rect x="50" y="95" width="10" height="10" fill="#F00"/>
+                    
+                    <rect x="100" y="50" width="80" height="100" fill="#EBF5FB" stroke="#3498DB" stroke-width="2"/>
+                    <text x="140" y="170" text-anchor="middle" font-size="12">Vaso A</text>
+                    
+                    <rect x="300" y="50" width="80" height="100" fill="#EBF5FB" stroke="#3498DB" stroke-width="2"/>
+                    <text x="340" y="170" text-anchor="middle" font-size="12">Vaso B</text>
+
+                    <line x1="60" y1="100" x2="100" y2="100" stroke="red" stroke-width="2" stroke-dasharray="2,2"/>
+                    <line x1="180" y1="100" x2="300" y2="100" stroke="red" stroke-width="2" stroke-dasharray="2,2"/>
+                    
+                    <line x1="300" y1="100" x2="380" y2="100" stroke="red" stroke-width="4" opacity="0.8"/>
+                    <line x1="380" y1="100" x2="450" y2="100" stroke="red" stroke-width="2" stroke-dasharray="2,2"/>
+                </svg>
+
+                <p>En el <strong>Vaso A</strong> la luz pasa pero no se ve el rayo dentro del líquido. En el <strong>Vaso B</strong>, el rayo de luz se ve claramente atravesando el líquido.</p>
+
+                <p><strong>Pregunta:</strong> Basándose en la observación, ¿cuál de las siguientes conclusiones es correcta sobre el Vaso B?</p>
+
+                <button onclick="checkICFES('a')">A. El Vaso B es una solución pura porque la luz la atraviesa.</button>
+                <button onclick="checkICFES('b')">B. El Vaso B contiene un coloide, porque las partículas suspendidas dispersan la luz (Efecto Tyndall).</button>
+                <button onclick="checkICFES('c')">C. El Vaso B está sucio y por eso la luz rebota.</button>
+                <button onclick="checkICFES('d')">D. El Vaso B tiene mayor temperatura, lo que hace brillar la luz.</button>
+
+                <div id="icfes-feedback" class="feedback"></div>
+            </div>
+        </section>
+
+        <hr>
+
+        <section id="deductivo">
+            <h2>📘 Parte 2: Explicando la Magia (Teoría)</h2>
+            <p>¡Excelente trabajo indagando! Lo que acabas de ver en el gráfico anterior tiene un nombre científico: <strong>Efecto Tyndall</strong>. </p>
+            
+            <p><strong>¿Por qué ocurre?</strong><br>
+            Imagina que lanzas una pelota de tenis (la luz) a través de una habitación vacía. La pelota pasa sin chocar. Eso es una solución verdadera (Vaso A). Ahora, imagina que lanzas la misma pelota a través de una habitación llena de globos flotando (las partículas coloidales). La pelota golpeará los globos y rebotará en diferentes direcciones. Eso es lo que hace que veamos el rayo de luz en el Vaso B o los faros de un carro en la niebla.</p>
+
+            <h3>Las Fases de un Coloide</h3>
+            <p>A diferencia de las mezclas simples, los coloides tienen dos partes fundamentales, como un baile en pareja:</p>
+            <ol>
+                <li><strong>Fase Dispersa:</strong> Son las partículas "flotando" (como las gotas de agua en la niebla). Sería el equivalente al soluto en una solución.</li>
+                <li><strong>Fase Dispersante (o Continua):</strong> Es el medio donde flotan las partículas (como el aire en la niebla). Sería el solvente.</li>
+            </ol>
+
+            <p>Dependiendo de qué estado sea cada fase, el coloide tiene nombres diferentes. Esto es vital para la industria farmacéutica y alimentaria. Mira la siguiente tabla:</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fase Dispersa (Lo que flota)</th>
+                        <th>Fase Dispersante (El medio)</th>
+                        <th>Nombre del Coloide</th>
+                        <th>Ejemplo Cotidiano</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Sólido</td>
+                        <td>Líquido</td>
+                        <td>Sol</td>
+                        <td>Pinturas, Sangre</td>
+                    </tr>
+                    <tr>
+                        <td>Líquido</td>
+                        <td>Líquido</td>
+                        <td>Emulsión</td>
+                        <td>Leche, Mayonesa</td>
+                    </tr>
+                    <tr>
+                        <td>Gas</td>
+                        <td>Líquido</td>
+                        <td>Espuma</td>
+                        <td>Espuma de afeitar, Crema batida</td>
+                    </tr>
+                    <tr>
+                        <td>Líquido</td>
+                        <td>Gas</td>
+                        <td>Aerosol Líquido</td>
+                        <td>Niebla, Desodorante en spray</td>
+                    </tr>
+                    <tr>
+                        <td>Sólido</td>
+                        <td>Gas</td>
+                        <td>Aerosol Sólido</td>
+                        <td>Humo</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p><strong>Importancia Industrial:</strong><br>
+            Sin el conocimiento de los coloides, no tendrías mayonesa en tu sándwich (se separaría el aceite del huevo). Tampoco tendrías pinturas que cubran bien las paredes, ni medicamentos jarabes que se mantengan mezclados. La ciencia de los coloides permite crear productos estables, sabrosos y útiles.</p>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 6: Clasificación</h3>
+                <p>Busca una crema corporal en tu casa. ¿Qué tipo de coloide crees que es según la tabla? Escríbelo.</p>
+                <textarea id="act6" rows="1"></textarea>
+                <button onclick="verifyNotebook('act6')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 7: Dibujo Técnico</h3>
+                <p>Dibuja en tu cuaderno cómo crees que se ve la leche bajo un microscopio (gotitas de grasa en agua). Escribe "Listo".</p>
+                <textarea id="act7" rows="1"></textarea>
+                <button onclick="verifyNotebook('act7')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 8: Análisis</h3>
+                <p>¿Por qué hay que agitar los medicamentos líquidos antes de tomarlos? (Pista: Estabilidad de coloides). Responde.</p>
+                <textarea id="act8" rows="2"></textarea>
+                <button onclick="verifyNotebook('act8')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 9: Mapa Conceptual</h3>
+                <p>Realiza un mapa conceptual que conecte: "Fase Dispersa", "Fase Dispersante" y "Efecto Tyndall". Escribe "Hecho".</p>
+                <textarea id="act9" rows="1"></textarea>
+                <button onclick="verifyNotebook('act9')">Verificar</button>
+            </div>
+
+            <div class="activity-box">
+                <h3>📓 Actividad 10: La Mayonesa</h3>
+                <p>Investiga o pregunta en casa: ¿Qué ingrediente ayuda a unir el aceite y el agua en la mayonesa? (Se llama emulsificante).</p>
+                <textarea id="act10" rows="1"></textarea>
+                <button onclick="verifyNotebook('act10')">Verificar</button>
+            </div>
+        </section>
+
+        <hr>
+
+        <section id="final-eval">
+            <h2>🏆 Taller Final: ¿Cuánto aprendiste?</h2>
+            
+            <h3>Parte A: Selección Múltiple</h3>
+            <div class="card" id="f1">
+                <p>1. El efecto que permite ver un rayo de luz a través de la niebla se llama:</p>
+                <button onclick="checkFinalMCQ('f1', 'a', false)">Efecto Doppler</button>
+                <button onclick="checkFinalMCQ('f1', 'b', true)">Efecto Tyndall</button>
+                <button onclick="checkFinalMCQ('f1', 'c', false)">Efecto Invernadero</button>
+                <button onclick="checkFinalMCQ('f1', 'd', false)">Reflexión Total</button>
+            </div>
+            <div class="card" id="f2">
+                <p>2. La mayonesa es un ejemplo de:</p>
+                <button onclick="checkFinalMCQ('f2', 'a', false)">Sol</button>
+                <button onclick="checkFinalMCQ('f2', 'b', false)">Aerosol</button>
+                <button onclick="checkFinalMCQ('f2', 'c', true)">Emulsión</button>
+                <button onclick="checkFinalMCQ('f2', 'd', false)">Espuma</button>
+            </div>
+            <div class="card" id="f3">
+                <p>3. En un coloide, la fase dispersa es comparable a:</p>
+                <button onclick="checkFinalMCQ('f3', 'a', true)">El soluto en una solución</button>
+                <button onclick="checkFinalMCQ('f3', 'b', false)">El solvente en una solución</button>
+                <button onclick="checkFinalMCQ('f3', 'c', false)">El vaso que lo contiene</button>
+                <button onclick="checkFinalMCQ('f3', 'd', false)">La temperatura</button>
+            </div>
+             <div class="card" id="f4">
+                <p>4. ¿Cuál de estos NO es un coloide?</p>
+                <button onclick="checkFinalMCQ('f4', 'a', false)">Gelatina</button>
+                <button onclick="checkFinalMCQ('f4', 'b', true)">Agua pura filtrada</button>
+                <button onclick="checkFinalMCQ('f4', 'c', false)">Sangre</button>
+                <button onclick="checkFinalMCQ('f4', 'd', false)">Niebla</button>
+            </div>
+             <div class="card" id="f5">
+                <p>5. ¿Cuál es el rango de tamaño de las partículas coloidales?</p>
+                <button onclick="checkFinalMCQ('f5', 'a', false)">Son grandes y se ven a simple vista</button>
+                <button onclick="checkFinalMCQ('f5', 'b', false)">Son tan pequeñas como átomos individuales</button>
+                <button onclick="checkFinalMCQ('f5', 'c', true)">Intermedias (entre soluciones y suspensiones)</button>
+                <button onclick="checkFinalMCQ('f5', 'd', false)">No tienen tamaño</button>
+            </div>
+
+            <h3>Parte B: Preguntas Abiertas (Responder entre 10 y 15 palabras)</h3>
+            <p><em>El sistema verificará que tu respuesta tenga la longitud correcta. Ni muy corta, ni muy larga.</em></p>
+            
+            <div class="card">
+                <p>6. Describe con tus palabras qué es el Efecto Tyndall.</p>
+                <textarea id="open6"></textarea>
+                <button onclick="validateOpen('open6')">Validar Respuesta</button>
+                <div id="fb-open6" class="feedback"></div>
+            </div>
+
+            <div class="card">
+                <p>7. Explica la diferencia entre fase dispersa y fase dispersante.</p>
+                <textarea id="open7"></textarea>
+                <button onclick="validateOpen('open7')">Validar Respuesta</button>
+                <div id="fb-open7" class="feedback"></div>
+            </div>
+
+            <div class="card">
+                <p>8. ¿Por qué es importante la química de coloides en la industria?</p>
+                <textarea id="open8"></textarea>
+                <button onclick="validateOpen('open8')">Validar Respuesta</button>
+                <div id="fb-open8" class="feedback"></div>
+            </div>
+
+            <div class="card">
+                <p>9. Menciona dos ejemplos de coloides que uses en tu baño.</p>
+                <textarea id="open9"></textarea>
+                <button onclick="validateOpen('open9')">Validar Respuesta</button>
+                <div id="fb-open9" class="feedback"></div>
+            </div>
+
+            <div class="card">
+                <p>10. ¿Qué aprendiste sobre la gelatina que no sabías antes?</p>
+                <textarea id="open10"></textarea>
+                <button onclick="validateOpen('open10')">Validar Respuesta</button>
+                <div id="fb-open10" class="feedback"></div>
+            </div>
+
+        </section>
+
+        <section id="download-section" style="text-align: center; margin-top: 50px;">
+            <h2>¡Misión Cumplida!</h2>
+            <p>Has completado el recorrido por el mundo de los coloides.</p>
+            <button onclick="downloadResults()" style="background-color: var(--success); color: white; padding: 15px 30px; font-size: 1.2em;">📥 Descargar Mis Resultados (.txt)</button>
+        </section>
+
+    </div>
+
+    <script>
+        // --- ESTADO DEL ESTUDIANTE ---
+        let studentData = {
+            name: "",
+            score: 0,
+            progress: 0,
+            maxScore: 30, // Aproximado para cálculo de gamificación
+            answers: {}
+        };
+
+        // --- INICIALIZACIÓN ---
+        window.onload = function() {
+            const savedData = localStorage.getItem('coloides_ova_data');
+            if (savedData) {
+                studentData = JSON.parse(savedData);
+                if (studentData.name) {
+                    showApp();
+                }
+            }
+        };
+
+        // --- FUNCIONES DE GESTIÓN ---
+        function login() {
+            const nameInput = document.getElementById('student-name').value;
+            if (nameInput.trim().length > 2) {
+                studentData.name = nameInput;
+                saveData();
+                showApp();
+            } else {
+                alert("Por favor ingresa un nombre válido.");
+            }
+        }
+
+        function showApp() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('top-bar').style.display = 'block';
+            document.getElementById('user-display').innerText = studentData.name;
+            updateGamification();
+        }
+
+        function saveData() {
+            localStorage.setItem('coloides_ova_data', JSON.stringify(studentData));
+            updateGamification();
+        }
+
+        function updateGamification() {
+            // Cálculo simple de progreso
+            const totalTasks = 20; // 3 pre + 10 notebook + 1 icfes + 5 final MCQ + 5 final Open
+            let completed = Object.keys(studentData.answers).length;
+            let percent = (completed / totalTasks) * 100;
+            if(percent > 100) percent = 100;
+
+            document.getElementById('prog-bar').style.width = percent + "%";
+
+            // Sistema de Puntos (Tabla Periódica)
+            // 0-20%: H (Hidrógeno), 21-40%: He (Helio), 41-60%: Li (Litio), 61-80%: Be (Berilio), 81-100%: B (Boro)
+            const badgeSym = document.getElementById('atomic-symbol');
+            const badgeNum = document.getElementById('atomic-number');
+            const badge = document.getElementById('element-badge');
+
+            if (percent < 20) { badgeSym.innerText = "H"; badgeNum.innerText = "1"; badge.style.backgroundColor = "#FFFFFF"; }
+            else if (percent < 40) { badgeSym.innerText = "He"; badgeNum.innerText = "2"; badge.style.backgroundColor = "#D7BDE2"; }
+            else if (percent < 60) { badgeSym.innerText = "Li"; badgeNum.innerText = "3"; badge.style.backgroundColor = "#F5B7B1"; }
+            else if (percent < 80) { badgeSym.innerText = "Be"; badgeNum.innerText = "4"; badge.style.backgroundColor = "#A9DFBF"; }
+            else { badgeSym.innerText = "B"; badgeNum.innerText = "5"; badge.style.backgroundColor = "#F9E79F"; }
+        }
+
+        // --- LÓGICA DE PREGUNTAS ---
+
+        // Pre-saberes
+        function checkMCQ(id, correctOption) {
+            if(studentData.answers[id]) return; // Ya respondido
+
+            const feedbackEl = document.getElementById('fb-' + id);
+            feedbackEl.style.display = 'block';
+            
+            // Simulación simple, tomamos el último clic como respuesta (idealmente se selecciona primero)
+            // Aquí simplificamos para flujo rápido: Click = Answer
+            
+            let isCorrect = false;
+            // Detectar cuál botón se presionó es complejo sin pasar el argumento del click, 
+            // pero asumiremos que el usuario intenta acertar.
+            // Para este código simplificado, solo mostramos retroalimentación fija basada en la opción correcta.
+            
+            if (arguments.callee.caller.arguments[0].innerText) {
+                 // Truco sucio para saber qué botón llamó en JS puro simple sin listeners complejos
+                 // Mejor lógica: pasar la opción elegida en el HTML (ya hecho: checkMCQ('q1', 'b'))
+            }
+
+            // Nota: La lógica de arriba tiene un fallo al no comparar la selección del usuario.
+            // Corrección: Modificaremos la función para recibir la opción del usuario.
+        }
+
+        // Reescritura correcta de checkMCQ para usar en onclick
+        window.checkMCQ = function(questionId, userOption) {
+            if(studentData.answers[questionId]) return;
+
+            const correctAnswers = {'q1': 'b', 'q2': 'a', 'q3': 'b'};
+            const feedbackEl = document.getElementById('fb-' + questionId);
+            feedbackEl.style.display = 'block';
+
+            if (userOption === correctAnswers[questionId]) {
+                feedbackEl.className = 'feedback correct';
+                feedbackEl.innerHTML = "<strong>¡Correcto!</strong> Buen inicio.";
+                studentData.score += 1;
+            } else {
+                feedbackEl.className = 'feedback incorrect';
+                feedbackEl.innerHTML = "<strong>Incorrecto.</strong> No te preocupes, aprenderemos por qué más adelante.";
+            }
+            studentData.answers[questionId] = userOption;
+            saveData();
+        }
+
+        // Actividades de Cuaderno
+        window.verifyNotebook = function(id) {
+            const val = document.getElementById(id).value;
+            if (val.trim().length > 0) {
+                alert("¡Actividad registrada! Recuerda tenerla en tu cuaderno físico.");
+                if(!studentData.answers[id]) {
+                    studentData.answers[id] = "Completado: " + val;
+                    saveData();
+                }
+            } else {
+                alert("Por favor escribe algo antes de verificar.");
+            }
+        }
+
+        // ICFES
+        window.checkICFES = function(option) {
+            if(studentData.answers['icfes']) return;
+
+            const fb = document.getElementById('icfes-feedback');
+            fb.style.display = 'block';
+
+            if (option === 'b') {
+                fb.className = 'feedback correct';
+                fb.innerHTML = "<strong>¡Excelente! (Competencia Indagar)</strong><br>Has identificado correctamente que la dispersión de la luz (Efecto Tyndall) es la prueba reina para identificar un coloide. Las partículas, aunque no se vean a simple vista, son lo suficientemente grandes para chocar con la luz.";
+                studentData.score += 5;
+            } else {
+                fb.className = 'feedback incorrect';
+                let reason = "";
+                if(option === 'a') reason = "Si fuera una solución pura (como agua con sal), la luz pasaría sin verse (como en el Vaso A).";
+                if(option === 'c') reason = "La suciedad suele precipitarse al fondo. Aquí la mezcla es estable.";
+                if(option === 'd') reason = "La temperatura no hace que la luz brille dentro del líquido de esta manera.";
+                fb.innerHTML = "<strong>Incorrecto.</strong> " + reason + " Intenta observar de nuevo el gráfico del Vaso B.";
+            }
+            studentData.answers['icfes'] = option;
+            saveData();
+        }
+
+        // Final MCQ
+        window.checkFinalMCQ = function(id, option, isCorrect) {
+            if(studentData.answers[id]) return;
+            
+            const btn = event.target;
+            if(isCorrect) {
+                btn.style.backgroundColor = "var(--success)";
+                btn.style.color = "white";
+                studentData.score += 2;
+            } else {
+                btn.style.backgroundColor = "var(--error)";
+                btn.style.color = "white";
+            }
+            studentData.answers[id] = option; // Guarda respuesta
+            saveData();
+        }
+
+        // Final Open Questions Validator (10-15 words)
+        window.validateOpen = function(id) {
+            const txt = document.getElementById(id).value.trim();
+            const words = txt.split(/\s+/).filter(w => w.length > 0);
+            const fb = document.getElementById('fb-' + id);
+            fb.style.display = 'block';
+
+            if (words.length >= 10 && words.length <= 15) {
+                fb.className = 'feedback correct';
+                fb.innerText = "Extensión perfecta. Respuesta registrada.";
+                if(!studentData.answers[id]) {
+                    studentData.answers[id] = txt;
+                    saveData();
+                }
+            } else {
+                fb.className = 'feedback incorrect';
+                fb.innerText = `Tienes ${words.length} palabras. Debes tener entre 10 y 15.`;
+            }
+        }
+
+        // --- DESCARGA ---
+        window.downloadResults = function() {
+            let content = `REPORTE DE OVA: COLOIDES\n`;
+            content += `Estudiante: ${studentData.name}\n`;
+            content += `Fecha: ${new Date().toLocaleString()}\n`;
+            content += `Progreso General: ${document.getElementById('prog-bar').style.width}\n`;
+            content += `-----------------------------------\nRESPUESTAS:\n`;
+            
+            for (const [key, value] of Object.entries(studentData.answers)) {
+                content += `Pregunta [${key}]: ${value}\n`;
+            }
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Resultados_${studentData.name.replace(/\s+/g, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+</html>

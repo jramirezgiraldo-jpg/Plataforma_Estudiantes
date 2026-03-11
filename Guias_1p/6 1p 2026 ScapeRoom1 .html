@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: El Enigma de la Materia</title>
+    <style>
+        /* =========================================
+           VARIABLES Y DISEÑO BASE (CSS)
+           ========================================= */
+        :root {
+            --bg-color: #0f172a; /* Azul muy oscuro */
+            --panel-bg: #1e293b;
+            --text-main: #f8fafc;
+            --accent-gold: #fbbf24;
+            --accent-red: #ef4444;
+            --accent-cyan: #22d3ee;
+            --accent-purple: #a855f7;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-title: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: #020617;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+        }
+
+        h1 {
+            font-family: var(--font-title);
+            margin: 0;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            font-size: 1em;
+            color: var(--accent-gold);
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* =========================================
+           LAYOUT PRINCIPAL
+           ========================================= */
+        .game-container {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                flex-direction: column;
+            }
+        }
+
+        /* Panel Principal de Habitaciones */
+        .main-panel {
+            flex: 3;
+            background-color: var(--panel-bg);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 30px;
+            position: relative;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        /* Panel de Inventario */
+        .inventory-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--accent-purple);
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 250px;
+            height: fit-content;
+        }
+
+        .inventory-title {
+            color: var(--accent-purple);
+            border-bottom: 2px solid var(--accent-purple);
+            padding-bottom: 10px;
+            margin-top: 0;
+            text-align: center;
+            font-family: var(--font-title);
+        }
+
+        .inventory-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .inventory-item {
+            background-color: #334155;
+            margin-bottom: 10px;
+            padding: 12px;
+            border-left: 4px solid var(--accent-cyan);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95em;
+            animation: fadeIn 0.5s;
+        }
+
+        /* =========================================
+           ESTILOS DE HABITACIONES Y CONTENIDO
+           ========================================= */
+        .room {
+            display: none;
+            animation: fadeIn 1s;
+        }
+
+        .room.active {
+            display: block;
+        }
+
+        .room-title {
+            color: var(--accent-gold);
+            border-bottom: 1px dashed #475569;
+            padding-bottom: 10px;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: var(--font-title);
+        }
+
+        .story-text {
+            line-height: 1.7;
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-gold);
+        }
+
+        /* Botón para leer documentos largos */
+        .document-btn {
+            background-color: #334155;
+            color: #fff;
+            border: 1px solid var(--accent-cyan);
+            padding: 12px 20px;
+            cursor: pointer;
+            font-family: var(--font-main);
+            font-weight: bold;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .document-btn:hover {
+            background-color: #475569;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(34, 211, 238, 0.2);
+        }
+
+        /* =========================================
+           FORMULARIOS E INPUTS
+           ========================================= */
+        .puzzle-box {
+            background-color: #020617;
+            padding: 25px;
+            border: 2px solid var(--accent-purple);
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 15px;
+            font-size: 1.3em;
+            font-family: var(--font-title);
+            background-color: #1e293b;
+            color: var(--accent-cyan);
+            border: 2px solid #475569;
+            border-radius: 6px;
+            width: 250px;
+            text-align: center;
+            margin-bottom: 15px;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
+        }
+
+        button.submit-btn {
+            background-color: var(--accent-cyan);
+            color: #0f172a;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+            font-family: var(--font-title);
+            transition: transform 0.1s, background-color 0.3s;
+            text-transform: uppercase;
+        }
+
+        button.submit-btn:hover:not(:disabled) {
+            background-color: #06b6d4;
+            transform: scale(1.05);
+        }
+
+        button.submit-btn:disabled {
+            background-color: #475569;
+            color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-msg {
+            color: var(--accent-red);
+            margin-top: 15px;
+            min-height: 24px;
+            font-weight: bold;
+            font-family: var(--font-title);
+        }
+
+        /* =========================================
+           MODAL (DOCUMENTOS)
+           ========================================= */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background-color: #fdf6e3; /* Color papel antiguo */
+            color: #333;
+            font-family: 'Georgia', serif;
+            padding: 40px;
+            max-width: 650px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 40px rgba(251, 191, 36, 0.2);
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 2em;
+            cursor: pointer;
+            color: #ef4444;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .modal-close:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-title {
+            text-align: center;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 15px;
+            margin-top: 0;
+            color: #1e293b;
+            font-family: var(--font-main);
+        }
+
+        /* Utilidades */
+        .emoji-large { font-size: 2.5em; }
+        .shake { animation: shake 0.5s; }
+        .highlight { background-color: #fef08a; padding: 2px 5px; border-radius: 3px; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🌌 Archivo Atómico: Escape Room</h1>
+        <div class="subtitle">Clasificando la Materia - Nivel Intermedio</div>
+    </header>
+
+    <div class="game-container">
+        <!-- Panel de Habitaciones -->
+        <main class="main-panel">
+            
+            <!-- HABITACIÓN 1: ¿De qué está hecho mi mundo? -->
+            <section id="room-1" class="room active">
+                <h2 class="room-title"><span class="emoji-large">🌍</span> Fase 1: El Origen de Todo</h2>
+                <div class="story-text">
+                    Has despertado dentro del "Archivo Atómico", una bóveda de contención donde se guarda el conocimiento del universo. 
+                    Las puertas están selladas magnéticamente. Todo a tu alrededor, la pantalla que miras, el aire que respiras y tú mismo, 
+                    son <strong>Materia</strong>.
+                    <br><br>
+                    Frente a ti hay un panel de seguridad que pide un código numérico para iniciar el sistema. Necesitarás papel, lápiz y leer la bitácora inicial.
+                </div>
+                
+                <button class="document-btn" onclick="openModal('bitacora-1')">
+                    📖 Leer "La Bitácora del Archivero"
+                </button>
+
+                <div class="puzzle-box">
+                    <p>Introduce la <strong>Clave Material</strong> (Solo números):</p>
+                    <input type="number" id="input-1" placeholder="Ej: 123">
+                    <br>
+                    <button id="btn-1" class="submit-btn" onclick="checkAnswer(1)">Verificar Clave</button>
+                    <div id="error-1" class="error-msg"></div>
+                </div>
+            </section>
+
+            <!-- HABITACIÓN 2: Sustancias Puras (Elementos) -->
+            <section id="room-2" class="room">
+                <h2 class="room-title"><span class="emoji-large">💠</span> Fase 2: La Sala de los Elementos</h2>
+                <div class="story-text">
+                    La puerta se abre, revelando una sala brillante. En las paredes hay vitrinas con metales y gases puros. 
+                    Has llegado a la zona de las <strong>Sustancias Puras: Elementos</strong>. 
+                    <br><br>
+                    Recuerda: un elemento es una sustancia pura formada por <em>un solo tipo de átomo</em> y no puede descomponerse en sustancias más simples.
+                    <br><br>
+                    Una consola de titanio bloquea el paso. Requiere una calibración basada en los "Números Atómicos" (la cantidad de protones que tiene un elemento).
+                </div>
+
+                <button class="document-btn" onclick="openModal('tabla-periodica')">
+                    📊 Ver Fragmento de la Tabla Periódica
+                </button>
+
+                <div class="puzzle-box">
+                    <p><strong>El Acertijo Elemental:</strong></p>
+                    <p>Encuentra los números atómicos del <strong>Carbono (C)</strong>, el <strong>Oxígeno (O)</strong> y el <strong>Nitrógeno (N)</strong> en la tabla.<br>
+                    Para abrir la puerta, debes calcular: <br>
+                    <em>(Número atómico del Carbono multiplicado por el del Oxígeno) y al resultado sumarle el del Nitrógeno.</em></p>
+                    <input type="number" id="input-2" placeholder="Resultado final">
+                    <br>
+                    <button id="btn-2" class="submit-btn" onclick="checkAnswer(2)">Calibrar Consola</button>
+                    <div id="error-2" class="error-msg"></div>
+                </div>
+            </section>
+
+            <!-- HABITACIÓN 3: Sustancias Puras (Compuestos) -->
+            <section id="room-3" class="room">
+                <h2 class="room-title"><span class="emoji-large">🧬</span> Fase 3: El Sintetizador de Compuestos</h2>
+                <div class="story-text">
+                    Avanzas a un laboratorio lleno de matraces conectados por tubos de cristal. 
+                    Esta es la sala de los <strong>Compuestos</strong>: sustancias puras formadas por la unión química de <em>dos o más elementos diferentes</em> en proporciones fijas (como el H2O).
+                    <br><br>
+                    El panel de la siguiente puerta está congelado. Necesitas encender el calentador introduciendo un "Código Molecular".
+                    <strong>¡Atención! A partir de aquí, guarda muy bien tus apuntes de la Fase 2, los necesitarás al final.</strong>
+                </div>
+
+                <button class="document-btn" onclick="openModal('manual-compuestos')">
+                    🔬 Leer el Manual de Fórmulas Químicas
+                </button>
+
+                <div class="puzzle-box">
+                    <p><strong>El Acertijo Molecular:</strong></p>
+                    <p>Según el manual, averigua cuántos átomos <strong>EN TOTAL</strong> conforman <strong>UNA (1) sola molécula de Glucosa</strong>.<br>
+                    Luego, multiplica ese total de átomos por <strong>3</strong> (porque necesitamos sintetizar 3 moléculas para encender el calentador).</p>
+                    <input type="number" id="input-3" placeholder="Número total">
+                    <br>
+                    <button id="btn-3" class="submit-btn" onclick="checkAnswer(3)">Encender Calentador</button>
+                    <div id="error-3" class="error-msg"></div>
+                </div>
+            </section>
+
+            <!-- HABITACIÓN 4: Mezclas Heterogéneas -->
+            <section id="room-4" class="room">
+                <h2 class="room-title"><span class="emoji-large">🥗</span> Fase 4: La Máquina Separadora</h2>
+                <div class="story-text">
+                    El hielo se derrite y cruzas a una sala desordenada. Hay una cinta transportadora atascada. 
+                    En esta zona estudiamos las <strong>Mezclas Heterogéneas</strong>: aquellas donde sus componentes NO están distribuidos de manera uniforme y <em>puedes distinguirlos a simple vista</em> o con una lupa.
+                    <br><br>
+                    Un brazo robótico necesita saber qué frascos contienen mezclas heterogéneas para poder separarlos mecánicamente y despejar el camino.
+                </div>
+
+                <button class="document-btn" onclick="openModal('lista-muestras')">
+                    📋 Leer el Registro de Muestras
+                </button>
+
+                <div class="puzzle-box">
+                    <p>Identifica los 3 frascos que contienen <strong>Mezclas Heterogéneas</strong>.<br>
+                    Introduce el número de identificación (ID) de esos 3 frascos, ordenados <strong>de MAYOR a MENOR</strong>, sin espacios.</p>
+                    <input type="number" id="input-4" placeholder="Ej: 973">
+                    <br>
+                    <button id="btn-4" class="submit-btn" onclick="checkAnswer(4)">Activar Brazo Robótico</button>
+                    <div id="error-4" class="error-msg"></div>
+                </div>
+            </section>
+
+            <!-- HABITACIÓN 5: Mezclas Homogéneas -->
+            <section id="room-5" class="room">
+                <h2 class="room-title"><span class="emoji-large">☕</span> Fase 5: La Puerta de Aleación</h2>
+                <div class="story-text">
+                    ¡Casi lo logras! Llegas a una enorme puerta de metal pulido. Es una <strong>Aleación</strong> (una mezcla homogénea de metales). 
+                    Las <strong>Mezclas Homogéneas</strong> (también llamadas soluciones) tienen una apariencia uniforme; sus componentes se mezclan tan bien que parecen una sola sustancia (como el agua con azúcar disuelta).
+                    <br><br>
+                    Para abrir esta puerta, debes introducir la "Frecuencia de Resonancia" en el teclado táctil cruzando toda la información que has recopilado.
+                </div>
+
+                <div class="puzzle-box">
+                    <p><strong>El Cálculo Final (¡Revisa tus apuntes!):</strong></p>
+                    <p style="text-align: left; margin-left: 10%;">
+                        Paso 1: Toma el Número Atómico del <strong>Carbono</strong> (Lo averiguaste en la Fase 2).<br>
+                        Paso 2: Multiplícalo por la cantidad total de átomos que hay en <strong>UNA sola molécula de Glucosa</strong> (Lo averiguaste en la Fase 3).<br>
+                        Paso 3: A ese resultado, súmale el <strong>PRIMER DÍGITO</strong> del código de 3 números que usaste en la Fase 4.
+                    </p>
+                    <input type="number" id="input-5" placeholder="Frecuencia Final">
+                    <br>
+                    <button id="btn-5" class="submit-btn" onclick="checkAnswer(5)">Desbloquear Puerta Final</button>
+                    <div id="error-5" class="error-msg"></div>
+                </div>
+            </section>
+
+            <!-- PANTALLA FINAL: Victoria -->
+            <section id="room-6" class="room">
+                <h2 class="room-title" style="color: var(--accent-gold);"><span class="emoji-large">🏆</span> ¡ARCHIVO COMPLETADO!</h2>
+                <div class="story-text" style="text-align: center;">
+                    <span style="font-size: 5em;">🔓</span><br><br>
+                    <strong>¡Felicidades, experto en materia!</strong><br><br>
+                    Has logrado escapar demostrando tu dominio absoluto sobre la clasificación de la materia. 
+                    Ahora entiendes la diferencia fundamental entre los elementos puros que forman el universo, cómo se combinan para crear compuestos vitales, y cómo interactúan físicamente para formar mezclas homogéneas y heterogéneas.
+                    <br><br>
+                    El universo ya no tiene secretos para ti.
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Panel de Inventario -->
+        <aside class="inventory-panel">
+            <h3 class="inventory-title">🎒 Tu Inventario</h3>
+            <ul class="inventory-list" id="inventory-list">
+                <li style="color: #64748b; font-style: italic;" id="empty-inv">No tienes objetos aún. Necesitarás apuntar cosas aquí mentalmente o en tu papel.</li>
+            </ul>
+        </aside>
+    </div>
+
+    <!-- =========================================
+         VENTANAS MODALES PARA LECTURA
+         ========================================= -->
+    
+    <!-- Modal 1: Bitácora -->
+    <div id="modal-bitacora-1" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('bitacora-1')">×</button>
+            <h2 class="modal-title">La Bitácora del Archivero</h2>
+            <p><strong>Todo lo que ocupa un lugar en el espacio y tiene masa es materia.</strong></p>
+            <p>En nuestro planeta, la materia suele presentarse comúnmente en tres estados físicos principales. Piensa en el agua, puede ser hielo, agua líquida o vapor. Estos tres estados se escriben como: <strong>SOLIDO</strong>, <strong>LIQUIDO</strong> y <strong>GASEOSO</strong>.</p>
+            <p>Pero si miramos más de cerca, más allá de lo que el ojo puede ver, descubriremos que la materia no es continua. Está formada por partículas minúsculas, indivisibles a simple vista. Los antiguos griegos llamaron a esta partícula fundamental con una palabra que significa "indivisible". Esta palabra es <strong>ATOMO</strong>.</p>
+            <hr>
+            <p><strong>Para obtener la Clave Material:</strong></p>
+            <p>1. Cuenta el número total de letras que suman las palabras de los tres estados físicos mencionados arriba (S-O-L-I-D-O + L-I-Q-U-I-D-O + G-A-S-E-O-S-O).</p>
+            <p>2. Multiplica ese resultado por la cantidad de letras que tiene la palabra de la partícula fundamental (A-T-O-M-O).</p>
+            <p>Ese número exacto desbloqueará el panel.</p>
+        </div>
+    </div>
+
+    <!-- Modal 2: Tabla Periódica -->
+    <div id="modal-tabla-periodica" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('tabla-periodica')">×</button>
+            <h2 class="modal-title">Fragmento de la Tabla Periódica</h2>
+            <p>Los elementos son los "ladrillos" del universo. Cada uno tiene un Número Atómico que lo identifica (representa cuántos protones tiene en su núcleo).</p>
+            <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 15px;">
+                <tr style="border-bottom: 2px solid #ccc;">
+                    <th>Símbolo</th>
+                    <th>Nombre</th>
+                    <th>Número Atómico</th>
+                </tr>
+                <tr><td><strong>H</strong></td><td>Hidrógeno</td><td>1</td></tr>
+                <tr><td><strong>He</strong></td><td>Helio</td><td>2</td></tr>
+                <tr><td><strong>C</strong></td><td><span class="highlight">Carbono</span></td><td>6</td></tr>
+                <tr><td><strong>N</strong></td><td><span class="highlight">Nitrógeno</span></td><td>7</td></tr>
+                <tr><td><strong>O</strong></td><td><span class="highlight">Oxígeno</span></td><td>8</td></tr>
+                <tr><td><strong>Na</strong></td><td>Sodio</td><td>11</td></tr>
+                <tr><td><strong>Cl</strong></td><td>Cloro</td><td>17</td></tr>
+            </table>
+            <p style="margin-top: 20px; font-style: italic;">Nota: Anota el número atómico del Carbono (C) en tu papel, ¡lo necesitarás mucho después!</p>
+        </div>
+    </div>
+
+    <!-- Modal 3: Manual de Compuestos -->
+    <div id="modal-manual-compuestos" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('manual-compuestos')">×</button>
+            <h2 class="modal-title">Manual de Fórmulas Químicas</h2>
+            <p>A diferencia de los elementos puros (como un bloque de oro puro o un tanque de oxígeno), los <strong>compuestos</strong> se forman cuando los átomos de diferentes elementos se "toman de las manos" (enlaces químicos).</p>
+            <p>Para representar esto usamos Fórmulas Químicas. Las letras mayúsculas indican el elemento, y el número pequeño abajo a la derecha (subíndice) indica cuántos átomos de ese elemento hay. Si no hay número, significa que hay 1 átomo.</p>
+            <hr>
+            <p><strong>Ejemplo - Agua (H2O):</strong> Tiene 2 átomos de Hidrógeno y 1 átomo de Oxígeno. Total por molécula = 3 átomos.</p>
+            <hr>
+            <p><strong>Tu Objetivo - La Glucosa:</strong><br>
+            La glucosa es el compuesto que da energía a tus células. Su fórmula química es:</p>
+            <h3 style="text-align: center; font-size: 2em; letter-spacing: 5px; color: #ef4444;">C<sub>6</sub>H<sub>12</sub>O<sub>6</sub></h3>
+            <p>¿Cuántos átomos en total hay en UNA de estas moléculas? Suma los números con cuidado.</p>
+            <p style="font-style: italic;">Anota este total en tu papel, ¡también será vital para el final!</p>
+        </div>
+    </div>
+
+    <!-- Modal 4: Registro de Muestras -->
+    <div id="modal-lista-muestras" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('lista-muestras')">×</button>
+            <h2 class="modal-title">Registro de Muestras del Laboratorio</h2>
+            <p>En el estante hay 5 frascos. Recuerda, buscas <strong>Mezclas Heterogéneas</strong> (aquellas donde puedes ver más de una fase, textura o componente a simple vista).</p>
+            <ul style="line-height: 1.8;">
+                <li><strong>[ID: 1] Agua con sal perfectamente disuelta.</strong> El líquido es totalmente transparente y uniforme en todas sus partes.</li>
+                <li><strong>[ID: 2] Granito.</strong> Es una roca sólida, pero si la miras de cerca, puedes ver manchas negras (mica), grises (cuarzo) y rosadas (feldespato).</li>
+                <li><strong>[ID: 3] Aire limpio en un frasco.</strong> Es una mezcla de gases (nitrógeno, oxígeno, etc.), pero tus ojos solo ven un espacio vacío y uniforme.</li>
+                <li><strong>[ID: 4] Ensalada de frutas en conserva.</strong> Trozos de piña, cereza y uva flotando en almíbar. Puedes sacar cada fruta por separado.</li>
+                <li><strong>[ID: 5] Agua y Aceite.</strong> Ambos líquidos están en el frasco, pero el aceite flota claramente formando una gruesa capa amarilla sobre el agua transparente.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- =========================================
+         LÓGICA DEL JUEGO (JAVASCRIPT)
+         ========================================= -->
+    <script>
+        /* =========================================================
+         * SOLUCIONARIO (Para el profesor/desarrollador):
+         * * Fase 1: SOLIDO(6) + LIQUIDO(7) + GASEOSO(7) = 20. ATOMO(5). 20 * 5 = 100.
+         * Fase 2: Carbono(6) * Oxígeno(8) = 48. Nitrógeno(7). 48 + 7 = 55.
+         * Fase 3: Glucosa (C6 H12 O6) = 6+12+6 = 24 átomos. Nos piden 3 moléculas: 24 * 3 = 72.
+         * Fase 4: Mezclas Heterogéneas son el Granito (2), Ensalada (4) y Agua/Aceite (5). De mayor a menor: 542.
+         * Fase 5: Num Atómico Carbono (6). Átomos 1 mol Glucosa (24). Primer dígito fase 4 (5). -> 6 * 24 = 144. 144 + 5 = 149.
+         * ========================================================= */
+        
+        const ANSWERS = {
+            1: "100", 
+            2: "55", 
+            3: "72", 
+            4: "542", 
+            5: "149"  
+        };
+
+        const ITEMS = {
+            1: "📜 Nota del Archivero (Materia)",
+            2: "🔋 Tarjeta de Carbono (C=6)",
+            3: "🧪 Frasco de Solvente (Glucosa=24 átomos)",
+            4: "⚙️ Engranaje Separador"
+        };
+
+        let isLocked = false;
+        const PENALTY_MS = 5000; // 5 segundos de espera al equivocarse para evitar adivinar
+
+        // Función principal para validar respuestas
+        function checkAnswer(roomNumber) {
+            if (isLocked) return;
+
+            const inputElement = document.getElementById(`input-${roomNumber}`);
+            const btnElement = document.getElementById(`btn-${roomNumber}`);
+            const errorElement = document.getElementById(`error-${roomNumber}`);
+            
+            const userAnswer = inputElement.value.trim();
+
+            if (userAnswer === ANSWERS[roomNumber]) {
+                // RESPUESTA CORRECTA
+                errorElement.style.color = "var(--accent-cyan)";
+                errorElement.innerText = "¡Código Aceptado!";
+                inputElement.style.borderColor = "var(--accent-cyan)";
+                inputElement.style.boxShadow = "0 0 15px rgba(34, 211, 238, 0.5)";
+                
+                // Actualizar inventario visualmente
+                if(ITEMS[roomNumber]) {
+                    addToInventory(ITEMS[roomNumber]);
+                }
+
+                // Transición a la siguiente sala
+                setTimeout(() => {
+                    document.getElementById(`room-${roomNumber}`).classList.remove('active');
+                    document.getElementById(`room-${roomNumber + 1}`).classList.add('active');
+                }, 1200);
+
+            } else {
+                // RESPUESTA INCORRECTA (Aplica penalización temporal)
+                isLocked = true;
+                inputElement.classList.add('shake');
+                inputElement.style.borderColor = "var(--accent-red)";
+                inputElement.style.boxShadow = "0 0 15px rgba(239, 68, 68, 0.5)";
+                
+                let secondsLeft = PENALTY_MS / 1000;
+                btnElement.disabled = true;
+                
+                // Contador visual del bloqueo
+                errorElement.innerText = `Acceso denegado. Bloqueo de seguridad: ${secondsLeft}s`;
+                
+                const countdown = setInterval(() => {
+                    secondsLeft--;
+                    if (secondsLeft > 0) {
+                        errorElement.innerText = `Acceso denegado. Bloqueo de seguridad: ${secondsLeft}s`;
+                    }
+                }, 1000);
+
+                setTimeout(() => {
+                    clearInterval(countdown);
+                    isLocked = false;
+                    btnElement.disabled = false;
+                    inputElement.classList.remove('shake');
+                    inputElement.style.borderColor = "#475569";
+                    inputElement.style.boxShadow = "none";
+                    errorElement.innerText = "";
+                    inputElement.value = "";
+                }, PENALTY_MS);
+            }
+        }
+
+        // Función para añadir objetos al panel lateral
+        function addToInventory(itemName) {
+            const list = document.getElementById('inventory-list');
+            const emptyMsg = document.getElementById('empty-inv');
+            
+            if (emptyMsg) {
+                emptyMsg.style.display = 'none';
+            }
+
+            const li = document.createElement('li');
+            li.className = 'inventory-item';
+            li.innerHTML = itemName;
+            list.appendChild(li);
+        }
+
+        // Control de Modales (Ventanas emergentes de lectura)
+        function openModal(modalId) {
+            document.getElementById(`modal-${modalId}`).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(`modal-${modalId}`).style.display = 'none';
+        }
+
+        // Cerrar modal al hacer click en el fondo oscuro
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

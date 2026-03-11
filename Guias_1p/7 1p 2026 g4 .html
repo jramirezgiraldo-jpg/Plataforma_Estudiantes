@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Arquitectos del Átomo - Bohr y Lewis</title>
+    <style>
+        :root {
+            --primary: #1a2a6c;
+            --secondary: #27ae60;
+            --accent: #f39c12;
+            --bg: #f4f7f6;
+            --text: #2c3e50;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        /* Pantalla de Logueo */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Header y Progreso */
+        header {
+            background: var(--white);
+            padding: 10px 20px;
+            position: sticky; top: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 900;
+            display: none;
+        }
+
+        .progress-wrapper {
+            display: flex; align-items: center; gap: 15px;
+        }
+
+        .progress-bar-bg {
+            flex-grow: 1; height: 15px; background: #eee; border-radius: 10px; overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%; background: var(--secondary); width: 0%; transition: 0.5s;
+        }
+
+        /* Contenedor Principal */
+        .container {
+            max-width: 950px; margin: 20px auto; padding: 20px;
+            background: var(--white); border-radius: 10px; display: none;
+        }
+
+        h1, h2 { color: var(--primary); border-left: 5px solid var(--accent); padding-left: 15px; }
+
+        .info-box {
+            background: #eef2f3; border-radius: 8px; padding: 20px; margin: 20px 0;
+        }
+
+        .activity-card {
+            border: 2px dashed var(--secondary); padding: 20px; margin: 25px 0;
+            background: #f9fffb; border-radius: 10px;
+        }
+
+        .table-style {
+            width: 100%; border-collapse: collapse; margin: 20px 0;
+        }
+
+        .table-style th, .table-style td {
+            border: 1px solid #ddd; padding: 12px; text-align: left;
+        }
+
+        .table-style th { background: var(--primary); color: white; }
+
+        .btn-check {
+            background: var(--secondary); color: white; border: none;
+            padding: 8px 15px; border-radius: 5px; cursor: pointer;
+        }
+
+        .icfes-box {
+            background: #fff4e5; padding: 25px; border-radius: 10px; border: 1px solid #f39c12;
+        }
+
+        .feedback { display: none; margin-top: 15px; padding: 15px; border-radius: 8px; font-size: 0.9em; }
+
+        .score-display {
+            font-weight: bold; color: var(--primary);
+        }
+
+        textarea { width: 100%; border-radius: 5px; border: 1px solid #ccc; padding: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>Bienvenido Investigador</h2>
+            <p>Ingresa tus nombres y apellidos para comenzar</p>
+            <input type="text" id="user-input" style="padding:10px; width:250px;"><br><br>
+            <button class="btn-check" onclick="startOVA()">Ingresar al Laboratorio</button>
+        </div>
+    </div>
+
+    <header id="main-header">
+        <div class="progress-wrapper">
+            <div style="min-width: 150px;"><b>Explorador:</b> <span id="student-name"></span></div>
+            <div class="progress-bar-bg"><div id="progress-fill"></div></div>
+            <div class="score-display">Puntos: <span id="points">0</span> (<span id="element-tag">H</span>)</div>
+        </div>
+    </header>
+
+    <div class="container" id="content">
+        <section>
+            <h1>Objetivo de Aprendizaje</h1>
+            <p>Representar la distribución electrónica de los átomos mediante los modelos de Bohr y Lewis, comprendiendo la organización de los elementos en la tabla periódica y su capacidad de enlace para formar "familias" químicas.</p>
+        </section>
+
+        <section class="info-box">
+            <h3>Desafío Inicial: ¿Qué tanto recuerdas?</h3>
+            <div id="pre-questions">
+                <p>1. ¿En qué parte del átomo se encuentran los electrones?</p>
+                <input type="radio" name="pre1" value="a"> Núcleo | <input type="radio" name="pre1" value="b"> Corteza/Orbitales | <input type="radio" name="pre1" value="c"> Protones
+                <p>2. ¿Qué indica el número atómico (Z) de un elemento neutro?</p>
+                <input type="radio" name="pre2" value="a"> Solo neutrones | <input type="radio" name="pre2" value="b"> Cantidad de electrones | <input type="radio" name="pre2" value="c"> Su peso total
+                <p>3. ¿Cómo se llaman las filas horizontales de la tabla periódica?</p>
+                <input type="radio" name="pre3" value="a"> Grupos | <input type="radio" name="pre3" value="b"> Períodos | <input type="radio" name="pre3" value="c"> Familias
+            </div>
+            <button class="btn-check" style="margin-top:15px;" onclick="checkPre()">Verificar Pre-saberes</button>
+            <div id="pre-feedback" class="feedback"></div>
+        </section>
+
+        <section id="inductivo">
+            <h2>El Orden en el Caos: Los Arquitectos del Átomo</h2>
+            <p>
+                Imagina que el universo es un gigantesco rompecabezas donde cada pieza es un átomo. Durante siglos, los científicos intentaron entender cómo estaban organizadas esas piezas por dentro. No fue sino hasta principios del siglo XX cuando Niels Bohr propuso una idea revolucionaria: los electrones no vuelan de forma caótica, sino que giran alrededor del núcleo en niveles de energía definidos, de forma muy similar a como los planetas orbitan alrededor del Sol. En este "Sistema Solar Atómico", cada órbita tiene una capacidad máxima de pasajeros. El primer nivel solo acepta 2 electrones, el segundo hasta 8, y así sucesivamente. Esta organización es clave, porque nos permite predecir cómo se comportará un elemento. 
+            </p>
+            
+            
+
+            <p>
+                Pero, ¿qué pasa con los electrones que están en la capa más externa? Gilbert Lewis, otro gran pensador, se dio cuenta de que son estos electrones —llamados electrones de valencia— los verdaderos protagonistas de la química. Lewis simplificó el átomo a su mínima expresión: el símbolo del elemento rodeado de puntos. Cada punto representa un electrón listo para interactuar. Si pensamos en los enlaces químicos como "apretones de manos", el modelo de Lewis nos dice cuántas manos tiene disponibles un átomo para unirse a otros. Esta distribución no es aleatoria; los elementos se agrupan en familias porque comparten el mismo número de electrones de valencia, lo que los hace actuar de manera muy parecida, casi como hermanos con el mismo carácter.
+            </p>
+
+            <table class="table-style">
+                <caption>Tabla 1: Comparación de Modelos Atómicos</caption>
+                <tr><th>Característica</th><th>Modelo de Bohr</th><th>Modelo de Lewis</th></tr>
+                <tr><td>Enfoque</td><td>Todos los niveles de energía</td><td>Solo nivel de valencia</td></tr>
+                <tr><td>Representación</td><td>Círculos concéntricos (órbitas)</td><td>Símbolo químico y puntos</td></tr>
+                <tr><td>Utilidad</td><td>Visualizar la estructura total</td><td>Predecir enlaces químicos</td></tr>
+            </table>
+
+            <div class="activity-card">
+                <h4>Actividad 1: El Sistema Solar Atómico</h4>
+                <p>En tu cuaderno, dibuja el modelo de Bohr para el Carbono (Z=6). Recuerda poner 2 electrones en el primer nivel y 4 en el segundo. Usa colores diferentes para el núcleo y los electrones.</p>
+                <button class="btn-check" onclick="addActivity(1)">Registrar en Cuaderno</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 2: Comparativa Visual</h4>
+                <p>Crea una tabla comparativa en tu cuaderno donde pongas: Columna A (Sistema Solar) vs Columna B (Modelo de Bohr). Identifica qué parte del átomo equivale al Sol y qué parte a los planetas.</p>
+                <button class="btn-check" onclick="addActivity(2)">Registrar en Cuaderno</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 3: Mapa Mental de Lewis</h4>
+                <p>Dibuja un mapa mental en el centro de tu hoja con el nombre "Gilbert Lewis". Saca ramas que expliquen: ¿Qué representan los puntos? y ¿Qué es el nivel de valencia?</p>
+                <button class="btn-check" onclick="addActivity(3)">Registrar en Cuaderno</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 4: Los Brazos de Enlace</h4>
+                <p>Si el Hidrógeno tiene 1 punto y el Oxígeno tiene 6 puntos (2 pares y 2 libres), dibuja cómo se verían dándose las "manos" para formar agua. ¡Usa tu imaginación!</p>
+                <button class="btn-check" onclick="addActivity(4)">Registrar en Cuaderno</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 5: Autonomía de Materiales</h4>
+                <p>Escribe en tu cuaderno qué materiales de tu entorno podrías usar para construir un modelo de Bohr en 3D (ej: tapas, semillas, alambre) y justifica por qué elegiste esos materiales.</p>
+                <button class="btn-check" onclick="addActivity(5)">Registrar en Cuaderno</button>
+            </div>
+        </section>
+
+        <section class="icfes-box">
+            <h3>Evaluación de Competencia: Indagar</h3>
+            <p>Un estudiante observa la siguiente representación de dos elementos desconocidos (X y Y) en el modelo de Lewis:</p>
+            
+            
+
+            <p><b>Pregunta:</b> Si el estudiante sabe que los elementos del Grupo 1 tienen 1 electrón de valencia y los del Grupo 17 tienen 7, ¿cuál es la conclusión más acertada sobre la relación entre X y Y?</p>
+            
+            <input type="radio" name="icfes" value="a"> A) X y Y pertenecen al mismo período porque tienen el mismo tamaño.<br>
+            <input type="radio" name="icfes" value="b"> B) X es un metal alcalino y Y es un halógeno, y pueden unirse fácilmente para dar estabilidad.<br>
+            <input type="radio" name="icfes" value="c"> C) El elemento X tiene más energía que el elemento Y porque tiene menos electrones.<br>
+            <input type="radio" name="icfes" value="d"> D) Ambos elementos pertenecen a la misma familia química ya que son gases nobles.<br>
+            
+            <button class="btn-check" style="margin-top:15px;" onclick="checkIcfes()">Enviar Respuesta</button>
+            <div id="icfes-feedback" class="feedback"></div>
+        </section>
+
+        <section id="deductivo">
+            <h2>De la Identidad a la Convivencia: Familias Químicas</h2>
+            <p>
+                A partir de los modelos que hemos estudiado, podemos deducir una regla fundamental de la naturaleza: la estructura interna determina el comportamiento social de los átomos. Así como tú perteneces a una familia con la que compartes rasgos físicos o apellidos, los elementos químicos se organizan en familias o grupos. Si un átomo tiene 7 electrones en su capa de valencia (como el Flúor o el Cloro), siempre estará buscando desesperadamente un electrón más para completar sus 8 (la famosa regla del octeto). Esta necesidad compartida es lo que los hace reaccionar de forma similar ante el peligro o ante otros elementos.
+            </p>
+            <p>
+                Por lo tanto, la tabla periódica no es solo una lista de nombres raros, es un mapa de empatía química. Los gases nobles, que tienen sus órbitas llenas según el modelo de Bohr, son "solitarios" e independientes porque no necesitan nada de nadie. En cambio, los metales del grupo 1 son sumamente generosos y "regalan" su único electrón con facilidad. Entender esto nos permite deducir que la química es, en esencia, un juego de rol donde cada personaje (elemento) cumple una función vital basada en lo que tiene para ofrecer (sus electrones).
+            </p>
+
+            <div class="activity-card">
+                <h4>Actividad 6: Mapa Conceptual de Familias</h4>
+                <p>Realiza un mapa conceptual que relacione: Tabla Periódica -> Grupos -> Electrones de Valencia -> Familias Químicas.</p>
+                <button class="btn-check" onclick="addActivity(6)">Registrar en Cuaderno</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 7: Juego de Rol Atómico</h4>
+                <p>Escribe un pequeño diálogo de 5 líneas donde el Cloro (7 electrones) intenta convencer al Sodio (1 electrón) de que le preste su electrón para ser felices. ¡Usa la empatía!</p>
+                <button class="btn-check" onclick="addActivity(7)">Registrar en Cuaderno</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 8: Tabla de Grupos</h4>
+                <p>Dibuja una tabla con 3 columnas: Elemento | Grupo | Electrones de Valencia. Complétala para el Helio, el Oxígeno y el Potasio.</p>
+                <button class="btn-check" onclick="addActivity(8)">Registrar en Cuaderno</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 9: Reflexión sobre la Pertenencia</h4>
+                <p>Escribe un párrafo de 5 renglones explicando por qué es importante para los seres humanos, al igual que para los átomos, pertenecer a un grupo o familia.</p>
+                <button class="btn-check" onclick="addActivity(9)">Registrar en Cuaderno</button>
+            </div>
+
+            <div class="activity-card">
+                <h4>Actividad 10: El Dibujo del Octeto</h4>
+                <p>Dibuja un átomo de Neón (Z=10) usando el modelo de Bohr y explica por qué se dice que está "completo" o es "estable".</p>
+                <button class="btn-check" onclick="addActivity(10)">Registrar en Cuaderno</button>
+            </div>
+        </section>
+
+        <section class="info-box">
+            <h2>Taller de Afianzamiento</h2>
+            <div id="taller">
+                <p><b>1. ¿Cuántos electrones caben máximo en el primer nivel de Bohr?</b></p>
+                <input type="radio" name="t1" value="a"> 8 | <input type="radio" name="t1" value="b"> 2 | <input type="radio" name="t1" value="c"> 18 | <input type="radio" name="t1" value="d"> 1
+                
+                <p><b>2. ¿Qué representa el símbolo central en el modelo de Lewis?</b></p>
+                <input type="radio" name="t2" value="a"> El electrón | <input type="radio" name="t2" value="b"> El núcleo y electrones internos | <input type="radio" name="t2" value="c"> Solo los protones | <input type="radio" name="t2" value="d"> El número de grupo
+                
+                <p><b>3. Los elementos de una misma familia tienen igual número de:</b></p>
+                <input type="radio" name="t3" value="a"> Protones | <input type="radio" name="t3" value="b"> Neutrones | <input type="radio" name="t3" value="c"> Electrones de valencia | <input type="radio" name="t3" value="d"> Niveles de energía
+                
+                <p><b>4. Bohr comparó el átomo con:</b></p>
+                <input type="radio" name="t4" value="a"> Un pudín | <input type="radio" name="t4" value="b"> El sistema solar | <input type="radio" name="t4" value="c"> Una nube | <input type="radio" name="t4" value="d"> Una canica
+                
+                <p><b>5. El grupo 18 de la tabla periódica es conocido como:</b></p>
+                <input type="radio" name="t5" value="a"> Halógenos | <input type="radio" name="t5" value="b"> Metales | <input type="radio" name="t5" value="c"> Gases Nobles | <input type="radio" name="t5" value="d"> Actínidos
+            </div>
+
+            <h3>Preguntas Abiertas (10 a 15 palabras)</h3>
+            <div id="abiertas">
+                <p>A1. Explica brevemente qué son los electrones de valencia para un átomo:</p>
+                <textarea id="ans1" placeholder="Tu respuesta aquí..."></textarea>
+                <button class="btn-check" onclick="validateOpen('ans1')">Validar</button>
+                
+                <p>A2. ¿Por qué el modelo de Bohr es útil para entender el átomo?</p>
+                <textarea id="ans2" placeholder="Tu respuesta aquí..."></textarea>
+                <button class="btn-check" onclick="validateOpen('ans2')">Validar</button>
+            </div>
+            
+            <button class="btn-check" style="margin-top:40px; background:var(--primary);" onclick="finishAndSave()">Descargar Resultados .txt</button>
+        </section>
+    </div>
+
+    <script>
+        let userData = {
+            name: "",
+            progress: 0,
+            points: 0,
+            activities: [],
+            openAnswers: {}
+        };
+
+        const elements = ["H", "He", "Li", "Be", "B", "C"];
+
+        function startOVA() {
+            const name = document.getElementById('user-input').value.trim();
+            if (name === "") return alert("Ingresa tu nombre");
+            
+            userData.name = name;
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('main-header').style.display = 'block';
+            document.getElementById('content').style.display = 'block';
+            document.getElementById('student-name').innerText = name;
+            loadProgress();
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('progress-fill').style.width = userData.progress + "%";
+            document.getElementById('points').innerText = userData.points.toFixed(1);
+            let eIdx = Math.min(Math.floor(userData.points), 5);
+            document.getElementById('element-tag').innerText = elements[eIdx];
+            localStorage.setItem('ova_bohr_data', JSON.stringify(userData));
+        }
+
+        function addActivity(num) {
+            if (!userData.activities.includes(num)) {
+                userData.activities.push(num);
+                userData.progress += 7;
+                userData.points += 0.3;
+                alert("Actividad " + num + " registrada con éxito.");
+                updateUI();
+            } else {
+                alert("Esta actividad ya fue registrada.");
+            }
+        }
+
+        function checkPre() {
+            const f = document.getElementById('pre-feedback');
+            f.style.display = "block";
+            f.style.background = "#d4edda";
+            f.innerHTML = "<b>Retroalimentación:</b> 1. Los electrones están en la corteza. 2. Z indica electrones en átomos neutros. 3. Las filas son Períodos. ¡Sigue adelante!";
+            userData.progress += 5;
+            updateUI();
+        }
+
+        function checkIcfes() {
+            const val = document.querySelector('input[name="icfes"]:checked')?.value;
+            const f = document.getElementById('icfes-feedback');
+            f.style.display = "block";
+            if (val === 'b') {
+                f.style.background = "#d4edda";
+                f.innerHTML = "<b>¡Excelente Indagación!</b> Has identificado correctamente que el número de puntos dicta la familia (Grupo 1 y 17) y su capacidad de interactuar (metales y no metales).";
+                userData.points += 1;
+            } else {
+                f.style.background = "#f8d7da";
+                f.innerHTML = "<b>Inténtalo de nuevo:</b> Recuerda que los puntos en Lewis representan el grupo al que pertenecen, lo que define si son metales o halógenos.";
+            }
+            updateUI();
+        }
+
+        function validateOpen(id) {
+            const text = document.getElementById(id).value.trim();
+            const words = text.split(/\s+/);
+            if (words.length >= 10 && words.length <= 15) {
+                alert("✓ Respuesta válida. Guardada.");
+                userData.openAnswers[id] = text;
+                userData.points += 0.5;
+                updateUI();
+            } else {
+                alert("La respuesta debe tener entre 10 y 15 palabras. Tienes: " + words.length);
+            }
+        }
+
+        function finishAndSave() {
+            let report = "REPORTE DE OVA: Bohr y Lewis\n";
+            report += "Estudiante: " + userData.name + "\n";
+            report += "Puntaje Final: " + userData.points.toFixed(1) + "/5.0\n";
+            report += "Progreso: " + userData.progress + "%\n\n";
+            report += "Respuestas Abiertas:\n" + JSON.stringify(userData.openAnswers, null, 2);
+            
+            const blob = new Blob([report], {type: 'text/plain'});
+            const anchor = document.createElement('a');
+            anchor.download = "resultados_" + userData.name + ".txt";
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.click();
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('ova_bohr_data');
+            if (saved) {
+                const data = JSON.parse(saved);
+                if (data.name === userData.name) {
+                    userData = data;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aventura: El Guardián de la Vereda</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --secondary: #4caf50;
+            --accent: #ffeb3b;
+            --water: #29b6f6;
+            --soil: #795548;
+            --text: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff;
+            color: var(--text);
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* UI Elements */
+        #game-container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            overflow: hidden;
+            min-height: 600px;
+            position: relative;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        #mission-area {
+            padding: 20px;
+            height: 500px;
+            position: relative;
+            background: #e8f5e9;
+        }
+
+        /* Pantallas de Estado */
+        .overlay-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 100;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .hidden { display: none !important; }
+
+        h1, h2 { color: var(--primary); }
+        
+        .btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #1b5e20;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .btn:hover { background: #43a047; }
+
+        /* Misión 1: La Cocina (Soluto/Solvente) */
+        .kitchen-scene {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .pot-container {
+            width: 200px;
+            height: 180px;
+            border-radius: 0 0 50px 50px;
+            background: #cfd8dc;
+            border: 5px solid #78909c;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+        
+        .liquid {
+            width: 100%;
+            height: 80%; /* Nivel del agua */
+            background: var(--water);
+            transition: background 1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255,255,255,0.7);
+            font-weight: bold;
+        }
+
+        .ingredient {
+            width: 80px;
+            height: 80px;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .ingredient:active { cursor: grabbing; transform: scale(1.1); }
+
+        .ingredient svg { width: 60px; height: 60px; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.2)); }
+
+        /* Misión 2: Clasificación */
+        .lab-scene {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+        }
+
+        .shelves {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .shelf {
+            width: 45%;
+            height: 150px;
+            border: 3px dashed var(--primary);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .item-belt {
+            width: 100%;
+            height: 100px;
+            background: #37474f;
+            margin-top: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .belt-item {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            font-size: 2rem;
+        }
+
+        /* Misión 3: Compartir */
+        .table-scene {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            background-color: #fbe9e7; /* Mantel */
+        }
+
+        .family-table {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 50px;
+        }
+
+        .cup {
+            width: 60px;
+            height: 80px;
+            border: 4px solid #5d4037;
+            border-top: none;
+            background: rgba(255,255,255,0.8);
+            border-radius: 0 0 20px 20px;
+            position: relative;
+        }
+
+        .cup-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: #d32f2f; /* Jugo */
+            transition: height 0.5s;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .pitcher {
+            width: 100px;
+            height: 140px;
+            background: #d32f2f;
+            clip-path: polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%);
+            cursor: pointer;
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Misión 4: Limpieza Río */
+        .river-scene {
+            background: linear-gradient(180deg, #81c784 0%, #4caf50 30%, #29b6f6 30%, #0288d1 100%);
+            height: 100%;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        .contaminant {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            animation: float 3s infinite ease-in-out;
+            font-size: 2rem;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Misión 5: Bioética */
+        .debate-scene {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .choice-btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 15px;
+            border: 2px solid var(--primary);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .choice-btn:hover { background: #e8f5e9; }
+
+        /* Notificaciones */
+        .toast {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <div>Misión: <span id="mission-title">Inicio</span></div>
+        <div class="badge">Puntos: <span id="score">0</span></div>
+    </header>
+
+    <div id="mission-area">
+        </div>
+
+    <div id="start-screen" class="overlay-screen">
+        <h1>🌱 El Guardián de la Vereda 💧</h1>
+        <p style="font-size: 1.2rem; max-width: 600px;">
+            Bienvenido, estudiante. Hoy es día de mercado y reunión comunitaria en la finca.
+            Tu misión es preparar los alimentos, compartir con la familia y proteger nuestra fuente de vida: 
+            <strong>La Quebrada Cristalina</strong>.
+        </p>
+        <p>¿Tienes lo necesario para completar las 5 misiones?</p>
+        <button class="btn" onclick="startGame()">¡Comenzar Aventura!</button>
+    </div>
+
+    <div id="end-screen" class="overlay-screen hidden">
+        <h1>¡Misión Cumplida! 🌟</h1>
+        <h2 id="final-score-text"></h2>
+        <p>Has demostrado ser un experto en mezclas y un guardián ético del agua.</p>
+        <p>La comunidad te agradece por cuidar el ecosistema.</p>
+        <button class="btn" onclick="location.reload()">Jugar de Nuevo</button>
+    </div>
+</div>
+
+<div id="toast" class="toast">Mensaje</div>
+
+<script>
+    // Estado del Juego
+    let currentMission = 0;
+    let score = 0;
+    let gameState = {};
+
+    const missions = [
+        {
+            title: "El Agua de Panela",
+            type: "dragdrop_solvent",
+            intro: "Para el almuerzo comunal, debemos preparar aguapanela. Recuerda: El agua es el solvente universal."
+        },
+        {
+            title: "Clasificación de Bebidas",
+            type: "sorting",
+            intro: "Han traído varias bebidas. Separa las Mezclas Homogéneas (no se ven sus componentes) de las Heterogéneas."
+        },
+        {
+            title: "La Mesa de la Unión",
+            type: "sharing",
+            intro: "En la mesa todos somos iguales. Reparte el jugo equitativamente para completar el valor de 'El Compartir'."
+        },
+        {
+            title: "Limpieza de la Quebrada",
+            type: "cleaning",
+            intro: "¡Alerta! Alguien ha dejado residuos cerca de la bocatoma. ¡Limpia el agua antes de que se contamine el ecosistema!"
+        },
+        {
+            title: "El Consejo Bioético",
+            type: "debate",
+            intro: "Un vecino quiere lavar su moto en la quebrada. Como líder ambiental, debes tomar la decisión correcta."
+        }
+    ];
+
+    function startGame() {
+        document.getElementById('start-screen').classList.add('hidden');
+        loadMission(0);
+    }
+
+    function loadMission(index) {
+        currentMission = index;
+        if (index >= missions.length) {
+            endGame();
+            return;
+        }
+
+        const mission = missions[index];
+        document.getElementById('mission-title').textContent = mission.title;
+        const area = document.getElementById('mission-area');
+        area.innerHTML = ''; // Limpiar
+
+        // Mostrar intro breve
+        const introDiv = document.createElement('div');
+        introDiv.innerHTML = `
+            <h3>Misión ${index + 1}: ${mission.title}</h3>
+            <p>${mission.intro}</p>
+            <button class="btn" id="start-mission-btn">Iniciar</button>
+        `;
+        introDiv.style.textAlign = 'center';
+        introDiv.style.paddingTop = '50px';
+        area.appendChild(introDiv);
+
+        document.getElementById('start-mission-btn').onclick = () => {
+            introDiv.remove();
+            renderMissionContent(mission.type, area);
+        };
+    }
+
+    function renderMissionContent(type, container) {
+        if (type === 'dragdrop_solvent') setupMission1(container);
+        if (type === 'sorting') setupMission2(container);
+        if (type === 'sharing') setupMission3(container);
+        if (type === 'cleaning') setupMission4(container);
+        if (type === 'debate') setupMission5(container);
+    }
+
+    // ================= MISION 1: AGUA DE PANELA (SOLUTO/SOLVENTE) =================
+    function setupMission1(container) {
+        container.innerHTML = `
+            <div class="kitchen-scene">
+                <div class="drag-items">
+                    <div class="ingredient" draggable="true" id="panela" ondragstart="drag(event)">
+                        <svg viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="60" fill="#795548" rx="10"/><text x="50" y="55" font-size="12" fill="white" text-anchor="middle">PANELA (Soluto)</text></svg>
+                    </div>
+                    <div class="ingredient" draggable="true" id="piedra" ondragstart="drag(event)">
+                        <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="#9e9e9e"/><text x="50" y="55" font-size="10" fill="white" text-anchor="middle">PIEDRA</text></svg>
+                    </div>
+                </div>
+                <div class="pot-container" id="pot" ondrop="dropPanela(event)" ondragover="allowDrop(event)">
+                    <div class="liquid" id="liquid">AGUA (Solvente)</div>
+                </div>
+            </div>
+            <p style="text-align:center">Arrastra el SOLUTO correcto al SOLVENTE para crear la solución.</p>
+        `;
+    }
+
+    function dropPanela(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        if (data === "panela") {
+            const liquid = document.getElementById('liquid');
+            liquid.style.background = "#8d6e63"; // Color aguapanela
+            liquid.textContent = "¡Solución Homogénea!";
+            document.getElementById(data).style.visibility = 'hidden';
+            showToast("¡Excelente! La panela se disolvió en el agua.");
+            addPoints(20);
+            setTimeout(() => nextMission(), 2000);
+        } else {
+            showToast("Eso no se disuelve... Intenta de nuevo.");
+        }
+    }
+
+    // ================= MISION 2: CLASIFICACION =================
+    function setupMission2(container) {
+        gameState.items = [
+            {id: 'jugo', name: 'Jugo Naranja Colado', type: 'homo', icon: '🥤'},
+            {id: 'sopa', name: 'Sopa de Verduras', type: 'hetero', icon: '🍲'},
+            {id: 'cafe', name: 'Tinto', type: 'homo', icon: '☕'},
+            {id: 'ensalada', name: 'Ensalada', type: 'hetero', icon: '🥗'}
+        ];
+        gameState.currentItem = 0;
+
+        container.innerHTML = `
+            <div class="lab-scene">
+                <div class="shelves">
+                    <div class="shelf" id="shelf-homo" ondrop="dropSort(event, 'homo')" ondragover="allowDrop(event)">
+                        <h3>Homogénea</h3>
+                        <small>(Solución)</small>
+                    </div>
+                    <div class="shelf" id="shelf-hetero" ondrop="dropSort(event, 'hetero')" ondragover="allowDrop(event)">
+                        <h3>Heterogénea</h3>
+                        <small>(Se ven componentes)</small>
+                    </div>
+                </div>
+                <div class="item-belt" id="belt">
+                    </div>
+            </div>
+        `;
+        loadNextSortItem();
+    }
+
+    function loadNextSortItem() {
+        const belt = document.getElementById('belt');
+        belt.innerHTML = '';
+        if (gameState.currentItem < gameState.items.length) {
+            const item = gameState.items[gameState.currentItem];
+            const div = document.createElement('div');
+            div.className = 'belt-item';
+            div.draggable = true;
+            div.textContent = item.icon;
+            div.id = "sort-" + item.type; // Hack simple para identificar tipo
+            div.ondragstart = (ev) => {
+                ev.dataTransfer.setData("type", item.type);
+            };
+            // Añadir etiqueta de texto
+            const label = document.createElement('span');
+            label.innerText = item.name;
+            label.style.position = "absolute";
+            label.style.bottom = "-25px";
+            label.style.color = "white";
+            label.style.fontSize = "0.9rem";
+            
+            belt.appendChild(div);
+            belt.appendChild(label);
+        } else {
+            setTimeout(() => nextMission(), 1000);
+        }
+    }
+
+    function dropSort(ev, targetType) {
+        ev.preventDefault();
+        const droppedType = ev.dataTransfer.getData("type");
+        if (droppedType === targetType) {
+            showToast("¡Correcto!");
+            addPoints(10);
+            gameState.currentItem++;
+            loadNextSortItem();
+        } else {
+            showToast("Ups, revisa bien si se ven los componentes.");
+        }
+    }
+
+    // ================= MISION 3: COMPARTIR (Logic/Click) =================
+    function setupMission3(container) {
+        gameState.cupsFilled = 0;
+        container.innerHTML = `
+            <div class="table-scene">
+                <h2>Haz clic en la jarra para servir a todos por igual</h2>
+                <div class="pitcher" onclick="pourJuice()">JARRA</div>
+                <div class="family-table">
+                    <div class="cup"><div class="cup-fill" id="cup1"></div></div>
+                    <div class="cup"><div class="cup-fill" id="cup2"></div></div>
+                    <div class="cup"><div class="cup-fill" id="cup3"></div></div>
+                    <div class="cup"><div class="cup-fill" id="cup4"></div></div>
+                </div>
+            </div>
+        `;
+    }
+
+    function pourJuice() {
+        if (gameState.cupsFilled < 4) {
+            gameState.cupsFilled++;
+            document.getElementById(`cup${gameState.cupsFilled}`).style.height = "80%";
+            if (gameState.cupsFilled === 4) {
+                showToast("¡Todos tienen su parte! La mesa nos une.");
+                addPoints(20);
+                setTimeout(() => nextMission(), 2000);
+            }
+        }
+    }
+
+    // ================= MISION 4: LIMPIEZA RIO (Click Reaction) =================
+    function setupMission4(container) {
+        container.innerHTML = `
+            <div class="river-scene" id="river-bg">
+                <h3 style="color:white; text-align:center; padding-top:10px;">¡Haz clic rápido en la basura!</h3>
+            </div>
+        `;
+        const river = document.getElementById('river-bg');
+        let trashCount = 5;
+        
+        const contaminants = ['🧴', '💊', '🛢️', '🛍️', '🧂']; // Jabón, medicina, aceite, bolsa, abono
+        
+        for(let i=0; i<trashCount; i++) {
+            let el = document.createElement('div');
+            el.className = 'contaminant';
+            el.textContent = contaminants[i];
+            el.style.left = Math.random() * 80 + '%';
+            el.style.top = (Math.random() * 50 + 30) + '%';
+            el.onclick = function() {
+                this.remove();
+                addPoints(10);
+                trashCount--;
+                if(trashCount === 0) {
+                    showToast("¡Río limpio! El ecosistema respira.");
+                    setTimeout(() => nextMission(), 1500);
+                }
+            };
+            river.appendChild(el);
+        }
+    }
+
+    // ================= MISION 5: BIOETICA (Decision) =================
+    function setupMission5(container) {
+        container.innerHTML = `
+            <div class="debate-scene">
+                <div class="card">
+                    <h3>Dilema Ético</h3>
+                    <p>Don José trajo abonos químicos fuertes para sus cultivos. Sobró un poco y quiere echarlo a la quebrada para "deshacerse de eso rápido".</p>
+                    <p>¿Qué le dices?</p>
+                    
+                    <button class="choice-btn" onclick="resolveDebate(false)">
+                        "Hágale Don José, un poquito no hace daño."
+                    </button>
+                    
+                    <button class="choice-btn" onclick="resolveDebate(true)">
+                        "¡No Don José! Eso envenena el agua y mata los peces aguas abajo. Mejor busquemos dónde desecharlo seguro."
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    function resolveDebate(isCorrect) {
+        if (isCorrect) {
+            showToast("¡Excelente decisión bioética!");
+            addPoints(30);
+            nextMission();
+        } else {
+            alert("Piénsalo bien: El agua conecta a todos los seres vivos. Si la contaminamos aquí, afectamos a todos.");
+        }
+    }
+
+    // ================= UTILIDADES =================
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function nextMission() {
+        loadMission(currentMission + 1);
+    }
+
+    function addPoints(p) {
+        score += p;
+        document.getElementById('score').textContent = score;
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.opacity = 1;
+        setTimeout(() => t.style.opacity = 0, 3000);
+    }
+
+    function endGame() {
+        document.getElementById('mission-area').innerHTML = '';
+        document.getElementById('end-screen').classList.remove('hidden');
+        document.getElementById('final-score-text').textContent = "Puntaje Final: " + score + "/150";
+    }
+
+</script>
+</body>
+</html>

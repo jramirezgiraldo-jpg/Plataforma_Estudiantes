@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ritmo Rural: Mezclas (6°)</title>
+    <style>
+        /* --- ESTÉTICA NEON SCIENCE (RURAL EDITION) --- */
+        :root {
+            --bg-color: #050510;
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --neon-amber: #ffae00;
+            --text-main: #ffffff;
+            --lane-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden; /* Sin scroll */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- CONTENEDOR PRINCIPAL (APP) --- */
+        #game-app {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 600px; /* Optimizado para tablets/móviles */
+            margin: 0 auto;
+            border-left: 1px solid #222;
+            border-right: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HUD (Puntaje y Nivel) */
+        .hud {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            z-index: 20;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        /* --- ARQUITECTURA "ANTI-DESFASE" (FLEXBOX STRICT) --- */
+        #lanes-container {
+            flex: 1; /* Ocupa el espacio restante vertical */
+            display: flex; /* Divide en columnas */
+            width: 100%;
+            position: relative;
+        }
+
+        .lane {
+            flex: 1; /* CADA CARRIL OCUPA EXACTAMENTE EL 33.33% */
+            border-right: 1px solid var(--lane-border);
+            position: relative; /* Contexto para posicionamiento absoluto de notas */
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .lane:last-child { border-right: none; }
+
+        /* LÍNEA DE META */
+        #target-line {
+            position: absolute;
+            bottom: 15%; /* Zona de impacto ideal */
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* --- NOTAS (HIJAS DEL CARRIL) --- */
+        .note {
+            position: absolute;
+            /* REGLA DE ORO DE UI: */
+            width: 90%; 
+            left: 5%; 
+            /* Esto centra la nota matemáticamente dentro de su carril flex */
+            
+            height: 70px;
+            background: rgba(20, 30, 50, 0.9);
+            border: 2px solid var(--neon-blue);
+            border-radius: 12px;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.85rem;
+            padding: 5px;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            z-index: 10;
+        }
+
+        /* --- PANTALLAS (MÁQUINA DE ESTADOS) --- */
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            z-index: 50;
+        }
+        .active { display: flex; }
+
+        /* ESTILOS DE TEXTO Y BOTONES */
+        h1 { color: var(--neon-blue); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .question-box { font-size: 1.3rem; margin-bottom: 20px; line-height: 1.5; color: #eee; }
+        .countdown { font-size: 5rem; color: var(--neon-green); font-weight: 800; margin: 20px 0; }
+        
+        .btn-action {
+            padding: 15px 40px;
+            background: transparent;
+            border: 2px solid var(--neon-pink);
+            color: var(--neon-pink);
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--neon-pink);
+            transition: transform 0.1s;
+        }
+        .btn-action:active { transform: scale(0.95); background: var(--neon-pink); color: #fff; }
+
+        /* CONTROLES TÁCTILES INVISIBLES */
+        #touch-controls {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 15%;
+            display: flex;
+            z-index: 40;
+        }
+        .touch-zone {
+            flex: 1;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+        .touch-zone:active { background: rgba(255, 255, 255, 0.1); }
+
+        /* MODAL DE FEEDBACK (JITL) */
+        #feedback-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .feedback-box {
+            background: #151525;
+            border: 2px solid var(--neon-amber);
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 30px var(--neon-amber);
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-app">
+    <div class="hud">
+        <span id="score-display">Nota: 0.0</span>
+        <span id="progress-display">1 / 10</span>
+    </div>
+
+    <div id="screen-loading" class="screen active">
+        <h1>CIENCIA RURAL</h1>
+        <p style="color: #aaa; margin-bottom: 20px;">Grado 6°: Mezclas y Soluciones</p>
+        <div style="font-size: 0.9rem; color: #888; margin-bottom: 30px;">
+            1. Lee la pregunta del campo.<br>
+            2. Espera que caigan las respuestas.<br>
+            3. ¡Toca el carril correcto en la línea azul!
+        </div>
+        <button class="btn-action" onclick="Game.init()">IR A LA FINCA</button>
+    </div>
+
+    <div id="screen-reading" class="screen">
+        <div class="question-box" id="question-text">Cargando...</div>
+        <div class="countdown" id="read-timer">12</div>
+        <p style="color: #666;">Analiza bien antes de responder...</p>
+    </div>
+
+    <div id="lanes-container">
+        <div class="lane" id="lane-0"></div>
+        <div class="lane" id="lane-1"></div>
+        <div class="lane" id="lane-2"></div>
+        <div id="target-line"></div>
+    </div>
+
+    <div id="touch-controls">
+        <div class="touch-zone" onclick="Game.handleInput(0)"></div>
+        <div class="touch-zone" onclick="Game.handleInput(1)"></div>
+        <div class="touch-zone" onclick="Game.handleInput(2)"></div>
+    </div>
+
+    <div id="feedback-overlay">
+        <div class="feedback-box">
+            <h2 style="color: var(--neon-amber);">¡ATENCIÓN!</h2>
+            <p id="feedback-msg" style="margin: 20px 0; font-size: 1.1rem; line-height: 1.4;">Explicación...</p>
+            <button class="btn-action" onclick="Game.resumeFromPause()">ENTENDIDO</button>
+        </div>
+    </div>
+
+    <div id="screen-ended" class="screen">
+        <h1>RESULTADO FINAL</h1>
+        <div id="final-score" style="font-size: 4rem; color: var(--neon-blue); margin: 10px 0;">0.0</div>
+        <h3 id="final-rank" style="color: var(--neon-green); font-size: 1.5rem; margin-bottom: 20px;">Rango</h3>
+        <button class="btn-action" onclick="location.reload()">NUEVA COSECHA</button>
+    </div>
+</div>
+
+<script>
+/**
+ * LÓGICA DE JUEGO ADAPTATIVA - GRADO 6
+ * Contexto: Rural (Finca, Cocina, Río)
+ * Arquitectura: Anti-Desfase (Flexbox + Relative/Absolute)
+ */
+
+const CONFIG = {
+    GRADO: 6,
+    READING_TIME: 12, // Segundos (Lento para 6°)
+    FALL_SPEED: 60,   // Píxeles por segundo (Suave)
+    TARGET_PERCENT: 85 // Altura de meta en %
+};
+
+// --- BASE DE DATOS DE 10 DESAFÍOS (CONTEXTO RURAL) ---
+const QUESTIONS = [
+    {
+        q: "En el trapiche, Doña María prepara agua de panela. Al disolver la panela en agua caliente y quedar todo parejo, se forma una:",
+        opts: ["Mezcla Heterogénea", "Solución (Homogénea)", "Sustancia Pura"],
+        correct: 1,
+        fb: "Es una Solución (Homogénea) porque la panela se disuelve totalmente y no distingues las partes a simple vista."
+    },
+    {
+        q: "En esa misma agua de panela, el AGUA que disuelve a la panela se llama:",
+        opts: ["Solvente", "Soluto", "Residuo"],
+        correct: 0,
+        fb: "El Solvente es quien disuelve (generalmente el agua). El Soluto es lo que se disuelve (la panela)."
+    },
+    {
+        q: "Si vamos a la quebrada y vemos que el agua arrastra piedras, arena y palos, esa agua revuelta es una:",
+        opts: ["Solución", "Mezcla Homogénea", "Mezcla Heterogénea"],
+        correct: 2,
+        fb: "Es Heterogénea porque puedes ver y separar fácilmente las fases (piedras, agua, palos)."
+    },
+    {
+        q: "Al lavar el café, usamos agua para separar los granos buenos de la pulpa y la suciedad. El agua actúa como:",
+        opts: ["Solvente Universal", "Contaminante", "Soluto"],
+        correct: 0,
+        fb: "El agua es el 'Solvente Universal' y medio de transporte vital en los procesos de la finca."
+    },
+    {
+        q: "Si fumigamos y caen restos de abono químico al río, estos se disuelven y no se ven, pero contaminan. Esto es una mezcla:",
+        opts: ["Homogénea", "Heterogénea", "Mecánica"],
+        correct: 0,
+        fb: "Es Homogénea. El peligro es que, al disolverse, no vemos el veneno a simple vista."
+    },
+    {
+        q: "La leche recien ordeñada parece pareja, pero al microscopio tiene gotitas de grasa flotando. Es un tipo especial de mezcla llamada:",
+        opts: ["Solución", "Coloide", "Suspensión"],
+        correct: 1,
+        fb: "La leche es un COLOIDE. Parece homogénea pero tiene partículas microscópicas dispersas."
+    },
+    {
+        q: "En la cocina, cuando haces gelatina de pata, esta mezcla espesa que no es ni líquida ni sólida del todo es un:",
+        opts: ["Coloide (Gel)", "Elemento", "Gas"],
+        correct: 0,
+        fb: "La gelatina es un ejemplo clásico de Coloide en estado de gel."
+    },
+    {
+        q: "Para construir el corral, Don José pasa la arena por una malla para quitarle las piedras grandes. Este método es:",
+        opts: ["Filtración", "Tamizado", "Evaporación"],
+        correct: 1,
+        fb: "El Tamizado usa una malla o zaranda para separar sólidos de diferentes tamaños (arena fina de piedras)."
+    },
+    {
+        q: "Cuando hacemos tinto en la mañana, usamos un colador de tela para que no pasen las pepas. Esto se llama:",
+        opts: ["Decantación", "Filtración", "Imantación"],
+        correct: 1,
+        fb: "Filtración: Usamos una barrera (la tela) para separar el sólido (cuncho) del líquido (café)."
+    },
+    {
+        q: "Si dejas un balde con agua y aceite del tractor, verás que el aceite flota y se separa solo. Para sacarlo usamos:",
+        opts: ["Decantación", "Tamizado", "Evaporación"],
+        correct: 0,
+        fb: "Decantación: Aprovechamos que tienen densidades diferentes para separarlos vertiendo uno con cuidado."
+    }
+];
+
+const STATE = { LOADING: 0, READING: 1, PLAYING: 2, PAUSED: 3, ENDED: 4 };
+
+// --- MOTOR DEL JUEGO ---
+const Game = {
+    state: STATE.LOADING,
+    qIndex: 0,
+    score: 0,
+    notes: [], // { element, lane, y, active, isCorrect }
+    lastTime: 0,
+    animId: null,
+
+    init() {
+        this.qIndex = 0;
+        this.score = 0;
+        this.startReading();
+    },
+
+    startReading() {
+        if (this.qIndex >= QUESTIONS.length) {
+            this.endGame();
+            return;
+        }
+
+        this.state = STATE.READING;
+        // UI Reset
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-reading').classList.add('active');
+        document.querySelectorAll('.lane').forEach(l => l.innerHTML = ''); // Limpiar notas viejas
+        
+        // Cargar Datos
+        const q = QUESTIONS[this.qIndex];
+        document.getElementById('question-text').innerText = q.q;
+        document.getElementById('progress-display').innerText = `${this.qIndex + 1} / 10`;
+        
+        // Timer
+        let timeLeft = CONFIG.READING_TIME;
+        const timerEl = document.getElementById('read-timer');
+        timerEl.innerText = timeLeft;
+        
+        const interval = setInterval(() => {
+            if (this.state !== STATE.READING) { clearInterval(interval); return; }
+            timeLeft--;
+            timerEl.innerText = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                this.startPlaying();
+            }
+        }, 1000);
+    },
+
+    startPlaying() {
+        this.state = STATE.PLAYING;
+        document.getElementById('screen-reading').classList.remove('active');
+        this.spawnNotes();
+        this.lastTime = performance.now();
+        this.gameLoop();
+    },
+
+    spawnNotes() {
+        this.notes = [];
+        const q = QUESTIONS[this.qIndex];
+        
+        q.opts.forEach((text, i) => {
+            // Crear elemento DOM dentro del carril (ANTI-DESFASE)
+            const laneEl = document.getElementById(`lane-${i}`);
+            const noteEl = document.createElement('div');
+            noteEl.className = 'note';
+            noteEl.innerText = text;
+            noteEl.style.top = '-80px'; // Inicio arriba
+            laneEl.appendChild(noteEl);
+            
+            this.notes.push({
+                el: noteEl,
+                lane: i,
+                y: -80,
+                active: true,
+                isCorrect: (i === q.correct)
+            });
+        });
+    },
+
+    gameLoop(timestamp) {
+        if (this.state !== STATE.PLAYING) return;
+        if (!timestamp) timestamp = performance.now();
+        const delta = (timestamp - this.lastTime) / 1000;
+        this.lastTime = timestamp;
+
+        // Calcular altura dinámica de la meta
+        const containerHeight = document.getElementById('lanes-container').offsetHeight;
+        const targetY = containerHeight * (CONFIG.TARGET_PERCENT / 100);
+
+        let activeNotes = 0;
+
+        this.notes.forEach(note => {
+            if (note.active) {
+                activeNotes++;
+                // Movimiento
+                note.y += CONFIG.FALL_SPEED * delta;
+                note.el.style.top = `${note.y}px`;
+
+                // Miss (Se pasó de largo)
+                if (note.y > containerHeight) {
+                    note.active = false;
+                    note.el.style.opacity = '0.3';
+                    if (note.isCorrect) {
+                        this.triggerFeedback("¡Se te pasó la respuesta correcta! Debes estar más atento.");
+                    }
+                }
+            }
+        });
+
+        // Si ya no hay notas activas y no perdimos, pasar (fallback)
+        if (activeNotes === 0 && this.state === STATE.PLAYING) {
+             // Normalmente esto se maneja en el Miss, pero por seguridad:
+             this.qIndex++;
+             this.startReading();
+             return;
+        }
+
+        this.animId = requestAnimationFrame((t) => this.gameLoop(t));
+    },
+
+    handleInput(laneIdx) {
+        if (this.state !== STATE.PLAYING) return;
+
+        const containerHeight = document.getElementById('lanes-container').offsetHeight;
+        const targetY = containerHeight * (CONFIG.TARGET_PERCENT / 100);
+        const tolerance = 70; // px
+
+        // Buscar nota en el carril presionado
+        const note = this.notes.find(n => n.lane === laneIdx && n.active);
+
+        if (note) {
+            // Verificar colisión con la meta
+            const dist = Math.abs(note.y - targetY);
+            // Permitimos golpear un poco antes o un poco después
+            if (dist < tolerance || (note.y < targetY + tolerance && note.y > targetY - 100)) {
+                if (note.isCorrect) {
+                    // ACIERTO
+                    this.score += 0.5; // Max 5.0
+                    document.getElementById('score-display').innerText = `Nota: ${this.score.toFixed(1)}`;
+                    
+                    // Feedback visual
+                    note.el.style.background = 'var(--neon-green)';
+                    note.el.style.boxShadow = '0 0 20px var(--neon-green)';
+                    
+                    // Pequeña pausa de satisfacción
+                    setTimeout(() => {
+                        this.qIndex++;
+                        this.startReading();
+                    }, 300);
+                } else {
+                    // ERROR
+                    this.triggerFeedback(QUESTIONS[this.qIndex].fb);
+                }
+            }
+        }
+    },
+
+    triggerFeedback(msg) {
+        this.state = STATE.PAUSED;
+        cancelAnimationFrame(this.animId);
+        document.getElementById('feedback-overlay').style.display = 'flex';
+        document.getElementById('feedback-msg').innerText = msg;
+    },
+
+    resumeFromPause() {
+        document.getElementById('feedback-overlay').style.display = 'none';
+        this.qIndex++; // Avanzar aunque falló
+        this.startReading();
+    },
+
+    endGame() {
+        this.state = STATE.ENDED;
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-ended').classList.add('active');
+        
+        const finalScore = this.score.toFixed(1);
+        document.getElementById('final-score').innerText = finalScore;
+        
+        let rank = "";
+        if (this.score < 3.0) rank = "APRENDIZ (Necesita Práctica)";
+        else if (this.score < 4.0) rank = "CAPATAZ (Sólido)";
+        else if (this.score < 4.6) rank = "INGENIERO (Muy bueno)";
+        else rank = "MAESTRO RURAL (Excelencia)";
+        
+        document.getElementById('final-rank').innerText = rank;
+    }
+};
+
+// Carga Segura
+window.addEventListener('load', () => {
+    console.log("Sistema cargado. Grado 6 - Modo Rural.");
+});
+</script>
+</body>
+</html>

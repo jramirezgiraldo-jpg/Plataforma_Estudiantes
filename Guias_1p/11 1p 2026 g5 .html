@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Carbohidratos en la Cocina de Mamá</title>
+    <style>
+        /* ESTILOS GENERALES Y PALETA DE COLORES (FOCUS FRIENDLY) */
+        :root {
+            --primary: #2E5C55; /* Verde oscuro pizarra (descanso visual) */
+            --secondary: #D4A373; /* Tono tierra/madera */
+            --accent: #E9EDC9; /* Beige claro para fondos de lectura */
+            --text: #2C3333; /* Gris muy oscuro para texto (no negro puro) */
+            --white: #FEFAE0;
+            --success: #4CAF50;
+            --error: #D32F2F;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--white);
+            color: var(--text);
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* BARRA DE NAVEGACIÓN Y PROGRESO */
+        #top-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: var(--primary);
+            color: var(--white);
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            padding: 10px 0;
+            display: none; /* Se activa al loguearse */
+        }
+
+        .bar-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .progress-container {
+            width: 60%;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 15px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--secondary);
+            transition: width 0.5s;
+        }
+
+        #score-badge {
+            font-weight: bold;
+            background: var(--white);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 50%;
+            border: 2px solid var(--secondary);
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .container {
+            max-width: 850px;
+            margin: 80px auto 40px auto;
+            padding: 20px;
+        }
+
+        /* LOGIN */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: var(--white);
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            width: 250px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background-color: var(--secondary);
+            color: var(--white);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background-color: #b08558;
+        }
+
+        /* SECCIONES DE CONTENIDO */
+        .section-card {
+            background-color: #FAFAF5;
+            border-left: 5px solid var(--primary);
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        h2, h3 {
+            color: var(--primary);
+        }
+
+        /* ACTIVIDADES EN CUADERNO */
+        .notebook-activity {
+            background-color: #FFF8E1;
+            border: 2px dashed var(--secondary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .notebook-activity::before {
+            content: "📓 Actividad en Cuaderno";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background-color: var(--secondary);
+            color: white;
+            padding: 2px 10px;
+            font-size: 0.8rem;
+            border-radius: 5px;
+        }
+
+        .verify-btn {
+            display: block;
+            margin-top: 15px;
+            background-color: var(--primary);
+        }
+
+        /* TABLAS Y GRÁFICOS CSS */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .css-tube {
+            width: 30px;
+            height: 100px;
+            border: 2px solid #555;
+            border-top: none;
+            border-radius: 0 0 15px 15px;
+            display: inline-block;
+            margin: 0 20px;
+            position: relative;
+            background: linear-gradient(to bottom, transparent 40%, #ccc 40%);
+        }
+        
+        .tube-blue { background: linear-gradient(to bottom, transparent 40%, #00008B 40%); }
+        .tube-red { background: linear-gradient(to bottom, transparent 40%, #B22222 40%); }
+        .tube-yellow { background: linear-gradient(to bottom, transparent 40%, #FFD700 40%); }
+
+        /* PREGUNTAS TIPO ICFES Y TESTS */
+        .question-box {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .options label {
+            display: block;
+            margin: 8px 0;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .options label:hover {
+            background-color: #f0f0f0;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #E8F5E9;
+            border-left: 4px solid var(--success);
+            display: none;
+            font-size: 0.9rem;
+        }
+        
+        .feedback.error {
+            background-color: #FFEBEE;
+            border-left-color: var(--error);
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        /* BOTÓN FLOTANTE DESCARGA */
+        #download-section {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <h1>Laboratorio Virtual de Ciencias</h1>
+        <p>Introducción a la Bioquímica en la Cocina</p>
+        <div style="text-align: center;">
+            <input type="text" id="student-name" placeholder="Ingresa tus Nombres y Apellidos completos">
+            <br>
+            <button onclick="login()">INGRESAR AL LABORATORIO</button>
+        </div>
+    </div>
+
+    <div id="top-bar">
+        <div class="bar-content">
+            <span id="display-name">Estudiante</span>
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div title="Nivel Químico" id="score-badge">H (1)</div>
+        </div>
+    </div>
+
+    <div class="container" id="main-content" style="display: none;">
+
+        <section class="section-card">
+            <h2>Objetivo de Aprendizaje</h2>
+            <p>Comprender y aplicar pruebas químicas cualitativas (Lugol y Benedict) para la identificación y diferenciación de carbohidratos complejos y azúcares reductores en alimentos cotidianos del contexto rural (yuca, plátano, panela), relacionando los cambios de coloración con las propiedades moleculares.</p>
+        </section>
+
+        <section class="section-card">
+            <h3>🔍 Pre-saberes: ¿Qué tanto sabes de lo que comes?</h3>
+            <div id="presaberes-quiz">
+                </div>
+        </section>
+
+        <hr>
+
+        <section class="section-card">
+            <h2>1. La Química Oculta en la Cocina de Mamá</h2>
+            
+            <p>Imagina que entras a la cocina un domingo por la mañana. El aroma a café recién colado inunda la casa. Sobre la mesa de madera hay tres ingredientes fundamentales que nunca faltan en nuestra vereda: una yuca harinosa lista para el sancocho, unos plátanos (algunos verdes, otros maduros con pecas negras) y un bloque de panela brillante.</p>
+            
+            <p>Desde el punto de vista biológico y culinario, estos alimentos son nuestras principales fuentes de energía. Cuando tu mamá dice que "la yuca da fuerza para trabajar en el jornal", tiene razón científica. La yuca es rica en almidón, un polímero gigante de glucosa. Por otro lado, la panela nos da energía inmediata. ¿Alguna vez te has preguntado por qué el plátano verde sabe "carrasposo" o astringente, y cuando madura se vuelve dulce? Esa transformación mágica es pura química orgánica ocurriendo dentro de la cáscara.</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad 1: Observación Sensorial</strong></p>
+                <p>En tu cuaderno, dibuja una yuca, un plátano verde, un plátano maduro y un trozo de panela. Debajo de cada dibujo, describe su textura (duro, blando, pegajoso) y su sabor predilecto (dulce, insípido, amargo). ¿Cuál crees que te da energía más rápido?</p>
+                <button class="verify-btn" onclick="verifyActivity(1)">✅ Ya lo realicé en mi cuaderno</button>
+            </div>
+
+            <p>En el laboratorio, no podemos probar el sabor de todo (¡sería peligroso!), pero usamos "reactivos" que cambian de color para decirnos qué hay dentro. Hoy usaremos dos "chismosos" químicos:</p>
+            
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Reactivo</th>
+                        <th>Color Original</th>
+                        <th>¿Qué busca?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Lugol</td>
+                        <td>Ámbar / Amarillo oscuro</td>
+                        <td>Almidones (Polisacáridos)</td>
+                    </tr>
+                    <tr>
+                        <td>Benedict</td>
+                        <td>Azul claro</td>
+                        <td>Azúcares Reductores (Glucosa, Fructosa)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>Al aplicar estos reactivos sobre nuestros alimentos, ocurren cambios de color fascinantes. Si la yuca se pone negra con el Lugol, es porque está llena de almidón. Si el agua de panela se pone roja ladrillo al calentarla con Benedict, es porque hay azúcares libres listos para reaccionar.</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad 2: Mapa Mental de Alimentos</strong></p>
+                <p>Crea un mapa mental en tu cuaderno con el título "Carbohidratos en mi Vereda". Ramifica en tres categorías: "Almidones (Yuca/Papa)", "Azúcares (Panela/Frutas)" y "Fibras (Cáscaras/Tallos)". Escribe ejemplos de tu entorno en cada uno.</p>
+                <button class="verify-btn" onclick="verifyActivity(2)">✅ Ya hice el mapa mental</button>
+            </div>
+
+            <p>Es importante notar que no todos los carbohidratos son iguales. La panela es disacárido (sacarosa) que, bajo ciertas condiciones, se rompe en glucosa y fructosa. El almidón de la yuca es una cadena larguísima de glucosas unidas que nuestro cuerpo debe cortar lentamente. Por eso la energía de la yuca dura más tiempo que la de la panela.</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad 3: Tabla Comparativa</strong></p>
+                <p>Realiza una tabla comparativa de 2 columnas: "Alimentos de absorción rápida" vs "Alimentos de absorción lenta". Clasifica 10 alimentos que consumas en el recreo o en tu casa.</p>
+                <button class="verify-btn" onclick="verifyActivity(3)">✅ Tabla completada</button>
+            </div>
+
+            <p>Para entender esto mejor, miremos el siguiente gráfico simulado de resultados positivos:</p>
+            
+            <div style="text-align: center; margin: 20px;">
+                <div style="display: inline-block; text-align: center;">
+                    <div class="css-tube tube-blue"></div>
+                    <p><small>Benedict (-)<br>Negativo</small></p>
+                </div>
+                <div style="display: inline-block; text-align: center;">
+                    <div class="css-tube tube-red"></div>
+                    <p><small>Benedict (+)<br>Positivo (Rojo)</small></p>
+                </div>
+                 <div style="display: inline-block; text-align: center;">
+                    <div class="css-tube tube-yellow"></div>
+                    <p><small>Lugol (-)<br>Negativo</small></p>
+                </div>
+                <div style="display: inline-block; text-align: center;">
+                    <div class="css-tube" style="background: linear-gradient(to bottom, transparent 40%, #000 40%);"></div>
+                    <p><small>Lugol (+)<br>Positivo (Negro/Violeta)</small></p>
+                </div>
+            </div>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad 4: Predicción</strong></p>
+                <p>Dibuja 3 tubos de ensayo en tu cuaderno. Predice y colorea cómo se verían si agregamos Lugol a: 1. Un pedazo de papel (celulosa), 2. Agua con maicena, 3. Aceite de cocina.</p>
+                <button class="verify-btn" onclick="verifyActivity(4)">✅ Predicción dibujada</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad 5: Glosario de la Cocina</strong></p>
+                <p>Define con tus propias palabras en el cuaderno: "Espesar" (cuando hacemos colada) y "Caramelizar" (cuando derretimos azúcar). Intenta explicar qué les pasa a las moléculas.</p>
+                <button class="verify-btn" onclick="verifyActivity(5)">✅ Glosario escrito</button>
+            </div>
+        </section>
+
+        <section class="section-card" style="border-left-color: var(--secondary);">
+            <h3>🧠 Desafío de Competencia: Indagar</h3>
+            <div class="question-box" id="icfes-q1">
+                <p><strong>Contexto:</strong> Un estudiante quiere investigar cómo cambia la concentración de almidón y azúcar en el plátano a medida que madura. Para ello, toma muestras de plátano verde, pintón y muy maduro, y les aplica la prueba de Lugol (detecta almidón) y Benedict (detecta azúcares reductores). Obtiene los siguientes resultados visuales:</p>
+                
+                <div style="background:#eee; padding:10px; margin:10px 0; border-radius:5px;">
+                    <ul>
+                        <li><strong>Plátano Verde:</strong> Lugol = Negro intenso | Benedict = Azul (sin cambio)</li>
+                        <li><strong>Plátano Maduro:</strong> Lugol = Amarillo (sin cambio) | Benedict = Rojo ladrillo</li>
+                    </ul>
+                </div>
+
+                <p><strong>Pregunta:</strong> Basándose en los resultados de las pruebas químicas, ¿cuál de las siguientes gráficas describe mejor el proceso químico que ocurre durante la maduración del plátano?</p>
+
+                <div class="options">
+                    <label><input type="radio" name="icfes1" value="A"> <strong>A.</strong> Una gráfica donde el almidón aumenta y el azúcar disminuye con el tiempo.</label>
+                    <label><input type="radio" name="icfes1" value="B"> <strong>B.</strong> Una gráfica donde el almidón se mantiene constante, pero el azúcar aumenta drásticamente.</label>
+                    <label><input type="radio" name="icfes1" value="C"> <strong>C.</strong> Una gráfica donde la línea del almidón desciende progresivamente mientras la línea de los azúcares asciende, cruzándose en el estado "pintón".</label>
+                    <label><input type="radio" name="icfes1" value="D"> <strong>D.</strong> Una gráfica donde ambas sustancias disminuyen porque el plátano se pudre.</label>
+                </div>
+                <button onclick="checkICFES()">Verificar Respuesta</button>
+                
+                <div id="icfes-feedback" class="feedback"></div>
+            </div>
+        </section>
+
+        <hr>
+
+        <section class="section-card">
+            <h2>2. La Explicación Molecular (Lo que no vemos)</h2>
+            
+            <p>Ahora que hemos observado los fenómenos macroscópicos, debemos usar nuestra visión científica para deducir qué ocurre a nivel molecular. La química de carbohidratos se basa en grupos funcionales. Recordemos que los carbohidratos son polihidroxialdehídos o polihidroxicetonas.</p>
+
+            <h3>La Prueba de Benedict y el Poder Reductor</h3>
+            <p>El reactivo de Benedict contiene sulfato de cobre (II), CuSO<sub>4</sub>, que le da ese color azul bonito. En medio alcalino y con calor, los azúcares que tienen un grupo aldehído libre (o una cetona que pueda isomerizarse) actúan como "reductores". Ellos le regalan electrones al Cobre.</p>
+            <p>La reacción simplificada es: El Cu<sup>+2</sup> (Azul) gana un electrón y se convierte en Cu<sup>+1</sup>, formando óxido de cobre (I), Cu<sub>2</sub>O, que es un sólido de color rojo ladrillo insolubles en agua. </p>
+            <blockquote>La sacarosa (azúcar de mesa o panela pura sin invertir) NO reduce al Benedict porque sus carbonos anoméricos están ocupados en el enlace glucosídico. Sin embargo, si hervimos la panela con limón (ácido), rompemos el enlace y liberamos glucosa y fructosa, dando positivo después.</blockquote>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad 6: El Enlace Roto</strong></p>
+                <p>Dibuja en tu cuaderno dos hexágonos agarrados de la mano (Sacarosa). Dibuja una tijera (Ácido/Calor) cortando el agarre. Dibuja los dos hexágonos separados (Glucosa + Fructosa). Escribe: "Hidrólisis".</p>
+                <button class="verify-btn" onclick="verifyActivity(6)">✅ Esquema dibujado</button>
+            </div>
+
+            <h3>La Prueba de Lugol y el Complejo de Inclusión</h3>
+            <p>El Lugol es una disolución de Yodo (I<sub>2</sub>) y Yoduro de Potasio (KI). El almidón está formado por dos tipos de cadenas: amilosa y amilopectina. La amilosa tiene una forma de hélice (como un resorte).</p>
+            <p>Lo que sucede no es una reacción química fuerte, sino física. Las moléculas de yodo se meten dentro del "resorte" de la amilosa. Al quedar atrapadas allí, interactúan con la luz de tal manera que vemos un color azul muy oscuro, casi negro. Si calentamos el tubo, el resorte se estira, el yodo se sale y el color desaparece. ¡Al enfriar, el color vuelve!</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad 7: El Resorte de Amilosa</strong></p>
+                <p>Dibuja un resorte o espiral. Dibuja puntos pequeños (yodo) atrapados dentro del espiral. Colorea el conjunto de morado oscuro. Escribe al lado: "Complejo de Inclusión Almidón-Yodo".</p>
+                <button class="verify-btn" onclick="verifyActivity(7)">✅ Modelo dibujado</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad 8: Tabla de Resultados Esperados</strong></p>
+                <p>Copia y completa la siguiente tabla en tu cuaderno prediciendo el color final:</p>
+                <ul style="list-style-type: none;">
+                    <li>Miel de abejas + Benedict + Calor = _______</li>
+                    <li>Papa cruda + Lugol = _______</li>
+                    <li>Agua pura + Lugol = _______</li>
+                    <li>Jugo de naranja + Benedict + Calor = _______</li>
+                </ul>
+                <button class="verify-btn" onclick="verifyActivity(8)">✅ Tabla completada</button>
+            </div>
+
+            <p>Esta capacidad de identificar sustancias es vital no solo en química, sino en la industria de alimentos de nuestro departamento del Quindío. Por ejemplo, para detectar si la leche ha sido adulterada con maicena para que rinda más, los inspectores usan una gota de Lugol. Si la leche se pone violeta... ¡fraude!</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad 9: Detective de Alimentos</strong></p>
+                <p>Escribe en tu cuaderno un párrafo corto imaginando que eres un inspector de calidad en una fábrica de arepas. ¿Cómo usarías el Lugol para asegurar que no usen harina de trigo (que tiene gluten) si prometen que son 100% maíz? (Investiga o deduce si ambos tienen almidón, la clave es la intensidad).</p>
+                <button class="verify-btn" onclick="verifyActivity(9)">✅ Párrafo escrito</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad 10: Mapa Conceptual Final</strong></p>
+                <p>Realiza un mapa conceptual que conecte: Carbohidratos -> Monosacáridos/Polisacáridos -> Pruebas de Identificación -> Benedict/Lugol -> Colores resultantes.</p>
+                <button class="verify-btn" onclick="verifyActivity(10)">✅ Mapa conceptual finalizado</button>
+            </div>
+        </section>
+
+        <hr>
+
+        <section class="section-card" id="final-workshop">
+            <h2>📝 Taller de Verificación</h2>
+            <p>Demuestra lo aprendido. Recuerda ser honesto en tus respuestas.</p>
+
+            <div id="quiz-container">
+                </div>
+
+            <h3>Preguntas de Análisis (10 a 15 palabras)</h3>
+            <p><em>El sistema verificará que no copies y pegues, y que cumplas la longitud.</em></p>
+            
+            <div class="open-q-container">
+                <label>1. ¿Por qué es necesario calentar el tubo en la prueba de Benedict?</label>
+                <textarea id="open1" onpaste="return false;" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <p class="word-count" id="wc1">Palabras: 0</p>
+                <button onclick="verifyOpenAnswer('open1', 'wc1')">Verificar Redacción</button>
+            </div>
+
+            <div class="open-q-container">
+                <label>2. ¿Qué indica químicamente que el Lugol cambie a color negro azulado?</label>
+                <textarea id="open2" onpaste="return false;" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <p class="word-count" id="wc2">Palabras: 0</p>
+                <button onclick="verifyOpenAnswer('open2', 'wc2')">Verificar Redacción</button>
+            </div>
+
+             <div class="open-q-container">
+                <label>3. ¿Por qué la sacarosa (azúcar de mesa) da negativo en Benedict inicialmente?</label>
+                <textarea id="open3" onpaste="return false;" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <p class="word-count" id="wc3">Palabras: 0</p>
+                <button onclick="verifyOpenAnswer('open3', 'wc3')">Verificar Redacción</button>
+            </div>
+
+             <div class="open-q-container">
+                <label>4. Si un plátano verde da positivo para Lugol, ¿qué carbohidrato predomina?</label>
+                <textarea id="open4" onpaste="return false;" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <p class="word-count" id="wc4">Palabras: 0</p>
+                <button onclick="verifyOpenAnswer('open4', 'wc4')">Verificar Redacción</button>
+            </div>
+
+             <div class="open-q-container">
+                <label>5. ¿Cuál es la utilidad práctica de estas pruebas en la industria alimentaria?</label>
+                <textarea id="open5" onpaste="return false;" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <p class="word-count" id="wc5">Palabras: 0</p>
+                <button onclick="verifyOpenAnswer('open5', 'wc5')">Verificar Redacción</button>
+            </div>
+
+        </section>
+
+        <div id="download-section">
+            <h3>¡Has terminado!</h3>
+            <p>Descarga tu evidencia para enviarla al profesor.</p>
+            <button onclick="downloadReport()" style="background-color: white; color: var(--primary); font-size: 1.2rem;">💾 DESCARGAR RESPUESTAS (.TXT)</button>
+        </div>
+
+    </div>
+
+    <script>
+        // CONFIGURACIÓN Y ESTADO
+        const appState = {
+            studentName: "",
+            progress: 0,
+            score: 0,
+            totalSteps: 18, // 3 presaberes + 10 actividades + 1 ICFES + 5 MCQ + 5 Abiertas
+            currentStepCount: 0,
+            answers: {
+                presaberes: [],
+                icfes: "",
+                quiz: [],
+                open: []
+            }
+        };
+
+        const elements = ["H (1)", "He (2)", "Li (3)", "Be (4)", "B (5)"];
+
+        // INICIALIZACIÓN
+        window.onload = function() {
+            const savedData = localStorage.getItem('ova_carbohidratos_data');
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                appState.studentName = parsed.studentName;
+                appState.progress = parsed.progress;
+                appState.score = parsed.score;
+                appState.currentStepCount = parsed.currentStepCount;
+                
+                if(appState.studentName) {
+                    showMainContent();
+                }
+            }
+            renderPresaberes();
+            renderQuiz();
+            setupWordCounters();
+        };
+
+        function saveState() {
+            localStorage.setItem('ova_carbohidratos_data', JSON.stringify(appState));
+        }
+
+        function updateProgress() {
+            appState.currentStepCount++;
+            let pct = (appState.currentStepCount / appState.totalSteps) * 100;
+            if(pct > 100) pct = 100;
+            
+            document.getElementById('progress-bar').style.width = pct + "%";
+            
+            // Sistema de Puntos (Elementos Tabla Periódica) escala de 0 a 5
+            let scoreIndex = Math.floor((pct / 100) * 4.9); // 0 a 4
+            if (pct >= 100) scoreIndex = 4;
+            document.getElementById('score-badge').innerText = elements[scoreIndex];
+            
+            saveState();
+        }
+
+        // LOGIN
+        function login() {
+            const nameInput = document.getElementById('student-name').value;
+            if (nameInput.trim().length > 3) {
+                appState.studentName = nameInput;
+                showMainContent();
+                saveState();
+            } else {
+                alert("Por favor ingresa tu nombre completo.");
+            }
+        }
+
+        function showMainContent() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('top-bar').style.display = 'block';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('display-name').innerText = appState.studentName;
+        }
+
+        // PRE-SABERES
+        function renderPresaberes() {
+            const questions = [
+                { q: "¿Cuál de estos alimentos crees que tiene más almidón?", opts: ["Queso", "Yuca", "Carne", "Agua"], a: 1 },
+                { q: "¿Para qué comemos carbohidratos principalmente?", opts: ["Para tener energía", "Para formar músculos", "Para hidratarnos", "Para enfriarnos"], a: 0 },
+                { q: "Si masticas mucho tiempo un pedazo de pan, ¿qué sabor toma?", opts: ["Ácido", "Salado", "Dulce", "Amargo"], a: 2 }
+            ];
+            
+            let html = "";
+            questions.forEach((item, index) => {
+                html += `<div class="question-box"><p>${index+1}. ${item.q}</p>`;
+                item.opts.forEach((opt, i) => {
+                    html += `<label><input type="radio" name="pre${index}" value="${i}" onclick="checkPresaber(${index}, ${item.a}, this)"> ${opt}</label><br>`;
+                });
+                html += `</div>`;
+            });
+            document.getElementById('presaberes-quiz').innerHTML = html;
+        }
+
+        function checkPresaber(qIndex, correctIndex, input) {
+            // Solo cuenta si es la primera vez que interactúa con este grupo (simplificado)
+            // Feedback inmediato
+            if (parseInt(input.value) === correctIndex) {
+                alert("¡Correcto! Tienes buenas bases.");
+                updateProgress();
+            } else {
+                alert("Incorrecto. Sigue leyendo para descubrir la respuesta.");
+            }
+            appState.answers.presaberes[qIndex] = input.parentElement.innerText;
+        }
+
+        // VERIFICACIÓN ACTIVIDADES CUADERNO
+        function verifyActivity(num) {
+            const btn = event.target;
+            if (!btn.disabled) {
+                if(confirm("¿Confirmas que has realizado la actividad " + num + " en tu cuaderno física y conscientemente?")) {
+                    btn.disabled = true;
+                    btn.innerText = "⭐ Completado";
+                    btn.style.backgroundColor = "#aaa";
+                    updateProgress();
+                }
+            }
+        }
+
+        // ICFES LOGIC
+        function checkICFES() {
+            const radios = document.getElementsByName('icfes1');
+            let val = "";
+            for (let r of radios) { if (r.checked) val = r.value; }
+            
+            const feedbackBox = document.getElementById('icfes-feedback');
+            feedbackBox.style.display = 'block';
+
+            if (val === "C") {
+                feedbackBox.className = "feedback";
+                feedbackBox.innerHTML = "<strong>¡Correcto!</strong> La opción C es acertada. Al madurar, las enzimas hidrolizan (rompen) el almidón convirtiéndolo en azúcares simples (glucosa/fructosa). Por eso el Lugol (detecta almidón) va perdiendo intensidad y el Benedict (detecta azúcar) va ganando intensidad. Las líneas se cruzan indicando la transformación química.";
+                updateProgress();
+            } else {
+                feedbackBox.className = "feedback error";
+                let msg = "<strong>Incorrecto.</strong> Analicemos por qué:<br>";
+                if (val === "A") msg += "Opción A: Incorrecta. Sugiere que el almidón aumenta, pero el plátano maduro es menos harinoso y más dulce (menos almidón).";
+                if (val === "B") msg += "Opción B: Incorrecta. El azúcar no puede aparecer de la nada; proviene de la degradación del almidón, por lo tanto el almidón DEBE bajar.";
+                if (val === "D") msg += "Opción D: Incorrecta. Aunque en la putrefacción se pierden nutrientes, en la maduración hay conversión, no desaparición total inicial.";
+                feedbackBox.innerHTML = msg;
+            }
+            appState.answers.icfes = val;
+        }
+
+        // TALLER FINAL MCQ
+        function renderQuiz() {
+            const q = [
+                { t: "El reactivo de Lugol identifica:", opts: ["Proteínas", "Almidones", "Grasas", "Vitaminas"], c: 1 },
+                { t: "El color positivo de Benedict es:", opts: ["Azul", "Violeta", "Rojo Ladrillo", "Transparente"], c: 2 },
+                { t: "La yuca da positivo para:", opts: ["Lugol", "Benedict en frío", "Biuret", "Sudán III"], c: 0 },
+                { t: "¿Qué carbohidrato es un azúcar reductor?", opts: ["Sacarosa pura", "Almidón", "Glucosa", "Celulosa"], c: 2 },
+                { t: "El cambio de color en Benedict se debe a:", opts: ["Oxidación del yodo", "Reducción del Cobre", "Fermentación", "Congelación"], c: 1 }
+            ];
+
+            let h = "";
+            q.forEach((item, idx) => {
+                h += `<div class="question-box"><p>${idx+1}. ${item.t}</p>`;
+                item.opts.forEach((opt, i) => {
+                    h += `<label><input type="radio" name="quiz${idx}" onclick="checkQuiz(${idx}, ${item.c}, this)"> ${opt}</label><br>`;
+                });
+                h += `</div>`;
+            });
+            document.getElementById('quiz-container').innerHTML = h;
+        }
+
+        function checkQuiz(idx, correct, el) {
+            // Feedback visual simple
+            if (parseInt(el.parentElement.querySelector('input').value) == -1) return; // hack prevent
+            
+            const inputs = document.getElementsByName('quiz'+idx);
+            let selectedIndex = Array.from(inputs).indexOf(el);
+            
+            if (selectedIndex === correct) {
+                el.parentElement.style.backgroundColor = "#C8E6C9";
+                if(!appState.answers.quiz[idx]) updateProgress(); // Solo cuenta la primera vez
+                appState.answers.quiz[idx] = "Correcto";
+            } else {
+                el.parentElement.style.backgroundColor = "#FFCDD2";
+                appState.answers.quiz[idx] = "Incorrecto";
+            }
+        }
+
+        // ABIERTAS Y ANTI-COPY
+        function setupWordCounters() {
+            for(let i=1; i<=5; i++) {
+                let ta = document.getElementById('open'+i);
+                let p = document.getElementById('wc'+i);
+                ta.addEventListener('input', function() {
+                    let words = this.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+                    p.innerText = "Palabras: " + words;
+                    if (words >= 10 && words <= 15) p.style.color = "green";
+                    else p.style.color = "red";
+                });
+            }
+        }
+
+        function verifyOpenAnswer(id, wcId) {
+            const txt = document.getElementById(id).value;
+            const words = txt.trim().split(/\s+/).filter(w => w.length > 0).length;
+            
+            if (words >= 10 && words <= 15) {
+                alert("Longitud correcta. Respuesta guardada.");
+                document.getElementById(id).disabled = true;
+                appState.answers.open.push(txt);
+                updateProgress();
+            } else {
+                alert("Tu respuesta tiene " + words + " palabras. Debe tener entre 10 y 15.");
+            }
+        }
+
+        // DESCARGA
+        function downloadReport() {
+            let content = "REPORTE DE LABORATORIO VIRTUAL - CARBOHIDRATOS\n";
+            content += "=================================================\n";
+            content += "Estudiante: " + appState.studentName + "\n";
+            content += "Fecha: " + new Date().toLocaleString() + "\n";
+            content += "Nivel Alcanzado: " + document.getElementById('score-badge').innerText + "\n\n";
+            
+            content += "RESPUESTAS DE PRE-SABERES:\n" + appState.answers.presaberes.join('\n') + "\n\n";
+            content += "RESPUESTA ICFES: " + appState.answers.icfes + "\n\n";
+            content += "RESULTADOS TEST FINAL: " + appState.answers.quiz.join(', ') + "\n\n";
+            content += "RESPUESTAS ABIERTAS:\n";
+            appState.answers.open.forEach((a, i) => content += (i+1) + ". " + a + "\n");
+
+            const blob = new Blob([content], { type: "text/plain" });
+            const anchor = document.createElement("a");
+            anchor.download = "Laboratorio_" + appState.studentName.replace(/\s+/g, '_') + ".txt";
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.target = "_blank";
+            anchor.style.display = "none";
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+        }
+
+    </script>
+</body>
+</html> 

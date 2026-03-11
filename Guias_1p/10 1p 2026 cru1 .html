@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Crucigrama: El Notario Químico</title>
+    <style>
+        :root { --primario: #1b5e20; --acentuado: #81c784; --fondo: #f1f8e9; --error: #c62828; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--fondo); display: flex; flex-direction: column; align-items: center; padding: 20px; color: #1b5e20; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(27, 94, 32, 0.2); max-width: 950px; width: 100%; }
+        h1 { color: var(--primario); text-align: center; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        h4 { text-align: center; color: #4caf50; margin-top: 0; font-style: italic; }
+        .grid-container { display: flex; justify-content: center; margin: 25px 0; }
+        .grid { display: grid; grid-template-columns: repeat(15, 34px); grid-template-rows: repeat(15, 34px); gap: 2px; background: #a5d6a7; border: 4px solid var(--primario); }
+        .cell { background: #c8e6c9; width: 34px; height: 34px; display: flex; justify-content: center; align-items: center; position: relative; }
+        .cell.active { background: white; }
+        .cell input { width: 100%; height: 100%; border: none; text-align: center; font-size: 18px; font-weight: bold; text-transform: uppercase; background: transparent; color: var(--primario); }
+        .cell input:focus { background: #f1f8e9; outline: none; }
+        .num { position: absolute; top: 1px; left: 2px; font-size: 10px; color: #666; pointer-events: none; }
+        .clues { display: flex; gap: 20px; margin-top: 25px; }
+        .clue-col { flex: 1; background: #fdfdfd; padding: 15px; border-radius: 12px; border-left: 5px solid var(--primario); }
+        h3 { color: var(--primario); margin-top: 0; font-size: 1.1em; border-bottom: 1px solid #ddd; }
+        li { font-size: 13px; margin-bottom: 10px; list-style: none; line-height: 1.2; }
+        #win-msg { display: none; text-align: center; color: var(--primario); font-weight: bold; padding: 20px; border: 3px double var(--primario); border-radius: 15px; margin-top: 20px; background: #e8f5e9; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>El Notario Químico: Ácidos y Sales</h1>
+    <h4>Nomenclatura IUPAC y Salud de la Tierra</h4>
+
+    <div class="grid-container">
+        <div id="grid" class="grid"></div>
+    </div>
+
+    <div id="win-msg">¡Excelente, Notario! Has nombrado con precisión los componentes que nutren nuestro suelo.</div>
+
+    <div class="clues">
+        <div class="clue-col">
+            <h3>Horizontales</h3>
+            <ul id="hor-clues"></ul>
+        </div>
+        <div class="clue-col">
+            <h3>Verticales</h3>
+            <ul id="ver-clues"></ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    const data = [
+        [1, 5, "SULFATO", "Sal común en fertilizantes (SO4), vital para el cafetal.", "H"],
+        [4, 2, "OXACIDO", "Ácido que contiene hidrógeno, un no metal y oxígeno.", "H"],
+        [6, 8, "IUPAC", "Organismo internacional que dicta las normas del nombre.", "H"],
+        [8, 1, "HIDRACIDO", "Ácido formado solo por hidrógeno y un no metal (ej: HCl).", "H"],
+        [10, 4, "NOTARIO", "Juego de rol sobre la verdad al nombrar fórmulas.", "H"],
+        [12, 0, "NOMENCLATURA", "El arte y sistema de dar nombre a los compuestos.", "H"],
+        [14, 6, "SALES", "Resultan de la reacción entre un ácido y una base.", "H"],
+        [0, 6, "FOSFATO", "Sal de fósforo necesaria para las raíces del café.", "V"],
+        [3, 3, "HIDROGENO", "Elemento que siempre está al inicio de un ácido.", "V"],
+        [3, 11, "NITRATO", "La 'N' del NPK; sal esencial para el crecimiento.", "V"],
+        [5, 13, "NORMAS", "Reglas que debemos respetar para hablar el mismo idioma.", "V"],
+        [7, 5, "TIERRA", "Su salud depende del equilibrio de ácidos y sales.", "V"],
+        [1, 1, "ACIDO", "Sustancia que libera iones H+ y tiene sabor agrio.", "V"],
+        [9, 9, "REGLA", "Instrucción precisa para nombrar según la IUPAC.", "V"],
+        [11, 2, "VERDAD", "Valor de asignar el nombre que realmente corresponde.", "V"]
+    ];
+
+    const gridDiv = document.getElementById('grid');
+    for(let r=0; r<15; r++) {
+        for(let c=0; c<15; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.id = `c-${r}-${c}`;
+            gridDiv.appendChild(cell);
+        }
+    }
+
+    data.forEach((item, index) => {
+        let [r, c, word, clue, dir] = item;
+        const list = document.getElementById(dir === 'H' ? 'hor-clues' : 'ver-clues');
+        const li = document.createElement('li');
+        li.innerHTML = `<b>${index + 1}.</b> ${clue}`;
+        list.appendChild(li);
+
+        for(let i=0; i<word.length; i++) {
+            let currR = dir === 'H' ? r : r + i;
+            let currC = dir === 'H' ? c + i : c;
+            let cell = document.getElementById(`c-${currR}-${currC}`);
+            cell.classList.add('active');
+            if(!cell.querySelector('input')) {
+                const input = document.createElement('input');
+                input.maxLength = 1;
+                input.dataset.answer = word[i];
+                cell.appendChild(input);
+                const num = document.createElement('span');
+                num.className = 'num';
+                num.innerText = index + 1;
+                cell.appendChild(num);
+            }
+        }
+    });
+
+    gridDiv.addEventListener('input', (e) => {
+        e.target.style.color = e.target.value.toUpperCase() === e.target.dataset.answer ? "#1b5e20" : "#c62828";
+        const inputs = document.querySelectorAll('input');
+        if(Array.from(inputs).every(i => i.value.toUpperCase() === i.dataset.answer)) {
+            document.getElementById('win-msg').style.display = 'block';
+        }
+    });
+</script>
+</body>
+</html>

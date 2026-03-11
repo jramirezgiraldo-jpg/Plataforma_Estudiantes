@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: El Enlace Cuántico</title>
+    <style>
+        /* ================= ESTILOS CSS INMERSIVOS (CYBERPUNK NEÓN) ================= */
+        :root {
+            --bg-color: #09090b;
+            --panel-bg: #18181b;
+            --text-main: #e4e4e7;
+            --neon-magenta: #d946ef;
+            --neon-blue: #3b82f6;
+            --neon-alert: #f43f5e;
+            --neon-success: #10b981;
+            --font-mono: 'Courier New', Courier, monospace;
+            --font-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding-bottom: 60px;
+            background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, transparent 50%);
+        }
+
+        /* Cabecera e Inventario */
+        header {
+            background: rgba(9, 9, 11, 0.95);
+            border-bottom: 2px solid var(--neon-magenta);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(217, 70, 239, 0.2);
+            backdrop-filter: blur(8px);
+        }
+
+        h1 { 
+            font-size: 1.4rem; 
+            color: #fff;
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            text-shadow: 0 0 10px var(--neon-magenta); 
+        }
+
+        #inventory-panel {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 1px solid #3f3f46;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--neon-blue);
+            font-weight: bold;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            animation: pulseIn 0.5s ease-out;
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        /* Estructura de Habitaciones */
+        .room-container { max-width: 900px; margin: 40px auto; padding: 20px; }
+
+        .room {
+            background-color: var(--panel-bg);
+            border: 1px solid #27272a;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            opacity: 0.3;
+            pointer-events: none;
+            transition: all 0.6s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .room::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: #3f3f46; transition: background 0.6s;
+        }
+
+        .room.active { opacity: 1; pointer-events: auto; border-color: #3f3f46; }
+        .room.active::before { background: linear-gradient(90deg, var(--neon-magenta), var(--neon-blue)); box-shadow: 0 0 15px var(--neon-magenta); }
+
+        .room-header {
+            font-size: 1.6rem;
+            color: #fff;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .room-header::before { content: '>'; color: var(--neon-magenta); font-family: var(--font-mono); font-weight: bold; }
+
+        /* Cajas de Acertijos */
+        .puzzle-box {
+            background: #09090b;
+            border-left: 3px solid #3f3f46;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .puzzle-box.solved {
+            border-left-color: var(--neon-success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .puzzle-title { 
+            font-family: var(--font-mono); 
+            font-weight: bold; 
+            color: var(--neon-blue); 
+            margin-bottom: 15px; 
+            font-size: 1.1rem;
+        }
+
+        .reading-block {
+            font-family: var(--font-mono);
+            background: #000;
+            padding: 20px;
+            border: 1px solid #27272a;
+            border-radius: 6px;
+            color: #a1a1aa;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        /* Controles (Inputs y Botones) */
+        .input-group { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+
+        input[type="text"] {
+            padding: 12px 15px;
+            border: 1px solid #3f3f46;
+            border-radius: 4px;
+            background-color: #18181b;
+            color: var(--neon-magenta);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            flex-grow: 1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        input:focus { outline: none; border-color: var(--neon-magenta); box-shadow: 0 0 10px rgba(217, 70, 239, 0.2); }
+        input:disabled { opacity: 0.6; cursor: not-allowed; border-color: var(--neon-success); color: var(--neon-success); }
+
+        button {
+            padding: 12px 25px;
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        button:hover { background-color: rgba(59, 130, 246, 0.2); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+        button:disabled { border-color: #3f3f46; color: #52525b; background: transparent; cursor: not-allowed; box-shadow: none; }
+        
+        button.solved-btn { 
+            background-color: rgba(16, 185, 129, 0.1); 
+            color: var(--neon-success); 
+            border-color: var(--neon-success);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .error-msg {
+            color: var(--neon-alert);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+            padding: 8px;
+            background: rgba(244, 63, 94, 0.1);
+            border-left: 2px solid var(--neon-alert);
+        }
+
+        /* Modal / Alertas del Sistema */
+        #custom-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #18181b; padding: 40px; border-radius: 8px;
+            border: 1px solid var(--neon-magenta); max-width: 500px; text-align: center;
+            box-shadow: 0 0 40px rgba(217, 70, 239, 0.3);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .modal-title { font-size: 1.5rem; color: #fff; margin-bottom: 15px; font-family: var(--font-mono); }
+        .modal-btn { margin-top: 25px; background: var(--neon-magenta); color: #fff; border:none; padding: 10px 20px; cursor:pointer; font-weight:bold; border-radius:4px;}
+        .modal-btn:hover { background: #c026d3; box-shadow: 0 0 15px rgba(217, 70, 239, 0.5);}
+
+        /* Arte CSS / Contenedores de Imagen */
+        .img-placeholder-container {
+            border: 1px dashed #3f3f46; padding: 20px; margin: 20px 0;
+            background: #000; border-radius: 4px; text-align: center;
+        }
+
+        /* Simulador Lewis CSS */
+        .css-lewis { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 20px 0; font-family: var(--font-mono); font-size: 1.5rem; font-weight: bold; color: #fff; }
+        .atom { position: relative; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; border: 1px solid #3f3f46; border-radius: 5px; background: #18181b; }
+        .electron { position: absolute; width: 8px; height: 8px; background: var(--neon-blue); border-radius: 50%; box-shadow: 0 0 8px var(--neon-blue); }
+        .e-top { top: -4px; } .e-bottom { bottom: -4px; } .e-left { left: -4px; } .e-right { right: -4px; }
+        
+        /* Animaciones */
+        @keyframes pulseIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        @media (max-width: 650px) {
+            header { flex-direction: column; gap: 15px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🔬 Laboratorio de Enlaces Cuánticos</h1>
+        <div id="inventory-panel">
+            <span style="color:#71717a; font-family:var(--font-mono);">INVENTARIO:</span>
+            <span id="empty-inv" style="color: #52525b; font-size: 0.9rem;">[Vacío]</span>
+        </div>
+    </header>
+
+    <div class="room-container">
+        
+        <!-- ================= FASE 1: EL ARTE DE COMPARTIR ================= -->
+        <section class="room active" id="room-1">
+            <h2 class="room-header">Fase 1: La Naturaleza del Vínculo</h2>
+            <p style="margin-bottom: 20px;">El sistema de ventilación está bloqueado. Para iniciar la anulación, debes demostrar que comprendes el principio más básico de los enlaces químicos donde los átomos no roban, sino que comparten.</p>
+
+            <div class="puzzle-box" id="box-p1">
+                <div class="puzzle-title">TERMINAL 01: Identidad Elemental</div>
+                <p>En un enlace iónico, un metal le arranca un electrón a un no metal. Pero en el enlace que estamos estudiando hoy (covalente), los electrones se comparten. ¿Entre qué tipo de elementos de la tabla periódica se forma estrictamente un enlace covalente?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p1" placeholder="Ej: Metales, No metales, Gases...">
+                    <button id="btn-p1" onclick="checkAnswer('p1')">Ingresar Respuesta</button>
+                </div>
+                <div class="error-msg" id="error-p1"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p2">
+                <div class="puzzle-title">TERMINAL 02: Informe de Diferencias</div>
+                <p>Lee el registro fragmentado de la computadora central para encontrar la clasificación exacta de la molécula de agua.</p>
+                <div class="reading-block">"Registro #808: La electronegatividad es la fuerza con la que un átomo atrae los electrones compartidos en un enlace. Si la diferencia de electronegatividad (ΔEN) entre dos átomos es mayor a 1.7, el enlace es Iónico. Si la diferencia está entre 0.4 y 1.7, los electrones se comparten de forma desigual, creando polos eléctricos (Enlace Covalente Polar). Si la diferencia es menor a 0.4, se comparten equitativamente (Covalente No Polar).
+
+He analizado el agua (H2O). El Oxígeno tiene una electronegatividad de 3.44, y el Hidrógeno de 2.20. La resta nos da 1.24. Por lo tanto, el agua actúa como un diminuto imán eléctrico."</div>
+                <p>Según el texto y el cálculo (1.24), ¿qué tipo específico de enlace covalente tiene la molécula de agua?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p2" placeholder="Escribe 'Polar' o 'No Polar'...">
+                    <button id="btn-p2" onclick="checkAnswer('p2')">Clasificar Molécula</button>
+                </div>
+                <div class="error-msg" id="error-p2"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p3">
+                <div class="puzzle-title">TERMINAL 03: Desencriptación (Premio: Gafas UV)</div>
+                <p>Para abrir el casillero de suministros, debes resolver un Cifrado César (Rot-1). La nota de tu predecesor dice: <em>"Para hallar la herramienta, retrocede una letra en el alfabeto por cada letra de este código: <strong>H B G B T</strong>."</em></p>
+                <p style="font-size: 0.85rem; color: #71717a; margin-top: 5px;">(Pista: Si la letra es H, la anterior es G...).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p3" placeholder="Ingresa la palabra de 5 letras...">
+                    <button id="btn-p3" onclick="checkAnswer('p3')">Abrir Casillero</button>
+                </div>
+                <div class="error-msg" id="error-p3"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 2: LA ELECTRONEGATIVIDAD ================= -->
+        <section class="room" id="room-2">
+            <h2 class="room-header">Fase 2: El Juego de Fuerzas</h2>
+            <p style="margin-bottom: 20px;">Los enlaces se definen por la fuerza con la que los átomos compiten por los electrones. Calcula y deduce.</p>
+
+            <div class="puzzle-box" id="box-p4">
+                <div class="puzzle-title">TERMINAL 04: Cálculo de Diferencia (ΔEN)</div>
+                <p>El sistema requiere calibración matemática. Observa la tabla de electronegatividad básica:</p>
+                <ul style="list-style:none; padding-left:15px; margin: 10px 0; color: #a1a1aa; font-family: var(--font-mono);">
+                    <li>> Carbono (C): 2.5</li>
+                    <li>> Oxígeno (O): 3.5</li>
+                    <li>> Nitrógeno (N): 3.0</li>
+                </ul>
+                <p>Calcula la diferencia de electronegatividad (ΔEN) restando el valor menor al mayor para un enlace entre **Carbono y Oxígeno** (C=O).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p4" placeholder="Ingresa solo el número (ej. 1.5)...">
+                    <button id="btn-p4" onclick="checkAnswer('p4')">Calibrar Sensor</button>
+                </div>
+                <div class="error-msg" id="error-p4"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p5">
+                <div class="puzzle-title">TERMINAL 05: El Elemento Soberano</div>
+                <div class="img-placeholder-container">
+                    <p style="color: #71717a; font-size:0.8rem; margin-bottom:15px;">[Marcador Imagen: <code style="color:#a1a1aa">&lt;img src="escala_pauling.png"&gt;</code> - Inserta tu imagen de la Escala de Pauling aquí]</p>
+                    <p style="color: #a1a1aa;">La escala de Pauling mide la electronegatividad. En la tabla periódica, esta fuerza aumenta de izquierda a derecha y de abajo hacia arriba (ignorando a los gases nobles).</p>
+                </div>
+                <p>Según esta regla, ¿cuál es el elemento más electronegativo de toda la tabla periódica? (Aquel que está más arriba y a la derecha en el Grupo 17).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p5" placeholder="Nombre completo del elemento...">
+                    <button id="btn-p5" onclick="checkAnswer('p5')">Identificar Soberano</button>
+                </div>
+                <div class="error-msg" id="error-p5"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p6">
+                <div class="puzzle-title">TERMINAL 06: Lógica de Enlaces Múltiples (Premio: Módulo Lewis)</div>
+                <p>Dos átomos de Oxígeno (O2) necesitan completar su octeto. Ambos tienen 6 electrones de valencia. Si comparten solo 1 par de electrones (enlace simple), cada uno llegaría a 7 (inestable). Para llegar a 8, deben compartir <strong>2 pares</strong> de electrones.</p>
+                <p>¿Cómo se le llama al tipo de enlace donde se comparten 2 pares de electrones (4 electrones en total)?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p6" placeholder="Escribe 'Simple', 'Doble' o 'Triple'...">
+                    <button id="btn-p6" onclick="checkAnswer('p6')">Desbloquear Módulo</button>
+                </div>
+                <div class="error-msg" id="error-p6"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 3: ESTRUCTURAS DE LEWIS ================= -->
+        <section class="room" id="room-3">
+            <h2 class="room-header">Fase 3: La Arquitectura Visible</h2>
+            <p style="margin-bottom: 20px;">Gilbert N. Lewis ideó un sistema de puntos para visualizar los electrones de valencia. Debes construir la estructura correcta para avanzar.</p>
+
+            <div class="puzzle-box" id="box-p7">
+                <div class="puzzle-title">TERMINAL 07: Conteo de Puntos</div>
+                <div class="img-placeholder-container">
+                    <p style="color: #71717a; font-size:0.8rem; margin-bottom:15px;">[Marcador: <code style="color:#a1a1aa">&lt;img src="lewis_co2.png"&gt;</code>]</p>
+                    <p><strong>Simulador Lewis CSS (Molécula de CO2):</strong></p>
+                    <div class="css-lewis">
+                        <div class="atom">O<div class="electron e-left"></div><div class="electron e-top"></div><div class="electron e-bottom"></div></div>
+                        <span style="color: var(--neon-magenta);">==</span>
+                        <div class="atom" style="border-color: var(--neon-blue);">C</div>
+                        <span style="color: var(--neon-magenta);">==</span>
+                        <div class="atom">O<div class="electron e-right"></div><div class="electron e-top"></div><div class="electron e-bottom"></div></div>
+                    </div>
+                </div>
+                <p>En la estructura de Lewis del Dióxido de Carbono (CO2), el carbono central forma dos enlaces dobles (==) con los oxígenos. Cada línea representa 1 par de electrones compartidos (2 electrones). ¿Cuántos electrones se están compartiendo <strong>en total</strong> en toda la molécula (sumando ambos enlaces dobles)?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p7" placeholder="Ingresa solo el número...">
+                    <button id="btn-p7" onclick="checkAnswer('p7')">Verificar Conteo</button>
+                </div>
+                <div class="error-msg" id="error-p7"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p8">
+                <div class="puzzle-title">TERMINAL 08: Análisis Estructural</div>
+                <p>El escáner central requiere analizar una molécula de Nitrógeno gaseoso (N2). El nitrógeno está en el Grupo 15, tiene 5 electrones de valencia. Para llegar a 8, necesita compartir 3 electrones con el otro nitrógeno.</p>
+                <p>Revisa tu <strong>INVENTARIO</strong>. Si obtuviste el <em>Módulo Lewis</em> en la Fase 2, sabrás que al compartir 3 pares (6 electrones), se forma un enlace triple. ¿Qué tipo de enlace (general) es este, donde los electrones se comparten en lugar de transferirse?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p8" placeholder="Tipo de enlace (Iónico, Metálico o Covalente)...">
+                    <button id="btn-p8" onclick="checkAnswer('p8')">Analizar Estructura</button>
+                </div>
+                <div class="error-msg" id="error-p8"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p9">
+                <div class="puzzle-title">TERMINAL 09: Diagrama de Flujo del Metano</div>
+                <div class="reading-block">
+EVALUANDO: Metano (CH4)
+1. Átomo central: Carbono (4 e- de valencia).
+2. Átomos periféricos: 4 Hidrógenos (1 e- de valencia cada uno).
+3. ¿Cuántos enlaces necesita hacer el carbono para llegar a 8? -> 4.
+4. ¿Cuántos electrones puede aportar cada hidrógeno? -> 1.
+RESULTADO: El carbono forma enlaces simples independientes con cada hidrógeno.
+                </div>
+                <p>Siguiendo la lógica del texto, ¿cuántos <strong>enlaces simples</strong> en total se forman en una molécula de Metano (CH4)?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p9" placeholder="Ingresa solo el número...">
+                    <button id="btn-p9" onclick="checkAnswer('p9')">Confirmar Geometría</button>
+                </div>
+                <div class="error-msg" id="error-p9"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 4: PROPIEDADES FÍSICAS ================= -->
+        <section class="room" id="room-4">
+            <h2 class="room-header">Fase 4: Propiedades y Sustancias</h2>
+            <p style="margin-bottom: 20px;">Los enlaces determinan cómo se comportan las sustancias en el mundo real.</p>
+
+            <div class="puzzle-box" id="box-p10">
+                <div class="puzzle-title">TERMINAL 10: La Tinta Inerte</div>
+                <p>Hay un panel manchado. Necesitas tus <strong>Gafas UV</strong> (obtenidas en la Fase 1) para leerlo.</p>
+                <div class="img-placeholder-container" id="uv-container" style="color: #000; transition: color 0.5s;">
+                    <p>"Los compuestos iónicos (como la sal) son sólidos cristalinos con altísimos puntos de fusión y conducen electricidad si se disuelven en agua. Los compuestos covalentes (como la cera o el azúcar) tienen puntos de fusión más bajos y NO conducen electricidad en el agua."</p>
+                </div>
+                <p>Una vez leas el texto con las gafas: Tienes Sal (NaCl) y Azúcar (Sacarosa). ¿Cuál de los dos es un compuesto <strong>Covalente</strong> porque NO conduce electricidad al disolverse?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p10" placeholder="Nombre de la sustancia...">
+                    <button id="btn-p10" onclick="checkAnswer('p10')">Usar Gafas y Responder</button>
+                </div>
+                <div class="error-msg" id="error-p10"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p11">
+                <div class="puzzle-title">TERMINAL 11: Estado Físico</div>
+                <p>El agua (H2O), el dióxido de carbono (CO2) y el alcohol son todos compuestos covalentes. La sal de mesa (NaCl) es iónica y se funde a 801°C. En contraste, el hielo (agua sólida) se funde a 0°C. Por regla general, en comparación con los compuestos iónicos, los compuestos covalentes tienen un punto de fusión: ¿Alto o Bajo?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p11" placeholder="Escribe 'Alto' o 'Bajo'...">
+                    <button id="btn-p11" onclick="checkAnswer('p11')">Verificar Propiedad</button>
+                </div>
+                <div class="error-msg" id="error-p11"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 5: EL ESCAPE ================= -->
+        <section class="room" id="room-5">
+            <h2 class="room-header">Fase 5: El Núcleo de Enlace</h2>
+            <p style="margin-bottom: 20px;">Última barrera. Sintetiza todo lo aprendido sobre electronegatividad, estructuras de Lewis y propiedades covalentes.</p>
+
+            <div class="puzzle-box" id="box-p12">
+                <div class="puzzle-title">TERMINAL 12: Deducción de Molécula Omega</div>
+                <div class="reading-block">
+PISTAS DE LA MOLÉCULA:
+1. Formada por dos no metales: Hidrógeno y Oxígeno.
+2. Su enlace es Covalente Polar (sus polos eléctricos le permiten disolver muchas cosas).
+3. Su punto de fusión es exactamente 0°C y su punto de ebullición es 100°C.
+4. En su estructura de Lewis, el oxígeno central tiene 2 pares de electrones libres (no compartidos) y forma 2 enlaces simples.
+                </div>
+                <p>Cruza los 4 datos de arriba. ¿Cuál es el nombre común de esta sustancia vital?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p12" placeholder="Nombre de la sustancia...">
+                    <button id="btn-p12" onclick="checkAnswer('p12')">Sintetizar Molécula</button>
+                </div>
+                <div class="error-msg" id="error-p12"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p13" style="border-left-color: var(--neon-magenta); box-shadow: 0 0 20px rgba(217, 70, 239, 0.15);">
+                <div class="puzzle-title" style="color: var(--neon-magenta); font-size: 1.25rem;">TERMINAL 13: El Holograma Definitivo (Acertijo Final)</div>
+                
+                <p style="margin-bottom:15px;">Para desbloquear la puerta del laboratorio, analiza la proyección holográfica generada por la IA de la sala. Dentro de esta compleja estructura de Lewis y su red de enlaces covalentes (líneas magenta y azules), hay 8 letras luminosas escondidas. Búscalas y ordénalas: forman la palabra que describe los electrones de la última capa, responsables de formar enlaces.</p>
+                
+                <div class="img-placeholder-container" style="border-color: var(--neon-magenta); background: rgba(217, 70, 239, 0.05); padding: 0;">
+                    <!-- IMAGEN GENERADA POR IA INSERTADA AQUÍ (Acertijo Visual Complejo) -->
+                    <img src="http://googleusercontent.com/image_generation_content/2" alt="Holograma de Estructura de Lewis" style="width: 100%; border-radius: 4px; display: block;">
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="input-p13" placeholder="Ingresa la palabra oculta final..." style="border-color: var(--neon-magenta);">
+                    <button id="btn-p13" onclick="checkAnswer('p13')" style="background-color: var(--neon-magenta); color: #fff; border-color: var(--neon-magenta);">¡DESBLOQUEAR LABORATORIO!</button>
+                </div>
+                <div class="error-msg" id="error-p13"></div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODAL PERSONALIZADO -->
+    <div id="custom-modal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modal-title">SISTEMA</h3>
+            <p id="modal-text" style="margin-bottom: 20px; color: #a1a1aa;"></p>
+            <button class="modal-btn" onclick="closeModal()">ACEPTAR</button>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT LÓGICA ================= -->
+    <script>
+        // Diccionario de respuestas (evaluadas en mayúsculas sin tildes)
+        const answers = {
+            p1: ["NO METALES", "NO METAL", "NOMETALES"],
+            p2: "POLAR",
+            p3: "GAFAS", // Clave H B G B T -> -1 = G A F A S
+            p4: ["1.0", "1"],
+            p5: ["FLUOR", "FLÚOR"],
+            p6: "DOBLE",
+            p7: "8",
+            p8: "COVALENTE",
+            p9: "4",
+            p10: ["AZUCAR", "AZÚCAR", "SACAROSA"],
+            p11: "BAJO",
+            p12: "AGUA",
+            p13: "VALENCIA"
+        };
+
+        // Estado del Juego
+        let gameState = {
+            solvedPuzzles: [],
+            inventory: [],
+            activeRoom: 1
+        };
+
+        // Lógica de Modales
+        function showModal(title, text) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').style.display = 'none';
+        }
+
+        // Normalización de cadenas
+        function normalizeString(str) {
+            return str.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        // Validación principal
+        function checkAnswer(puzzleId) {
+            const inputEl = document.getElementById(`input-${puzzleId}`);
+            const btnEl = document.getElementById(`btn-${puzzleId}`);
+            const errorEl = document.getElementById(`error-${puzzleId}`);
+            
+            const userAnswer = normalizeString(inputEl.value);
+            let isCorrect = false;
+            
+            const correctAnswer = answers[puzzleId];
+            if(Array.isArray(correctAnswer)) {
+                isCorrect = correctAnswer.includes(userAnswer);
+            } else {
+                isCorrect = (userAnswer === normalizeString(correctAnswer));
+            }
+
+            // Dependencias de Inventario Estrictas
+            if(puzzleId === 'p8' && !gameState.inventory.includes('Módulo Lewis')) {
+                showModal("ACCESO DENEGADO", "No tienes el conocimiento necesario para analizar enlaces múltiples. Necesitas el 'Módulo Lewis' de la Fase 2.");
+                return;
+            }
+            if(puzzleId === 'p10') {
+                if(!gameState.inventory.includes('Gafas UV')) {
+                    showModal("VISIÓN INSUFICIENTE", "El panel está cubierto de tinta invisible. Necesitas un dispositivo óptico de la Fase 1 para leerlo.");
+                    return;
+                } else {
+                    // Revelar el texto con CSS
+                    document.getElementById('uv-container').style.color = '#d946ef';
+                    document.getElementById('uv-container').style.textShadow = '0 0 5px #d946ef';
+                }
+            }
+
+            if(isCorrect) {
+                handleSuccess(puzzleId, inputEl, btnEl, errorEl);
+            } else {
+                handleFailure(puzzleId, inputEl, btnEl, errorEl);
+            }
+        }
+
+        function handleSuccess(puzzleId, inputEl, btnEl, errorEl) {
+            inputEl.disabled = true;
+            btnEl.disabled = true;
+            btnEl.classList.add('solved-btn');
+            btnEl.innerText = 'CÓDIGO ACEPTADO';
+            errorEl.style.display = 'none';
+            document.getElementById(`box-${puzzleId}`).classList.add('solved');
+
+            if (!gameState.solvedPuzzles.includes(puzzleId)) {
+                gameState.solvedPuzzles.push(puzzleId);
+                
+                // Recompensas de Inventario
+                if(puzzleId === 'p3') addInventoryItem('Gafas UV', '🥽');
+                if(puzzleId === 'p6') addInventoryItem('Módulo Lewis', '⚛️');
+                
+                checkRoomProgress();
+                saveProgress();
+                
+                if(puzzleId === 'p13') {
+                    setTimeout(() => {
+                        showModal("¡ESCAPE CUÁNTICO EXITOSO!", "¡Felicidades! Has dominado el arte de compartir electrones, calculado la electronegatividad y descifrado las estructuras de Lewis. Las compuertas del laboratorio están abiertas.");
+                    }, 500);
+                }
+            }
+        }
+
+        function handleFailure(puzzleId, inputEl, btnEl, errorEl) {
+            inputEl.disabled = true;
+            btnEl.disabled = true;
+            let timeLeft = 7; // Penalización anti fuerza-bruta de 7 segundos
+            
+            errorEl.style.display = 'block';
+            errorEl.innerText = `ERROR DE VALIDACIÓN. Bloqueo de seguridad: ${timeLeft}s`;
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                errorEl.innerText = `ERROR DE VALIDACIÓN. Bloqueo de seguridad: ${timeLeft}s`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    inputEl.disabled = false;
+                    btnEl.disabled = false;
+                    inputEl.value = "";
+                    errorEl.style.display = 'none';
+                    inputEl.focus();
+                }
+            }, 1000);
+        }
+
+        // Sistema de Inventario
+        function addInventoryItem(itemName, icon) {
+            if (!gameState.inventory.includes(itemName)) {
+                gameState.inventory.push(itemName);
+                renderInventory();
+                showModal("SISTEMA ACTUALIZADO", `Has adquirido: ${icon} ${itemName}. Se ha guardado en tu inventario.`);
+            }
+        }
+
+        function renderInventory() {
+            const panel = document.getElementById('inventory-panel');
+            const emptySpan = document.getElementById('empty-inv');
+            
+            if (gameState.inventory.length > 0 && emptySpan) {
+                emptySpan.style.display = 'none';
+            }
+
+            const existingItems = panel.querySelectorAll('.inventory-item');
+            existingItems.forEach(item => item.remove());
+
+            gameState.inventory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'inventory-item';
+                let icon = item === 'Gafas UV' ? '🥽' : '⚛️';
+                div.innerHTML = `${icon} ${item}`;
+                panel.appendChild(div);
+            });
+        }
+
+        // Progreso y Apertura de Habitaciones
+        function checkRoomProgress() {
+            const r1 = ['p1', 'p2', 'p3'].every(p => gameState.solvedPuzzles.includes(p));
+            const r2 = ['p4', 'p5', 'p6'].every(p => gameState.solvedPuzzles.includes(p));
+            const r3 = ['p7', 'p8', 'p9'].every(p => gameState.solvedPuzzles.includes(p));
+            const r4 = ['p10', 'p11'].every(p => gameState.solvedPuzzles.includes(p));
+
+            if (r1 && gameState.activeRoom < 2) activateRoom(2);
+            if (r1 && r2 && gameState.activeRoom < 3) activateRoom(3);
+            if (r1 && r2 && r3 && gameState.activeRoom < 4) activateRoom(4);
+            if (r1 && r2 && r3 && r4 && gameState.activeRoom < 5) activateRoom(5);
+        }
+
+        function activateRoom(roomNumber) {
+            gameState.activeRoom = roomNumber;
+            const roomEl = document.getElementById(`room-${roomNumber}`);
+            if(roomEl && !roomEl.classList.contains('active')) {
+                roomEl.classList.add('active');
+                setTimeout(() => roomEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 500);
+            }
+        }
+
+        // Persistencia (localStorage)
+        function saveProgress() {
+            try { localStorage.setItem('escapeCovalente_Grado8', JSON.stringify(gameState)); } 
+            catch (e) { console.error("Error guardando progreso", e); }
+        }
+
+        function loadProgress() {
+            try {
+                const savedData = localStorage.getItem('escapeCovalente_Grado8');
+                if (savedData) {
+                    gameState = JSON.parse(savedData);
+                    
+                    gameState.solvedPuzzles.forEach(puzzleId => {
+                        const inputEl = document.getElementById(`input-${puzzleId}`);
+                        const btnEl = document.getElementById(`btn-${puzzleId}`);
+                        const errorEl = document.getElementById(`error-${puzzleId}`);
+                        
+                        if(inputEl && btnEl) {
+                            // Si es un array de respuestas, agarramos la primera
+                            let ans = answers[puzzleId];
+                            inputEl.value = Array.isArray(ans) ? ans[0] : ans;
+                            handleSuccess(puzzleId, inputEl, btnEl, errorEl);
+                        }
+                    });
+
+                    renderInventory();
+                    
+                    for(let i = 1; i <= gameState.activeRoom; i++) {
+                        const roomEl = document.getElementById(`room-${i}`);
+                        if(roomEl) roomEl.classList.add('active');
+                    }
+                }
+            } catch (e) { console.error("Error cargando progreso", e); }
+        }
+
+        window.onload = () => {
+            loadProgress();
+        };
+    </script>
+</body>
+</html>

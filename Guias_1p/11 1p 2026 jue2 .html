@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Synth Quindío: Maestros del Carbono</title>
+    <style>
+        :root {
+            --coffee-dark: #3e2723;
+            --coffee-light: #795548;
+            --leaf-green: #2e7d32;
+            --citrus-orange: #ef6c00;
+            --lab-white: #f5f5f5;
+            --glass: rgba(255, 255, 255, 0.9);
+            --danger: #c62828;
+            --success: #2ecc71;
+            --shadow: 0 4px 6px rgba(0,0,0,0.3);
+            --font-tech: 'Consolas', 'Monaco', monospace;
+            --font-ui: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, var(--coffee-dark), var(--leaf-green));
+            font-family: var(--font-ui);
+            color: #333;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        #app-container {
+            width: 100%;
+            max-width: 950px;
+            height: 95vh;
+            background: var(--lab-white);
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- HUD (HEADS UP DISPLAY) --- */
+        header {
+            background: var(--coffee-dark);
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--citrus-orange);
+            z-index: 10;
+        }
+
+        .hud-group { display: flex; gap: 20px; align-items: center; }
+        .hud-label { font-size: 0.85rem; opacity: 0.8; text-transform: uppercase; }
+        .hud-value { font-size: 1.2rem; font-weight: bold; font-family: var(--font-tech); color: var(--citrus-orange); }
+
+        /* Barra de progreso */
+        #progress-track {
+            width: 100%; height: 6px; background: #ddd;
+        }
+        #progress-fill {
+            height: 100%; width: 0%; background: var(--leaf-green); transition: width 0.5s ease;
+        }
+
+        /* --- ÁREA DE JUEGO --- */
+        #game-stage {
+            flex: 1;
+            position: relative;
+            background-image: radial-gradient(#ccc 1px, transparent 1px);
+            background-size: 20px 20px; /* Patrón de papel milimetrado */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Centrado vertical */
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        /* Componentes de Misiones */
+        .instruction-card {
+            background: white;
+            border-left: 5px solid var(--citrus-orange);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: var(--shadow);
+            max-width: 800px;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .theory-text {
+            font-size: 0.9rem; color: #555; margin-top: 10px; font-style: italic;
+            background: #fff3e0; padding: 10px; border-radius: 4px;
+        }
+
+        /* Estilos Misión 1: Drag & Drop Reacción */
+        .reaction-zone {
+            display: flex; gap: 20px; align-items: center; justify-content: center;
+            margin-top: 20px; min-height: 200px;
+        }
+        .molecule-draggable {
+            width: 120px; height: 120px;
+            background: white; border: 2px solid #aaa; border-radius: 8px;
+            cursor: grab; display: flex; justify-content: center; align-items: center;
+            box-shadow: var(--shadow); transition: transform 0.2s;
+        }
+        .molecule-draggable:active { cursor: grabbing; transform: scale(1.1); }
+        .drop-target {
+            width: 150px; height: 150px;
+            border: 3px dashed var(--coffee-light); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            background: rgba(121, 85, 72, 0.1);
+        }
+
+        /* Estilos Misión 3: Constructor Aromático */
+        .ring-base {
+            width: 200px; height: 200px;
+            position: relative;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="none" stroke="%23333" stroke-width="3"/></svg>') no-repeat center;
+            background-size: contain;
+            margin: 20px;
+        }
+        .slot {
+            position: absolute; width: 40px; height: 40px;
+            background: rgba(0,0,0,0.1); border-radius: 50%;
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-family: var(--font-tech);
+            border: 2px solid transparent;
+        }
+        .slot:hover { border-color: var(--citrus-orange); background: white; }
+        .slot.filled { background: var(--leaf-green); color: white; border-color: var(--leaf-green); }
+
+        /* Estilos Misión 4: Etiquetadora */
+        .label-machine {
+            background: #333; padding: 20px; border-radius: 10px; color: white;
+            text-align: center; width: 100%; max-width: 600px;
+        }
+        .lcd-display {
+            background: #9ea7aa; color: #222; font-family: var(--font-tech);
+            padding: 15px; font-size: 1.5rem; margin-bottom: 20px;
+            border: 4px solid #555; border-radius: 4px; letter-spacing: 2px;
+        }
+        .controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .ctrl-btn {
+            background: #555; color: white; border: none; padding: 10px 15px;
+            border-radius: 4px; cursor: pointer; border-bottom: 3px solid #222;
+        }
+        .ctrl-btn:active { transform: translateY(2px); border-bottom: 1px solid #222; }
+
+        /* General UI */
+        .btn-main {
+            background: var(--citrus-orange); color: white; border: none;
+            padding: 12px 30px; font-size: 1rem; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(239, 108, 0, 0.4);
+            font-weight: bold; margin-top: 20px; transition: transform 0.2s;
+        }
+        .btn-main:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        /* Pantallas Overlay */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(20, 20, 20, 0.98); color: white;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100;
+            padding: 40px; text-align: center;
+        }
+        .hidden { display: none !important; }
+
+        /* Animaciones */
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .pop { animation: pop 0.3s; }
+
+        /* SVG Iconos */
+        svg { width: 80%; height: 80%; pointer-events: none; }
+        
+        /* Modal Feedback */
+        #feedback-modal {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: white; color: #333; padding: 15px 30px;
+            border-radius: 50px; box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            display: none; border: 2px solid var(--coffee-dark);
+            z-index: 50; font-weight: bold; text-align: center; width: 80%;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <header>
+        <div class="hud-group">
+            <div>LABORATORIO<br><span style="font-size:0.7em; color:#bbb;">QUINDÍO BIO-SYNTH</span></div>
+        </div>
+        <div class="hud-group">
+            <div>
+                <div class="hud-label">Eficiencia (Puntos)</div>
+                <div class="hud-value" id="score">0</div>
+            </div>
+            <div>
+                <div class="hud-label">Calificación</div>
+                <div class="hud-value" id="grade">0.0</div>
+            </div>
+        </div>
+    </header>
+    <div id="progress-track"><div id="progress-fill"></div></div>
+
+    <div id="game-stage">
+        </div>
+
+    <div id="feedback-modal"></div>
+    <canvas id="confetti" style="position:absolute; top:0; left:0; pointer-events:none; width:100%; height:100%; z-index:90;"></canvas>
+
+    <div id="start-screen" class="overlay">
+        <h1 style="color: var(--citrus-orange); font-size: 2.5rem; margin-bottom: 10px;">BIO-SYNTH QUINDÍO</h1>
+        <h3 style="color: var(--leaf-green);">Especialista en Química Orgánica</h3>
+        <p style="max-width: 600px; line-height: 1.6; margin-bottom: 30px;">
+            Bienvenido, colega. Estamos en temporada de cosecha en la vereda Pueblo Rico. 
+            Necesitamos sintetizar esencias naturales para exportación y etiquetar correctamente nuestros agroinsumos orgánicos.
+            <br><br>
+            La precisión es vital. La naturaleza busca armonía en sus anillos y enlaces. ¿Podrás mantener el estándar de calidad?
+        </p>
+        <button class="btn-main" onclick="game.startLevel(0)">Ingresar al Laboratorio</button>
+    </div>
+
+    <div id="end-screen" class="overlay hidden">
+        <h1 style="color: var(--success);">Turno Finalizado</h1>
+        <h2 id="final-title">Químico Junior</h2>
+        <div style="font-size: 4rem; font-weight: bold; color: var(--citrus-orange); margin: 20px 0;" id="final-score-display">0.0</div>
+        <p id="final-msg">Has completado las tareas de síntesis.</p>
+        <button class="btn-main" onclick="location.reload()">Nuevo Turno</button>
+    </div>
+</div>
+
+<script>
+// --- DATOS DEL JUEGO ---
+const missions = [
+    {
+        title: "Misión 1: La Trampa de los Anillos (Diels-Alder)",
+        desc: "Para crear la base del aroma a limón (Limoneno), necesitamos cerrar un ciclo. Arrastra los reactivos correctos al reactor: Un <b>Dieno</b> (4 carbonos, 2 dobles enlaces) y un <b>Dienófilo</b>.",
+        theory: "<b>Just-in-Time:</b> Reacción Pericíclica de Cicloadición [4+2]. El calor mueve los electrones en círculo para formar un anillo de 6 carbonos (Ciclohexeno). Es la armonía de formar enlaces nuevos simultáneamente.",
+        type: "drag",
+        options: [
+            { id: "dieno", label: "Dieno (Butadieno)", type: "dieno", svg: '<path d="M10,80 L40,80 L60,40 L90,40" fill="none" stroke="black" stroke-width="4"/><path d="M10,85 L40,85 M60,35 L90,35" fill="none" stroke="black" stroke-width="2"/>' },
+            { id: "wrong1", label: "Alcano (Butano)", type: "wrong", svg: '<path d="M10,60 L40,40 L60,80 L90,60" fill="none" stroke="black" stroke-width="4"/>' },
+            { id: "dienofilo", label: "Dienófilo (Etileno)", type: "dienofilo", svg: '<path d="M30,50 L70,50" fill="none" stroke="black" stroke-width="4"/><path d="M30,40 L70,40" fill="none" stroke="black" stroke-width="2"/>' }
+        ]
+    },
+    {
+        title: "Misión 2: Reordenamiento Térmico (Cope)",
+        desc: "Tenemos un derivado inestable. Aplica la temperatura justa para permitir que la molécula se reorganice buscando estabilidad (Reordenamiento de Cope).",
+        theory: "<b>Just-in-Time:</b> Reordenamiento Sigmatrópico [3,3]. Los enlaces se rompen y forman en un 'baile' concertado. No se pierden átomos, solo cambian de lugar por estabilidad termodinámica.",
+        type: "slider",
+        targetVal: 75, // Valor ideal en el slider
+        tolerance: 10
+    },
+    {
+        title: "Misión 3: Arquitecto Aromático (Esencia de Café)",
+        desc: "Sintetiza <b>Guayacol</b> (aroma ahumado/tostado del café). Tienes un anillo de benceno. Debes colocar los grupos funcionales en posición <b>orto</b> (1,2).",
+        theory: "<b>Just-in-Time:</b> Los compuestos aromáticos derivados del benceno dan el perfil sensorial al café. La posición 'orto' significa carbonos adyacentes (vecinos).",
+        type: "builder",
+        targetStructure: [0, 1], // Slots 0 y 1 (vecinos)
+        groups: ["-OH (Hidroxilo)", "-OCH<sub>3</sub> (Metoxi)"]
+    },
+    {
+        title: "Misión 4: Etiquetado Técnico (IUPAC)",
+        desc: "Hemos sintetizado un alcohol para limpieza de equipos. Su estructura es <b>CH<sub>3</sub>-CH<sub>2</sub>-OH</b>. Configura la impresora con el nombre IUPAC correcto.",
+        theory: "<b>Just-in-Time:</b> Prefijos IUPAC: 1C (Met), 2C (Et), 3C (Prop). Para alcoholes, el sufijo es '-ol'. La honestidad técnica exige nombres precisos.",
+        type: "labeler",
+        correctSequence: ["Et", "an", "ol"],
+        pool: ["Met", "Et", "Prop", "an", "en", "ol", "ona", "oico"]
+    },
+    {
+        title: "Misión 5: Control de Calidad (Ética)",
+        desc: "Un proveedor vende este agroinsumo orgánico. La etiqueta dice 'Ácido Acético' (Vinagre). La estructura química mostrada es un anillo de benceno con un cloro. ¿Es honesto?",
+        theory: "<b>Just-in-Time:</b> El Ácido Acético es CH<sub>3</sub>COOH (lineal). Un anillo con cloro es Clorobenceno (tóxico). La ética profesional salva vidas y cultivos.",
+        type: "inspector",
+        isCorrect: false,
+        displayStructure: '<polygon points="50,20 80,40 80,70 50,90 20,70 20,40" fill="none" stroke="black" stroke-width="3"/><text x="50" y="55" text-anchor="middle" font-size="20">Cl</text><circle cx="50" cy="55" r="15" fill="none" stroke="black" stroke-width="1"/>'
+    }
+];
+
+// --- MOTOR DEL JUEGO ---
+const game = {
+    score: 0,
+    level: 0,
+    maxScore: 50,
+    
+    // Estado interno niveles
+    dragItems: [],
+    slotsFilled: [],
+    labelSequence: [],
+
+    startLevel: function(idx) {
+        document.getElementById('start-screen').classList.add('hidden');
+        if (idx >= missions.length) {
+            this.endGame();
+            return;
+        }
+        this.level = idx;
+        
+        // Reset estados
+        this.dragItems = [];
+        this.slotsFilled = [];
+        this.labelSequence = [];
+        
+        this.renderLevel(missions[idx]);
+        this.updateHUD();
+    },
+
+    renderLevel: function(m) {
+        const stage = document.getElementById('game-stage');
+        let html = `
+            <div class="instruction-card">
+                <h3 style="margin:0; color:var(--coffee-dark)">${m.title}</h3>
+                <p>${m.desc}</p>
+                <div class="theory-text">💡 ${m.theory}</div>
+            </div>
+        `;
+
+        // Renderizado condicional
+        if (m.type === "drag") {
+            html += `<div class="drop-target" id="reactor" ondrop="game.handleDrop(event)" ondragover="event.preventDefault()">
+                        <span style="font-size:3rem; opacity:0.3;">🔥</span>
+                     </div>
+                     <div class="reaction-zone">`;
+            m.options.forEach(opt => {
+                html += `<div class="molecule-draggable" draggable="true" ondragstart="game.handleDragStart(event, '${opt.type}')">
+                            <div style="text-align:center;">
+                                <svg viewBox="0 0 100 100" style="width:50px; height:50px;">${opt.svg}</svg>
+                                <div style="font-size:0.8rem; margin-top:5px;">${opt.label}</div>
+                            </div>
+                         </div>`;
+            });
+            html += `</div>`;
+        } 
+        else if (m.type === "slider") {
+            html += `<div style="text-align:center; width:100%; margin-top:30px;">
+                        <div style="font-size:5rem; margin-bottom:20px;" id="molecule-anim">⚗️</div>
+                        <input type="range" min="0" max="100" value="0" style="width:80%;" id="heat-slider">
+                        <p>Temperatura: <span id="temp-display">0</span>°C</p>
+                        <button class="btn-main" onclick="game.checkSlider()">Iniciar Reacción</button>
+                     </div>`;
+        }
+        else if (m.type === "builder") {
+            html += `<div style="display:flex; justify-content:center; position:relative;">
+                        <div class="ring-base">
+                            <div class="slot" style="top:-20px; left:80px;" onclick="game.toggleSlot(0)">1</div>
+                            <div class="slot" style="top:25px; right:-10px;" onclick="game.toggleSlot(1)">2</div>
+                            <div class="slot" style="bottom:25px; right:-10px;" onclick="game.toggleSlot(2)">3</div>
+                            <div class="slot" style="bottom:-20px; left:80px;" onclick="game.toggleSlot(3)">4</div>
+                            <div class="slot" style="bottom:25px; left:-10px;" onclick="game.toggleSlot(4)">5</div>
+                            <div class="slot" style="top:25px; left:-10px;" onclick="game.toggleSlot(5)">6</div>
+                        </div>
+                     </div>
+                     <div style="text-align:center; margin-top:20px;">
+                        <p>Selecciona las posiciones 1 y 2 (Orto) para acoplar los grupos.</p>
+                        <button class="btn-main" onclick="game.checkBuilder()">Sintetizar</button>
+                     </div>`;
+        }
+        else if (m.type === "labeler") {
+            html += `<div class="label-machine">
+                        <div class="lcd-display" id="lcd">_ _ _</div>
+                        <div class="controls">`;
+            m.pool.forEach(word => {
+                html += `<button class="ctrl-btn" onclick="game.addLabel('${word}')">${word}</button>`;
+            });
+            html += `   </div>
+                        <div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+                            <button class="ctrl-btn" style="background:var(--danger);" onclick="game.clearLabel()">BORRAR</button>
+                            <button class="ctrl-btn" style="background:var(--success);" onclick="game.checkLabel()">IMPRIMIR</button>
+                        </div>
+                     </div>`;
+        }
+        else if (m.type === "inspector") {
+            html += `<div style="background:white; padding:20px; border:1px solid #999; text-align:center; max-width:300px; box-shadow:var(--shadow);">
+                        <h4>CERTIFICADO DE ORIGEN</h4>
+                        <p>Producto: <b>Ácido Acético</b></p>
+                        <svg viewBox="0 0 100 100" style="width:150px; height:150px; margin:0 auto;">${m.displayStructure}</svg>
+                        <hr>
+                        <p style="font-size:0.9rem;">¿Corresponde la etiqueta a la estructura?</p>
+                        <div style="display:flex; gap:10px; justify-content:center; margin-top:15px;">
+                            <button class="ctrl-btn" style="background:var(--success); font-weight:bold;" onclick="game.checkInspector(true)">APROBAR ✅</button>
+                            <button class="ctrl-btn" style="background:var(--danger); font-weight:bold;" onclick="game.checkInspector(false)">DENUNCIAR ❌</button>
+                        </div>
+                     </div>`;
+        }
+
+        stage.innerHTML = html;
+        this.updateProgress();
+
+        // Listeners específicos
+        if(m.type === "slider") {
+            const slider = document.getElementById('heat-slider');
+            slider.addEventListener('input', (e) => {
+                document.getElementById('temp-display').innerText = e.target.value;
+                // Cambio visual simple
+                document.getElementById('molecule-anim').style.transform = `rotate(${e.target.value * 3}deg)`;
+            });
+        }
+    },
+
+    // --- LOGICA MISION 1: DRAG ---
+    handleDragStart: function(e, type) {
+        e.dataTransfer.setData("type", type);
+    },
+    handleDrop: function(e) {
+        e.preventDefault();
+        const type = e.dataTransfer.getData("type");
+        
+        if (this.dragItems.includes(type)) return; // Ya agregado
+        this.dragItems.push(type);
+        
+        // Feedback visual en el reactor
+        const reactor = document.getElementById('reactor');
+        reactor.innerHTML = `<span style="font-size:2rem;">⚗️</span><div style="font-size:0.8rem;">${this.dragItems.length}/2 Reactivos</div>`;
+        reactor.style.borderColor = "var(--citrus-orange)";
+        reactor.classList.add('pop');
+
+        if (this.dragItems.length === 2) {
+            // Verificar lógica Diels-Alder
+            const hasDiene = this.dragItems.includes("dieno");
+            const hasDienophile = this.dragItems.includes("dienofilo");
+            
+            if (hasDiene && hasDienophile) {
+                this.success("¡Cicloadición Exitosa! Has formado Limoneno.");
+            } else {
+                this.fail("Reactivos incorrectos. Necesitas un Dieno y un Dienófilo.");
+            }
+        }
+    },
+
+    // --- LOGICA MISION 2: SLIDER ---
+    checkSlider: function() {
+        const val = parseInt(document.getElementById('heat-slider').value);
+        const m = missions[this.level];
+        if (val >= m.targetVal - m.tolerance && val <= m.targetVal + m.tolerance) {
+            this.success("¡Temperatura perfecta! El reordenamiento ocurrió en armonía.");
+        } else if (val < m.targetVal - m.tolerance) {
+            this.fail("Muy frío. La energía de activación no fue suficiente.");
+        } else {
+            this.fail("¡Demasiado calor! Has degradado la molécula.");
+        }
+    },
+
+    // --- LOGICA MISION 3: BUILDER ---
+    toggleSlot: function(idx) {
+        const el = document.querySelectorAll('.slot')[idx];
+        if (this.slotsFilled.includes(idx)) {
+            this.slotsFilled = this.slotsFilled.filter(i => i !== idx);
+            el.classList.remove('filled');
+        } else {
+            if (this.slotsFilled.length < 2) {
+                this.slotsFilled.push(idx);
+                el.classList.add('filled');
+            }
+        }
+    },
+    checkBuilder: function() {
+        // Verificar si eligió 0 y 1 (o equivalentes vecinos)
+        // Para simplificar, requerimos estrictamente slot 0 y 1
+        const s = this.slotsFilled.sort();
+        if (s.length === 2 && s[0] === 0 && s[1] === 1) {
+            this.success("Posición Orto correcta. El aroma es auténtico.");
+        } else {
+            this.fail("Posición incorrecta. Recuerda: Orto significa carbonos vecinos (1,2).");
+        }
+    },
+
+    // --- LOGICA MISION 4: LABELER ---
+    addLabel: function(txt) {
+        this.labelSequence.push(txt);
+        document.getElementById('lcd').innerText = this.labelSequence.join("");
+    },
+    clearLabel: function() {
+        this.labelSequence = [];
+        document.getElementById('lcd').innerText = "_ _ _";
+    },
+    checkLabel: function() {
+        const m = missions[this.level];
+        const current = this.labelSequence.join("");
+        const target = m.correctSequence.join("");
+        
+        if (current.toLowerCase() === target.toLowerCase()) {
+            this.success("Etiqueta impresa correctamente. Precisión técnica lograda.");
+        } else {
+            this.fail("Nombre IUPAC incorrecto. Revisa prefijos y sufijos.");
+            this.clearLabel();
+        }
+    },
+
+    // --- LOGICA MISION 5: INSPECTOR ---
+    checkInspector: function(userApproves) {
+        const m = missions[this.level];
+        // El usuario debe coincidir con m.isCorrect
+        if (userApproves === m.isCorrect) {
+            this.success("¡Excelente auditoría! Detectaste la discrepancia ética.");
+        } else {
+            this.fail("Cuidado. Has aprobado un producto mal etiquetado o rechazado uno válido.");
+        }
+    },
+
+    // --- SISTEMA ---
+    success: function(msg) {
+        this.score += 10;
+        fireConfetti();
+        this.showFeedback(msg, true);
+        this.updateHUD();
+    },
+    fail: function(msg) {
+        this.score = Math.max(0, this.score - 2);
+        this.showFeedback("⚠️ " + msg, false);
+        this.updateHUD();
+        // Shake effect
+        document.getElementById('app-container').style.transform = "translateX(5px)";
+        setTimeout(()=>document.getElementById('app-container').style.transform = "translateX(0)", 100);
+    },
+    showFeedback: function(msg, isSuccess) {
+        const modal = document.getElementById('feedback-modal');
+        modal.innerHTML = `<p>${msg}</p>`;
+        if(isSuccess) {
+            modal.innerHTML += `<button class="btn-main" onclick="game.nextLevel()">Continuar</button>`;
+            modal.style.borderColor = "var(--success)";
+        } else {
+            modal.innerHTML += `<button class="ctrl-btn" onclick="document.getElementById('feedback-modal').style.display='none'">Reintentar</button>`;
+            modal.style.borderColor = "var(--danger)";
+        }
+        modal.style.display = 'block';
+    },
+    nextLevel: function() {
+        document.getElementById('feedback-modal').style.display = 'none';
+        this.startLevel(this.level + 1);
+    },
+    updateHUD: function() {
+        document.getElementById('score').innerText = this.score;
+        let grade = (this.score / this.maxScore) * 5.0;
+        document.getElementById('grade').innerText = Math.min(5.0, grade).toFixed(1);
+    },
+    updateProgress: function() {
+        const pct = (this.level / missions.length) * 100;
+        document.getElementById('progress-fill').style.width = pct + "%";
+    },
+    endGame: function() {
+        document.getElementById('end-screen').classList.remove('hidden');
+        document.getElementById('progress-fill').style.width = "100%";
+        
+        let grade = (this.score / this.maxScore) * 5.0;
+        grade = Math.min(5.0, grade).toFixed(1);
+        
+        document.getElementById('final-score-display').innerText = grade;
+        
+        let title = "Aprendiz de Laboratorio";
+        if (grade >= 4.5) title = "Maestro Sintetizador";
+        else if (grade >= 3.5) title = "Químico Analista";
+        
+        document.getElementById('final-title').innerText = title;
+        document.getElementById('final-msg').innerText = `Puntaje final: ${this.score}/${this.maxScore}. La precisión es nuestra firma.`;
+    }
+};
+
+// --- CONFETI ---
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+let particles = [];
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function fireConfetti() {
+    for (let i = 0; i < 80; i++) {
+        particles.push({
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2,
+            vx: (Math.random() - 0.5) * 12,
+            vy: (Math.random() - 0.5) * 12,
+            life: 80,
+            color: `hsl(${Math.random() * 60 + 20}, 100%, 50%)`, // Tonos naranjas/amarillos
+            size: Math.random() * 6 + 2
+        });
+    }
+    animateConfetti();
+}
+
+function animateConfetti() {
+    if (particles.length === 0) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    for (let i = 0; i < particles.length; i++) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.3; // Gravedad
+        p.life--;
+        
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.rect(p.x, p.y, p.size, p.size); // Cuadrados como confeti
+        ctx.fill();
+        
+        if (p.life <= 0) {
+            particles.splice(i, 1);
+            i--;
+        }
+    }
+    requestAnimationFrame(animateConfetti);
+}
+
+// Inicializar juego globalmente para acceso HTML
+window.game = game;
+
+</script>
+</body>
+</html>

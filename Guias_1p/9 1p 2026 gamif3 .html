@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El pH en la Vida y el Territorio</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #27ae60;
+            --gold: #f1c40f;
+            --silver: #bdc3c7;
+            --iron: #a1887f;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: var(--primary);
+        }
+
+        /* Pantalla de Logueo */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        /* Header Fijo */
+        header {
+            position: fixed;
+            top: 0; width: 100%;
+            background: var(--white);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 900;
+            box-sizing: border-box;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-weight: bold;
+        }
+
+        /* Contenedor Principal */
+        main {
+            margin-top: 100px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;
+        }
+
+        .section-title {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+
+        .activity-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 6px solid var(--accent);
+            transition: transform 0.2s;
+        }
+
+        .scrambled-box {
+            background: #eef2f3;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            font-weight: bold;
+            margin: 15px 0;
+            text-align: center;
+            color: #34495e;
+            border: 1px dashed #bdc3c7;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover { background: #219150; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Medallas */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-weight: bold;
+            color: white;
+            margin-left: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .badge-au { background: var(--gold); color: #000; }
+        .badge-ag { background: var(--silver); color: #000; }
+        .badge-fe { background: var(--iron); }
+
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h1 style="color: var(--accent)">Bio-Lab pH</h1>
+            <p>Ingresa al laboratorio virtual de química aplicada</p>
+            <input type="text" id="reg-nombre" placeholder="Nombre">
+            <input type="text" id="reg-apellido" placeholder="Apellido">
+            <br><br>
+            <button onclick="login()">Iniciar Práctica</button>
+        </div>
+    </div>
+
+    <header>
+        <div id="user-display">Estudiante: <strong>-</strong></div>
+        <div class="stats">
+            <span>Puntaje Total: <span id="score-val">0</span></span>
+        </div>
+    </header>
+
+    <main id="app">
+        </main>
+
+    <script>
+        // --- BASE DE DATOS DE ACTIVIDADES ---
+        const DATABASE = [
+            // 10 Anagramas (pH y Salud / Agricultura)
+            { id: 1, tipo: 'anagrama', palabra: 'GASTRITIS', pista: 'Inflamación de la mucosa estomacal por exceso de ácido.' },
+            { id: 2, tipo: 'anagrama', palabra: 'ALCALINO', pista: 'Sustancia con pH mayor a 7.' },
+            { id: 3, tipo: 'anagrama', palabra: 'ANTIACIDO', pista: 'Medicamento que neutraliza el pH del estómago.' },
+            { id: 4, tipo: 'anagrama', palabra: 'ESTOMAGO', pista: 'Órgano donde ocurre la digestión ácida.' },
+            { id: 5, tipo: 'anagrama', palabra: 'EQUILIBRIO', pista: 'Estado ideal de salud y pH en el cuerpo.' },
+            { id: 6, tipo: 'anagrama', palabra: 'FERTILIDAD', pista: 'Capacidad del suelo para sostener cultivos.' },
+            { id: 7, tipo: 'anagrama', palabra: 'CAL', pista: 'Sustancia usada para corregir suelos muy ácidos.' },
+            { id: 8, tipo: 'anagrama', palabra: 'POTENCIAL', pista: 'La "P" en la sigla pH significa...' },
+            { id: 9, tipo: 'anagrama', palabra: 'HIDROGENO', pista: 'Elemento cuyo ion determina la acidez.' },
+            { id: 10, tipo: 'anagrama', palabra: 'INDICADOR', pista: 'Sustancia que cambia de color según el pH.' },
+
+            // 10 Ordenar Palabras (Neutralización y Territorio)
+            { id: 11, tipo: 'ordenar', frase: 'El bicarbonato neutraliza el acido del vinagre', pista: 'Reacción clásica en el experimento de la cocina.' },
+            { id: 12, tipo: 'ordenar', frase: 'La neutralizacion produce agua y una sal', pista: 'Resultado químico de unir un ácido y una base.' },
+            { id: 13, tipo: 'ordenar', frase: 'Escuchar nuestro cuerpo previene enfermedades digestivas', pista: 'Sobre el autocuidado y la salud.' },
+            { id: 14, tipo: 'ordenar', frase: 'El pH del suelo afecta los cultivos locales', pista: 'Relación entre química y agricultura de la vereda.' },
+            { id: 15, tipo: 'ordenar', frase: 'Resolver conflictos busca el equilibrio entre partes', pista: 'Analogía social de la neutralización.' },
+            { id: 16, tipo: 'ordenar', frase: 'Los habitos saludables mantienen el pH estable', pista: 'Relativo a la infografía de salud.' },
+            { id: 17, tipo: 'ordenar', frase: 'La cal mejora la estructura del suelo acido', pista: 'Práctica común en la huerta escolar.' },
+            { id: 18, tipo: 'ordenar', frase: 'Sentir pertenencia motiva el cuidado del territorio', pista: 'Valor social sobre nuestra tierra.' },
+            { id: 19, tipo: 'ordenar', frase: 'Acido mas base siempre produce una sal', pista: 'Ecuación simplificada de neutralización.' },
+            { id: 20, tipo: 'ordenar', frase: 'El exceso de grasas altera la digestion acida', pista: 'Causa común de la gastritis.' }
+        ];
+
+        // --- LÓGICA DE ESTADO ---
+        let usuario = {
+            nombre: "",
+            apellido: "",
+            puntos: 0,
+            progreso: {} // { id: {intentos: 0, resuelto: true, puntos: X, badge: 'Au'} }
+        };
+
+        // Algoritmo Fisher-Yates
+        function shuffle(text, isSentence = false) {
+            let arr = isSentence ? text.split(' ') : text.split('');
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            let res = isSentence ? arr.join(' / ') : arr.join('-');
+            // Asegurar que no salga igual al original
+            if (res.toUpperCase() === text.toUpperCase()) return shuffle(text, isSentence);
+            return res;
+        }
+
+        function login() {
+            const n = document.getElementById('reg-nombre').value.trim();
+            const a = document.getElementById('reg-apellido').value.trim();
+            if (n && a) {
+                usuario.nombre = n;
+                usuario.apellido = a;
+                localStorage.setItem('ova_ph_user', JSON.stringify(usuario));
+                document.getElementById('login-overlay').style.display = 'none';
+                renderApp();
+            } else {
+                alert("Por favor completa tus datos.");
+            }
+        }
+
+        function renderApp() {
+            document.getElementById('user-display').innerHTML = `Estudiante: <strong>${usuario.nombre} ${usuario.apellido}</strong>`;
+            document.getElementById('score-val').innerText = usuario.puntos;
+
+            const container = document.getElementById('app');
+            container.innerHTML = "";
+
+            // Secciones
+            const secciones = [
+                { t: "Módulo 1: pH y Salud Humana", de: 1, a: 5 },
+                { t: "Módulo 2: pH en la Agricultura", de: 6, a: 10 },
+                { t: "Módulo 3: Neutralización y Equilibrio", de: 11, a: 20 }
+            ];
+
+            secciones.forEach(sec => {
+                let html = `<div class="section-title"><h2>${sec.t}</h2></div>`;
+                DATABASE.filter(act => act.id >= sec.de && act.id <= sec.a).forEach(act => {
+                    const prog = usuario.progreso[act.id] || { intentos: 0, resuelto: false };
+                    const displayVal = act.tipo === 'anagrama' ? shuffle(act.palabra) : shuffle(act.frase, true);
+                    
+                    html += `
+                        <div class="activity-card" id="card-${act.id}">
+                            <p><strong>Actividad ${act.id}:</strong> ${act.pista}</p>
+                            <div class="scrambled-box">${prog.resuelto ? (act.palabra || act.frase) : displayVal}</div>
+                            <input type="text" id="input-${act.id}" placeholder="Tu respuesta..." ${prog.resuelto ? 'disabled' : ''}>
+                            <button id="btn-${act.id}" onclick="validar(${act.id})" ${prog.resuelto ? 'disabled' : ''}>Validar</button>
+                            <div id="feedback-${act.id}" class="feedback">
+                                ${prog.resuelto ? `¡Completado! Medalla: <span class="badge badge-${prog.badge.toLowerCase()}">${prog.badge}</span>` : ''}
+                            </div>
+                            <small style="display:block; margin-top:5px; color:#7f8c8d">Intentos: ${prog.intentos}/3</small>
+                        </div>
+                    `;
+                });
+                container.innerHTML += html;
+            });
+        }
+
+        function validar(id) {
+            const act = DATABASE.find(a => a.id === id);
+            const input = document.getElementById(`input-${id}`).value.trim().toUpperCase();
+            const feedback = document.getElementById(`feedback-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+            const meta = act.tipo === 'anagrama' ? act.palabra : act.frase;
+
+            if (!usuario.progreso[id]) usuario.progreso[id] = { intentos: 0, resuelto: false };
+            let p = usuario.progreso[id];
+
+            p.intentos++;
+
+            if (input === meta.toUpperCase()) {
+                p.resuelto = true;
+                let pts = 0;
+                if (p.intentos === 1) { pts = 5; p.badge = 'Au'; }
+                else if (p.intentos === 2) { pts = 3; p.badge = 'Ag'; }
+                else { pts = 1.5; p.badge = 'Fe'; }
+                
+                p.puntos = pts;
+                usuario.puntos += pts;
+                feedback.innerHTML = `<span style="color:var(--accent)">¡Correcto!</span> <span class="badge badge-${p.badge.toLowerCase()}">${p.badge}</span> (+${pts} pts)`;
+                btn.disabled = true;
+                document.getElementById(`input-${id}`).disabled = true;
+            } else {
+                if (p.intentos >= 3) {
+                    feedback.innerHTML = `<span style="color:red">Fallido. La respuesta era: ${meta}</span>`;
+                    btn.disabled = true;
+                    document.getElementById(`input-${id}`).disabled = true;
+                } else {
+                    feedback.innerHTML = `<span style="color:#e67e22">Incorrecto. Intento ${p.intentos}/3</span>`;
+                }
+            }
+
+            usuario.progreso[id] = p;
+            localStorage.setItem('ova_ph_user', JSON.stringify(usuario));
+            document.getElementById('score-val').innerText = usuario.puntos;
+        }
+
+        // Cargar datos al iniciar
+        window.onload = () => {
+            const saved = localStorage.getItem('ova_ph_user');
+            if (saved) {
+                usuario = JSON.parse(saved);
+                document.getElementById('login-overlay').style.display = 'none';
+                renderApp();
+            }
+        };
+    </script>
+</body>
+</html>

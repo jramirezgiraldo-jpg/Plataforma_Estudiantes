@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Guardianes de la Materia V2 - Juego ABJ</title>
+    <style>
+        :root { --primary: #388e3c; --secondary: #1976d2; --accent: #fbc02d; --bg: #f1f8e9; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        #game-container { background: white; width: 950px; border-radius: 25px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); overflow: hidden; border: 5px solid var(--primary); position: relative; }
+        .hud { padding: 15px; background: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        .stage { padding: 40px; display: flex; flex-direction: column; align-items: center; min-height: 400px; }
+        .equation-area { font-size: 24px; background: #f5f5f5; padding: 30px; border-radius: 15px; border: 2px solid #ddd; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .coeff-input { width: 60px; height: 60px; font-size: 24px; text-align: center; border: 3px solid var(--secondary); border-radius: 8px; font-weight: bold; color: var(--secondary); }
+        .btn-verify { margin-top: 30px; padding: 15px 40px; background: var(--secondary); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; transition: 0.3s; }
+        .btn-verify:hover { background: #0d47a1; transform: scale(1.05); }
+        .modal { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.98); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:100; text-align: center; padding: 40px; }
+        .feedback-label { margin-top: 20px; font-weight: bold; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="hud">
+        <span id="m-title">Misión 1: Ley de Conservación</span>
+        <span id="m-status">Estado: En Proceso</span>
+    </div>
+
+    <div class="stage">
+        <div id="visual-icon" style="font-size: 80px; margin-bottom: 20px;">⚖️</div>
+        <div class="equation-area" id="equation"></div>
+        <button class="btn-verify" onclick="validate()">🧪 Verificar Equilibrio</button>
+        <div id="feedback-msg" class="feedback-label"></div>
+    </div>
+
+    <div id="modal" class="modal">
+        <h2 id="modal-title" style="color: var(--primary); font-size: 2em;">¡Equilibrio Logrado!</h2>
+        <p id="modal-text" style="font-size: 1.3em; max-width: 600px;"></p>
+        <button class="btn-verify" onclick="nextMission()">Siguiente Desafío</button>
+    </div>
+</div>
+
+<script>
+    let currentMission = 0;
+    const missions = [
+        { 
+            title: "Misión 1: Ley de Conservación (Masa)", 
+            eq: ["_ NaHCO₃", "+", "_ CH₃COOH", "➔", "_ CH₃COONa", "+", "_ H₂O", "+", "_ CO₂"], 
+            ans: [1, 1, 1, 1, 1],
+            info: "En un sistema cerrado, la masa total no cambia. Lo que entra es igual a lo que sale."
+        },
+        { 
+            title: "Misión 2: El Aliento de las Plantas", 
+            eq: ["_ CO₂", "+", "_ H₂O", "➔", "_ C₆H₁₂O₆", "+", "_ O₂"], 
+            ans: [6, 6, 1, 6],
+            info: "La fotosíntesis es el balance perfecto de la naturaleza en nuestro cafetal."
+        },
+        { 
+            title: "Misión 3: Combustión en la Finca", 
+            eq: ["_ C₃H₈", "+", "_ O₂", "➔", "_ CO₂", "+", "_ H₂O"], 
+            ans: [1, 5, 3, 4],
+            info: "Balancear el gas nos permite entender la energía necesaria para cocinar."
+        }
+    ];
+
+    function loadMission() {
+        const m = missions[currentMission];
+        document.getElementById('modal').style.display = "none";
+        document.getElementById('m-title').innerText = m.title;
+        document.getElementById('feedback-msg').innerText = "";
+        const eqDiv = document.getElementById('equation');
+        eqDiv.innerHTML = "";
+
+        m.eq.forEach(part => {
+            if (part.startsWith("_")) {
+                const input = document.createElement('input');
+                input.type = "number";
+                input.className = "coeff-input";
+                input.placeholder = "0";
+                eqDiv.appendChild(input);
+                const name = document.createElement('span');
+                name.innerText = part.substring(1);
+                eqDiv.appendChild(name);
+            } else {
+                const span = document.createElement('span');
+                span.innerText = " " + part + " ";
+                eqDiv.appendChild(span);
+            }
+        });
+    }
+
+    function validate() {
+        const inputs = document.querySelectorAll('.coeff-input');
+        const m = missions[currentMission];
+        const userAns = Array.from(inputs).map(i => parseInt(i.value) || 0);
+        const feedback = document.getElementById('feedback-msg');
+
+        if (JSON.stringify(userAns) === JSON.stringify(m.ans)) {
+            showSuccess(m.info);
+        } else {
+            feedback.style.color = "#c62828";
+            feedback.innerText = "❌ Los átomos no están equilibrados. ¡Revisa la cuenta!";
+        }
+    }
+
+    function showSuccess(text) {
+        document.getElementById('modal-text').innerText = text;
+        document.getElementById('modal').style.display = "flex";
+    }
+
+    function nextMission() {
+        currentMission++;
+        if (currentMission < missions.length) {
+            loadMission();
+        } else {
+            alert("¡Felicidades! Has completado todas las misiones de balanceo.");
+            currentMission = 0;
+            loadMission();
+        }
+    }
+
+    loadMission();
+</script>
+</body>
+</html>

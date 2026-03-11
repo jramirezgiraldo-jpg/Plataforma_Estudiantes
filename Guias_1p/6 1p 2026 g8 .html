@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Métodos de Separación (I)</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #27ae60;
+            --bg: #f4f7f6;
+            --text: #333;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            scroll-behavior: smooth;
+        }
+
+        /* Login Overlay */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+            flex-direction: column;
+        }
+
+        .login-box {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 10px;
+            color: var(--text);
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 80%;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover { background: #219150; }
+
+        /* Progress Bar & Header */
+        header {
+            position: sticky;
+            top: 0;
+            background: var(--white);
+            padding: 10px 5%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 900;
+            flex-direction: column;
+        }
+
+        .nav-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .progress-container {
+            width: 100%;
+            background: #eee;
+            height: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--accent);
+            transition: 0.5s;
+        }
+
+        /* Content Sections */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: var(--white);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .section { margin-bottom: 60px; display: none; }
+
+        h1, h2 { color: var(--primary); border-left: 5px solid var(--accent); padding-left: 15px; }
+
+        .svg-container { text-align: center; margin: 20px 0; }
+
+        .activity-box {
+            background: #e8f4fd;
+            border: 1px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .feedback {
+            font-weight: bold;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .correct { color: #27ae60; }
+        .incorrect { color: #c0392b; }
+
+        #fortalecimiento-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            margin-top: 30px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="login-screen">
+    <div class="login-box">
+        <h2>Bienvenido al Laboratorio de Química</h2>
+        <p>Ingresa tus Nombres y Apellidos para comenzar:</p>
+        <input type="text" id="username" placeholder="Tu nombre completo">
+        <br>
+        <button onclick="iniciarOVA()">Entrar al OVA</button>
+    </div>
+</div>
+
+<header id="main-header">
+    <div class="nav-info">
+        <span>Estudiante: <strong id="display-name"></strong></span>
+        <span>Elemento Alcanzado: <strong id="element-display">Hidrógeno (H)</strong></span>
+        <span>Puntos: <span id="score-display">0</span>/5</span>
+    </div>
+    <div class="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+</header>
+
+<div class="container" id="content-area" style="display:none;">
+    <section class="section" id="intro" style="display:block;">
+        <h1>Introducción: El mundo de las Mezclas</h1>
+        <p>Objetivo de aprendizaje: Identificar y aplicar técnicas de separación de mezclas (filtración y tamizado) comprendiendo sus principios físicos y su utilidad en la vida cotidiana.</p>
+        <hr>
+        <h3>Desafío de Pre-saberes</h3>
+        <div class="activity-box">
+            <p>1. Si mezclas arena con piedras grandes, ¿qué herramienta usarías para separarlas?</p>
+            <button onclick="checkPre(1, 'Colador')">Un colador</button>
+            <button onclick="checkPre(1, 'Imán')">Un imán</button>
+            <p id="pre-1" class="feedback"></p>
+        </div>
+        <div class="activity-box">
+            <p>2. ¿El agua con lodo es una mezcla homogénea o heterogénea?</p>
+            <button onclick="checkPre(2, 'Heterogénea')">Heterogénea</button>
+            <button onclick="checkPre(2, 'Homogénea')">Homogénea</button>
+            <p id="pre-2" class="feedback"></p>
+        </div>
+        <div class="activity-box">
+            <p>3. ¿Qué propiedad permite separar granos de diferente tamaño?</p>
+            <button onclick="checkPre(3, 'Color')">El color</button>
+            <button onclick="checkPre(3, 'Tamaño')">El tamaño de partícula</button>
+            <p id="pre-3" class="feedback"></p>
+        </div>
+    </section>
+
+    <section class="section" id="inductive" style="display:block;">
+        <h2>Exploración de la Materia: La Observación Primero</h2>
+        <p>
+            Imagina que estás caminando por las orillas de un río en nuestra región. Al observar el suelo, notas que no es una masa uniforme. Hay piedras grandes, granos de arena fina y fragmentos de hojas secas, todos conviviendo en un mismo espacio. Esta observación es el primer paso del método científico. En la naturaleza, la materia rara vez se presenta de forma pura; lo que vemos son mezclas. Una mezcla es la unión física de dos o más sustancias que mantienen sus propiedades individuales. 
+        </p>
+        <div class="svg-container">
+            <svg width="200" height="150" viewBox="0 0 200 150">
+                <rect x="50" y="20" width="100" height="10" fill="#7f8c8d" />
+                <rect x="50" y="30" width="100" height="50" fill="none" stroke="#7f8c8d" stroke-dasharray="2,2" />
+                <circle cx="100" cy="90" r="5" fill="#e67e22" />
+                <circle cx="80" cy="110" r="5" fill="#e67e22" />
+                <circle cx="120" cy="110" r="5" fill="#e67e22" />
+                <text x="60" y="140" font-size="12">Tamizado de granos</text>
+            </svg>
+        </div>
+        <p>
+            Cuando observamos estas mezclas heterogéneas (donde se ven sus partes), surge una pregunta natural: ¿Cómo puedo obtener solo uno de los componentes? Aquí es donde entra el **Tamizado**. Este método se basa exclusivamente en la diferencia de tamaño. Si los componentes son sólidos de distintos diámetros, usamos una malla. Los granos más pequeños pasan por los orificios (poros), mientras que los más grandes quedan retenidos. Es lo que hace un constructor al "zarandear" la arena para obtener un material fino para el revoque de las paredes de nuestras casas.
+        </p>
+        <p>
+            Por otro lado, si tenemos un sólido mezclado con un líquido, como el café que preparamos en la mañana, la observación nos dice que el grano molido no se disuelve por completo. Al pasar esta mezcla por un papel filtro o una tela fina, el líquido (que llamamos filtrado) atraviesa el material poroso, y el sólido queda atrapado. Este proceso se llama **Filtración**. Es un proceso fundamental no solo en la cocina, sino en la purificación del agua que llega a nuestras veredas. La naturaleza también filtra: las capas de arena y rocas en el subsuelo limpian el agua de lluvia antes de que llegue a los pozos.
+        </p>
+
+        <div class="activity-box">
+            <h3>Actividades para el Cuaderno (Sección Inductiva)</h3>
+            <ol>
+                <li>Dibuja en tu cuaderno tres tipos de coladores que encuentres en tu casa.</li>
+                <li>Realiza una tabla comparando el tamaño de un grano de arroz y un grano de sal.</li>
+                <li>Escribe una lista de 5 mezclas que veas en tu camino al colegio.</li>
+                <li>Describe qué pasaría si el papel filtro tuviera agujeros muy grandes.</li>
+                <li>Dibuja el proceso de colar un jugo de fruta local (ej. Lulo o Mora).</li>
+            </ol>
+            <button onclick="addPoint()">He completado mis dibujos en el cuaderno</button>
+        </div>
+
+        <h3>Pregunta tipo ICFES - Competencia: Indagar</h3>
+        <div class="activity-box">
+            <p>Un estudiante desea separar una mezcla de agua, arena y clips metálicos. Para lograrlo, decide usar un imán primero y luego un papel filtro. ¿Qué función cumple el papel filtro en este experimento?</p>
+            <button onclick="feedbackIcfes('a')">A. Atraer los clips restantes.</button>
+            <button onclick="feedbackIcfes('b')">B. Retener la arena por ser un sólido no soluble.</button>
+            <button onclick="feedbackIcfes('c')">C. Cambiar el color del agua para que sea potable.</button>
+            <div id="icfes-feedback" class="feedback"></div>
+        </div>
+    </section>
+
+    <section class="section" id="deductive" style="display:block;">
+        <h2>Principios Científicos: ¿Por qué ocurre la separación?</h2>
+        <p>
+            Una vez que hemos observado y experimentado, debemos deducir las leyes físicas que gobiernan estos procesos. No se trata de magia, sino de la interacción entre la materia y la gravedad. En la **Filtración**, el principio fundamental es la **Porosidad**. Todo material filtrante tiene canales microscópicos. El fluido (líquido o gas) fluye a través de estos canales debido a una diferencia de presión o simplemente por el peso del líquido. Las partículas sólidas, al ser mayores que el diámetro del poro, chocan contra la superficie y se acumulan. A este residuo sólido lo llamamos "Torta de filtración".
+        </p>
+        <div class="svg-container">
+            <svg width="200" height="150" viewBox="0 0 200 150">
+                <path d="M70,20 L130,20 L100,70 Z" fill="none" stroke="black" />
+                <rect x="98" y="70" width="4" height="40" fill="#3498db" />
+                <path d="M80,110 L120,110 L125,140 L75,140 Z" fill="none" stroke="black" />
+                <text x="110" y="50" font-size="10">Embudo</text>
+                <text x="60" y="130" font-size="10">Vaso de precipitado</text>
+            </svg>
+        </div>
+        <p>
+            En el **Tamizado**, deducimos que la eficiencia depende de tres factores: el tamaño del orificio de la malla, la forma de la partícula y el movimiento. Si dejamos el tamiz quieto, muchas partículas pequeñas quedarán atrapadas sobre las grandes. Al agitar el tamiz, aplicamos energía que permite que las partículas se reordenen, permitiendo que las pequeñas encuentren el camino hacia los agujeros. Esto se conoce en la industria como clasificación granulométrica. Es vital en la minería de nuestra región para separar minerales valiosos de la tierra común.
+        </p>
+        <p>
+            Podemos concluir que los métodos físicos de separación no alteran la naturaleza química de los componentes. Si filtramos agua salada, el agua seguirá siendo salada (porque la sal está disuelta a nivel molecular, mucho más pequeño que cualquier poro de papel). Esto nos enseña que para cada mezcla existe un método específico basado en las propiedades físicas de sus componentes: tamaño para el tamizado, solubilidad y estado de agregación para la filtración. Entender esto permite a los ingenieros diseñar plantas de tratamiento de agua que salvan vidas diariamente.
+        </p>
+
+        <div class="activity-box">
+            <h3>Actividades de Aplicación (Sección Deductiva)</h3>
+            <ol>
+                <li>Calcula: Si un tamiz tiene poros de 2mm, ¿pasará una piedra de 0.5cm? Explica.</li>
+                <li>Investiga y dibuja cómo funciona una máscara de gas (un tipo de filtración).</li>
+                <li>Crea un diagrama de flujo de los pasos para limpiar arena sucia del río.</li>
+                <li>Escribe la diferencia técnica entre "residuo" y "filtrado".</li>
+                <li>Explica por qué no podemos usar un colador de pasta para separar harina.</li>
+            </ol>
+            <button onclick="addPoint()">He registrado las deducciones en mi cuaderno</button>
+        </div>
+    </section>
+
+    <section class="section" id="evaluation" style="display:block;">
+        <h2>Evaluación de Competencias</h2>
+        <div id="quiz-container">
+            <p>1. El tamizado separa mezclas de:</p>
+            <select id="q1">
+                <option value="">Selecciona...</option>
+                <option value="a">Líquidos solubles</option>
+                <option value="b">Sólidos de distinto tamaño</option>
+                <option value="c">Gases nobles</option>
+            </select>
+
+            <p>2. En la filtración, el sólido que queda en el papel se llama:</p>
+            <select id="q2">
+                <option value="">Selecciona...</option>
+                <option value="a">Residuo</option>
+                <option value="b">Filtrado</option>
+                <option value="c">Solución</option>
+            </select>
+
+            <p>3. ¿Qué método usarías para separar arena de agua de río?</p>
+            <select id="q3">
+                <option value="">Selecciona...</option>
+                <option value="a">Tamizado</option>
+                <option value="b">Filtración</option>
+                <option value="c">Destilación</option>
+            </select>
+
+            <p>4. El tamizado es más efectivo si:</p>
+            <select id="q4">
+                <option value="">Selecciona...</option>
+                <option value="a">Se deja en reposo</option>
+                <option value="b">Se agita constantemente</option>
+                <option value="c">Se calienta la mezcla</option>
+            </select>
+
+            <p>5. La filtración ocurre gracias a:</p>
+            <select id="q5">
+                <option value="">Selecciona...</option>
+                <option value="a">Magnetismo</option>
+                <option value="b">Porosidad del material</option>
+                <option value="c">Evaporación</option>
+            </select>
+
+            <hr>
+            <h3>Preguntas Abiertas (Análisis Crítico)</h3>
+            <p>Responde en 10 a 15 palabras exactas.</p>
+            
+            <p>6. ¿Por qué es importante filtrar el agua antes de consumirla?</p>
+            <input type="text" id="q6" placeholder="Tu respuesta...">
+            
+            <p>7. Describe la función de un colador en la cocina local.</p>
+            <input type="text" id="q7" placeholder="Tu respuesta...">
+
+            <p>8. ¿Qué sucede con los granos grandes en un proceso de tamizado?</p>
+            <input type="text" id="q8" placeholder="Tu respuesta...">
+
+            <p>9. ¿Cómo ayuda la ciencia de las mezclas a tu comunidad?</p>
+            <input type="text" id="q9" placeholder="Tu respuesta...">
+
+            <p>10. Define con tus palabras qué es un material poroso.</p>
+            <input type="text" id="q10" placeholder="Tu respuesta...">
+
+            <br><br>
+            <button onclick="calificar()">Finalizar y Evaluar</button>
+        </div>
+
+        <div id="fortalecimiento-box">
+            <h3>Ruta de Fortalecimiento Personalizada</h3>
+            <p id="instruccion-pedagogica" style="font-weight:bold; color: #d35400;"></p>
+            <div id="refuerzo-contenido"></div>
+        </div>
+
+        <div id="final-actions" style="display:none; margin-top: 20px;">
+            <button onclick="descargarResultados()">Descargar Reporte Final (.txt)</button>
+        </div>
+    </section>
+</div>
+
+<script>
+    let puntos = 0;
+    const elementos = ["Hidrógeno (H)", "Litio (Li)", "Sodio (Na)", "Potasio (K)", "Rubidio (Rb)", "Cesio (Cs)"];
+    
+    // Persistencia
+    window.onload = () => {
+        if(localStorage.getItem('ova_user')) {
+            document.getElementById('username').value = localStorage.getItem('ova_user');
+        }
+    };
+
+    function iniciarOVA() {
+        const name = document.getElementById('username').value;
+        if(name.length < 3) return alert("Ingresa tu nombre completo");
+        
+        localStorage.setItem('ova_user', name);
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-header').style.display = 'flex';
+        document.getElementById('content-area').style.display = 'block';
+        document.getElementById('display-name').innerText = name;
+        updateProgress(10);
+    }
+
+    function updateProgress(val) {
+        document.getElementById('progress-bar').style.width = val + '%';
+    }
+
+    function checkPre(q, ans) {
+        const feedback = document.getElementById('pre-' + q);
+        feedback.style.display = 'block';
+        feedback.innerText = "¡Correcto! Sigue explorando.";
+        feedback.className = "feedback correct";
+        updateProgress(15 + (q*5));
+    }
+
+    function addPoint() {
+        if(puntos < 5) puntos += 0.5;
+        actualizarPuntaje();
+        alert("¡Puntos de cuaderno registrados!");
+    }
+
+    function actualizarPuntaje() {
+        const idx = Math.floor(puntos);
+        document.getElementById('score-display').innerText = puntos.toFixed(1);
+        document.getElementById('element-display').innerText = elementos[idx] || "Francio (Fr)";
+    }
+
+    function feedbackIcfes(opcion) {
+        const fb = document.getElementById('icfes-feedback');
+        fb.style.display = 'block';
+        if(opcion === 'b') {
+            fb.innerHTML = "CORRECTO. El papel filtro actúa como una barrera física que permite el paso del líquido pero no de los granos de arena sólidos.";
+            fb.className = "feedback correct";
+            puntos += 0.5;
+            actualizarPuntaje();
+        } else {
+            fb.innerHTML = "INCORRECTO. La opción A es para el imán. La opción C no es una propiedad física del filtro simple.";
+            fb.className = "feedback incorrect";
+        }
+    }
+
+    function calificar() {
+        let notaFinal = 0;
+        let erroresInductivos = 0;
+        let erroresDeductivos = 0;
+
+        // MCQs
+        if(document.getElementById('q1').value === 'b') notaFinal += 0.5; else erroresInductivos++;
+        if(document.getElementById('q2').value === 'a') notaFinal += 0.5; else erroresInductivos++;
+        if(document.getElementById('q3').value === 'b') notaFinal += 0.5; else erroresInductivos++;
+        if(document.getElementById('q4').value === 'b') notaFinal += 0.5; else erroresDeductivos++;
+        if(document.getElementById('q5').value === 'b') notaFinal += 0.5; else erroresDeductivos++;
+
+        // Open questions validation
+        for(let i=6; i<=10; i++) {
+            let val = document.getElementById('q' + i).value.trim().split(/\s+/);
+            if(val.length >= 10 && val.length <= 15) {
+                notaFinal += 0.4;
+            } else {
+                erroresDeductivos++;
+            }
+        }
+
+        puntos = Math.min(5, notaFinal);
+        actualizarPuntaje();
+        generarRefuerzo(erroresInductivos, erroresDeductivos);
+        document.getElementById('final-actions').style.display = 'block';
+        updateProgress(100);
+    }
+
+    function generarRefuerzo(ei, ed) {
+        const box = document.getElementById('fortalecimiento-box');
+        const inst = document.getElementById('instruccion-pedagogica');
+        const cont = document.getElementById('refuerzo-contenido');
+        
+        box.style.display = 'block';
+        inst.innerText = "De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades:";
+        
+        let textoRefuerzo = "";
+        if(ei > ed) {
+            textoRefuerzo = "REFUERZO INDUCTIVO: Debes repasar la observación de mezclas. Recuerda que el tamizado solo funciona con sólidos de diferentes tamaños y la filtración requiere un papel poroso para atrapar sólidos en líquidos.";
+        } else if(ed >= ei && ed > 0) {
+            textoRefuerzo = "REFUERZO DEDUCTIVO: Es necesario profundizar en las leyes de la física. La porosidad es la clave de la filtración y la agitación mecánica es lo que permite que el tamizado sea eficiente.";
+        } else {
+            textoRefuerzo = "¡EXCELENTE TRABAJO! Has dominado tanto la parte práctica como la teórica de los métodos de separación.";
+        }
+        
+        cont.innerText = textoRefuerzo;
+        localStorage.setItem('refuerzo_txt', textoRefuerzo);
+    }
+
+    function descargarResultados() {
+        const nombre = localStorage.getItem('ova_user');
+        const nota = document.getElementById('score-display').innerText;
+        const elemento = document.getElementById('element-display').innerText;
+        const refuerzo = localStorage.getItem('refuerzo_txt');
+        
+        const contenido = `REPORTE DE LABORATORIO OVA\n
+Estudiante: ${nombre}\n
+Nota Final: ${nota}/5.0\n
+Rango Químico: ${elemento}\n
+Ruta de Fortalecimiento:\n${refuerzo}\n
+-----------------------------------\n
+Generado el: ${new Date().toLocaleString()}`;
+
+        const blob = new Blob([contenido], {type: 'text/plain'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Resultados_${nombre}.txt`;
+        a.click();
+    }
+</script>
+
+</body>
+</html>

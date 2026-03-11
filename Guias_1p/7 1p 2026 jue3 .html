@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Expedición Quindío: Código Elemental</title>
+    <style>
+        :root {
+            --bg-color: #1a237e;
+            --panel-bg: #283593;
+            --accent: #ffab00;
+            --text: #e8eaf6;
+            --metal: #b0bec5;
+            --non-metal: #a1887f;
+            --metalloid: #81c784;
+            --success: #00c853;
+            --danger: #d50000;
+        }
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
+            background: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-interface {
+            width: 900px;
+            height: 650px;
+            background: var(--panel-bg);
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: 60px 1fr 60px;
+        }
+
+        /* HUD */
+        header {
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .stat-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .progress-bar {
+            width: 150px;
+            height: 15px;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #555;
+        }
+
+        #energy-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #f44336, #ffeb3b, #4caf50);
+            transition: width 0.5s;
+        }
+
+        /* Área Principal */
+        #main-stage {
+            position: relative;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Pantallas Overlay */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 35, 126, 0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .hidden { display: none !important; }
+
+        h1 { color: var(--accent); font-size: 2.5rem; text-transform: uppercase; letter-spacing: 2px; }
+        h2 { color: #fff; margin-bottom: 10px; }
+        p { font-size: 1.1rem; max-width: 600px; line-height: 1.6; }
+
+        .btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 4px 0 #ef6c00;
+        }
+
+        .btn:hover { background: #ffca28; transform: translateY(-2px); }
+        .btn:active { transform: translateY(2px); box-shadow: none; }
+
+        /* Misión 1: Coordenadas */
+        .grid-map {
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            gap: 2px;
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .grid-cell {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            font-size: 0.6rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #aaa;
+            transition: 0.2s;
+        }
+
+        .grid-cell:hover { background: var(--accent); color: black; }
+        .grid-cell.target { animation: pulse 1s infinite; }
+
+        /* Misión 2: Caja Fuerte (Z y A) */
+        .safe-container {
+            background: #37474f;
+            padding: 40px;
+            border-radius: 20px;
+            border: 10px solid #263238;
+            text-align: center;
+        }
+
+        .display-screen {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            font-size: 2rem;
+            border: 4px solid #555;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 10px #0f0;
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .num-btn { background: #546e7a; color: white; padding: 15px; font-size: 1.5rem; border: none; cursor: pointer; border-radius: 5px; }
+        .num-btn:active { background: #78909c; }
+
+        /* Misión 3: Clasificación */
+        .sorting-area {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            gap: 20px;
+        }
+
+        .bins {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 30%;
+        }
+
+        .bin {
+            flex: 1;
+            border: 3px dashed rgba(255,255,255,0.3);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .bin.drag-over { background: rgba(255,255,255,0.1); border-color: var(--accent); }
+
+        .workbench {
+            flex: 1;
+            background: #5d4037; /* Mesa de madera */
+            border-radius: 10px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .material-item {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        /* Misión 4: Circuito */
+        .circuit-board {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            background: #263238;
+            border-radius: 10px;
+        }
+
+        .wire { position: absolute; background: #ff5722; height: 10px; border-radius: 5px; }
+        
+        .bulb {
+            position: absolute;
+            top: 50px; left: 250px;
+            width: 60px; height: 90px;
+            fill: #555;
+            transition: fill 0.3s, filter 0.3s;
+        }
+
+        .bulb.on { fill: #ffeb3b; filter: drop-shadow(0 0 20px #ffeb3b); }
+
+        .gap-slot {
+            position: absolute;
+            bottom: 50px; left: 200px;
+            width: 200px; height: 80px;
+            border: 2px dashed #777;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #777;
+        }
+
+        .toolbox {
+            position: absolute;
+            bottom: -100px;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Notificaciones */
+        .toast {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 15px 30px;
+            border-radius: 50px;
+            color: var(--accent);
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            width: 80%;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-interface">
+    <header>
+        <div class="stat-box">📍 Misión: <span id="mission-name">Inicio</span></div>
+        <div class="stat-box">
+            ⚡ Energía Mental:
+            <div class="progress-bar"><div id="energy-fill"></div></div>
+        </div>
+    </header>
+
+    <div id="main-stage">
+        </div>
+
+    <div id="start-screen" class="overlay">
+        <h1>Expedición Quindío</h1>
+        <h2>El Código Elemental</h2>
+        <p>Bienvenido, geólogo. Hemos detectado minerales extraños en la zona volcánica. Tu misión es usar la Tabla Periódica para identificarlos y asegurar los recursos de la región.</p>
+        <p>⚠️ Cuidado: Los errores te causan frustración y bajan tu energía mental.</p>
+        <button class="btn" onclick="startGame()">Iniciar Expedición</button>
+    </div>
+
+    <div id="game-over-screen" class="overlay hidden">
+        <h1 style="color: var(--danger)">¡Energía Agotada!</h1>
+        <p>La frustración te ha bloqueado. Recuerda: En la ciencia, el error es parte del aprendizaje.</p>
+        <p>Tómate un respiro y vuelve a intentarlo.</p>
+        <button class="btn" onclick="location.reload()">Reintentar</button>
+    </div>
+
+    <div id="victory-screen" class="overlay hidden">
+        <h1 style="color: var(--success)">¡Misión Cumplida!</h1>
+        <p>Has clasificado los recursos del Quindío y demostrado dominio sobre la materia.</p>
+        <p>¡Eres un Maestro de los Elementos!</p>
+        <button class="btn" onclick="location.reload()">Jugar de Nuevo</button>
+    </div>
+
+    <div id="toast" class="toast">Mensaje del sistema</div>
+</div>
+
+<script>
+    // Estado del Juego
+    let currentMission = 0;
+    let energy = 100;
+    let missionData = {};
+
+    const missions = [
+        {
+            title: "El Mapa de Coordenadas",
+            instruction: "Localiza el 'Potasio' (K). Está en el Periodo 4, Grupo 1. (Es vital para los cultivos de plátano).",
+            type: "grid",
+            target: {p: 4, g: 1}, // P=Fila, G=Columna
+            hint: "Cuenta las filas hacia abajo (4) y las columnas desde la izquierda (1)."
+        },
+        {
+            title: "La Caja Fuerte Atómica",
+            instruction: "Para abrir la muestra de Carbono-14, calcula el número de NEUTRONES.",
+            type: "math",
+            data: { element: "C", A: 14, Z: 6 },
+            hint: "Recuerda la fórmula: Neutrones = Masa (A) - Número Atómico (Z)."
+        },
+        {
+            title: "Clasificación en la Chagra",
+            instruction: "Separa los materiales encontrados en la finca según sus propiedades.",
+            type: "sorting",
+            items: [
+                {name: "Alambre de Cobre", type: "metal", icon: "🔗"},
+                {name: "Carbón de Leña", type: "nometal", icon: "⚫"},
+                {name: "Chip de Silicio", type: "metaloide", icon: "💻"},
+                {name: "Azufre (Abono)", type: "nometal", icon: "🟡"}
+            ]
+        },
+        {
+            title: "El Circuito de Prueba",
+            instruction: "Se fue la luz en el laboratorio. Encuentra un material CONDUCTOR para cerrar el circuito y encender el bombillo.",
+            type: "circuit",
+            items: [
+                {name: "Madera Seca", conductive: false, icon: "🪵"},
+                {name: "Llave de Hierro", conductive: true, icon: "🗝️"},
+                {name: "Plástico", conductive: false, icon: "🥤"},
+                {name: "Anillo de Oro", conductive: true, icon: "💍"}
+            ]
+        },
+        {
+            title: "El Acertijo Final",
+            instruction: "Soy un gas noble, no reacciono con nadie y hago flotar los globos en las ferias del pueblo. ¿Quién soy?",
+            type: "riddle",
+            answer: "He",
+            hint: "Estoy en el Periodo 1, Grupo 18."
+        }
+    ];
+
+    function startGame() {
+        document.getElementById('start-screen').classList.add('hidden');
+        updateEnergy(0);
+        loadMission(0);
+    }
+
+    function updateEnergy(amount) {
+        energy += amount;
+        if (energy > 100) energy = 100;
+        if (energy <= 0) {
+            energy = 0;
+            document.getElementById('game-over-screen').classList.remove('hidden');
+        }
+        document.getElementById('energy-fill').style.width = energy + "%";
+        
+        // Cambio de color según energía
+        const fill = document.getElementById('energy-fill');
+        if(energy < 30) fill.style.background = "#d50000";
+        else fill.style.background = "linear-gradient(90deg, #f44336, #ffeb3b, #4caf50)";
+    }
+
+    function loadMission(index) {
+        if (index >= missions.length) {
+            document.getElementById('victory-screen').classList.remove('hidden');
+            return;
+        }
+        currentMission = index;
+        const m = missions[index];
+        document.getElementById('mission-name').innerText = m.title;
+        
+        const stage = document.getElementById('main-stage');
+        stage.innerHTML = ''; // Limpiar
+
+        // Instrucción
+        const instrBox = document.createElement('div');
+        instrBox.innerHTML = `
+            <h2 style="text-align:center">${m.title}</h2>
+            <p style="text-align:center; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px;">${m.instruction}</p>
+        `;
+        stage.appendChild(instrBox);
+        
+        // Renderizado específico
+        const contentDiv = document.createElement('div');
+        contentDiv.style.width = "100%";
+        contentDiv.style.display = "flex";
+        contentDiv.style.justifyContent = "center";
+        contentDiv.style.marginTop = "20px";
+        
+        if(m.type === 'grid') renderGridMission(contentDiv, m);
+        if(m.type === 'math') renderMathMission(contentDiv, m);
+        if(m.type === 'sorting') renderSortingMission(contentDiv, m);
+        if(m.type === 'circuit') renderCircuitMission(contentDiv, m);
+        if(m.type === 'riddle') renderRiddleMission(contentDiv, m);
+
+        stage.appendChild(contentDiv);
+    }
+
+    // --- MISION 1: GRID ---
+    function renderGridMission(container, m) {
+        const grid = document.createElement('div');
+        grid.className = 'grid-map';
+        // Crear tabla periódica simplificada (7 periodos x 18 grupos)
+        for(let p=1; p<=7; p++) {
+            for(let g=1; g<=18; g++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.innerText = `${p},${g}`;
+                cell.onclick = () => {
+                    if(p === m.target.p && g === m.target.g) {
+                        cell.style.background = "#00c853";
+                        showToast("¡Correcto! Encontraste el Potasio.");
+                        setTimeout(nextMission, 1500);
+                    } else {
+                        cell.style.background = "#d50000";
+                        showToast("Aquí no está. " + m.hint);
+                        updateEnergy(-15);
+                    }
+                };
+                grid.appendChild(cell);
+            }
+        }
+        container.appendChild(grid);
+    }
+
+    // --- MISION 2: MATH ---
+    function renderMathMission(container, m) {
+        container.innerHTML = `
+            <div class="safe-container">
+                <div style="color:#aaa; margin-bottom:10px;">MUESTRA: ${m.data.element} (Masa A=${m.data.A}, Z=${m.data.Z})</div>
+                <div class="display-screen" id="calc-display">_</div>
+                <div class="numpad">
+                    ${[1,2,3,4,5,6,7,8,9,0].map(n => `<button class="num-btn" onclick="typeNum(${n})">${n}</button>`).join('')}
+                    <button class="num-btn" style="background:#d50000" onclick="clearDisplay()">C</button>
+                    <button class="num-btn" style="background:#00c853" onclick="checkMath(${m.data.A - m.data.Z})">OK</button>
+                </div>
+            </div>
+        `;
+    }
+    
+    window.currentInput = "";
+    window.typeNum = (n) => {
+        if(window.currentInput.length < 2) {
+            window.currentInput += n;
+            document.getElementById('calc-display').innerText = window.currentInput;
+        }
+    };
+    window.clearDisplay = () => { window.currentInput = ""; document.getElementById('calc-display').innerText = "_"; };
+    window.checkMath = (correctAnswer) => {
+        if(parseInt(window.currentInput) === correctAnswer) {
+            showToast("¡Acceso Concedido! Cálculos precisos.");
+            setTimeout(nextMission, 1500);
+        } else {
+            showToast("Error. Neutrones = A - Z. Intenta de nuevo.");
+            updateEnergy(-20);
+            window.clearDisplay();
+        }
+    };
+
+    // --- MISION 3: SORTING ---
+    function renderSortingMission(container, m) {
+        missionData.itemsToSort = [...m.items];
+        missionData.currentItem = 0;
+        
+        container.innerHTML = `
+            <div class="sorting-area">
+                <div class="bins">
+                    <div class="bin" style="border-color:#b0bec5; color:#b0bec5" ondrop="dropSort(event, 'metal')" ondragover="allowDrop(event)">METALES<br><small>(Brillan, conducen)</small></div>
+                    <div class="bin" style="border-color:#a1887f; color:#a1887f" ondrop="dropSort(event, 'nometal')" ondragover="allowDrop(event)">NO METALES<br><small>(Opacos, frágiles)</small></div>
+                    <div class="bin" style="border-color:#81c784; color:#81c784" ondrop="dropSort(event, 'metaloide')" ondragover="allowDrop(event)">METALOIDES<br><small>(Semiconductores)</small></div>
+                </div>
+                <div class="workbench" id="workbench">
+                    </div>
+            </div>
+        `;
+        loadNextSortItem();
+    }
+
+    function loadNextSortItem() {
+        const wb = document.getElementById('workbench');
+        wb.innerHTML = '';
+        if(missionData.currentItem < missionData.itemsToSort.length) {
+            const item = missionData.itemsToSort[missionData.currentItem];
+            const div = document.createElement('div');
+            div.className = 'material-item';
+            div.draggable = true;
+            div.innerHTML = `<span style="font-size:2rem">${item.icon}</span><span>${item.name}</span>`;
+            div.ondragstart = (ev) => ev.dataTransfer.setData("type", item.type);
+            wb.appendChild(div);
+        } else {
+            showToast("¡Clasificación completada!");
+            setTimeout(nextMission, 1000);
+        }
+    }
+
+    window.dropSort = (ev, binType) => {
+        ev.preventDefault();
+        const type = ev.dataTransfer.getData("type");
+        if(type === binType) {
+            showToast("¡Correcto!");
+            missionData.currentItem++;
+            loadNextSortItem();
+        } else {
+            showToast("Incorrecto. Observa las propiedades.");
+            updateEnergy(-10);
+        }
+    };
+    window.allowDrop = (ev) => ev.preventDefault();
+
+    // --- MISION 4: CIRCUIT ---
+    function renderCircuitMission(container, m) {
+        container.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center">
+                <div class="circuit-board">
+                    <div class="wire" style="top:50px; left:50px; width:200px;"></div>
+                    <div class="wire" style="top:50px; left:50px; height:250px; width:10px;"></div>
+                    <div class="wire" style="bottom:100px; left:50px; width:150px;"></div>
+                    
+                    <div class="wire" style="top:50px; right:50px; width:250px;"></div>
+                    <div class="wire" style="top:50px; right:50px; height:250px; width:10px;"></div>
+                    <div class="wire" style="bottom:100px; right:50px; width:150px;"></div>
+
+                    <svg class="bulb" id="bulb" viewBox="0 0 100 150">
+                        <path d="M30,100 L70,100 L70,120 L30,120 Z" fill="#777"/>
+                        <circle cx="50" cy="50" r="40" />
+                    </svg>
+
+                    <div class="gap-slot" id="gap-slot">ARRASTRA AQUÍ</div>
+                </div>
+                <div class="toolbox">
+                    ${m.items.map(item => `
+                        <div class="material-item" style="width:80px; height:80px; font-size:0.8rem" 
+                             onclick="testMaterial('${item.name}', ${item.conductive})">
+                            <div style="font-size:1.5rem">${item.icon}</div>
+                            ${item.name}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    window.testMaterial = (name, isConductive) => {
+        const slot = document.getElementById('gap-slot');
+        slot.innerHTML = name;
+        slot.style.borderStyle = "solid";
+        slot.style.background = "#555";
+        slot.style.color = "white";
+
+        if(isConductive) {
+            document.getElementById('bulb').classList.add('on');
+            showToast("¡Luz! El " + name + " conduce electricidad.");
+            setTimeout(nextMission, 2000);
+        } else {
+            document.getElementById('bulb').classList.remove('on');
+            showToast("El " + name + " es aislante. No pasa corriente.");
+            updateEnergy(-10);
+        }
+    };
+
+    // --- MISION 5: RIDDLE ---
+    function renderRiddleMission(container, m) {
+        container.innerHTML = `
+            <div style="text-align:center">
+                <p style="font-size:1.5rem; margin-bottom:20px;">❓ ${m.instruction}</p>
+                <input type="text" id="riddle-input" placeholder="Símbolo (ej: Fe)" style="padding:15px; font-size:1.5rem; text-transform:uppercase; text-align:center; width:150px;">
+                <br>
+                <button class="btn" onclick="checkRiddle('${m.answer}')">Verificar</button>
+            </div>
+        `;
+    }
+
+    window.checkRiddle = (ans) => {
+        const input = document.getElementById('riddle-input').value.trim();
+        if(input.toLowerCase() === ans.toLowerCase()) {
+            showToast("¡Correcto! Es el Helio.");
+            setTimeout(nextMission, 1500);
+        } else {
+            showToast("Incorrecto. Pista: Está en el grupo de los gases nobles.");
+            updateEnergy(-20);
+        }
+    };
+
+    // Utilidades
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.opacity = 1;
+        setTimeout(() => t.style.opacity = 0, 3000);
+    }
+
+    function nextMission() {
+        loadMission(currentMission + 1);
+    }
+
+</script>
+</body>
+</html>

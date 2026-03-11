@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: La Mansión del Alquimista</title>
+    <style>
+        /* =========================================================
+           VARIABLES Y DISEÑO BASE (TEMÁTICA ALQUIMIA/QUÍMICA MÁGICA)
+           ========================================================= */
+        :root {
+            --bg-color: #1a0f14;
+            --panel-bg: #2d1b24;
+            --text-main: #fde0d9;
+            --accent-gold: #fbbf24;   /* Dorado alquímico */
+            --accent-cyan: #22d3ee;   /* Cian reactivo */
+            --accent-red: #f43f5e;    /* Rojo alerta */
+            --border-color: #502b3a;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* Fondo con patrón místico y partículas */
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(251, 191, 36, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(34, 211, 238, 0.05) 0%, transparent 40%),
+                linear-gradient(rgba(26, 15, 20, 0.9), rgba(26, 15, 20, 0.9)),
+                url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="1" fill="%23fbbf24" opacity="0.2"/></svg>');
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 95%;
+            max-width: 1100px;
+            height: 90vh;
+            background-color: rgba(45, 27, 36, 0.85);
+            border: 2px solid var(--accent-gold);
+            border-radius: 12px;
+            box-shadow: 0 0 40px rgba(251, 191, 36, 0.2), inset 0 0 20px rgba(0,0,0,0.8);
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(90deg, #1a0f14 0%, #3a1c2a 50%, #1a0f14 100%);
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+            flex: 1;
+        }
+
+        .progress-badge {
+            background-color: rgba(251, 191, 36, 0.15);
+            border: 1px solid var(--accent-gold);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-family: var(--font-mono);
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
+
+        /* LAYOUT PRINCIPAL */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column; }
+            .inventory-panel { border-left: none !important; border-top: 2px solid var(--accent-gold); height: 200px; }
+            .game-area { overflow-y: auto; }
+        }
+
+        /* ÁREA DE JUEGO (Izquierda) */
+        .game-area {
+            flex: 3;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .phase-title {
+            color: var(--accent-cyan);
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+        }
+        
+        .puzzle-counter {
+            color: #bfa6b4;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: #fce7e2;
+        }
+
+        .clue-box {
+            background-color: rgba(34, 211, 238, 0.05);
+            border-left: 4px solid var(--accent-cyan);
+            padding: 20px;
+            margin-bottom: 25px;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            border-radius: 0 8px 8px 0;
+            line-height: 1.5;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* ESTILOS PARA LAS IMÁGENES GENERADAS POR IA */
+        .ai-image-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 15px auto;
+            border: 2px dashed var(--accent-gold);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: rgba(251, 191, 36, 0.05);
+            text-align: center;
+            position: relative;
+        }
+
+        .ai-image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Fallback si la imagen no se ha generado/cargado aún */
+        .ai-image-container::before {
+            content: attr(data-placeholder);
+            display: block;
+            padding: 40px 20px;
+            color: var(--accent-gold);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            width: 100%;
+            box-sizing: border-box;
+            opacity: 0.8;
+        }
+
+        /* CONTROLES DE ENTRADA */
+        .input-section {
+            background-color: var(--panel-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: auto;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.4);
+        }
+
+        .input-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--accent-cyan);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            background-color: #1a0f14;
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-family: var(--font-mono);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: var(--accent-gold);
+            color: #1a0f14;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #fcd34d;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            background-color: #502b3a;
+            color: #885b6f;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .message.error {
+            display: block;
+            background-color: rgba(244, 63, 94, 0.15);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .message.success {
+            display: block;
+            background-color: rgba(34, 211, 238, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+        }
+
+        /* PANEL DE INVENTARIO (Derecha) */
+        .inventory-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            border-left: 2px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+        }
+
+        .inventory-title {
+            text-align: center;
+            color: var(--accent-gold);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .inventory-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        .item {
+            background-color: #3a1c2a;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            border-color: var(--accent-cyan);
+        }
+
+        .item-icon {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.4));
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .item-hint {
+            font-size: 0.8rem;
+            color: var(--accent-cyan);
+            margin-top: 4px;
+        }
+
+        /* MODAL PARA LEER OBJETOS DEL INVENTARIO */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--accent-gold);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 650px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 0 40px rgba(251, 191, 36, 0.3);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.8rem;
+            color: #bfa6b4;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover { color: var(--accent-red); }
+
+        .modal-title {
+            color: var(--accent-cyan);
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            font-size: 1.6rem;
+            text-transform: uppercase;
+        }
+
+        .modal-body {
+            font-family: var(--font-main);
+            line-height: 1.6;
+            color: #fde0d9;
+            margin-top: 20px;
+        }
+
+        .modal-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: #3a1c2a;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+        }
+        
+        .modal-body th, .modal-body td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .modal-body th { 
+            background-color: rgba(251, 191, 36, 0.15); 
+            color: var(--accent-gold); 
+        }
+
+        /* Pantalla final */
+        .victory-screen {
+            text-align: center;
+            padding: 40px 20px;
+            animation: fadeIn 1s ease-in;
+        }
+        .victory-icon {
+            font-size: 6rem;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🔮 La Mansión del Alquimista</h1>
+            <div class="progress-badge" id="progress-badge">Acertijo: 1 / 13</div>
+        </header>
+
+        <div class="main-layout">
+            <!-- Zona Izquierda: Historia y Puzle -->
+            <div class="game-area" id="game-area">
+                <div id="phase-content">
+                    <!-- El contenido se inyecta por JS -->
+                </div>
+
+                <div class="input-section" id="input-section">
+                    <label id="input-label" for="answer">Introduce tu respuesta:</label>
+                    <div class="input-group">
+                        <input type="text" id="answer" placeholder="Escribe aquí..." autocomplete="off">
+                        <button id="submit-btn" onclick="checkAnswer()">Revelar</button>
+                    </div>
+                    <div id="message-box" class="message"></div>
+                </div>
+            </div>
+
+            <!-- Zona Derecha: Inventario -->
+            <div class="inventory-panel">
+                <h3 class="inventory-title">🎒 Morral Mágico</h3>
+                <div class="inventory-items" id="inventory-list">
+                    <!-- Los objetos se inyectan por JS -->
+                    <div style="text-align: center; color: #885b6f; font-size: 0.95rem; margin-top: 30px; font-style: italic;" id="empty-inventory">
+                        Aún no tienes objetos.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para leer pistas (Diarios, tablas, manuales) -->
+    <div class="modal-overlay" id="item-modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">✖</button>
+            <h2 class="modal-title" id="modal-title">Título</h2>
+            <div class="modal-body" id="modal-body">
+                Contenido del objeto.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =========================================================
+           ESTRUCTURA DE LOS 13 ACERTIJOS EN 5 FASES
+           Tema: Química Grado 8 (Cambios, Reacciones, Enlaces)
+           ========================================================= */
+        const gameData = [
+            // FASE 1: El Estudio de la Materia (Físico vs Químico)
+            {
+                id: 1,
+                phase: "Fase 1: El Estudio de la Materia",
+                puzzleNum: "Acertijo 1 de 13 (Clasificando Cambios)",
+                story: "Has entrado a la mansión abandonada de un antiguo Alquimista. La puerta se ha cerrado de golpe a tus espaldas. En una mesa polvorienta encuentras un diario titulado 'Los Secretos de la Transformación'.",
+                clue: "La primera página del diario enumera 5 eventos cotidianos. Debes clasificarlos como cambio Físico (F) o cambio Químico (Q). Escribe las 5 letras seguidas, sin espacios.\n\nEventos:\n1. Fusión de un cubo de hielo al sol.\n2. Combustión de un trozo de madera.\n3. Oxidación de un clavo de hierro en la lluvia.\n4. Romper un vaso de vidrio contra el suelo.\n5. Digerir una manzana en el estómago.",
+                visual: null,
+                question: "Introduce las 5 letras de tu clasificación (Ej: FQFQF):",
+                answer: "fqqfq", // Físico, Químico, Químico, Físico, Químico
+                reward: null
+            },
+            {
+                id: 2,
+                phase: "Fase 1: El Estudio de la Materia",
+                puzzleNum: "Acertijo 2 de 13 (La Clave Numérica)",
+                story: "Al escribir tu respuesta, un cajón secreto se abre parcialmente, bloqueado por un candado de combinación matemática.",
+                clue: "El candado tiene grabada una instrucción: 'El código es el producto de la esencia'.\n\nDebes multiplicar la cantidad total de letras que tiene la palabra 'QUIMICO' por el número exacto de eventos químicos que identificaste correctamente en el acertijo anterior.",
+                visual: null,
+                question: "Introduce el código numérico resultante:",
+                answer: "21", // 7 letras * 3 eventos químicos = 21
+                reward: null
+            },
+            {
+                id: 3,
+                phase: "Fase 1: El Estudio de la Materia",
+                puzzleNum: "Acertijo 3 de 13 (Identificando la Excepción)",
+                story: "El candado se abre y encuentras un pergamino con ilustraciones antiguas. Para pasar a la siguiente habitación, debes demostrar tu agudeza visual.",
+                clue: "El pergamino está dividido en 4 cuadrantes numerados, mostrando diferentes frascos.\nTres de ellos muestran evidencias claras de que está ocurriendo una reacción química (formación de nuevas sustancias). Uno de ellos es el 'impostor', mostrando solo un cambio de estado físico.\n\n¿En qué cuadrante se encuentra el cambio puramente FÍSICO?",
+                // AQUÍ VA LA PRIMERA IMAGEN GENERADA POR IA (Marcador de posición)
+                visual: `<div class="ai-image-container" data-placeholder="[Imagen IA 1: Ilustración dividida en 4 cuadrantes etiquetados (Q1, Q2, Q3, Q4). Q1: Un matraz burbujeando violentamente (Gas). Q2: Dos líquidos transparentes mezclándose y formando un sólido amarillo (Precipitado). Q3: Un líquido cambiando de incoloro a fucsia (Cambio de color). Q4: Cubos de hielo derritiéndose en un vaso con agua.]">
+                            <img src="acertijo_visual_1.jpg" alt="Pista visual 1: Cuatro cuadrantes con reacciones y un cambio físico" onerror="this.style.display='none'">
+                         </div>`,
+                question: "Introduce únicamente el número del cuadrante (Ej: 1, 2, 3 o 4):",
+                answer: "4", // El hielo derritiéndose es físico.
+                reward: {
+                    id: "manual_evidencias",
+                    name: "Manual de Evidencias",
+                    icon: "📜",
+                    hint: "Guía de reacciones químicas",
+                    content: `
+                        <p><strong>El Alquimista Escribe:</strong></p>
+                        <p>Cuando la materia se transforma en algo nuevo (Cambio Químico), deja rastros de su magia. Estas son las 4 grandes evidencias y sus códigos asignados:</p>
+                        <ul>
+                            <li><strong>Código 1:</strong> Emisión de Gas (Burbujas o humo).</li>
+                            <li><strong>Código 2:</strong> Cambio drástico de Color inesperado.</li>
+                            <li><strong>Código 3:</strong> Formación de un Precipitado (Sólido que cae al fondo al mezclar líquidos).</li>
+                            <li><strong>Código 4:</strong> Liberación o absorción de Energía (Luz, fuego o cambio de temperatura).</li>
+                        </ul>
+                        <p><em>"No confíes en tus ojos si la sustancia sigue siendo la misma."</em></p>
+                    `
+                }
+            },
+            // FASE 2: Las Pruebas del Alquimista (Evidencias de Reacción)
+            {
+                id: 4,
+                phase: "Fase 2: Las Pruebas del Alquimista",
+                puzzleNum: "Acertijo 4 de 13 (Secuencia de Evidencias)",
+                story: "Has entrado a un pasillo lleno de frascos brillantes. Acabas de guardar el 'Manual de Evidencias' en tu morral (ábrelo para consultarlo).",
+                clue: "Frente a ti hay tres altares. Un texto grabado dice:\n'Revive mi experimento maestro en el orden correcto usando los códigos numéricos de las evidencias.'\n\nEl texto relata:\n'Primero, al mezclar dos pócimas transparentes, una densa arena dorada cayó al fondo del recipiente. Inmediatamente, el recipiente comenzó a brillar intensamente irradiando un calor abrasador. Finalmente, la poción comenzó a liberar un espeso humo verde hacia el techo.'",
+                visual: null,
+                question: "Introduce la secuencia de 3 dígitos (Ej: 123):",
+                answer: "341", // Sólido (3), Brillo/Calor (4), Humo/Gas (1)
+                reward: null
+            },
+            {
+                id: 5,
+                phase: "Fase 2: Las Pruebas del Alquimista",
+                puzzleNum: "Acertijo 5 de 13 (Ley Fundamental)",
+                story: "Los altares se hunden en el suelo, pero una voz fantasmal resuena en la sala exigiendo una contraseña.",
+                clue: "La voz susurra:\n'Los novatos creen que las reacciones químicas crean o destruyen la materia. Pero tú sabes la verdad, dictada por Lavoisier. La materia no se crea ni se destruye, solo se...'\n\n(Completa la palabra faltante en plural, tal cual dice la famosa frase adaptada a esta oración).",
+                visual: null,
+                question: "Escribe la palabra secreta (una sola palabra):",
+                answer: "transforma", // También aceptaremos transforman. Lo validaremos en el sanitizador.
+                reward: null
+            },
+            {
+                id: 6,
+                phase: "Fase 2: Las Pruebas del Alquimista",
+                puzzleNum: "Acertijo 6 de 13 (Cruce de Datos)",
+                story: "La voz guarda silencio. Una pesada puerta de madera bloquea el paso hacia el gran laboratorio.",
+                clue: "La cerradura exige un número. Revisa tus apuntes de los dos retos anteriores.\n\nToma el número de 3 dígitos que descubriste en la secuencia de los altares (Reto 4). A ese número, RÉSTALE la cantidad exacta de letras VOCALES que tiene la palabra secreta que acabas de pronunciar (transforma).",
+                visual: null,
+                question: "Introduce el resultado matemático:",
+                answer: "338", // 341 - 3 vocales (a, o, a) = 338. Si pusieron transforman, igual son 3 vocales.
+                reward: {
+                    id: "tabla_recombinacion",
+                    name: "Guía de Recombinación",
+                    icon: "⚖️",
+                    hint: "Balanceo y Átomos",
+                    content: `
+                        <p><strong>La Magia de la Recombinación:</strong></p>
+                        <p>En una ecuación química (Reactivos ➔ Productos):</p>
+                        <ul>
+                            <li><strong>Coeficiente:</strong> El número GRANDE a la izquierda. Multiplica a toda la molécula. Indica cantidad de moléculas.</li>
+                            <li><strong>Subíndice:</strong> El número PEQUEÑO abajo. Indica cantidad de átomos de ese elemento específico en la molécula.</li>
+                        </ul>
+                        <p>Para contar átomos de un elemento, multiplica el Coeficiente por el Subíndice.</p>
+                        <p><em>Ejemplo: En 3H₂O, hay 6 átomos de Hidrógeno (3x2) y 3 de Oxígeno (3x1).</em></p>
+                    `
+                }
+            },
+            // FASE 3: La Cámara de Recombinación (Reacciones Químicas)
+            {
+                id: 7,
+                phase: "Fase 3: La Cámara de Recombinación",
+                puzzleNum: "Acertijo 7 de 13 (Conteo de Reactivos)",
+                story: "Has entrado al corazón del laboratorio. Obtuviste la 'Guía de Recombinación' (revisa tu inventario). Un proyector mágico muestra esferas chocando entre sí.",
+                clue: "El diagrama muestra la reacción de formación del agua.\nObservas los reactivos (antes de la flecha): Hay 2 moléculas de Hidrógeno diatómico (H₂) reaccionando con 1 molécula de Oxígeno diatómico (O₂).\n\nBasándote en tu guía, debes contar la cantidad TOTAL de átomos presentes ÚNICAMENTE en el lado de los reactivos.",
+                // AQUÍ VA LA SEGUNDA IMAGEN GENERADA POR IA
+                visual: `<div class="ai-image-container" data-placeholder="[Imagen IA 2: Diagrama molecular. A la izquierda (Reactivos): Dos pares de esferas blancas unidas (2H2) más un par de esferas rojas unidas (O2). Una flecha central apunta hacia la derecha (Productos): Dos agrupaciones, cada una con una esfera roja en el centro unida a dos esferas blancas a los lados (2H2O).]">
+                            <img src="acertijo_visual_2.jpg" alt="Pista visual 2: Ecuación química visual del agua" onerror="this.style.display='none'">
+                         </div>`,
+                question: "¿Cuántos átomos individuales (esferitas en total) hay en los reactivos?",
+                answer: "6", // 2 moléculas H2 (4 átomos) + 1 molécula O2 (2 átomos) = 6.
+                reward: null
+            },
+            {
+                id: 8,
+                phase: "Fase 3: La Cámara de Recombinación",
+                puzzleNum: "Acertijo 8 de 13 (La Balanza Exacta)",
+                story: "El proyector te evalúa afirmativamente. Ahora se enciende una vieja pizarra verde con una ecuación química incompleta.",
+                clue: "El Alquimista dejó este reto de balanceo (conservación de la masa). La ecuación muestra la formación de amoníaco:\n\n<strong>N₂ + H₂ ➔ NH₃</strong>\n\nDebes encontrar los 3 coeficientes (los números grandes) que balancean la ecuación correctamente. (Nota: Si un coeficiente es 1, úsalo en tu respuesta, no lo omitas).\n\nEscribe los tres números seguidos sin espacios.",
+                visual: null,
+                question: "Introduce los 3 coeficientes en orden (Ej: 212):",
+                answer: "132", // 1 N2 + 3 H2 -> 2 NH3
+                reward: null
+            },
+            {
+                id: 9,
+                phase: "Fase 3: La Cámara de Recombinación",
+                puzzleNum: "Acertijo 9 de 13 (Código Estequiométrico)",
+                story: "La pizarra se desliza, revelando una caja de seguridad empotrada en la pared.",
+                clue: "La nota pegada a la caja exige cruzar tu conocimiento.\n\nToma la cantidad TOTAL de átomos de reactivos que calculaste en el Reto 7.\nLuego, toma los tres números que usaste para balancear la ecuación en el Reto 8 y SÚMALOS matemáticamente entre sí.\nFinalmente, MULTIPLICA ambos resultados.",
+                visual: null,
+                question: "Introduce el resultado de la multiplicación:",
+                answer: "36", // Reto 7 (6). Reto 8 (1+3+2 = 6). 6 x 6 = 36.
+                reward: {
+                    id: "esfera_valencia",
+                    name: "Esfera de Valencia",
+                    icon: "🔮",
+                    hint: "Datos de la Tabla Periódica",
+                    content: `
+                        <p><strong>El Secreto de la Capa Externa:</strong></p>
+                        <p>Los Electrones de Valencia son los que están en la capa más externa y participan en los enlaces. Para los elementos representativos, fíjate en su Grupo:</p>
+                        <ul>
+                            <li><strong>Grupo 1</strong> (Ej: Hidrógeno H, Sodio Na): Tienen <strong>1</strong> electrón de valencia.</li>
+                            <li><strong>Grupo 2</strong> (Ej: Magnesio Mg, Calcio Ca): Tienen <strong>2</strong> electrones de valencia.</li>
+                            <li><strong>Grupo 16</strong> (Ej: Oxígeno O, Azufre S): Tienen <strong>6</strong> electrones de valencia.</li>
+                            <li><strong>Grupo 17</strong> (Ej: Flúor F, Cloro Cl): Tienen <strong>7</strong> electrones de valencia.</li>
+                        </ul>
+                    `
+                }
+            },
+            // FASE 4: El Pasillo de los Electrones (Electrones de Valencia)
+            {
+                id: 10,
+                phase: "Fase 4: El Pasillo de los Electrones",
+                puzzleNum: "Acertijo 10 de 13 (Suma de la Capa Externa)",
+                story: "Al abrir la caja, encuentras la mística 'Esfera de Valencia'. La tomas y entras a un pasillo oscuro iluminado solo por luces flotantes parecidas a electrones.",
+                clue: "Para encender las luces principales, debes analizar una sola molécula de agua (H₂O) usando tu nueva Esfera de Valencia.\n\nBusca cuántos electrones de valencia aporta CADA átomo de Hidrógeno y cuántos aporta EL átomo de Oxígeno. Luego, suma TODOS esos electrones de valencia presentes en la molécula.",
+                visual: null,
+                question: "¿Cuántos electrones de valencia hay en total en una molécula de H₂O?",
+                answer: "8", // H(1) + H(1) + O(6) = 8
+                reward: null
+            },
+            {
+                id: 11,
+                phase: "Fase 4: El Pasillo de los Electrones",
+                puzzleNum: "Acertijo 11 de 13 (Identidad Oculta)",
+                story: "Las luces se encienden revelando misteriosos grabados en las paredes. Son estructuras de Lewis (puntos que representan electrones de valencia).",
+                clue: "Un grabado muestra un elemento desconocido 'X' rodeado por exactamente 7 puntos. A su lado, dice 'Periodo 3'.\n\nSi sabes que los puntos son sus electrones de valencia, puedes deducir a qué Grupo pertenece (revisa tu Esfera). Si unes el Grupo correcto con el Periodo 3 en una tabla periódica imaginaria, descubrirás de qué elemento se trata (es un gas verdoso muy reactivo).\n\nInvestiga en tu mente: ¿Cuál es el Número Atómico (Z) de ese elemento?",
+                // AQUÍ VA LA TERCERA IMAGEN GENERADA POR IA
+                visual: `<div class="ai-image-container" data-placeholder="[Imagen IA 3: Dos símbolos químicos grandes dibujados como con tiza. A la izquierda, una 'X' grande rodeada por 7 puntos (Estructura de Lewis para un halógeno). A la derecha, una 'Y' rodeada por 2 puntos. Debajo de la 'X' hay un texto antiguo que dice 'PERIODO 3'.]">
+                            <img src="acertijo_visual_3.jpg" alt="Pista visual 3: Estructuras de Lewis de elementos misteriosos" onerror="this.style.display='none'">
+                         </div>`,
+                question: "Introduce el Número Atómico (Z) del elemento 'X':",
+                answer: "17", // Tiene 7 puntos = Grupo 17. Periodo 3. Es el Cloro (Z=17).
+                reward: null
+            },
+            {
+                id: 12,
+                phase: "Fase 4: El Pasillo de los Electrones",
+                puzzleNum: "Acertijo 12 de 13 (La Regla de Oro)",
+                story: "Has deducido correctamente la identidad del Cloro. La puerta final comienza a manifestarse frente a ti.",
+                clue: "Para atravesar esta puerta, debes jurar por la 'Regla del Octeto'.\nTodos los átomos buscan tener 8 electrones en su capa externa para ser estables como los reyes (los Gases Nobles).\n\nSi el misterioso elemento 'Y' del grabado anterior tiene solo 2 electrones de valencia (Grupo 2)... para llegar a la estabilidad, ¿le resultará más fácil GANAR 6 electrones o PERDER esos 2 que tiene?",
+                visual: null,
+                question: "Escribe tu respuesta (ganar o perder):",
+                answer: "perder", // Los metales pierden electrones.
+                reward: {
+                    id: "cristal_ionico",
+                    name: "Cristal Iónico",
+                    icon: "💎",
+                    hint: "El arte de dar y recibir",
+                    content: `
+                        <p><strong>Enlace Iónico: Atracción de Opuestos</strong></p>
+                        <p>Cuando un elemento que quiere PERDER electrones (Metal, Grupos 1 y 2) se encuentra con uno que quiere GANAR electrones (No Metal, Grupos 16 y 17), ocurre la magia.</p>
+                        <ul>
+                            <li>El Metal <strong>CEDE</strong> sus electrones de valencia.</li>
+                            <li>El No Metal los <strong>ACEPTA</strong> hasta completar su octeto (8).</li>
+                        </ul>
+                        <p>A veces, un solo átomo que da no es suficiente para satisfacer a los que reciben, o viceversa, obligando a llamar a más átomos a la reacción.</p>
+                    `
+                }
+            },
+            // FASE 5: El Altar Iónico (Enlace Iónico: El arte de dar)
+            {
+                id: 13,
+                phase: "Fase 5: El Altar Iónico",
+                puzzleNum: "Acertijo 13 de 13 (El Código Maestro)",
+                story: "¡Has llegado a la salida! Una pesada bóveda te separa de la libertad. En tus manos sostienes el 'Cristal Iónico'.",
+                clue: "La terminal requiere un PIN maestro de 4 dígitos. Lee detenidamente y usa tu papel y lápiz. Une los números en este orden exacto sin espacios:\n\n<strong>1er Dígito:</strong> Tienes UN átomo de Magnesio (Mg, Grupo 2) que quiere reaccionar con el Flúor (F, Grupo 17). Si el Magnesio regala todos sus electrones de valencia y cada Flúor solo puede recibir UNO... ¿Cuántos átomos de Flúor se necesitan en total para aceptar el regalo de un solo Magnesio?\n\n<strong>2do Dígito:</strong> El número del cuadrante donde encontraste el cambio físico en la primera fase (Reto 3).\n\n<strong>3er Dígito:</strong> La suma total de electrones de valencia del H₂O que calculaste en el Reto 10.\n\n<strong>4to Dígito:</strong> La suma matemática de los coeficientes de la reacción del amoníaco que hiciste en el Reto 9.",
+                visual: null,
+                question: "Introduce el PIN Maestro de 4 dígitos para escapar:",
+                answer: "2486", // 1er: 2 átomos de F. 2do: cuadrante 4. 3er: 8 e- del agua. 4to: 1+3+2 = 6. -> 2486
+                reward: null
+            }
+        ];
+
+        /* =========================================================
+           LÓGICA DEL MOTOR DEL JUEGO (JAVASCRIPT)
+           ========================================================= */
+        let currentPuzzleIndex = 0;
+        let inventory = [];
+
+        // Referencias al DOM
+        const progressBadge = document.getElementById("progress-badge");
+        const phaseContentDiv = document.getElementById("phase-content");
+        const answerInput = document.getElementById("answer");
+        const submitBtn = document.getElementById("submit-btn");
+        const messageBox = document.getElementById("message-box");
+        const inventoryList = document.getElementById("inventory-list");
+        const emptyInventoryMsg = document.getElementById("empty-inventory");
+        const inputLabel = document.getElementById("input-label");
+        
+        // Modal referencias
+        const modalOverlay = document.getElementById("item-modal");
+        const modalTitle = document.getElementById("modal-title");
+        const modalBody = document.getElementById("modal-body");
+
+        // Inicializar el juego
+        function initGame() {
+            renderPuzzle();
+            // Permitir enviar con la tecla Enter
+            answerInput.addEventListener("keypress", function(event) {
+                if (event.key === "Enter" && !submitBtn.disabled) {
+                    event.preventDefault();
+                    checkAnswer();
+                }
+            });
+        }
+
+        // Renderizar el acertijo actual
+        function renderPuzzle() {
+            if (currentPuzzleIndex >= gameData.length) {
+                showVictory();
+                return;
+            }
+
+            const puzzle = gameData[currentPuzzleIndex];
+            
+            // Actualizar header
+            progressBadge.innerText = `Acertijo: ${currentPuzzleIndex + 1} / 13`;
+
+            // Construir el HTML de la fase
+            let visualHTML = puzzle.visual ? puzzle.visual : "";
+            
+            let html = `
+                <h2 class="phase-title">${puzzle.phase}</h2>
+                <div class="puzzle-counter">${puzzle.puzzleNum}</div>
+                <div class="story-text">${puzzle.story.replace(/\n/g, '<br>')}</div>
+                ${visualHTML}
+                <div class="clue-box">${puzzle.clue.replace(/\n/g, '<br>')}</div>
+            `;
+            
+            phaseContentDiv.innerHTML = html;
+            inputLabel.innerText = puzzle.question;
+            answerInput.value = "";
+            answerInput.focus();
+            hideMessage();
+        }
+
+        // Limpieza de inputs (remover acentos, espacios, homogeneizar a minúsculas)
+        function sanitizeInput(str) {
+            let s = str.trim().toLowerCase();
+            // Quitar acentos para perdonar errores ortográficos
+            s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            // Excepción para "transforma" o "transforman" del reto 5
+            if(s === "transforma" || s === "transforman") return "transforma";
+            return s;
+        }
+
+        // Comprobar la respuesta introducida
+        function checkAnswer() {
+            const puzzle = gameData[currentPuzzleIndex];
+            
+            const userAnswer = sanitizeInput(answerInput.value);
+            let correctAnswer = sanitizeInput(puzzle.answer);
+            
+            // Validación especial para el reto 5 (si la respuesta esperada era "transforma", ya fue manejada en el sanitize)
+
+            if (userAnswer === correctAnswer) {
+                // RESPUESTA CORRECTA
+                showMessage(`¡Respuesta Correcta! Revelando misterio...`, "success");
+                submitBtn.disabled = true;
+                answerInput.disabled = true;
+
+                // Añadir objeto al inventario si este acertijo otorga uno
+                if (puzzle.reward) {
+                    addToInventory(puzzle.reward);
+                }
+
+                // Pasar al siguiente acertijo después de 2 segundos (tiempo para leer el mensaje de éxito)
+                setTimeout(() => {
+                    currentPuzzleIndex++;
+                    submitBtn.disabled = false;
+                    answerInput.disabled = false;
+                    renderPuzzle();
+                }, 2000);
+
+            } else {
+                // RESPUESTA INCORRECTA - PENALIZACIÓN CONTRA FUERZA BRUTA
+                applyPenalty();
+            }
+        }
+
+        // Aplicar penalización de 5 segundos
+        function applyPenalty() {
+            let timeLeft = 5;
+            submitBtn.disabled = true;
+            answerInput.disabled = true;
+            
+            showMessage(`Respuesta errónea. Magia inestable. Espera ${timeLeft}s...`, "error");
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    showMessage(`Respuesta errónea. Magia inestable. Espera ${timeLeft}s...`, "error");
+                } else {
+                    clearInterval(timer);
+                    submitBtn.disabled = false;
+                    answerInput.disabled = false;
+                    answerInput.value = "";
+                    answerInput.focus();
+                    hideMessage();
+                }
+            }, 1000);
+        }
+
+        // Mostrar mensajes (éxito o error)
+        function showMessage(text, type) {
+            messageBox.innerHTML = text;
+            messageBox.className = `message ${type}`;
+        }
+
+        function hideMessage() {
+            messageBox.className = "message";
+            messageBox.innerHTML = "";
+            messageBox.style.display = "none";
+        }
+
+        // Lógica del Inventario
+        function addToInventory(item) {
+            // Evitar duplicados si por error la lógica recarga
+            if (inventory.some(i => i.id === item.id)) return;
+            
+            inventory.push(item);
+            emptyInventoryMsg.style.display = "none";
+
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "item";
+            itemDiv.onclick = () => openModal(item);
+
+            itemDiv.innerHTML = `
+                <div class="item-icon">${item.icon}</div>
+                <div class="item-info">
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-hint">${item.hint}</span>
+                </div>
+            `;
+            
+            // Animación de entrada fluida
+            itemDiv.style.opacity = "0";
+            itemDiv.style.transform = "translateX(20px)";
+            inventoryList.appendChild(itemDiv);
+            
+            setTimeout(() => {
+                itemDiv.style.transition = "all 0.5s ease-out";
+                itemDiv.style.opacity = "1";
+                itemDiv.style.transform = "translateX(0)";
+            }, 50);
+        }
+
+        // Manejo del Modal (Pantalla emergente para leer objetos)
+        function openModal(item) {
+            modalTitle.innerText = item.name;
+            modalBody.innerHTML = item.content;
+            modalOverlay.classList.add("active");
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove("active");
+        }
+
+        // Cerrar modal al hacer clic fuera de la caja o apretar Escape
+        modalOverlay.addEventListener("click", function(e) {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+        
+        document.addEventListener('keydown', function(event){
+            if(event.key === "Escape" && modalOverlay.classList.contains("active")){
+                closeModal();
+            }
+        });
+
+        // Pantalla Final de Victoria
+        function showVictory() {
+            const inputSection = document.getElementById("input-section");
+            inputSection.style.display = "none"; // Ocultar controles
+            progressBadge.innerText = "¡LIBERTAD!";
+            progressBadge.style.backgroundColor = "rgba(34, 211, 238, 0.2)";
+            progressBadge.style.borderColor = "var(--accent-cyan)";
+            progressBadge.style.color = "var(--accent-cyan)";
+
+            phaseContentDiv.innerHTML = `
+                <div class="victory-screen">
+                    <div class="victory-icon">🗝️✨</div>
+                    <h2 style="color: var(--accent-gold); font-size: 2.5rem; text-shadow: 0 0 15px rgba(251,191,36,0.6);">¡MANSIÓN SUPERADA!</h2>
+                    <p class="story-text" style="text-align: center; margin-top: 25px; font-size: 1.2rem;">
+                        La pesada bóveda se abre con un estruendo, dejando entrar la cálida luz del sol.
+                        <br><br>
+                        Has demostrado ser un gran aprendiz de las transformaciones de la materia. Tu conocimiento en <strong>Cambios Físicos, Evidencias Químicas, Balanceo de Ecuaciones y la formación de Enlaces Iónicos</strong> es asombroso.
+                        <br><br>
+                        <strong style="color: var(--accent-cyan);">¡Felicidades, lograste escapar!</strong>
+                    </p>
+                </div>
+            `;
+        }
+
+        // Arrancar el juego al cargar la página
+        window.onload = initGame;
+
+    </script>
+</body>
+</html>

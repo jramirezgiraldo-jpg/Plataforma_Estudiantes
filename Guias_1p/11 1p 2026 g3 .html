@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: La Danza de los Anillos - Reacciones Pericíclicas</title>
+    <style>
+        :root {
+            --coffee-dark: #3e2723;
+            --coffee-light: #d7ccc8;
+            --leaf-green: #33691e;
+            --citrus-orange: #f57c00;
+            --paper: #fffdf5;
+            --text: #212121;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #eceff1;
+            color: var(--text);
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Barra de Navegación y Progreso */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--coffee-dark);
+            color: white;
+            padding: 10px 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-container {
+            width: 50%;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            margin-left: 20px;
+            height: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--citrus-orange);
+            width: 0%;
+            border-radius: 20px;
+            transition: width 0.5s ease;
+        }
+
+        .score-box {
+            margin-right: 20px;
+            font-weight: bold;
+            background: var(--leaf-green);
+            padding: 5px 15px;
+            border-radius: 15px;
+        }
+
+        /* Contenedor Principal */
+        .main-content {
+            max-width: 900px;
+            margin: 80px auto 40px auto;
+            background: white;
+            padding: 50px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 { color: var(--coffee-dark); border-bottom: 3px solid var(--citrus-orange); padding-bottom: 10px; }
+        h3 { color: var(--leaf-green); margin-top: 30px; }
+        
+        .hidden { display: none; }
+
+        /* Actividades de Cuaderno */
+        .notebook-section {
+            background-color: var(--paper);
+            border-left: 6px solid var(--coffee-dark);
+            padding: 25px;
+            margin: 30px 0;
+            position: relative;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
+        }
+        .notebook-section::before {
+            content: "📓 ACTIVIDAD EN EL CUADERNO";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--coffee-dark);
+            color: white;
+            padding: 2px 10px;
+            font-size: 0.8em;
+            border-radius: 4px;
+        }
+
+        /* Botones */
+        .btn {
+            background-color: var(--leaf-green);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: transform 0.2s, background 0.2s;
+            margin-top: 15px;
+            display: inline-block;
+        }
+        .btn:hover { background-color: #2e7d32; transform: scale(1.02); }
+        .btn:disabled { background-color: #bdbdbd; cursor: not-allowed; transform: none; }
+
+        /* Elementos Gráficos */
+        .visual-box {
+            border: 2px dashed #90a4ae;
+            background: #fcfcfc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: var(--coffee-dark); color: white; }
+
+        /* ICFES */
+        .icfes-container {
+            border: 2px solid #0288d1;
+            background-color: #e1f5fe;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        .option-label {
+            display: block;
+            margin: 10px 0;
+            padding: 15px;
+            background: white;
+            border: 1px solid #b3e5fc;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .option-label:hover { background: #b3e5fc; }
+        
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct { background: #c8e6c9; color: #1b5e20; border: 1px solid #1b5e20; }
+        .incorrect { background: #ffcdd2; color: #b71c1c; border: 1px solid #b71c1c; }
+
+        /* Inputs */
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div style="margin-left: 20px; font-weight:bold;">Química Orgánica - Grado 11</div>
+        <div class="progress-container">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        <div class="score-box">Puntos: <span id="scoreVal">0.0</span>/5.0</div>
+    </nav>
+
+    <div class="main-content" id="step-login">
+        <h1>La Armonía de los Anillos: Reacciones Pericíclicas</h1>
+        <p>Bienvenido estudiante de Grado 11. Hoy descubriremos cómo la naturaleza construye sus estructuras más aromáticas, desde la cáscara de un limón en Quimbaya hasta el tostado del café en Montenegro.</p>
+        
+        <div style="background: var(--paper); padding: 20px; border-radius: 8px;">
+            <label><strong>Nombre Completo:</strong></label>
+            <input type="text" id="studentName" placeholder="Escribe tu nombre aquí...">
+            <button class="btn" onclick="startModule()">Iniciar Experiencia</button>
+        </div>
+    </div>
+
+    <div class="main-content hidden" id="step-intro">
+        <h2>Objetivo de Aprendizaje</h2>
+        <p>Comprender los procesos de ciclación y reordenamiento molecular (reacciones pericíclicas) como mecanismos concertados que buscan la estabilidad y armonía energética, analizándolos en el contexto de la formación de aromas en el café y cítricos del Quindío.</p>
+
+        <hr>
+        <h3>Diagnóstico de Pre-saberes</h3>
+        <p>Selecciona la opción correcta.</p>
+
+        <div id="quiz-pre">
+            <p><strong>1. ¿Qué característica define a un compuesto aromático como el Benceno?</strong></p>
+            <select id="pre1" class="btn" style="background:white; color:black; border:1px solid #ccc;">
+                <option value="0">Seleccionar...</option>
+                <option value="a">Es un ciclo plano muy estable con dobles enlaces alternados (resonancia).</option>
+                <option value="b">Tiene un aroma a frutas dulce.</option>
+                <option value="c">Es una cadena abierta muy reactiva.</option>
+            </select>
+
+            <p><strong>2. ¿Qué significa que una reacción sea "concertada"?</strong></p>
+            <select id="pre2" class="btn" style="background:white; color:black; border:1px solid #ccc;">
+                <option value="0">Seleccionar...</option>
+                <option value="a">Que ocurre en varios pasos con intermedios.</option>
+                <option value="b">Que todos los enlaces se rompen y forman al mismo tiempo.</option>
+                <option value="c">Que necesita música para ocurrir.</option>
+            </select>
+
+            <p><strong>3. Un isómero es:</strong></p>
+            <select id="pre3" class="btn" style="background:white; color:black; border:1px solid #ccc;">
+                <option value="0">Seleccionar...</option>
+                <option value="a">Un átomo con diferente número de neutrones.</option>
+                <option value="b">Una molécula con los mismos átomos pero diferente estructura.</option>
+                <option value="c">Un tipo de plástico.</option>
+            </select>
+            <br><br>
+            <button class="btn" onclick="checkPre()">Verificar y Continuar</button>
+        </div>
+    </div>
+
+    <div class="main-content hidden" id="step-inductive">
+        <h2>Parte I: El Aroma de la Tierra (Inducción)</h2>
+        
+        <p>Imagina que caminas por una finca cafetera en la vereda Pueblo Rico. Son las 5 de la tarde. En la cocina, están tostando café. Ese aroma inconfundible, amargo, terroso y delicioso, no existía cuando el grano estaba verde. El grano verde huele a hierba. ¿Qué pasó en el tostador? Ocurrió una transformación mágica impulsada por el calor: Las <strong>Reacciones Pericíclicas</strong>.</p>
+
+        <p>La naturaleza, en su infinita sabiduría, tiende a la estabilidad. Las cadenas lineales de átomos de carbono, llenas de energía y dobles enlaces, son como resortes estirados. A veces, estas cadenas deciden "morderse la cola" y cerrar un ciclo. Al hacerlo, encuentran paz y estabilidad. Este proceso de formar anillos es la base de la química de los aromas.</p>
+        
+        <div class="visual-box">
+            [GRÁFICO MENTAL: Imagina una cadena de eslabones abierta vibrando. De repente, los extremos se tocan y forman un círculo perfecto y estable.]
+        </div>
+
+        <p>En el café tostado, azúcares y aminoácidos reaccionan y sufren ciclaciones para formar <strong>Pirazinas</strong> y <strong>Furanos</strong>. Estas son moléculas en forma de anillo (heterociclos) que son responsables del olor a "tostado" y "nuez". No se formaron rompiendo la molécula en pedazos, sino reorganizando sus electrones en un baile circular.</p>
+
+        <div class="notebook-section">
+            <h4>Actividad 1: El Anillo del Café</h4>
+            <p>Investiga y dibuja en tu cuaderno la estructura molecular de la <strong>2-etil-3,5-dimetilpirazina</strong> (un compuesto clave del aroma a café tierra). Dibuja a su lado un grano de café. ¿Cuántos átomos forman el anillo central?</p>
+            <button class="btn" onclick="verifyActivity(1)">¡Dibujo realizado!</button>
+        </div>
+
+        <p>Ahora, piensa en los cítricos de Montenegro. La cáscara de naranja y limón contiene aceites esenciales ricos en <strong>Terpenos</strong>. El más famoso es el Limoneno. El Limoneno es un anillo de seis carbonos. Pero la planta no lo fabrica pieza por pieza. La planta toma una cadena larga llamada Pirofosfato de Geranilo y, mediante una enzima, hace que la cadena se cierre sobre sí misma. Es una <strong>Electrociclación</strong> biológica.</p>
+        
+        <p>Lo más hermoso de estos procesos es que son <strong>Concertados</strong>. En la mayoría de reacciones químicas que has visto hasta grado 10 (como ácido-base), primero pasa A, luego B, luego C. Hay intermedios. En las reacciones pericíclicas, no hay pasos intermedios. Es todo o nada. Es como un equipo de nado sincronizado: si una nadadora salta antes que la otra, falla. Todas deben mover sus electrones exactamente al mismo instante para cerrar el anillo.</p>
+
+        <div class="notebook-section">
+            <h4>Actividad 2: Tabla Comparativa</h4>
+            <p>Crea una tabla comparando "Reacciones por Pasos" (ej: Sustitución nucleofílica) vs "Reacciones Concertadas".<br>
+            Criterios: ¿Tienen intermedios? ¿Cómo es la velocidad? ¿Se rompen enlaces uno por uno o simultáneamente?</p>
+            <button class="btn" onclick="verifyActivity(2)">¡Tabla completada!</button>
+        </div>
+
+        <p>La armonía de estos procesos también depende de las condiciones externas: Luz y Calor. Algunas reacciones solo ocurren si calentamos (como tostar café), y otras solo ocurren si hay luz ultravioleta. Por ejemplo, tu cuerpo produce <strong>Vitamina D</strong> cuando el sol golpea tu piel. La luz UV rompe un anillo de colesterol en una reacción pericíclica inversa (apertura de anillo). Sin luz, no hay vitamina, y sin vitamina, no hay salud.</p>
+
+        <div class="notebook-section">
+            <h4>Actividad 3: Mapa Mental "Estímulos"</h4>
+            <p>Elabora un mapa mental con el centro "ACTIVADORES". Ramas: CALOR (Térmico) y LUZ (Fotoquímico). En Calor dibuja un grano de café o una sartén. En Luz dibuja el sol y la piel. Conecta con la idea de "Movimiento de electrones".</p>
+            <button class="btn" onclick="verifyActivity(3)">¡Mapa mental listo!</button>
+        </div>
+
+        <p>Para representar esto en papel, los químicos usamos flechas curvas. Pero no cualquier flecha. Usamos flechas que forman un círculo cerrado. Esto nos dice que los electrones están rotando dentro de la molécula para cambiar los enlaces de lugar. Es un reciclaje perfecto de energía.</p>
+
+        <div class="notebook-section">
+            <h4>Actividad 4: Dibujando el Flujo</h4>
+            <p>Dibuja un hexágono (ciclohexano) con tres dobles enlaces (Benceno). Dibuja un círculo de flechas dentro que muestre cómo los dobles enlaces podrían moverse a la posición siguiente. Esto representa la resonancia, prima hermana de la periciclación.</p>
+            <button class="btn" onclick="verifyActivity(4)">¡Flechas dibujadas!</button>
+        </div>
+
+        <p><strong>Reflexión sobre la Armonía:</strong><br>
+        Así como los electrones buscan "comodidad" formando anillos estables, en la vida nosotros buscamos cerrar ciclos. Un proyecto escolar, una etapa de la vida, una reconciliación. Dejar "cadenas abiertas" (cosas pendientes) gasta energía. Cerrar el ciclo (formar el anillo) nos da estabilidad y permite que surja nuestra esencia (aroma), tal como el café o el limón.</p>
+
+        <div class="notebook-section">
+            <h4>Actividad 5: Reflexión Personal</h4>
+            <p>Escribe un párrafo de 5 líneas: ¿Qué "ciclo" en tu vida académica necesitas cerrar este año para graduarte con éxito? ¿Qué "energía de activación" (esfuerzo) necesitas para lograr ese cierre concertado?</p>
+            <button class="btn" onclick="verifyActivity(5)">¡Reflexión escrita!</button>
+        </div>
+
+        <button class="btn" onclick="showSection('step-icfes')">Ir al Reto de Indagación (ICFES)</button>
+    </div>
+
+    <div class="main-content hidden" id="step-icfes">
+        <h2>Reto de Competencia: Indagar</h2>
+        
+        <div class="icfes-container">
+            <p><strong>Contexto:</strong> Un grupo de investigadores de la Universidad del Quindío está estudiando la síntesis de Vitamina D. Saben que en la piel humana, el 7-deshidrocolesterol se transforma en Pre-Vitamina D gracias a la luz solar (reacción fotoquímica). Sin embargo, observan algo curioso en el laboratorio.</p>
+            
+            <div class="visual-box" style="background: white;">
+                <strong>EXPERIMENTO:</strong><br>
+                1. Muestra A (Oscuridad + Calor 100°C): No hay reacción.<br>
+                2. Muestra B (Luz UV + Frío 10°C): Se forma Pre-Vitamina D.<br>
+                3. Muestra C (Pre-Vitamina D formada + Calor intenso): La molécula se cicla de nuevo pero forma un producto "extraño" (Isómero incorrecto) no útil para el cuerpo.
+            </div>
+
+            <p><strong>Pregunta:</strong> Basándose en los resultados del experimento, ¿cuál es la explicación científica más plausible de por qué el cuerpo humano necesita luz solar y no solo calor corporal para producir Vitamina D?</p>
+
+            <label class="option-label"><input type="radio" name="icfes" value="A"> <strong>A.</strong> Porque la luz solar calienta la piel más rápido que el metabolismo interno, acelerando las partículas.</label>
+            <label class="option-label"><input type="radio" name="icfes" value="B"> <strong>B.</strong> Porque las reacciones pericíclicas siguen reglas de simetría orbital donde la luz activa un camino de electrones diferente al del calor, permitiendo el producto correcto.</label>
+            <label class="option-label"><input type="radio" name="icfes" value="C"> <strong>C.</strong> Porque la Vitamina D es una molécula que absorbe oscuridad y emite luz, por lo tanto necesita cargarse de fotones.</label>
+            <label class="option-label"><input type="radio" name="icfes" value="D"> <strong>D.</strong> Porque el calor desnaturaliza las enzimas de la piel, impidiendo cualquier tipo de reacción química biológica.</label>
+
+            <button class="btn" onclick="checkICFES()">Enviar Análisis</button>
+            <div id="icfes-feedback" class="feedback"></div>
+            <button id="btn-post-icfes" class="btn hidden" onclick="showSection('step-deductive')">Continuar a Teoría Formal</button>
+        </div>
+    </div>
+
+    <div class="main-content hidden" id="step-deductive">
+        <h2>Parte II: Las Reglas del Juego (Texto Deductivo)</h2>
+        
+        <p>Hemos explorado los aromas y la biología. Ahora, organicemos este conocimiento con rigor científico. Las <strong>Reacciones Pericíclicas</strong> se definen formalmente como aquellas que ocurren a través de un <em>Estado de Transición Cíclico Concertado</em>. No hay iones (cargas + o -) ni radicales libres involucrados principalmente.</p>
+
+        <h3>Clasificación Fundamental</h3>
+        <p>Existen tres tipos principales que debes conocer para el examen de estado y la universidad:</p>
+        
+        <ul>
+            <li><strong>1. Cicloadiciones (La más famosa: Diels-Alder):</strong> Dos moléculas separadas se unen para formar un anillo. Generalmente involucra un sistema de 4 electrones pi (Dieno) y uno de 2 electrones pi (Dienófilo). Se le llama [4+2].
+                <br><em>Ejemplo:</em> La síntesis de plásticos y fármacos.</li>
+            
+            <li><strong>2. Reacciones Electrocíclicas:</strong> Una sola molécula lineal cierra un anillo (formando un enlace sigma a costa de uno pi) o un anillo se abre.
+                <br><em>Ejemplo:</em> La formación de Vitamina D que vimos en el ICFES.</li>
+            
+            <li><strong>3. Transposiciones Sigmatrópicas:</strong> Un átomo o grupo de átomos migra de una posición a otra dentro de la molécula, reorganizando los dobles enlaces, pero sin formar ni destruir anillos nuevos netos, solo moviéndolos.
+                <br><em>Ejemplo:</em> Reordenamiento de Claisen (ocurre al calentar ciertos aceites esenciales).</li>
+        </ul>
+
+        <div class="notebook-section">
+            <h4>Actividad 6: Cuadro Sinóptico</h4>
+            <p>Crea un cuadro sinóptico en tu cuaderno. Título: "Tipos de Reacciones Pericíclicas". Ramas: Cicloadición, Electrocíclica, Sigmatrópica. Debajo de cada una escribe: ¿Cuántas moléculas inician? (1 o 2). Dibuja un esquema simple.</p>
+            <button class="btn" onclick="verifyActivity(6)">¡Cuadro listo!</button>
+        </div>
+
+        <h3>La Reacción de Diels-Alder</h3>
+        <p>Es la reina de las cicloadiciones. Imagina un "Dieno" (una molécula con dos dobles enlaces conjugados, parece una letra C) y un "Dienófilo" (una molécula con un doble enlace, le gusta el dieno). Cuando se calientan, forman un ciclo de seis carbonos (Ciclohexeno).</p>
+        
+        <div class="visual-box">
+            Dieno (4e-) + Dienófilo (2e-) $\rightarrow$ Anillo de 6 miembros
+        </div>
+        
+        <p>Esta reacción es vital en la industria química verde porque no genera subproductos (toda la masa de los reactivos termina en el producto, ¡economía atómica del 100%!). Es ecológica y armónica.</p>
+
+        <div class="notebook-section">
+            <h4>Actividad 7: Identificación de Patrones</h4>
+            <p>Dibuja el Butadieno (4 carbonos, 2 dobles enlaces) y el Etileno (2 carbonos, 1 doble enlace). Únelos con flechas para formar un Ciclohexeno. ¿Ves cómo 4+2=6?</p>
+            <button class="btn" onclick="verifyActivity(7)">¡Reacción dibujada!</button>
+        </div>
+
+        <h3>Estereoquímica y las Reglas de Woodward-Hoffmann</h3>
+        <p>Aquí es donde entra la física cuántica (simplificada). Los orbitales tienen "fases" (colores, como arriba y abajo). Para que los enlaces se formen, las fases deben coincidir (azul con azul).
+        <br>Las reglas dicen:
+        <br>- Con <strong>CALOR</strong>, los electrones giran de una forma (Conrotatoria o Disrotatoria dependiendo del número de electrones).
+        <br>- Con <strong>LUZ</strong>, giran de la forma opuesta.
+        <br>Por eso en el ICFES vimos que el calor producía algo "incorrecto" en la Vitamina D. La naturaleza es estricta con sus reglas de simetría.</p>
+
+        <div class="notebook-section">
+            <h4>Actividad 8: Dibujo de Fases</h4>
+            <p>Dibuja dos lóbulos (como globos) uno al lado del otro. Pinta la mitad superior de uno de negro y la del otro de blanco. Esto representa fases opuestas. Ahora dibuja ambos con la parte superior negra. Eso es fases iguales (enlazantes). Escribe: "Solo fases iguales forman enlace".</p>
+            <button class="btn" onclick="verifyActivity(8)">¡Fases dibujadas!</button>
+        </div>
+
+        <h3>Bioquímica y Reordenamientos</h3>
+        <p>En el cuerpo humano y las plantas, las transposiciones sigmatrópicas son cruciales. El "Reordenamiento de Claisen" permite construir cadenas laterales complejas en aminoácidos y metabolitos. Sin estos movimientos precisos de átomos de hidrógeno, muchas proteínas no tendrían su forma funcional.</p>
+
+        <div class="notebook-section">
+            <h4>Actividad 9: Flujograma de Reacción</h4>
+            <p>Dibuja un flujograma lineal: Reactivos $\rightarrow$ Estado de Transición (Dibuja un ciclo con líneas punteadas) $\rightarrow$ Productos. Etiqueta el estado de transición como "Punto de máxima energía".</p>
+            <button class="btn" onclick="verifyActivity(9)">¡Flujograma hecho!</button>
+        </div>
+
+        <p><strong>Conclusión Deductiva:</strong>
+        Las reacciones pericíclicas demuestran que la química orgánica no es caótica. Es un ballet coreografiado por las leyes de la mecánica cuántica y la termodinámica. Desde el aroma de tu café matutino hasta la síntesis de vitaminas en tu piel, todo depende de que los electrones fluyan en círculos cerrados, respetando la simetría y conservando la armonía de la materia.</p>
+
+        <div class="notebook-section">
+            <h4>Actividad 10: La Carta a la Naturaleza</h4>
+            <p>Escribe una carta breve a la "Naturaleza" agradeciendo por la precisión de sus procesos. Usa al menos 3 términos químicos aprendidos hoy (ej: Concertado, Ciclo, Estabilidad, Orbital).</p>
+            <button class="btn" onclick="verifyActivity(10)">¡Carta finalizada!</button>
+        </div>
+
+        <button class="btn" onclick="showSection('step-final')">Ir al Taller Final</button>
+    </div>
+
+    <div class="main-content hidden" id="step-final">
+        <h2>Evaluación de Cierre</h2>
+        <p>Demuestra tu dominio del tema.</p>
+        
+        <h3>Selección Múltiple</h3>
+        <div id="final-mc">
+            <p>1. Una reacción pericíclica se caracteriza por:</p>
+            <label><input type="radio" name="q1" value="A"> A. Formar iones explosivos.</label><br>
+            <label><input type="radio" name="q1" value="B"> B. Ocurrir en un solo paso concertado.</label><br>
+            <label><input type="radio" name="q1" value="C"> C. Necesitar siempre un catalizador metálico.</label><br>
+            
+            <p>2. La reacción de Diels-Alder es del tipo:</p>
+            <label><input type="radio" name="q2" value="A"> A. Cicloadición [4+2].</label><br>
+            <label><input type="radio" name="q2" value="B"> B. Explosión nuclear.</label><br>
+            <label><input type="radio" name="q2" value="C"> C. Sustitución simple.</label><br>
+
+            <p>3. ¿Qué factor físico puede cambiar el resultado de estas reacciones?</p>
+            <label><input type="radio" name="q3" value="A"> A. El color del recipiente.</label><br>
+            <label><input type="radio" name="q3" value="B"> B. La Luz (Fotoquímica) vs Calor (Térmica).</label><br>
+            <label><input type="radio" name="q3" value="C"> C. El ruido ambiental.</label><br>
+
+            <p>4. El limoneno (aroma de limón) es un ejemplo de molécula:</p>
+            <label><input type="radio" name="q4" value="A"> A. Cíclica formada por biosíntesis.</label><br>
+            <label><input type="radio" name="q4" value="B"> B. Lineal y aburrida.</label><br>
+            <label><input type="radio" name="q4" value="C"> C. Inorgánica sin carbono.</label><br>
+
+            <p>5. ¿Qué significa "Economía Atómica"?</p>
+            <label><input type="radio" name="q5" value="A"> A. Que los reactivos son baratos.</label><br>
+            <label><input type="radio" name="q5" value="B"> B. Que todos los átomos de los reactivos terminan en el producto.</label><br>
+            <label><input type="radio" name="q5" value="C"> C. Que se usan pocos átomos.</label><br>
+        </div>
+
+        <h3>Preguntas Abiertas</h3>
+        <p><em>Responde con profundidad (Mínimo 20 palabras por respuesta). No uses IA.</em></p>
+        
+        <p>6. Explica con tus palabras la diferencia entre una reacción "paso a paso" y una "concertada". Usa una analogía.</p>
+        <textarea id="open6" rows="3"></textarea>
+        
+        <p>7. ¿Cómo se relaciona el tostado del café con la formación de anillos químicos?</p>
+        <textarea id="open7" rows="3"></textarea>
+
+        <p>8. Describe qué es un "Estado de Transición" en estas reacciones.</p>
+        <textarea id="open8" rows="3"></textarea>
+
+        <p>9. ¿Por qué crees que la naturaleza prefiere las estructuras cíclicas (anillos) para moléculas estables?</p>
+        <textarea id="open9" rows="3"></textarea>
+
+        <p>10. Resume la importancia de la luz UV en la química de la piel humana según lo aprendido.</p>
+        <textarea id="open10" rows="3"></textarea>
+
+        <button class="btn" onclick="finishCourse()">Finalizar y Descargar Resultados</button>
+    </div>
+
+<script>
+    // Variables de Estado
+    let studentData = { name: "", score: 0.0, activities: 0 };
+    const TOTAL_STEPS = 10; // 10 actividades notebook
+    const STEP_VALUE = 0.5; 
+
+    // Navegación
+    function showSection(id) {
+        document.querySelectorAll('.main-content').forEach(d => d.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+        window.scrollTo(0,0);
+    }
+
+    function startModule() {
+        const n = document.getElementById('studentName').value;
+        if(n.length < 5) { alert("Ingresa tu nombre completo."); return; }
+        studentData.name = n;
+        showSection('step-intro');
+    }
+
+    // Pre-saberes
+    function checkPre() {
+        const p1 = document.getElementById('pre1').value;
+        const p2 = document.getElementById('pre2').value;
+        const p3 = document.getElementById('pre3').value;
+        
+        if(p1==='0'||p2==='0'||p3==='0') { alert("Responde todo."); return; }
+        
+        let msg = "Resultados Diagnóstico:\n";
+        msg += (p1==='a') ? "1. Correcto (Aromáticos).\n" : "1. Incorrecto (El benceno es plano y cíclico).\n";
+        msg += (p2==='b') ? "2. Correcto (Concertada).\n" : "2. Incorrecto (Concertada es simultánea).\n";
+        msg += (p3==='b') ? "3. Correcto (Isómeros).\n" : "3. Incorrecto (Isómeros = igual fórmula, distinta forma).\n";
+        
+        alert(msg);
+        showSection('step-inductive');
+    }
+
+    // Actividades
+    function verifyActivity(n) {
+        const btn = event.target;
+        if(!btn.disabled) {
+            btn.disabled = true;
+            btn.innerText = "¡Verificado! (+0.5)";
+            btn.style.background = "#33691e";
+            studentData.score += STEP_VALUE;
+            studentData.activities++;
+            updateUI();
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('scoreVal').innerText = studentData.score.toFixed(1);
+        document.getElementById('progressBar').style.width = (studentData.activities * 10) + "%";
+    }
+
+    // ICFES
+    function checkICFES() {
+        const opts = document.getElementsByName('icfes');
+        let sel = null;
+        for(let o of opts) if(o.checked) sel = o.value;
+        
+        if(!sel) { alert("Elige una opción."); return; }
+
+        const fb = document.getElementById('icfes-feedback');
+        fb.style.display = "block";
+        fb.className = "feedback"; // reset
+
+        if(sel === 'B') {
+            fb.classList.add('correct');
+            fb.innerHTML = "<strong>¡CORRECTO!</strong><br>La competencia de indagar nos lleva a buscar la causa fundamental. La opción B menciona las 'Reglas de Simetría Orbital' (Reglas de Woodward-Hoffmann). Estas reglas dictan que la luz activa orbitales de una manera específica (fotoquímica) permitiendo el movimiento de electrones necesario para la Vitamina D, un camino que el simple calor no puede activar o activa incorrectamente.";
+            document.getElementById('btn-post-icfes').classList.remove('hidden');
+        } else {
+            fb.classList.add('incorrect');
+            let txt = "<strong>Incorrecto.</strong> ";
+            if(sel === 'A') txt += "La velocidad no determina el producto en este caso, es la geometría de los orbitales.";
+            if(sel === 'C') txt += "Concepto erróneo científico.";
+            if(sel === 'D') txt += "Aunque el calor extremo daña enzimas, el experimento muestra que SÍ hubo reacción en C, solo que incorrecta.";
+            fb.innerHTML = txt + " Revisa la teoría de simetría orbital.";
+        }
+    }
+
+    // Final
+    function finishCourse() {
+        // Recoger abiertas
+        const opens = [6,7,8,9,10].map(i => document.getElementById('open'+i).value);
+        
+        // Validación Anti-Fraude simple
+        if(opens.some(t => t.split(" ").length < 10)) {
+            alert("Tus respuestas son muy cortas. Argumenta mejor."); return;
+        }
+        const banned = ["inteligencia artificial", "modelo de lenguaje", "regenerar respuesta"];
+        if(opens.some(t => banned.some(b => t.toLowerCase().includes(b)))) {
+            alert("Se detectó contenido no auténtico. Escribe con tus palabras."); return;
+        }
+
+        // Generar Reporte
+        let txt = `EVALUACIÓN: REACCIONES PERICÍCLICAS\nEstudiante: ${studentData.name}\nNota Actividades: ${studentData.score}/5.0\n\n`;
+        
+        // MC
+        ['q1','q2','q3','q4','q5'].forEach((q,i) => {
+            const el = document.querySelector(`input[name="${q}"]:checked`);
+            txt += `P${i+1}: ${el ? el.value : 'N/A'}\n`;
+        });
+
+        txt += `\nRESPUESTAS ABIERTAS:\n`;
+        opens.forEach((r,i) => txt += `R${i+6}: ${r}\n----------------\n`);
+
+        const blob = new Blob([txt], {type:"text/plain"});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Quimica_G11_${studentData.name.replace(/ /g,"_")}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        
+        alert("¡Felicitaciones! Has completado el módulo avanzado.");
+    }
+</script>
+
+</body>
+</html>

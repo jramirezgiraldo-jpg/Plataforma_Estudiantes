@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Métodos de Separación - El Arte de la Paciencia</title>
+    <style>
+        :root {
+            --primary-blue: #1a3a5f;
+            --accent-orange: #f39c12;
+            --bg-light: #f4f7f6;
+            --success-green: #27ae60;
+            --text-dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            margin: 0;
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        /* LOGIN OVERLAY */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary-blue);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 2000;
+        }
+
+        .login-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-width: 400px;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 20px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+
+        /* HEADER & PROGRESS */
+        header {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 10px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+        }
+
+        .progress-container {
+            width: 100%;
+            background: #eee;
+            height: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-orange), var(--success-green));
+            transition: width 0.5s;
+        }
+
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--primary-blue);
+            line-height: 25px;
+        }
+
+        /* CONTENT STRUCTURE */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: none;
+        }
+
+        section {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        h1, h2 { color: var(--primary-blue); }
+        
+        .svg-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        /* INTERACTIVE ELEMENTS */
+        .activity-box {
+            background: #ebf2fa;
+            border-left: 5px solid var(--accent-orange);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover { background: var(--accent-orange); }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .word-counter {
+            font-size: 0.8rem;
+            color: #666;
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* REINFORCEMENT BOX */
+        #reinforcement-section {
+            display: none;
+            background: #fff3cd;
+            border: 2px solid #ffeeba;
+            padding: 2rem;
+            margin-top: 2rem;
+            border-radius: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>¡Bienvenido Explorador!</h2>
+            <p>Ingresa tu nombre y apellido para comenzar la expedición científica.</p>
+            <input type="text" id="user-fullname" placeholder="Ej: Juan Pérez">
+            <br>
+            <button class="btn" onclick="iniciarOVA()">Ingresar al Laboratorio</button>
+        </div>
+    </div>
+
+    <header id="main-header">
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+            <div class="progress-text">
+                Estudiante: <span id="display-name"></span> | 
+                Nivel: <span id="current-element">Hidrógeno (H)</span> | 
+                Puntos: <span id="score-val">0</span>/5
+            </div>
+        </div>
+    </header>
+
+    <div class="container" id="main-container">
+        <section id="inicio">
+            <h1>Objetivo de Aprendizaje</h1>
+            <p>Aprenderás a recuperar sustancias sólidas disueltas en líquidos y a separar mezclas de líquidos con diferente densidad, aplicando la evaporación y la decantación. Todo esto, mientras cultivas la paciencia y la perseverancia, herramientas clave de todo gran científico.</p>
+            
+            <div class="activity-box">
+                <h3>Pre-saberes: ¿Qué harías tú?</h3>
+                <p>1. Si mezclas sal en un vaso de agua y desaparece a la vista, ¿crees que la sal se fue para siempre?</p>
+                <button class="btn" onclick="preFeedback(1, '¡Correcto! Solo cambió de forma, pero sigue ahí.')">Sí, está oculta</button>
+                <button class="btn" onclick="preFeedback(1, 'No exactamente. La sal sigue presente, solo se disolvió.')">No, desapareció</button>
+                <div id="fb-1" class="feedback"></div>
+
+                <p>2. ¿Por qué el aceite siempre flota sobre el agua?</p>
+                <button class="btn" onclick="preFeedback(2, 'Exacto. Esa diferencia es lo que permite separarlos.')">Es menos denso (más liviano)</button>
+                <button class="btn" onclick="preFeedback(2, 'En realidad es por su densidad, no por el miedo.')">Le tiene miedo al agua</button>
+                <div id="fb-2" class="feedback"></div>
+
+                <p>3. ¿Qué necesitas para que el agua de un charco desaparezca más rápido?</p>
+                <button class="btn" onclick="preFeedback(3, '¡Así es! El calor es el motor de la evaporación.')">Mucho calor del sol</button>
+                <button class="btn" onclick="preFeedback(3, 'El frío congelaría el agua, no la evaporaría.')">Mucho frío</button>
+                <div id="fb-3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>I. El Secreto de las Salinas: La Evaporación</h2>
+            <div class="content">
+                <p>Imagina que estás en las costas de La Guajira, frente a las gigantescas montañas de sal blanca en Manaure. ¿Cómo llegó esa sal allí si estaba disuelta en el inmenso mar azul? La respuesta no es una máquina mágica, sino un proceso natural que requiere dos cosas: energía solar y mucha paciencia. La <strong>evaporación</strong> es un método de separación que sirve para obtener un sólido que se ha disuelto en un líquido. En este viaje, el líquido (el solvente) decide marcharse al aire en forma de vapor, dejando atrás al sólido (el soluto) que no puede volar.</p>
+                
+                <p>Cuando un científico decide recuperar sal en su casa, utiliza una estufa o deja un plato con agua salada al sol. Aquí es donde entra la <strong>perseverancia</strong>. Si intentas apurar el proceso con un fuego demasiado fuerte, la sal podría saltar o quemarse; si lo haces al sol, podrías tardar días. Pero al final, cuando el agua se ha ido totalmente, verás aparecer pequeños cristales brillantes. Esos cristales son tu recompensa por saber esperar. La evaporación es un cambio de estado de líquido a gas que ocurre solo en la superficie del líquido, a diferencia de la ebullición que ocurre en todo el volumen.</p>
+
+                <div class="svg-container">
+                    <svg width="300" height="200" viewBox="0 0 300 200">
+                        <circle cx="250" cy="50" r="30" fill="#f1c40f" />
+                        <rect x="100" y="100" width="100" height="80" fill="none" stroke="#2c3e50" stroke-width="3" />
+                        <rect x="103" y="130" width="94" height="47" fill="#3498db" opacity="0.6" />
+                        <rect x="110" y="170" width="5" height="5" fill="white" stroke="#bdc3c7" />
+                        <rect x="130" y="172" width="5" height="5" fill="white" stroke="#bdc3c7" />
+                        <rect x="150" y="171" width="5" height="5" fill="white" stroke="#bdc3c7" />
+                        <path d="M120 120 Q130 110 120 100" stroke="#95a5a6" fill="none" stroke-width="2">
+                            <animate attributeName="d" values="M120 120 Q130 110 120 100; M120 115 Q110 105 120 95" dur="2s" repeatCount="indefinite" />
+                        </path>
+                        <path d="M150 120 Q160 110 150 100" stroke="#95a5a6" fill="none" stroke-width="2">
+                            <animate attributeName="d" values="M150 120 Q160 110 150 100; M150 115 Q140 105 150 95" dur="2s" repeatCount="indefinite" />
+                        </path>
+                    </svg>
+                    <p><em>Gráfico 1: El calor solar impulsando la evaporación del agua salada.</em></p>
+                </div>
+
+                <p>Este método es vital no solo para la sal, sino para muchas industrias. Por ejemplo, para hacer café instantáneo o para secar frutas. La naturaleza lo hace constantemente en el ciclo del agua: los océanos se evaporan para formar nubes, dejando la sal en el mar. Sin este proceso, la lluvia sería salada y no podríamos beberla. Por eso, entender la evaporación es entender cómo la naturaleza se limpia y nos regala recursos preciosos. Recuerda: el agua se va, pero lo importante se queda si tienes la paciencia de esperar.</p>
+            </div>
+
+            <div class="activity-box">
+                <h3>Actividades para tu cuaderno</h3>
+                <ol>
+                    <li>Dibuja el experimento de evaporación que viste arriba. <button class="btn" onclick="addPoint(0.1)">Hecho</button></li>
+                    <li>Escribe una lista de 3 sustancias que crees que se pueden recuperar por evaporación. <button class="btn" onclick="addPoint(0.1)">Hecho</button></li>
+                    <li>Investiga y escribe en 5 renglones cómo es el proceso de la sal en Manaure. <button class="btn" onclick="addPoint(0.1)">Hecho</button></li>
+                    <li>Haz un mapa mental donde la palabra central sea "EVAPORACIÓN". <button class="btn" onclick="addPoint(0.1)">Hecho</button></li>
+                    <li>Escribe una frase sobre por qué la paciencia es importante en el laboratorio. <button class="btn" onclick="addPoint(0.1)">Hecho</button></li>
+                </ol>
+            </div>
+
+            <div class="activity-box">
+                <h3>Pregunta de Entrenamiento ICFES</h3>
+                <p>Un estudiante deja tres vasos con la misma cantidad de agua salada en diferentes lugares: uno en un refrigerador, otro en una habitación oscura y otro bajo el sol directo durante todo el día. ¿En cuál de los vasos se verán cristales de sal más rápido?</p>
+                <button class="btn" onclick="icfesFeedback(false, 'En el refrigerador el frío detiene la evaporación.')">A. En el refrigerador</button>
+                <button class="btn" onclick="icfesFeedback(false, 'En la habitación hay poca energía para que el agua escape.')">B. En la habitación oscura</button>
+                <button class="btn" onclick="icfesFeedback(true, '¡Exacto! El sol aporta la energía térmica necesaria para que el agua pase a estado gaseoso.')">C. Bajo el sol directo</button>
+                <div id="icfes-fb" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>II. El Juego de las Capas: La Decantación</h2>
+            <div class="content">
+                <p>Si la evaporación requiere calor, la <strong>decantación</strong> requiere quietud. Este es un método mecánico para separar mezclas heterogéneas, es decir, aquellas donde podemos ver los componentes a simple vista. Existen dos tipos principales: separar un sólido de un líquido (como arena y agua) o separar dos líquidos que no se mezclan (como agua y aceite). El secreto científico aquí se llama <strong>densidad</strong>. La densidad es la relación entre la masa de algo y el espacio que ocupa. Lo más denso siempre querrá irse al fondo por la fuerza de gravedad.</p>
+                
+                <p>En el laboratorio, usamos un instrumento llamado "embudo de decantación" o de separación. Es como una pera de vidrio con una llave abajo. Al verter la mezcla de agua y aceite, debemos tener la <strong>perseverancia</strong> de no mover el embudo. Poco a poco, el aceite formará una capa arriba y el agua una capa abajo. Al abrir la llave con cuidado, dejamos salir el agua y la cerramos justo antes de que el aceite pase. Si te desesperas y abres la llave muy fuerte, las capas se volverán a mezclar y tendrás que empezar de cero.</p>
+
+                <div class="svg-container">
+                    <svg width="200" height="250" viewBox="0 0 200 250">
+                        <path d="M50 20 L150 20 L110 150 L110 200 L90 200 L90 150 Z" fill="none" stroke="#2c3e50" stroke-width="3" />
+                        <path d="M60 40 L140 40 L125 100 L75 100 Z" fill="#f1c40f" opacity="0.7" />
+                        <path d="M75 100 L125 100 L110 150 L90 150 Z" fill="#3498db" opacity="0.7" />
+                        <circle cx="100" cy="175" r="8" fill="#e74c3c" />
+                        <rect x="90" y="172" width="20" height="6" fill="#c0392b" />
+                    </svg>
+                    <p><em>Gráfico 2: Embudo de decantación separando dos fases líquidas.</em></p>
+                </div>
+
+                <p>Deducimos entonces que la decantación es efectiva cuando hay una diferencia notable de densidades. En las plantas de tratamiento de agua, se usa la decantación para quitar el lodo del agua que llega de los ríos. El lodo, al ser más pesado (denso), cae al fondo de grandes tanques y el agua limpia queda arriba para ser filtrada. Sin este paso, el agua llegaría muy sucia a nuestras casas. La decantación nos enseña que, a veces, para separar lo que no sirve de lo que es valioso, solo necesitamos un momento de calma y dejar que las cosas tomen su lugar natural.</p>
+            </div>
+
+            <div class="activity-box">
+                <h3>Actividades de Análisis</h3>
+                <ol>
+                    <li>Dibuja un embudo de decantación y marca cuál es la sustancia más densa. <button class="btn" onclick="addPoint(0.1)">Hecho</button></li>
+                    <li>Escribe un ejemplo de la vida diaria donde uses la decantación. <button class="btn" onclick="addPoint(0.1)">Hecho</button></li>
+                    <li>Crea una tabla con 3 parejas de líquidos que podrías separar por este método. <button class="btn" onclick="addPoint(0.1)">Hecho</button></li>
+                    <li>¿Qué pasaría si intentas decantar agua y alcohol? Investiga si se puede. <button class="btn" onclick="addPoint(0.1)">Hecho</button></li>
+                    <li>Dibuja cómo se vería un vaso con agua, arena y aceite después de 10 minutos. <button class="btn" onclick="addPoint(0.1)">Hecho</button></li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="evaluacion">
+            <h2>Taller Evaluativo Final</h2>
+            <div id="quiz">
+                <p>1. ¿Qué factor es indispensable para que ocurra la evaporación?</p>
+                <select id="q1">
+                    <option value="error">Fuerza de gravedad</option>
+                    <option value="correct">Energía térmica (calor)</option>
+                    <option value="error">Un imán potente</option>
+                </select>
+
+                <p>2. En la decantación de agua y aceite, el aceite queda arriba porque:</p>
+                <select id="q2">
+                    <option value="error">Tiene más color</option>
+                    <option value="error">Es más denso</option>
+                    <option value="correct">Es menos denso</option>
+                </select>
+
+                <p>3. La evaporación se diferencia de la ebullición porque:</p>
+                <select id="q3">
+                    <option value="correct">Ocurre solo en la superficie</option>
+                    <option value="error">Ocurre en todo el líquido</option>
+                    <option value="error">Es mucho más rápida</option>
+                </select>
+
+                <p>4. El instrumento de vidrio usado para separar líquidos inmiscibles se llama:</p>
+                <select id="q4">
+                    <option value="error">Vaso de precipitados</option>
+                    <option value="correct">Embudo de decantación</option>
+                    <option value="error">Probeta graduada</option>
+                </select>
+
+                <p>5. Si quiero separar arena de agua rápidamente sin gastar energía térmica, uso:</p>
+                <select id="q5">
+                    <option value="correct">Decantación</option>
+                    <option value="error">Evaporación</option>
+                    <option value="error">Combustión</option>
+                </select>
+
+                <hr>
+                <h3>Preguntas Abiertas (10 a 15 palabras)</h3>
+                
+                <p>6. ¿Por qué es importante tener paciencia cuando estamos evaporando agua para obtener sal?</p>
+                <textarea id="a6" oninput="validaPalabras(6)"></textarea>
+                <span id="c6" class="word-counter">Palabras: 0</span>
+
+                <p>7. Explica con tus palabras qué es la densidad y cómo ayuda en la decantación.</p>
+                <textarea id="a7" oninput="validaPalabras(7)"></textarea>
+                <span id="c7" class="word-counter">Palabras: 0</span>
+
+                <p>8. ¿Qué sucedería si mezclas dos líquidos que sí se disuelven entre sí en un embudo?</p>
+                <textarea id="a8" oninput="validaPalabras(8)"></textarea>
+                <span id="c8" class="word-counter">Palabras: 0</span>
+
+                <p>9. Describe cómo la perseverancia ayuda a un científico a no rendirse en sus experimentos.</p>
+                <textarea id="a9" oninput="validaPalabras(9)"></textarea>
+                <span id="c9" class="word-counter">Palabras: 0</span>
+
+                <p>10. Menciona un uso industrial de la evaporación y por qué es útil para nosotros.</p>
+                <textarea id="a10" oninput="validaPalabras(10)"></textarea>
+                <span id="c10" class="word-counter">Palabras: 0</span>
+
+                <br><br>
+                <button class="btn" onclick="calificar()">Finalizar y Analizar Resultados</button>
+            </div>
+        </section>
+
+        <section id="reinforcement-section">
+            <h2 id="fort-titulo">Ruta de Fortalecimiento Personalizada</h2>
+            <p id="fort-instruccion"></p>
+            <div id="fort-contenido" style="font-weight: bold; color: var(--primary-blue);"></div>
+            <br>
+            <button class="btn" onclick="exportarResultados()">Descargar Reporte Final</button>
+        </section>
+    </div>
+
+    <script>
+        let score = 0;
+        let userName = "";
+        const elementos = ["Hidrógeno (H)", "Helio (He)", "Litio (Li)", "Berilio (Be)", "Boro (B)", "Carbono (C)"];
+
+        // PERSISTENCIA
+        window.onload = function() {
+            if(localStorage.getItem('ova_progreso')) {
+                let datos = JSON.parse(localStorage.getItem('ova_progreso'));
+                userName = datos.nombre;
+                score = datos.puntos;
+                document.getElementById('display-name').innerText = userName;
+                actualizarBarra();
+                mostrarContenido();
+            }
+        }
+
+        function iniciarOVA() {
+            userName = document.getElementById('user-fullname').value;
+            if(userName.length < 5) {
+                alert("Por favor, ingresa tu nombre y apellido completo.");
+                return;
+            }
+            document.getElementById('login-screen').style.display = 'none';
+            mostrarContenido();
+            document.getElementById('display-name').innerText = userName;
+            guardarProgreso();
+        }
+
+        function mostrarContenido() {
+            document.getElementById('main-header').style.display = 'block';
+            document.getElementById('main-container').style.display = 'block';
+            document.getElementById('login-screen').style.display = 'none';
+        }
+
+        function addPoint(val) {
+            score = Math.min(5, score + val);
+            actualizarBarra();
+            guardarProgreso();
+        }
+
+        function actualizarBarra() {
+            let p = (score / 5) * 100;
+            document.getElementById('progress-bar').style.width = p + "%";
+            document.getElementById('score-val').innerText = score.toFixed(1);
+            
+            let idx = Math.floor(score);
+            document.getElementById('current-element').innerText = elementos[idx] || "Carbono (C)";
+        }
+
+        function guardarProgreso() {
+            let datos = { nombre: userName, puntos: score };
+            localStorage.setItem('ova_progreso', JSON.stringify(datos));
+        }
+
+        function preFeedback(id, msg) {
+            let div = document.getElementById('fb-'+id);
+            div.innerText = msg;
+            div.style.display = 'block';
+            div.style.backgroundColor = msg.includes('Correcto') || msg.includes('Exacto') ? '#d4edda' : '#f8d7da';
+            addPoint(0.1);
+        }
+
+        function icfesFeedback(isCorrect, msg) {
+            let div = document.getElementById('icfes-fb');
+            div.innerText = msg;
+            div.style.display = 'block';
+            div.style.backgroundColor = isCorrect ? '#d4edda' : '#f8d7da';
+            if(isCorrect) addPoint(0.5);
+        }
+
+        function validaPalabras(id) {
+            let text = document.getElementById('a'+id).value.trim();
+            let words = text === "" ? 0 : text.split(/\s+/).length;
+            document.getElementById('c'+id).innerText = "Palabras: " + words;
+            document.getElementById('c'+id).style.color = (words >= 10 && words <= 15) ? "green" : "red";
+        }
+
+        function calificar() {
+            let correctas_inductivo = 0;
+            let correctas_deductivo = 0;
+
+            // MCQ check
+            if(document.getElementById('q1').value === 'correct') correctas_inductivo++;
+            if(document.getElementById('q2').value === 'correct') correctas_deductivo++;
+            if(document.getElementById('q3').value === 'correct') correctas_inductivo++;
+            if(document.getElementById('q4').value === 'correct') correctas_deductivo++;
+            if(document.getElementById('q5').value === 'correct') correctas_deductivo++;
+
+            // Open questions check (length only for logic)
+            let correctas_abiertas = 0;
+            for(let i=6; i<=10; i++){
+                let val = document.getElementById('a'+i).value.trim().split(/\s+/).length;
+                if(val >= 10 && val <= 15) correctas_abiertas++;
+            }
+
+            let total_eval = (correctas_inductivo + correctas_deductivo + correctas_abiertas);
+            score = (total_eval / 10) * 5;
+            actualizarBarra();
+
+            // Análisis de debilidades
+            let refuerzo = "";
+            if(correctas_inductivo < correctas_deductivo) {
+                refuerzo = "Debes fortalecer los conceptos de observación básica y evaporación. Recuerda que el calor es la clave para recuperar sólidos disueltos y que la paciencia permite que el agua se marche dejando lo valioso.";
+            } else if(correctas_deductivo < correctas_inductivo) {
+                refuerzo = "Tu debilidad está en la aplicación de leyes como la densidad. Repasa cómo las diferencias de peso permiten que la decantación separe mezclas líquidas en capas perfectas cuando hay quietud.";
+            } else {
+                refuerzo = "Has logrado un equilibrio excelente entre la teoría y la observación. Sigue practicando la perseverancia en cada experimento que realices.";
+            }
+
+            document.getElementById('fort-instruccion').innerText = "De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades:";
+            document.getElementById('fort-contenido').innerText = refuerzo;
+            document.getElementById('reinforcement-section').style.display = 'block';
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function exportarResultados() {
+            let notaFinal = score.toFixed(1);
+            let elemento = document.getElementById('current-element').innerText;
+            let refuerzo = document.getElementById('fort-contenido').innerText;
+            
+            let contenido = `REPORTE DE APRENDIZAJE - CIENCIAS GRADO 6\n`;
+            contenido += `Estudiante: ${userName}\n`;
+            contenido += `Nota Final: ${notaFinal} / 5.0\n`;
+            contenido += `Elemento Alcanzado: ${elemento}\n`;
+            contenido += `--------------------------------------------------\n`;
+            contenido += `Ruta de Fortalecimiento:\n${refuerzo}\n`;
+            contenido += `--------------------------------------------------\n`;
+            contenido += `Generado el: ${new Date().toLocaleString()}`;
+
+            let blob = new Blob([contenido], {type: "text/plain"});
+            let anchor = document.createElement("a");
+            anchor.download = `Reporte_${userName.replace(" ", "_")}.txt`;
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.target ="_blank";
+            anchor.style.display = "none"; 
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+        }
+    </script>
+</body>
+</html>

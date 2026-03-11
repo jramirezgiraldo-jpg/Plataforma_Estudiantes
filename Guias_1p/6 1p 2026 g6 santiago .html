@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Solvente Universal y Bioética</title>
+    <style>
+        /* === VARIABLES DE DISEÑO (ESTILO TABLERO DE CONTROL) === */
+        :root {
+            --bg-dark: #121212;
+            --bg-panel: #1e1e1e;
+            --text-main: #f0f0f0;
+            --text-muted: #aaaaaa;
+            --accent-green: #00ff88;
+            --accent-blue: #00b8ff;
+            --accent-orange: #ff6a00;
+            --accent-red: #ff3333;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --border-radius: 12px;
+        }
+
+        /* === ESTILOS GENERALES === */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--bg-panel);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 40px;
+            position: relative;
+            border-top: 5px solid var(--accent-blue);
+        }
+
+        h1, h2, h3 { margin-bottom: 20px; }
+        h1 { color: var(--accent-blue); font-size: 2.5rem; display: flex; align-items: center; gap: 15px; }
+        h2 { color: var(--accent-orange); font-size: 1.8rem; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        p { margin-bottom: 15px; font-size: 1.1rem; }
+        
+        /* === BOTONES === */
+        button {
+            background-color: transparent;
+            color: var(--text-main);
+            border: 2px solid var(--accent-blue);
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+        button:hover { background-color: var(--accent-blue); color: var(--bg-dark); transform: translateY(-2px); }
+        button.btn-green { border-color: var(--accent-green); }
+        button.btn-green:hover { background-color: var(--accent-green); color: black; }
+        button.btn-orange { border-color: var(--accent-orange); }
+        button.btn-orange:hover { background-color: var(--accent-orange); color: black; }
+        button:disabled { border-color: #555; color: #555; cursor: not-allowed; transform: none; background: transparent; }
+
+        /* === INPUTS === */
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            background-color: #2a2a2a;
+            border: 2px solid #444;
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        input[type="text"]:focus { outline: none; border-color: var(--accent-blue); }
+
+        /* === UTILIDADES VISUALES === */
+        .hidden { display: none !important; }
+        .emoji-icon { font-size: 2rem; }
+        
+        /* Barras de progreso */
+        .progress-container {
+            width: 100%;
+            background-color: #333;
+            border-radius: 10px;
+            height: 15px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-green);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* === MISIONES ESPECÍFICAS === */
+        /* Misión 2: Checklist del Cuaderno */
+        .checklist { list-style: none; margin-top: 20px; }
+        .check-item {
+            background-color: #2a2a2a;
+            border-left: 5px solid #444;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+        .check-item.active { border-color: var(--accent-orange); box-shadow: 0 0 15px rgba(255, 106, 0, 0.2); }
+        .check-item.completed { border-color: var(--accent-green); opacity: 0.8; }
+        
+        .check-header { display: flex; align-items: center; justify-content: space-between; }
+        .check-title { font-weight: bold; font-size: 1.2rem; color: var(--accent-blue); }
+        .check-btn { width: auto; margin: 0; padding: 10px 20px; font-size: 1rem; }
+
+        .timer-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent-green);
+            text-align: center;
+            font-family: monospace;
+            background: #111;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            margin-bottom: 20px;
+            letter-spacing: 5px;
+        }
+
+        /* Misión 4: Trivia */
+        .trivia-card {
+            background: #2a2a2a;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-top: 4px solid var(--accent-blue);
+        }
+        .trivia-options { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
+        .trivia-option {
+            background: #333; border: 2px solid #444; padding: 15px;
+            border-radius: 8px; cursor: pointer; text-align: left;
+            font-size: 1.1rem; transition: all 0.2s; color: white;
+        }
+        .trivia-option:hover:not(:disabled) { border-color: var(--accent-blue); background: #3a3a3a; }
+        .trivia-option.correct { background: var(--accent-green); border-color: var(--accent-green); color: black; font-weight: bold; }
+        .trivia-option.wrong { background: var(--accent-red); border-color: var(--accent-red); color: white; opacity: 0.6; }
+
+        /* Misión 5: Podio y Elemento Químico */
+        .element-card {
+            width: 200px; height: 250px;
+            margin: 30px auto;
+            border-radius: 15px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            color: black;
+        }
+        .element-symbol { font-size: 5rem; font-weight: bold; line-height: 1; }
+        .element-name { font-size: 1.5rem; font-weight: bold; margin-top: 10px; }
+        .element-number { font-size: 1.2rem; align-self: flex-start; margin-left: 15px; margin-bottom: -10px; }
+        
+        .grade-display { text-align: center; font-size: 4rem; font-weight: bold; color: var(--accent-green); margin: 20px 0; }
+
+        /* Estilos de Elementos */
+        .element-au { background: linear-gradient(135deg, #FFD700, #FDB931); border: 4px solid #B8860B; }
+        .element-ag { background: linear-gradient(135deg, #E0E0E0, #9E9E9E); border: 4px solid #757575; }
+        .element-fe { background: linear-gradient(135deg, #A19D94, #6e6a62); border: 4px solid #4a4741; color: white;}
+
+        /* HUD Superior */
+        .hud {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #111; padding: 15px 20px; border-radius: 8px;
+            margin-bottom: 30px; border: 1px solid #333;
+        }
+        .hud-name { font-weight: bold; font-size: 1.2rem; color: var(--accent-orange); }
+        .hud-mission { color: var(--text-muted); }
+
+        /* Metáforas Visuales (Cajas de texto destacadas) */
+        .metaphor-box {
+            background-color: #1a2a3a;
+            border-left: 5px solid var(--accent-blue);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- HUD (Heads Up Display) -->
+        <div id="hud" class="hud hidden">
+            <div class="hud-name" id="hudName">Explorador: ---</div>
+            <div class="hud-mission" id="hudMission">Sector: ---</div>
+        </div>
+
+        <!-- PANTALLA: AVISO DE RECUPERACIÓN -->
+        <div id="screen-recovery" class="hidden">
+            <h1><span class="emoji-icon">💾</span> Datos Detectados</h1>
+            <p id="recoveryMessage">Hola, veo que tienes una misión en curso.</p>
+            <button class="btn-green" onclick="app.resumeGame()">🚀 Continuar Misión</button>
+            <button class="btn-orange" onclick="app.resetGame()">🔄 Borrar todo y Empezar de Cero</button>
+        </div>
+
+        <!-- PANTALLA: LOGIN -->
+        <div id="screen-login" class="hidden">
+            <h1><span class="emoji-icon">🌍</span> Centro de Mando Ambiental</h1>
+            <p>Iniciando sistemas de monitoreo de ecosistemas... Ingresa tu nombre para comenzar la exploración.</p>
+            <input type="text" id="playerName" placeholder="Nombre del Explorador" autocomplete="off">
+            <button class="btn-blue" onclick="app.startGame()">Iniciar Protocolo ❯</button>
+        </div>
+
+        <!-- MISIÓN 1: EL DESPEGUE -->
+        <div id="screen-m1" class="hidden">
+            <h2>Misión 1: Analizando el Líquido Vital 💧</h2>
+            <div class="progress-container"><div class="progress-bar" style="width: 20%;"></div></div>
+            
+            <p>Atención, <span class="dynamic-name" style="font-weight:bold; color:var(--accent-blue);"></span>. Hoy analizaremos la sustancia más poderosa e importante de la Tierra: <strong>El Agua</strong>, conocida como el <em>Solvente Universal</em>.</p>
+            
+            <div class="metaphor-box">
+                <span class="emoji-icon">🪐</span> Los astrónomos buscan agua en otros planetas antes que cualquier otra cosa. ¿Por qué? Porque el agua es el único "fluido" capaz de disolver nutrientes y permitir que la química de la vida funcione. ¡Es el combustible supremo!
+            </div>
+
+            <p>Se le llama <strong>Solvente Universal</strong> porque disuelve más sustancias químicas que cualquier otro líquido. Esto es genial para que las plantas absorban minerales de la tierra... pero tiene un lado peligroso.</p>
+            
+            <div class="metaphor-box">
+                <span class="emoji-icon">🏍️</span> Imagina que lavas el motor de tu motocicleta cerca a una quebrada usando químicos fuertes. Como el agua es el solvente universal, disolverá esos químicos y los arrastrará consigo por toda la selva. El agua no distingue entre nutrientes buenos y venenos malos; lo disuelve y lo transporta todo.
+            </div>
+
+            <h3>Bioética (Nuestra Responsabilidad):</h3>
+            <p>La Bioética es el estudio de cómo nuestras acciones afectan la vida. Si el agua lo disuelve y lo transporta todo, ¿qué pasa con los peces, las plantas y las personas cuando arrojamos jabones industriales, abonos químicos o aceite a la quebrada?</p>
+
+            <button class="btn-green" onclick="app.goToMission(2)">Entendido. Pasar al Taller de Análisis ❯</button>
+        </div>
+
+        <!-- MISIÓN 2: EL TALLER DEL EXPERTO (CUADERNO) -->
+        <div id="screen-m2" class="hidden">
+            <h2>Misión 2: El Taller del Experto 🛠️</h2>
+            <div class="progress-container"><div class="progress-bar" style="width: 40%;"></div></div>
+            
+            <p>Atención <span class="dynamic-name"></span>. Tienes un límite de tiempo de 75 minutos para completar los 3 sub-retos en el mundo real. Abre tu cuaderno de operaciones.</p>
+
+            <div class="timer-display" id="m2-timer">75:00</div>
+
+            <ul class="checklist">
+                <!-- Sub-Reto A -->
+                <li class="check-item active" id="task-a">
+                    <div class="check-header">
+                        <span class="check-title">Sub-Reto A: Registro (Escritura)</span>
+                        <button class="check-btn" id="btn-check-a" onclick="app.completeTask('a')">Marcar Listo ✔</button>
+                    </div>
+                    <div class="check-content">
+                        <p>Escribe en tu cuaderno la fecha y el título: <strong>"El Agua: El Solvente Universal y la Bioética"</strong>.</p>
+                        <p>Redacta un párrafo explicando con tus palabras por qué el agua se llama "solvente universal" y qué pasa cuando este "poder" del agua se encuentra con la contaminación de jabones o abonos.</p>
+                    </div>
+                </li>
+
+                <!-- Sub-Reto B -->
+                <li class="check-item" id="task-b" style="opacity: 0.5; pointer-events: none;">
+                    <div class="check-header">
+                        <span class="check-title">Sub-Reto B: Esquemas Visuales (Dibujo)</span>
+                        <button class="check-btn" id="btn-check-b" onclick="app.completeTask('b')" disabled>Marcar Listo ✔</button>
+                    </div>
+                    <div class="check-content">
+                        <p><span class="emoji-icon">🦖</span> Divide una página de tu cuaderno en dos mitades.</p>
+                        <p><strong>Mitad Izquierda:</strong> Dibuja una selva prehistórica sana, donde un río de agua pura disuelve minerales de las rocas para alimentar a las plantas.</p>
+                        <p><strong>Mitad Derecha:</strong> Dibuja el mismo río hoy, pero alguien está lavando una moto con jabones industriales y echando abonos químicos al agua. Usa flechas rojas para mostrar cómo el agua disuelve el veneno y lo lleva a los animales.</p>
+                    </div>
+                </li>
+
+                <!-- Sub-Reto C -->
+                <li class="check-item" id="task-c" style="opacity: 0.5; pointer-events: none;">
+                    <div class="check-header">
+                        <span class="check-title">Sub-Reto C: Protocolo Bioético (Análisis)</span>
+                        <button class="check-btn" id="btn-check-c" onclick="app.completeTask('c')" disabled>Marcar Listo ✔</button>
+                    </div>
+                    <div class="check-content">
+                        <p>Imagina que eres el Guardián Bioético de la quebrada de tu región. Crea y escribe en tu cuaderno <strong>3 Reglas Estrictas</strong> que todo explorador, motociclista o granjero debe cumplir al acercarse al agua.</p>
+                        <p>Justifica por qué cada regla es importante para proteger la vida en el planeta.</p>
+                    </div>
+                </li>
+            </ul>
+
+            <button id="btn-m2-next" class="btn-green hidden" onclick="app.goToMission(3)">Misión Física Completada. Continuar ❯</button>
+        </div>
+
+        <!-- MISIÓN 3: PIT STOP -->
+        <div id="screen-m3" class="hidden">
+            <h2>Misión 3: Pit Stop - Zona de Recarga ⏸️</h2>
+            <div class="progress-container"><div class="progress-bar" style="width: 60%;"></div></div>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <span class="emoji-icon" id="breathe-icon" style="font-size: 5rem; display: block; transition: transform 4s ease-in-out;">🔵</span>
+            </div>
+
+            <p style="text-align: center; font-size: 1.3rem;">Modo Hibernación Activado.</p>
+            <p style="text-align: center;">El motor se ha esforzado. Sigue el círculo azul.</p>
+            <p style="text-align: center; color: var(--accent-orange); font-weight: bold;" id="breathe-text">Inhala profundamente...</p>
+
+            <button class="btn-blue" onclick="app.goToMission(4)" style="margin-top: 50px;">Sistemas Óptimos. Volver a la Pista ❯</button>
+        </div>
+
+        <!-- MISIÓN 4: LA PRUEBA DE PISTA -->
+        <div id="screen-m4" class="hidden">
+            <h2>Misión 4: Pista de Pruebas Ambientales 🏁</h2>
+            <div class="progress-container"><div class="progress-bar" style="width: 80%;"></div></div>
+            
+            <p>Evaluación de sistemas. Responde las siguientes situaciones tácticas. Selecciona la opción correcta.</p>
+
+            <div id="trivia-container">
+                <!-- Las preguntas se inyectan por JS -->
+            </div>
+
+            <button id="btn-m4-next" class="btn-green hidden" onclick="app.goToMission(5)">Ver Resultados del Simulador ❯</button>
+        </div>
+
+        <!-- MISIÓN 5: EL PODIO -->
+        <div id="screen-m5" class="hidden">
+            <h2>Misión 5: El Podio 🏆</h2>
+            <div class="progress-container"><div class="progress-bar" style="width: 100%;"></div></div>
+            
+            <p style="text-align: center; font-size: 1.2rem;">Rendimiento del Explorador <span class="dynamic-name" style="color:var(--accent-orange); font-weight:bold;"></span> calculado.</p>
+
+            <div class="grade-display" id="final-grade">0.0</div>
+
+            <p style="text-align: center;">Elemento Químico Obtenido:</p>
+            
+            <div class="element-card" id="element-card">
+                <div class="element-number" id="element-num">--</div>
+                <div class="element-symbol" id="element-sym">--</div>
+                <div class="element-name" id="element-name">-----</div>
+            </div>
+
+            <p style="text-align: center; margin-top: 20px;" id="element-desc"></p>
+
+            <button class="btn-blue" onclick="app.downloadReport()">📥 Descargar Informe de Misión (.txt)</button>
+            <button class="btn-orange" onclick="app.resetGame()" style="margin-top: 10px; border-color: #555;">🔄 Finalizar y Borrar Datos</button>
+        </div>
+
+    </div>
+
+    <script>
+        // === DATOS DE LA TRIVIA ===
+        const triviaData = [
+            {
+                id: 0,
+                question: "1. ¿Por qué el agua es conocida como el 'Solvente Universal'?",
+                options: [
+                    "A) Porque es el líquido que existe en mayor cantidad en la Tierra.",
+                    "B) Porque tiene la capacidad de disolver más sustancias que cualquier otro líquido.",
+                    "C) Porque no se mezcla con nada, ni con aceite ni con tierra."
+                ],
+                correct: 1
+            },
+            {
+                id: 1,
+                question: "2. Si alguien derrama abonos químicos en la tierra cerca de un río y llueve, ¿qué hace el agua con el abono?",
+                options: [
+                    "A) Lo disuelve y lo transporta al río, contaminando el ecosistema.",
+                    "B) Destruye el abono inmediatamente volviéndolo inofensivo.",
+                    "C) Actúa como un escudo y evita que el abono toque el suelo."
+                ],
+                correct: 0
+            },
+            {
+                id: 2,
+                question: "3. Lavar una motocicleta con jabones fuertes y grasas directamente en una quebrada es un problema bioético porque:",
+                options: [
+                    "A) Desperdicia agua que podría usarse para otra cosa.",
+                    "B) El jabón puede dañar la pintura de la motocicleta.",
+                    "C) Afectamos negativamente la vida de plantas y animales que dependen de esa agua."
+                ],
+                correct: 2
+            },
+            {
+                id: 3,
+                question: "4. ¿De qué se encarga la 'Bioética' en casos de contaminación del agua?",
+                options: [
+                    "A) De calcular matemáticamente cuánta agua hay en un río.",
+                    "B) De reflexionar sobre nuestras acciones y nuestra responsabilidad ética de cuidar la vida en el planeta.",
+                    "C) De inventar jabones más baratos."
+                ],
+                correct: 1
+            }
+        ];
+
+        // === ESTADO DE LA APLICACIÓN (NUEVA CLAVE) ===
+        const storageKey = 'ovaSantiagoAguaData';
+
+        const app = {
+            state: {
+                name: "",
+                currentMission: 1,
+                mission2Checks: { a: false, b: false, c: false },
+                mission2TimerStart: null,
+                triviaAnswers: { 0: null, 1: null, 2: null, 3: null },
+                grade: 0.0
+            },
+            timerInterval: null,
+            breatheInterval: null,
+
+            // === INICIALIZACIÓN ===
+            init() {
+                const savedData = localStorage.getItem(storageKey);
+                if (savedData) {
+                    this.state = JSON.parse(savedData);
+                    document.getElementById('recoveryMessage').innerHTML = `Hola <strong>${this.state.name}</strong>, veo que quedaste en la Misión ${this.state.currentMission}. ¿Continuamos?`;
+                    this.showScreen('screen-recovery');
+                } else {
+                    this.showScreen('screen-login');
+                }
+            },
+
+            saveState() {
+                localStorage.setItem(storageKey, JSON.stringify(this.state));
+            },
+
+            // === NAVEGACIÓN ===
+            showScreen(screenId) {
+                // Ocultar todas
+                document.querySelectorAll('div[id^="screen-"]').forEach(el => el.classList.add('hidden'));
+                // Mostrar la deseada
+                document.getElementById(screenId).classList.remove('hidden');
+                window.scrollTo(0,0);
+            },
+
+            updateHUD() {
+                const hud = document.getElementById('hud');
+                if (this.state.currentMission > 0 && this.state.name !== "") {
+                    hud.classList.remove('hidden');
+                    document.getElementById('hudName').innerText = `Explorador: ${this.state.name}`;
+                    document.getElementById('hudMission').innerText = `Sector: Misión ${this.state.currentMission}`;
+                    
+                    // Actualizar nombres dinámicos en los textos
+                    document.querySelectorAll('.dynamic-name').forEach(el => el.innerText = this.state.name);
+                } else {
+                    hud.classList.add('hidden');
+                }
+            },
+
+            // === CONTROL DE FLUJO ===
+            startGame() {
+                const nameInput = document.getElementById('playerName').value.trim();
+                if (nameInput === "") {
+                    // Feedback visual de error en el input (sin alert)
+                    const inp = document.getElementById('playerName');
+                    inp.style.borderColor = "var(--accent-red)";
+                    setTimeout(() => inp.style.borderColor = "#444", 1000);
+                    return;
+                }
+                this.state.name = nameInput;
+                this.goToMission(1);
+            },
+
+            resumeGame() {
+                this.goToMission(this.state.currentMission);
+            },
+
+            resetGame() {
+                localStorage.removeItem(storageKey);
+                clearInterval(this.timerInterval);
+                clearInterval(this.breatheInterval);
+                location.reload(); // Recarga limpia
+            },
+
+            goToMission(n) {
+                this.state.currentMission = n;
+                this.saveState();
+                this.updateHUD();
+                this.showScreen(`screen-m${n}`);
+
+                // Lógicas específicas por misión
+                if (n === 2) this.setupMission2();
+                if (n === 3) this.setupMission3();
+                if (n === 4) this.setupMission4();
+                if (n === 5) this.setupMission5();
+            },
+
+            // === LÓGICA MISIÓN 2 (CUADERNO Y TIMER) ===
+            setupMission2() {
+                // Configurar Timer (75 min = 4500000 ms)
+                const duration = 75 * 60 * 1000; 
+                
+                if (!this.state.mission2TimerStart) {
+                    this.state.mission2TimerStart = Date.now();
+                    this.saveState();
+                }
+
+                this.updateTimerDisplay(duration);
+                clearInterval(this.timerInterval);
+                this.timerInterval = setInterval(() => this.updateTimerDisplay(duration), 1000);
+
+                // Restaurar estado de los checks
+                this.renderChecks();
+            },
+
+            updateTimerDisplay(duration) {
+                const elapsed = Date.now() - this.state.mission2TimerStart;
+                let remaining = duration - elapsed;
+                
+                if (remaining < 0) remaining = 0; // Detener en 0
+
+                const totalSeconds = Math.floor(remaining / 1000);
+                const mins = Math.floor(totalSeconds / 60);
+                const secs = totalSeconds % 60;
+
+                document.getElementById('m2-timer').innerText = 
+                    `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            },
+
+            completeTask(taskId) {
+                this.state.mission2Checks[taskId] = true;
+                
+                // Puntos por checklist completado (1.0 cada uno)
+                this.state.grade += 1.0; 
+                this.saveState();
+                this.renderChecks();
+            },
+
+            renderChecks() {
+                const s = this.state.mission2Checks;
+                
+                // Tarea A
+                if (s.a) {
+                    this.markCheckUI('a');
+                    this.unlockCheckUI('b');
+                }
+                
+                // Tarea B
+                if (s.b) {
+                    this.markCheckUI('b');
+                    this.unlockCheckUI('c');
+                }
+
+                // Tarea C
+                if (s.c) {
+                    this.markCheckUI('c');
+                    document.getElementById('btn-m2-next').classList.remove('hidden');
+                }
+            },
+
+            markCheckUI(taskId) {
+                const li = document.getElementById(`task-${taskId}`);
+                const btn = document.getElementById(`btn-check-${taskId}`);
+                li.classList.remove('active');
+                li.classList.add('completed');
+                btn.innerText = "Completado ✔";
+                btn.style.backgroundColor = "var(--accent-green)";
+                btn.style.color = "black";
+                btn.disabled = true;
+            },
+
+            unlockCheckUI(taskId) {
+                const li = document.getElementById(`task-${taskId}`);
+                const btn = document.getElementById(`btn-check-${taskId}`);
+                li.style.opacity = "1";
+                li.style.pointerEvents = "auto";
+                li.classList.add('active');
+                btn.disabled = false;
+            },
+
+            // === LÓGICA MISIÓN 3 (PIT STOP / RESPIRACIÓN) ===
+            setupMission3() {
+                const icon = document.getElementById('breathe-icon');
+                const text = document.getElementById('breathe-text');
+                let isInhaling = true;
+
+                clearInterval(this.breatheInterval);
+                
+                // Animación visual inicial
+                icon.style.transform = "scale(2)";
+                
+                this.breatheInterval = setInterval(() => {
+                    isInhaling = !isInhaling;
+                    if (isInhaling) {
+                        icon.style.transform = "scale(2)";
+                        text.innerText = "Inhala profundamente...";
+                        text.style.color = "var(--accent-blue)";
+                    } else {
+                        icon.style.transform = "scale(1)";
+                        text.innerText = "Exhala lento...";
+                        text.style.color = "var(--accent-green)";
+                    }
+                }, 4000); // Cambia cada 4 segundos
+            },
+
+            // === LÓGICA MISIÓN 4 (TRIVIA) ===
+            setupMission4() {
+                const container = document.getElementById('trivia-container');
+                container.innerHTML = ""; // Limpiar
+
+                triviaData.forEach((item) => {
+                    const card = document.createElement('div');
+                    card.className = "trivia-card";
+                    
+                    const qText = document.createElement('h3');
+                    qText.innerText = item.question;
+                    card.appendChild(qText);
+
+                    const optsDiv = document.createElement('div');
+                    optsDiv.className = "trivia-options";
+
+                    item.options.forEach((optText, index) => {
+                        const btn = document.createElement('button');
+                        btn.className = "trivia-option";
+                        btn.innerText = optText;
+                        
+                        // Si ya fue respondida antes de recargar
+                        if (this.state.triviaAnswers[item.id] !== null) {
+                            btn.disabled = true;
+                            if (index === item.correct) {
+                                btn.classList.add('correct');
+                            } else if (index === this.state.triviaAnswers[item.id]) {
+                                btn.classList.add('wrong');
+                            }
+                        } else {
+                            // Lógica de click
+                            btn.onclick = () => this.answerTrivia(item.id, index, item.correct, card);
+                        }
+
+                        optsDiv.appendChild(btn);
+                    });
+
+                    card.appendChild(optsDiv);
+                    container.appendChild(card);
+                });
+
+                this.checkTriviaCompletion();
+            },
+
+            answerTrivia(questionId, selectedIndex, correctIndex, cardElement) {
+                this.state.triviaAnswers[questionId] = selectedIndex;
+                
+                // Deshabilitar botones de esta tarjeta
+                const buttons = cardElement.querySelectorAll('.trivia-option');
+                buttons.forEach((btn, idx) => {
+                    btn.disabled = true;
+                    if (idx === correctIndex) {
+                        btn.classList.add('correct'); // Siempre muestra la correcta
+                    } else if (idx === selectedIndex) {
+                        btn.classList.add('wrong'); // Marca la incorrecta en rojo si se equivocó
+                    }
+                });
+
+                // Calificación (0.5 por pregunta correcta)
+                if (selectedIndex === correctIndex) {
+                    this.state.grade += 0.5;
+                }
+
+                this.saveState();
+                this.checkTriviaCompletion();
+            },
+
+            checkTriviaCompletion() {
+                const allAnswered = Object.values(this.state.triviaAnswers).every(v => v !== null);
+                if (allAnswered) {
+                    document.getElementById('btn-m4-next').classList.remove('hidden');
+                }
+            },
+
+            // === LÓGICA MISIÓN 5 (PODIO Y CALIFICACIÓN) ===
+            setupMission5() {
+                // Asegurar que la nota no pase de 5.0 (por redondeos)
+                let finalGrade = Math.min(5.0, this.state.grade);
+                // Evitar decimales largos
+                finalGrade = (Math.round(finalGrade * 10) / 10).toFixed(1);
+                
+                document.getElementById('final-grade').innerText = finalGrade;
+
+                const card = document.getElementById('element-card');
+                const num = document.getElementById('element-num');
+                const sym = document.getElementById('element-sym');
+                const name = document.getElementById('element-name');
+                const desc = document.getElementById('element-desc');
+
+                // Limpiar clases previas
+                card.className = "element-card";
+
+                if (finalGrade >= 4.6) {
+                    card.classList.add('element-au');
+                    num.innerText = "79"; sym.innerText = "Au"; name.innerText = "Oro";
+                    desc.innerHTML = "¡Excelente! Eres como el <strong>Oro</strong>, un material brillante, inalterable y del más alto nivel. Comprendes perfectamente la importancia vital del agua.";
+                } else if (finalGrade >= 3.6) {
+                    card.classList.add('element-ag');
+                    num.innerText = "47"; sym.innerText = "Ag"; name.innerText = "Plata";
+                    desc.innerHTML = "¡Muy Bien! Eres como la <strong>Plata</strong>, un conductor de energía excepcional. Tienes una gran conciencia sobre la bioética y los ecosistemas.";
+                } else {
+                    card.classList.add('element-fe');
+                    num.innerText = "26"; sym.innerText = "Fe"; name.innerText = "Hierro";
+                    desc.innerHTML = "¡Buen Esfuerzo! Eres como el <strong>Hierro</strong>, la base de los motores más resistentes. Sigue forjando tu conocimiento, la constancia es la clave para proteger la naturaleza.";
+                }
+            },
+
+            // === EXPORTACIÓN DE DATOS (TXT) ===
+            downloadReport() {
+                const date = new Date().toLocaleDateString('es-CO');
+                const finalGrade = (Math.round(Math.min(5.0, this.state.grade) * 10) / 10).toFixed(1);
+                
+                let element = "Hierro (Fe)";
+                if (finalGrade >= 4.6) element = "Oro (Au)";
+                else if (finalGrade >= 3.6) element = "Plata (Ag)";
+
+                let correctAnswers = 0;
+                triviaData.forEach(q => {
+                    if (this.state.triviaAnswers[q.id] === q.correct) correctAnswers++;
+                });
+
+                const content = `===========================================
+REPORTE DE MISIÓN AMBIENTAL
+===========================================
+Explorador: ${this.state.name}
+Fecha: ${date}
+Tema: El Agua (Solvente Universal) y Bioética
+-------------------------------------------
+RESULTADOS DEL DIAGNÓSTICO:
+Calificación Final: ${finalGrade} / 5.0
+Elemento Ganado: ${element}
+
+DESGLOSE DE ACTIVIDADES:
+1. Retos de Cuaderno Completados:
+   - Registro de Datos: ${this.state.mission2Checks.a ? 'COMPLETADO' : 'INCOMPLETO'}
+   - Esquemas Visuales: ${this.state.mission2Checks.b ? 'COMPLETADO' : 'INCOMPLETO'}
+   - Protocolo Bioético: ${this.state.mission2Checks.c ? 'COMPLETADO' : 'INCOMPLETO'}
+
+2. Prueba de Pista Ambiental (Digital):
+   - Respuestas Correctas: ${correctAnswers} de 4
+-------------------------------------------
+Fin de la transmisión.
+===========================================`;
+
+                // Crear y descargar el archivo localmente (Sin servidor)
+                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Reporte_Agua_${this.state.name.replace(/\s+/g, '_')}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        };
+
+        // Iniciar la app al cargar
+        window.onload = () => app.init();
+
+    </script>
+</body>
+</html>

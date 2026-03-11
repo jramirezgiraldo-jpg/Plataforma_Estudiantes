@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿De qué está hecho mi mundo? - Pueblo Rico</title>
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #4CAF50;
+            --primary-dark: #1B5E20;
+            --secondary: #795548;
+            --secondary-light: #A1887F;
+            --background: #F1F8E9;
+            --surface: #FFFFFF;
+            --text-main: #333333;
+            --text-light: #666666;
+            --accent: #FFC107;
+            --danger: #E53935;
+            --success: #43A047;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --radius: 12px;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-hover: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* --- PANTALLA DE BIENVENIDA --- */
+        #login-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-dark));
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: fixed;
+            top: 0; left: 0; width: 100%; z-index: 1000;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-hover);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-card h1 { margin-bottom: 20px; font-size: 2em; }
+        .login-card p { margin-bottom: 30px; }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: var(--text-main);
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* --- BARRA DE NAVEGACIÓN Y PROGRESO --- */
+        nav {
+            background-color: var(--surface);
+            box-shadow: var(--shadow);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-user { font-weight: bold; color: var(--primary-dark); font-size: 1.1em; }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-grow: 1;
+            max-width: 500px;
+            margin: 0 20px;
+        }
+
+        .progress-bar-bg {
+            background-color: #e0e0e0;
+            height: 12px;
+            border-radius: 6px;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background-color: var(--primary);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .element-badge {
+            background: var(--secondary);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 2px solid var(--accent);
+        }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        #main-content { display: none; padding-bottom: 100px; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        
+        section {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        h2 { color: var(--primary-dark); margin-bottom: 20px; border-bottom: 2px solid var(--primary-light); padding-bottom: 10px; }
+        h3 { color: var(--secondary); margin: 20px 0 10px 0; }
+        p { margin-bottom: 15px; text-align: justify; font-size: 1.05em; }
+
+        /* --- PAUSAS ACTIVAS --- */
+        .pausa-activa {
+            background: #FFF8E1;
+            border-left: 5px solid var(--accent);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .pausa-activa h4 { color: #F57F17; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        
+        /* --- PREGUNTAS INTERACTIVAS --- */
+        .question-box { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: var(--radius); }
+        .options { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .option-btn {
+            background: var(--background); border: 1px solid var(--primary-light);
+            padding: 10px; border-radius: var(--radius); cursor: pointer; text-align: left; transition: 0.2s;
+        }
+        .option-btn:hover { background: var(--primary-light); color: white; }
+        .option-btn.correct { background: var(--success); color: white; border-color: var(--success); }
+        .option-btn.incorrect { background: var(--danger); color: white; border-color: var(--danger); }
+        .feedback { margin-top: 10px; font-weight: bold; display: none; padding: 10px; border-radius: 8px; }
+
+        /* --- CANVAS ANIMATION --- */
+        .canvas-container {
+            width: 100%;
+            background: #111;
+            border-radius: var(--radius);
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            margin: 30px 0;
+        }
+        canvas { display: block; width: 100%; height: 400px; }
+        .canvas-controls {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 10px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 20px;
+        }
+        .canvas-btn {
+            background: rgba(255,255,255,0.2); color: white; border: 1px solid white;
+            padding: 5px 15px; border-radius: 15px; cursor: pointer; transition: 0.3s;
+        }
+        .canvas-btn:hover, .canvas-btn.active { background: var(--accent); color: black; border-color: var(--accent); }
+        .canvas-overlay-text {
+            position: absolute; top: 20px; left: 20px; color: white; font-family: monospace;
+            background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; pointer-events: none;
+        }
+
+        /* --- SVG STYLING --- */
+        .svg-container { width: 100%; text-align: center; margin: 30px 0; }
+        .svg-graphic { max-width: 100%; height: auto; box-shadow: var(--shadow); border-radius: var(--radius); }
+
+        /* --- PREGUNTAS ABIERTAS --- */
+        .open-question { margin-bottom: 25px; }
+        textarea {
+            width: 100%; height: 80px; padding: 10px; border-radius: 8px;
+            border: 1px solid #ccc; resize: vertical; font-size: 1em;
+        }
+        .word-count { font-size: 0.9em; color: var(--text-light); margin-top: 5px; font-weight: bold; }
+        .word-count.error { color: var(--danger); }
+        .word-count.success { color: var(--success); }
+
+        /* --- RUTINA FORTALECIMIENTO --- */
+        #fortalecimiento { display: none; background: #E3F2FD; border-left: 5px solid #1976D2; }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE BIENVENIDA -->
+    <div id="login-screen">
+        <div class="login-card">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            <h1>Laboratorio Veredal</h1>
+            <p>Descubre de qué está hecho tu entorno en Pueblo Rico. Por favor, ingresa tus datos para comenzar y guardar tu progreso.</p>
+            
+            <div class="input-group">
+                <input type="text" id="apellidosEstudiante" placeholder="Apellidos" autocomplete="off">
+                <input type="text" id="nombresEstudiante" placeholder="Nombres" autocomplete="off">
+            </div>
+
+            <button type="button" class="btn" onclick="iniciarOVA()">Ingresar a la Vereda</button>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="main-content">
+        <nav>
+            <div class="nav-user">Estudiante: <span id="displayName"></span></div>
+            <div class="progress-container">
+                <span style="font-size: 0.9em; color: var(--text-light);">Progreso:</span>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+                <span id="progressText" style="font-weight: bold; font-size: 0.9em;">0%</span>
+            </div>
+            <div class="element-badge" id="elementBadge">
+                🔬 Nivel: Novato
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- SECCIÓN 1: INICIO Y PRE-SABERES -->
+            <section id="inicio">
+                <h2>Objetivo de Aprendizaje</h2>
+                <p>Al finalizar este recorrido por nuestra vereda Pueblo Rico, serás capaz de <strong>identificar y clasificar la materia y sus estados físicos</strong>, relacionando estos conceptos científicos con los elementos naturales, agrícolas y cotidianos de tu territorio, fortaleciendo así tu identidad y comprensión del entorno rural.</p>
+                
+                <h3>Activando Saberes Previos</h3>
+                <p>Antes de caminar por la vereda, veamos qué tanto sabemos observando a nuestro alrededor. Haz clic en la opción que consideres correcta:</p>
+
+                <div class="question-box" id="pre1">
+                    <p>1. Al levantarte temprano en Pueblo Rico y ver la niebla cubriendo las montañas, ¿qué estado de la materia estás observando principalmente?</p>
+                    <div class="options">
+                        <button class="option-btn" onclick="checkAnswer(this, 'pre1', false, 'Recuerda que los sólidos tienen forma definida. La niebla se esparce.')">Líquido</button>
+                        <button class="option-btn" onclick="checkAnswer(this, 'pre1', true, '¡Correcto! La niebla son minúsculas gotas de agua suspendidas en el aire, pero actúan en un entorno gaseoso y vaporoso.')">Gaseoso / Vapor</button>
+                        <button class="option-btn" onclick="checkAnswer(this, 'pre1', false, 'El hielo es un sólido, la niebla flota libremente.')">Sólido</button>
+                    </div>
+                    <div class="feedback"></div>
+                </div>
+
+                <div class="question-box" id="pre2">
+                    <p>2. Cuando recoges un grano de café maduro de la rama, notas que es firme y no cambia su forma al tocarlo suavemente. Esto significa que es...</p>
+                    <div class="options">
+                        <button class="option-btn" onclick="checkAnswer(this, 'pre2', true, '¡Exacto! Los sólidos mantienen su forma y volumen constantes.')">Un sólido</button>
+                        <button class="option-btn" onclick="checkAnswer(this, 'pre2', false, 'Los líquidos toman la forma de su recipiente, el grano ya tiene la suya.')">Un líquido</button>
+                        <button class="option-btn" onclick="checkAnswer(this, 'pre2', false, 'Los gases tienden a expandirse. El grano de café no lo hace.')">Un gas</button>
+                    </div>
+                    <div class="feedback"></div>
+                </div>
+
+                <div class="question-box" id="pre3">
+                    <p>3. Todo lo que nos rodea en la vereda (los árboles, el río, los animales, el aire) comparte una característica fundamental. ¿Cuál es?</p>
+                    <div class="options">
+                        <button class="option-btn" onclick="checkAnswer(this, 'pre3', false, 'No todo tiene vida. Las rocas del río, por ejemplo, son inertes.')">Todo tiene vida propia.</button>
+                        <button class="option-btn" onclick="checkAnswer(this, 'pre3', true, '¡Muy bien! Todo lo que ocupa un lugar en el espacio y tiene masa es materia.')">Todo es materia y ocupa un espacio.</button>
+                        <button class="option-btn" onclick="checkAnswer(this, 'pre3', false, 'Algunas cosas están hechas por el ser humano (artificiales), no todo es natural.')">Todo fue creado artificialmente.</button>
+                    </div>
+                    <div class="feedback"></div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: CUERPO INDUCTIVO -->
+            <section id="inductivo">
+                <h2>Caminando por Pueblo Rico: La Materia en Nuestro Entorno</h2>
+                
+                <p>Imagina que es una mañana fresca en la vereda Pueblo Rico. El sol apenas comienza a iluminar los cafetales y el rocío brilla sobre las hojas de plátano. Al respirar profundo, llenas tus pulmones de aire puro, y bajo tus botas, sientes la firmeza de la tierra arcillosa. Todo este escenario, absolutamente todo lo que puedes ver, tocar, oler e incluso lo que no puedes ver a simple vista como el aire que respiras, está compuesto de materia. En términos científicos, definimos la materia como todo aquello que tiene masa y ocupa un volumen en el espacio. Esta definición, aparentemente simple, encierra el secreto de la existencia misma de nuestro territorio. La montaña que nos da sombra, el río que riega nuestros cultivos y la madera con la que construimos nuestras casas, son manifestaciones tangibles de la materia que forma nuestro mundo. Comprender la materia no es solo memorizar un concepto en un libro; es aprender a leer el paisaje que habitamos diariamente y reconocer nuestra conexión íntima con él.</p>
+
+                <div class="pausa-activa" id="pa1">
+                    <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pausa Activa 1</h4>
+                    <p>En tu cuaderno, dibuja el paisaje de Pueblo Rico (o tu vereda). Señala con flechas tres cosas que sean materia y una cosa que NO sea materia (ejemplo: la luz del sol, un recuerdo).</p>
+                    <button type="button" class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="marcarPausa('pa1')">Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <p>Al avanzar por el sendero hacia la escuela, notamos que la materia no es toda igual; presenta diversas propiedades físicas que nos permiten distinguirla. Si recoges una piedra del camino, notarás que es pesada (tiene alta masa respecto a su tamaño) y áspera. Si tomas un puñado de tierra, su textura es diferente, más suelta y húmeda. Estas características que podemos percibir a través de nuestros sentidos o medir con instrumentos simples se llaman propiedades generales (como la masa y el volumen) y propiedades específicas (como el color, la dureza, o el punto de ebullición). En el entorno rural, nuestros abuelos y agricultores son expertos empíricos en estas propiedades. Ellos saben exactamente qué tipo de suelo (materia) es mejor para sembrar café por su porosidad, o reconocen cuándo la leña (materia orgánica) está lo suficientemente seca (baja humedad) para encender el fogón. La ciencia de la materia es, por tanto, una práctica diaria en la vida campesina.</p>
+
+                <div class="pausa-activa" id="pa2">
+                    <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pausa Activa 2</h4>
+                    <p>Elabora una tabla en tu cuaderno con dos columnas. En una escribe "Materia de mi vereda" y en la otra "Propiedad física observable". Llena la tabla con 4 ejemplos (ej: Tomate maduro / Color rojo y textura suave).</p>
+                    <button type="button" class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="marcarPausa('pa2')">Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <p>En nuestra observación, también debemos hacer una distinción crucial entre los materiales naturales y los materiales artificiales. La vereda Pueblo Rico es rica en materiales naturales: la madera de los guayacanes, la arcilla de las laderas, el agua del arroyo, las fibras de la guadua. Estos son recursos que la naturaleza proporciona directamente y que han sido utilizados por generaciones. Sin embargo, el desarrollo humano y las necesidades agrícolas han introducido materiales artificiales creados por el hombre a partir de la transformación de recursos naturales. Ejemplos de esto son las mangueras de plástico negro utilizadas para el riego, los techos de zinc de las casas, los fertilizantes químicos empacados en costales sintéticos, o el vidrio de las ventanas de la escuela. La interacción entre lo natural y lo artificial transforma el paisaje y nos obliga a pensar en cómo gestionamos nuestros residuos, ya que los materiales artificiales, como los plásticos, no se descomponen fácilmente y pueden afectar la pureza de nuestros suelos y aguas.</p>
+
+                <div class="pausa-activa" id="pa3">
+                    <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pausa Activa 3</h4>
+                    <p>Responde en tu cuaderno: ¿Por qué crees que es importante separar los residuos de materiales naturales (como cáscaras de plátano) de los materiales artificiales (como bolsas de plástico) en la finca?</p>
+                    <button type="button" class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="marcarPausa('pa3')">Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <div class="svg-container">
+                    <svg class="svg-graphic" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" style="background: linear-gradient(to bottom, #87CEEB, #E0F6FF);">
+                        <!-- Sol y nubes -->
+                        <circle cx="100" cy="80" r="40" fill="#FFD700" opacity="0.8"/>
+                        <path d="M200,80 Q220,50 250,80 Q280,60 310,80 Q330,100 310,110 L200,110 Q180,100 200,80" fill="#FFF" opacity="0.9"/>
+                        <!-- Montañas de Pueblo Rico -->
+                        <path d="M0,400 L250,150 L500,400 Z" fill="#2E8B57"/>
+                        <path d="M300,400 L550,180 L800,400 Z" fill="#3CB371"/>
+                        <path d="M-100,400 L150,250 L400,400 Z" fill="#228B22"/>
+                        <!-- Río / Agua -->
+                        <path d="M350,400 Q400,300 450,400 Z" fill="#4682B4" opacity="0.8"/>
+                        <path d="M380,400 Q410,330 440,400 Z" fill="#5F9EA0"/>
+                        <!-- Cafetal (Materia natural) -->
+                        <circle cx="150" cy="350" r="15" fill="#006400"/>
+                        <circle cx="150" cy="350" r="4" fill="#8B0000"/>
+                        <circle cx="135" cy="360" r="15" fill="#006400"/>
+                        <circle cx="165" cy="360" r="15" fill="#006400"/>
+                        <!-- Casa rural -->
+                        <rect x="550" y="300" width="100" height="80" fill="#FFE4B5"/>
+                        <polygon points="540,300 600,250 660,300" fill="#CD5C5C"/>
+                        <rect x="590" y="340" width="20" height="40" fill="#8B4513"/>
+                        <!-- Textos Explicativos -->
+                        <rect x="20" y="20" width="180" height="40" rx="5" fill="rgba(255,255,255,0.8)"/>
+                        <text x="30" y="45" font-family="Arial" font-size="14" font-weight="bold" fill="#333">Gas: Aire y Nubes</text>
+                        
+                        <rect x="600" y="40" width="180" height="40" rx="5" fill="rgba(255,255,255,0.8)"/>
+                        <text x="610" y="65" font-family="Arial" font-size="14" font-weight="bold" fill="#333">Sólido: Montaña y Casa</text>
+                        
+                        <rect x="320" y="220" width="180" height="40" rx="5" fill="rgba(255,255,255,0.8)"/>
+                        <text x="330" y="245" font-family="Arial" font-size="14" font-weight="bold" fill="#333">Líquido: Río de la vereda</text>
+                    </svg>
+                    <p style="text-align: center; font-size: 0.9em; color: var(--text-light);">Fig 1. Paisaje representativo de la materia y sus estados en el entorno rural.</p>
+                </div>
+
+                <p>Nuestra identidad campesina y nuestro apego al territorio están profundamente entrelazados con la materia que nos rodea. La vocación agrícola de Pueblo Rico no existiría sin la composición específica de nutrientes orgánicos y minerales inorgánicos presentes en su suelo. La arcilla, una materia moldeable cuando se mezcla con agua, fue utilizada por nuestros antepasados indígenas para crear utensilios, y hoy sigue siendo parte de nuestra historia geológica. El café, nuestro producto insignia, es en sí mismo un complejo sistema material: desde la semilla sólida, pasando por el líquido de la bebida preparada, hasta los aromas volátiles (gases) que inundan las cocinas al amanecer. Reconocer de qué está hecho nuestro mundo es también reconocer quiénes somos. Proteger el agua de la quebrada o conservar los bosques no es solo un acto ecológico, es defender la materia vital que sustenta nuestra cultura, nuestras tradiciones y nuestra permanencia en el territorio rural.</p>
+
+                <div class="pausa-activa" id="pa4">
+                    <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pausa Activa 4</h4>
+                    <p>Escribe en tu cuaderno un párrafo corto (3 líneas) explicando cómo un cultivo específico de tu región (como el café, el plátano o el maíz) representa la identidad de tu territorio.</p>
+                    <button type="button" class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="marcarPausa('pa4')">Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <p>Para comprender verdaderamente por qué la materia se comporta como lo hace, debemos ir más allá de lo que nuestros ojos pueden ver. Si tomáramos un grano de tierra o una gota de agua del río de Pueblo Rico y pudiéramos ampliarlos millones de veces, descubriríamos que no son masas continuas, sino que están formados por piezas increíblemente pequeñas llamadas partículas (átomos y moléculas). Esta naturaleza corpuscular o particulada de la materia es el concepto central de la química y la física moderna. La manera en que estas diminutas partículas se organizan, la fuerza con la que se atraen entre sí y la velocidad a la que se mueven, determinan si un objeto será duro como una piedra, fluido como el agua o invisible como el viento que agita las ramas de los árboles. Este viaje hacia lo invisible nos prepara para entender las leyes universales que rigen la naturaleza, desde nuestra finca hasta el universo entero.</p>
+
+                <div class="pausa-activa" id="pa5">
+                    <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pausa Activa 5</h4>
+                    <p>Imagina que tienes "lupas mágicas" que te permiten ver las partículas. Dibuja en tu cuaderno cómo te imaginas que están organizadas las partículas dentro de un bloque de panela y cómo están dentro de un vaso de agua.</p>
+                    <button type="button" class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="marcarPausa('pa5')">Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <h3>Pregunta de Competencia (ICFES - Indagar)</h3>
+                <div class="question-box" id="icfes1" style="background: #f9f9f9; border-left: 5px solid var(--primary-dark);">
+                    <p><strong>Observa la siguiente situación:</strong> Don Roberto, un campesino de Pueblo Rico, dejó una herramienta de hierro (materia artificial) olvidada a la orilla del río durante varios meses. Al encontrarla, nota que el hierro ha cambiado de color a un tono rojizo y su textura ya no es lisa, sino porosa y frágil. De acuerdo con el concepto de materia y sus propiedades, ¿qué hipótesis explica mejor lo ocurrido?</p>
+                    <div class="options">
+                        <button class="option-btn" onclick="checkIcfes(this, false, 'Incorrecto. La evaporación es un cambio físico de líquido a gas. Aquí hubo un cambio químico en el metal sólido.')">A. El material de la herramienta se evaporó debido al calor del sol veredal.</button>
+                        <button class="option-btn" onclick="checkIcfes(this, false, 'Incorrecto. Que un material sea artificial no significa que desaparezca. De hecho, los metales interactúan con el entorno.')">B. Al ser un material artificial, perdió su masa y volumen gradualmente hasta casi desaparecer.</button>
+                        <button class="option-btn" onclick="checkIcfes(this, true, '¡Correcto! Esta hipótesis indaga en cómo la materia interactúa. El hierro reaccionó con el oxígeno y la humedad (agua), formando óxido (una nueva sustancia).')">C. La materia de la herramienta interactuó con el agua del río y el oxígeno del aire, generando un cambio químico (oxidación).</button>
+                        <button class="option-btn" onclick="checkIcfes(this, false, 'Incorrecto. El agua y el aire son materia, no absorben la materia del hierro para transformarse ellos mismos en metal.')">D. El agua del río absorbió las partículas de hierro para transformarse en materia sólida.</button>
+                    </div>
+                    <div class="feedback" id="icfes1-feedback"></div>
+                </div>
+
+            </section>
+
+            <!-- SECCIÓN 3: CUERPO DEDUCTIVO Y SIMULADOR CANVAS -->
+            <section id="deductivo">
+                <h2>El Comportamiento Interno: Teoría Cinético-Molecular</h2>
+                
+                <p>Para deducir las reglas de cómo interactúa nuestro mundo a nivel microscópico, los científicos desarrollaron la Teoría Cinético-Molecular. Esta teoría establece tres postulados fundamentales: primero, toda la materia está formada por partículas pequeñísimas (átomos o moléculas); segundo, estas partículas están en constante movimiento (energía cinética); y tercero, existen fuerzas de atracción o cohesión entre ellas. Imagina que las partículas son como los asistentes a las fiestas patronales del pueblo. Si están sentados juntos en las bancas de la iglesia, sus movimientos son limitados y ordenados; esto representa el estado sólido. Si salen a la plaza y caminan rozándose unos con otros para saludar, representan el estado líquido. Y si están en una cancha amplia, corriendo libres y separados, representan el estado gaseoso. La temperatura es la "música" que altera su comportamiento: a mayor temperatura, más energía cinética tienen y más rápido se mueven, alejándose unas de otras.</p>
+
+                <div class="pausa-activa" id="pa6">
+                    <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pausa Activa 6</h4>
+                    <p>En tu cuaderno, define con tus propias palabras qué es la "Teoría Cinético-Molecular" usando la analogía de la fiesta (o inventa una analogía propia, como abejas en un panal).</p>
+                    <button type="button" class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="marcarPausa('pa6')">Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <p>Analicemos deductivamente el estado sólido. En objetos rígidos de nuestro entorno rural, como el tronco de un árbol de guayacán, un machete de acero o una roca de cuarzo en la quebrada, las partículas están sometidas a fuerzas de cohesión inmensamente fuertes. Estas fuerzas las obligan a mantenerse en posiciones fijas, formando redes cristalinas o estructuras muy ordenadas. Debido a esta organización interna estricta, los sólidos poseen forma definida y volumen constante; no se comprimen fácilmente si los aprietas, ni cambian de forma si los cambias de recipiente. Las partículas en un sólido no están completamente quietas; la teoría cinética nos dice que vibran constantemente en su lugar, como una campana que ha sido golpeada suavemente. Esta vibración aumenta si el sólido se calienta, explicando por qué los rieles de metal se expanden en los días más calurosos en el campo.</p>
+
+                <div class="pausa-activa" id="pa7">
+                    <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pausa Activa 7</h4>
+                    <p>Escribe tres características exclusivas del estado sólido que se deducen del texto anterior.</p>
+                    <button type="button" class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="marcarPausa('pa7')">Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <p>El estado líquido, por otro lado, es la esencia misma del fluir. Pensemos en el agua de la quebrada que baja por la montaña o en la leche recién ordeñada en la finca. En el estado líquido, las fuerzas de cohesión entre las partículas son más débiles que en el sólido. Esto permite que las moléculas se deslicen, rueden y fluyan unas sobre otras, rompiendo y formando enlaces constantemente. Como resultado deductivo de esta libertad microscópica, los líquidos tienen un volumen constante (un litro de agua siempre es un litro), pero no tienen forma definida; adoptan la forma del recipiente que los contiene, ya sea una cantina lechera o el cauce de un río. Además, la capacidad de fluir permite fenómenos vitales como la capilaridad, por la cual el agua y los nutrientes líquidos ascienden desde las raíces en la tierra hasta las hojas más altas de los árboles frutales desafiando la gravedad.</p>
+
+                <div class="pausa-activa" id="pa8">
+                    <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pausa Activa 8</h4>
+                    <p>Dibuja un vaso de agua y una piedra dentro. Explica en dos renglones por qué el agua se adapta al vaso pero la piedra no.</p>
+                    <button type="button" class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="marcarPausa('pa8')">Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <h3>Simulador Avanzado: Partículas en Acción</h3>
+                <p>Para visualizar verdaderamente estos conceptos abstractos, interactúa con el siguiente simulador científico de partículas. <strong>Instrucciones:</strong> Haz clic en los botones para cambiar la energía térmica (temperatura) del sistema y observa cómo la teoría cinético-molecular entra en acción. Además, pasa el mouse sobre el recuadro para ver cómo tu interacción física empuja las partículas debido a fuerzas repulsivas.</p>
+                
+                <!-- CANVAS ANIMATION -->
+                <div class="canvas-container">
+                    <div class="canvas-overlay-text" id="sim-data">Estado: Sólido | Temp: Baja</div>
+                    <canvas id="particleCanvas"></canvas>
+                    <div class="canvas-controls">
+                        <button class="canvas-btn active" id="btn-solid" onclick="setSimState('solid')">Hielo (Sólido)</button>
+                        <button class="canvas-btn" id="btn-liquid" onclick="setSimState('liquid')">Agua (Líquido)</button>
+                        <button class="canvas-btn" id="btn-gas" onclick="setSimState('gas')">Vapor (Gas)</button>
+                    </div>
+                </div>
+
+                <p>Finalmente, llegamos al estado gaseoso y a los cambios de estado. En un gas, como el vapor que sale de una olla donde hierve sancocho a fuego de leña, la energía cinética de las partículas es altísima y las fuerzas de cohesión son casi nulas. Las partículas se mueven caóticamente en línea recta, chocando entre sí y contra las paredes, ocupando todo el volumen y la forma del espacio disponible (por eso el aroma de la comida llena toda la casa). Entender estos tres estados nos lleva a deducir los cambios de fase causados por la termodinámica: cuando aportamos calor a la materia, la energía rompe los enlaces pasando de sólido a líquido (Fusión) y luego a gas (Evaporación o Ebullición). Si retiramos calor (enfriamos), el gas se vuelve líquido (Condensación, como el rocío matutino) y el líquido se vuelve sólido (Solidificación). Estos procesos físicos no alteran la composición interna de la materia; el agua sigue siendo H<sub>2</sub>O ya sea como hielo rígido, líquido fluyente o vapor invisible.</p>
+
+                <div class="pausa-activa" id="pa9">
+                    <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pausa Activa 9</h4>
+                    <p>Realiza un esquema en tu cuaderno utilizando flechas para conectar las palabras: SÓLIDO, LÍQUIDO, GAS. Escribe sobre las flechas el nombre del cambio de estado (Fusión, Evaporación, Condensación, Solidificación).</p>
+                    <button type="button" class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="marcarPausa('pa9')">Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <p>Las aplicaciones industriales y agrícolas de estas leyes físicas son inmensas, incluso en Pueblo Rico. Consideremos la producción de panela en el trapiche local. El jugo de caña extraído es una mezcla líquida rica en azúcares y agua. Para obtener la panela sólida, los campesinos aplican calor extremo mediante hornillas. Este aumento brutal de temperatura eleva la energía cinética de las moléculas de agua (H<sub>2</sub>O) hasta que superan sus fuerzas de cohesión, produciendo una intensa evaporación. A medida que el disolvente gaseoso escapa por la chimenea, el líquido restante se sobresatura de azúcar. Al retirar el calor y verter la miel en las gaveras (moldes), la temperatura desciende, la energía cinética disminuye abruptamente y las fuerzas de cohesión obligan a las moléculas de sacarosa a cristalizarse, formándose la panela en estado sólido. Este proceso cotidiano es una demostración magistral de termodinámica aplicada y control absoluto de los estados de la materia.</p>
+
+                <div class="pausa-activa" id="pa10">
+                    <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Pausa Activa 10</h4>
+                    <p>Analizando el ejemplo de la panela, explica en tu cuaderno: ¿Qué estado de la materia se evapora por la chimenea y qué estado de la materia queda al final en los moldes?</p>
+                    <button type="button" class="btn" style="padding: 10px 20px; font-size: 14px;" onclick="marcarPausa('pa10')">Ya lo hice en mi cuaderno</button>
+                </div>
+
+            </section>
+
+            <!-- SECCIÓN 4: EVALUACIÓN FINAL Y EXPORTACIÓN -->
+            <section id="evaluacion">
+                <h2>Evaluación Final: Consolidando Aprendizajes</h2>
+                <p>Es hora de demostrar lo aprendido en nuestro recorrido por Pueblo Rico. Responde cuidadosamente a las siguientes preguntas.</p>
+
+                <h3>Parte I: Selección Múltiple (Autocalificable)</h3>
+                <div id="quiz-container">
+                    <div class="question-box quiz-q" data-type="inductivo">
+                        <p><strong>1. (Concepto Inductivo)</strong> Al clasificar los materiales encontrados en una finca de la vereda, ¿cuál de las siguientes opciones agrupa SOLAMENTE materiales de origen natural?</p>
+                        <label><input type="radio" name="q1" value="0"> Manguera plástica, techo de zinc, abono químico.</label><br>
+                        <label><input type="radio" name="q1" value="0"> Agua del río, machete de hierro, madera.</label><br>
+                        <label><input type="radio" name="q1" value="1"> Suelo arcilloso, hojas de plátano, tronco de guayacán.</label><br>
+                        <label><input type="radio" name="q1" value="0"> Vidrio de ventana, carbón vegetal, fibras de nylon.</label>
+                    </div>
+
+                    <div class="question-box quiz-q" data-type="inductivo">
+                        <p><strong>2. (Concepto Inductivo)</strong> La definición científica fundamental de "materia" afirma que es todo aquello que:</p>
+                        <label><input type="radio" name="q2" value="0"> Se puede ver a simple vista en la naturaleza.</label><br>
+                        <label><input type="radio" name="q2" value="1"> Tiene masa y ocupa un volumen en el espacio.</label><br>
+                        <label><input type="radio" name="q2" value="0"> Posee vida propia y capacidad de moverse.</label><br>
+                        <label><input type="radio" name="q2" value="0"> Ha sido creado por el hombre a través de procesos industriales.</label>
+                    </div>
+
+                    <div class="question-box quiz-q" data-type="deductivo">
+                        <p><strong>3. (Concepto Deductivo)</strong> Según la Teoría Cinético-Molecular, si calentamos un cubo de hielo hasta convertirlo en vapor, ¿qué ocurre con sus partículas internas?</p>
+                        <label><input type="radio" name="q3" value="0"> Disminuyen su tamaño hasta desaparecer.</label><br>
+                        <label><input type="radio" name="q3" value="0"> Aumentan sus fuerzas de cohesión y se acercan entre sí.</label><br>
+                        <label><input type="radio" name="q3" value="1"> Aumentan su energía cinética, se mueven más rápido y se separan.</label><br>
+                        <label><input type="radio" name="q3" value="0"> Cambian químicamente, dejando de ser partículas de agua.</label>
+                    </div>
+
+                    <div class="question-box quiz-q" data-type="deductivo">
+                        <p><strong>4. (Concepto Deductivo)</strong> El proceso físico de evaporación del agua en el trapiche panelero se considera un cambio de estado de:</p>
+                        <label><input type="radio" name="q4" value="0"> Sólido a líquido.</label><br>
+                        <label><input type="radio" name="q4" value="1"> Líquido a gaseoso.</label><br>
+                        <label><input type="radio" name="q4" value="0"> Gaseoso a líquido.</label><br>
+                        <label><input type="radio" name="q4" value="0"> Líquido a sólido.</label>
+                    </div>
+
+                    <div class="question-box quiz-q" data-type="deductivo">
+                        <p><strong>5. (Concepto Deductivo)</strong> ¿Qué estado de la materia se caracteriza por tener volumen constante pero forma variable (adopta la forma de su recipiente)?</p>
+                        <label><input type="radio" name="q5" value="0"> Estado Sólido.</label><br>
+                        <label><input type="radio" name="q5" value="1"> Estado Líquido.</label><br>
+                        <label><input type="radio" name="q5" value="0"> Estado Gaseoso.</label><br>
+                        <label><input type="radio" name="q5" value="0"> Plasma.</label>
+                    </div>
+                </div>
+
+                <h3>Parte II: Respuestas Abiertas Breves</h3>
+                <p><em>Instrucción estricta: Cada respuesta debe contener entre <strong>10 y 15 palabras exactas</strong>. El sistema no te permitirá enviar si no cumples esta regla.</em></p>
+                
+                <div id="open-questions-container">
+                    <div class="open-question">
+                        <p>6. Escribe un ejemplo de materia en estado gaseoso común en tu vereda:</p>
+                        <textarea id="oq1" oninput="countWords(this, 'wc1')"></textarea>
+                        <div class="word-count error" id="wc1">Palabras: 0/15 (Mínimo 10, Máximo 15)</div>
+                    </div>
+                    <div class="open-question">
+                        <p>7. ¿Por qué una roca del río mantiene su forma dura?</p>
+                        <textarea id="oq2" oninput="countWords(this, 'wc2')"></textarea>
+                        <div class="word-count error" id="wc2">Palabras: 0/15 (Mínimo 10, Máximo 15)</div>
+                    </div>
+                    <div class="open-question">
+                        <p>8. Describe una diferencia física entre un material natural y uno artificial:</p>
+                        <textarea id="oq3" oninput="countWords(this, 'wc3')"></textarea>
+                        <div class="word-count error" id="wc3">Palabras: 0/15 (Mínimo 10, Máximo 15)</div>
+                    </div>
+                    <div class="open-question">
+                        <p>9. ¿Qué le pasa a las partículas del agua al ser hervida?</p>
+                        <textarea id="oq4" oninput="countWords(this, 'wc4')"></textarea>
+                        <div class="word-count error" id="wc4">Palabras: 0/15 (Mínimo 10, Máximo 15)</div>
+                    </div>
+                    <div class="open-question">
+                        <p>10. Nombra un cambio de estado visible en la elaboración de alimentos campesinos:</p>
+                        <textarea id="oq5" oninput="countWords(this, 'wc5')"></textarea>
+                        <div class="word-count error" id="wc5">Palabras: 0/15 (Mínimo 10, Máximo 15)</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="button" class="btn" id="btn-submit" onclick="evaluarFinal()" disabled>Enviar Evaluación y Ver Resultados</button>
+                </div>
+
+                <!-- ZONA DE RESULTADOS Y FORTALECIMIENTO -->
+                <div id="resultado-final" style="display: none; margin-top: 30px; padding: 20px; border-radius: 12px; text-align: center; background: #e8f5e9;">
+                    <h2>Tus Resultados Finales</h2>
+                    <h1 id="nota-final" style="font-size: 3em; color: var(--primary-dark);">0.0 / 5.0</h1>
+                    <p id="mensaje-elemento" style="font-size: 1.2em; font-weight: bold; margin: 15px 0;"></p>
+                    
+                    <div id="fortalecimiento" class="pausa-activa" style="text-align: left;">
+                        <h4><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976D2" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Ruta de Fortalecimiento Personalizada</h4>
+                        <p><em>De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades:</em></p>
+                        <p id="texto-fortalecimiento" style="font-weight: bold; margin-top: 10px;"></p>
+                    </div>
+
+                    <button type="button" class="btn" style="background: var(--primary); color: white; margin-top: 20px;" onclick="descargarReporte()">Descargar Resultados (.txt)</button>
+                </div>
+
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // --- ESTADO DE LA APLICACIÓN ---
+        let appState = {
+            studentName: '',
+            pausasCompletadas: 0,
+            totalPausas: 10,
+            evalScore: 0,
+            finalizado: false,
+            fallosInductivos: 0,
+            fallosDeductivos: 0,
+            textoFortaleza: ""
+        };
+
+        const elementsData = [
+            { threshold: 0.0, name: "Hidrógeno (H)", symbol: "H", desc: "El más ligero. ¡Estás empezando!" },
+            { threshold: 1.0, name: "Carbono (C)", symbol: "C", desc: "Base de la vida rural. ¡Avanzando!" },
+            { threshold: 2.5, name: "Oxígeno (O)", symbol: "O", desc: "Esencial para respirar. ¡Buen nivel!" },
+            { threshold: 3.5, name: "Hierro (Fe)", symbol: "Fe", desc: "Fuerte como las herramientas. ¡Muy bien!" },
+            { threshold: 4.5, name: "Oro (Au)", symbol: "Au", desc: "Metal precioso. ¡Excelente conocimiento!" }
+        ];
+
+        // --- INICIALIZACIÓN ---
+        window.onload = () => {
+            const savedApellidos = localStorage.getItem('ova_apellidos');
+            const savedNombres = localStorage.getItem('ova_nombres');
+            if (savedApellidos && savedNombres) {
+                document.getElementById('apellidosEstudiante').value = savedApellidos;
+                document.getElementById('nombresEstudiante').value = savedNombres;
+            }
+        };
+
+        // --- GESTIÓN DE USUARIO (SIN FORMULARIO) ---
+        function iniciarOVA() {
+            const apellidosInput = document.getElementById('apellidosEstudiante').value.trim();
+            const nombresInput = document.getElementById('nombresEstudiante').value.trim();
+            
+            if (apellidosInput.length < 2 || nombresInput.length < 2) {
+                alert("Por favor, ingresa tus Apellidos y Nombres completos.");
+                return;
+            }
+            
+            appState.studentName = `${nombresInput} ${apellidosInput}`;
+            localStorage.setItem('ova_apellidos', apellidosInput);
+            localStorage.setItem('ova_nombres', nombresInput);
+            
+            document.getElementById('displayName').innerText = appState.studentName;
+            
+            // Ocultar login y mostrar contenido principal
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            
+            // IMPORTANTE: Inicializar el Canvas SOLAMENTE después de que main-content sea visible.
+            // Esto asegura que el width y height del contenedor sean mayores a 0px.
+            initCanvas();
+            
+            actualizarProgreso();
+            
+            if (!animationId) animateLoop();
+        }
+
+        // --- SISTEMA DE PROGRESO Y GAMIFICACIÓN ---
+        function actualizarProgreso() {
+            const percent = (appState.pausasCompletadas / appState.totalPausas) * 100;
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').innerText = percent.toFixed(0) + '%';
+        }
+
+        function actualizarElemento(nota) {
+            let currentEl = elementsData[0];
+            for (let el of elementsData) {
+                if (nota >= el.threshold) currentEl = el;
+            }
+            const badge = document.getElementById('elementBadge');
+            badge.innerHTML = `🔬 Nivel: ${currentEl.name}`;
+            badge.style.background = nota >= 3.0 ? "var(--primary-dark)" : "var(--secondary)";
+            return currentEl;
+        }
+
+        function marcarPausa(id) {
+            const container = document.getElementById(id);
+            const btn = container.querySelector('button');
+            if (!btn.disabled) {
+                btn.disabled = true;
+                btn.innerText = "✓ Completado";
+                btn.style.backgroundColor = "var(--success)";
+                btn.style.color = "white";
+                container.style.borderLeftColor = "var(--success)";
+                appState.pausasCompletadas++;
+                actualizarProgreso();
+            }
+        }
+
+        // --- INTERACTIVIDAD PREGUNTAS EN LÍNEA ---
+        function checkAnswer(btn, containerId, isCorrect, msg) {
+            const container = document.getElementById(containerId);
+            const btns = container.querySelectorAll('.option-btn');
+            btns.forEach(b => {
+                b.disabled = true;
+                if(b === btn) b.classList.add(isCorrect ? 'correct' : 'incorrect');
+            });
+            const feedback = container.querySelector('.feedback');
+            feedback.innerText = msg;
+            feedback.style.display = 'block';
+            feedback.style.color = isCorrect ? 'var(--success)' : 'var(--danger)';
+            feedback.style.background = isCorrect ? '#E8F5E9' : '#FFEBEE';
+        }
+
+        function checkIcfes(btn, isCorrect, msg) {
+            const container = document.getElementById('icfes1');
+            const btns = container.querySelectorAll('.option-btn');
+            btns.forEach(b => {
+                b.disabled = true;
+                if(b === btn) b.classList.add(isCorrect ? 'correct' : 'incorrect');
+            });
+            const feedback = document.getElementById('icfes1-feedback');
+            feedback.innerText = msg;
+            feedback.style.display = 'block';
+            feedback.style.color = isCorrect ? 'var(--success)' : 'var(--danger)';
+            feedback.style.background = isCorrect ? '#E8F5E9' : '#FFEBEE';
+        }
+
+        // --- VALIDACIÓN DE PALABRAS ---
+        function countWords(textarea, counterId) {
+            const text = textarea.value.trim();
+            const words = text === "" ? [] : text.split(/\s+/);
+            const count = words.length;
+            const counter = document.getElementById(counterId);
+            
+            counter.innerText = `Palabras: ${count}/15 (Mínimo 10, Máximo 15)`;
+            
+            if (count >= 10 && count <= 15) {
+                counter.className = "word-count success";
+                textarea.style.borderColor = "var(--success)";
+            } else {
+                counter.className = "word-count error";
+                textarea.style.borderColor = "var(--danger)";
+            }
+            validarEnvioFinal();
+        }
+
+        function validarEnvioFinal() {
+            const textareas = document.querySelectorAll('.open-question textarea');
+            let todoValido = true;
+            textareas.forEach(ta => {
+                const count = (ta.value.trim() === "") ? 0 : ta.value.trim().split(/\s+/).length;
+                if (count < 10 || count > 15) todoValido = false;
+            });
+            document.getElementById('btn-submit').disabled = !todoValido;
+        }
+
+        // --- EVALUACIÓN Y RETROALIMENTACIÓN ---
+        function evaluarFinal() {
+            appState.fallosInductivos = 0;
+            appState.fallosDeductivos = 0;
+            let correctas = 0;
+
+            const q1 = document.querySelector('input[name="q1"]:checked');
+            if(q1 && q1.value == "1") correctas++; else appState.fallosInductivos++;
+
+            const q2 = document.querySelector('input[name="q2"]:checked');
+            if(q2 && q2.value == "1") correctas++; else appState.fallosInductivos++;
+
+            const q3 = document.querySelector('input[name="q3"]:checked');
+            if(q3 && q3.value == "1") correctas++; else appState.fallosDeductivos++;
+
+            const q4 = document.querySelector('input[name="q4"]:checked');
+            if(q4 && q4.value == "1") correctas++; else appState.fallosDeductivos++;
+
+            const q5 = document.querySelector('input[name="q5"]:checked');
+            if(q5 && q5.value == "1") correctas++; else appState.fallosDeductivos++;
+
+            let nota = (correctas * 0.5) + 2.5;
+            appState.evalScore = nota.toFixed(1);
+
+            document.getElementById('nota-final').innerText = `${appState.evalScore} / 5.0`;
+            const element = actualizarElemento(nota);
+            document.getElementById('mensaje-elemento').innerText = `¡Has alcanzado el nivel de la materia: ${element.name}!`;
+
+            generarFortalecimiento();
+
+            document.getElementById('resultado-final').style.display = 'block';
+            document.getElementById('btn-submit').style.display = 'none';
+            document.getElementById('resultado-final').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generarFortalecimiento() {
+            const fInd = appState.fallosInductivos;
+            const fDed = appState.fallosDeductivos;
+            const divFortalecimiento = document.getElementById('fortalecimiento');
+            const txtRes = document.getElementById('texto-fortalecimiento');
+            
+            if (fInd === 0 && fDed === 0) {
+                appState.textoFortaleza = "Excelente dominio del tema. Has comprendido a la perfección tanto la definición inductiva de la materia en tu entorno veredal, como la teoría cinético-molecular deductiva que explica su comportamiento. ¡Felicidades!";
+                divFortalecimiento.style.display = 'none';
+            } else {
+                divFortalecimiento.style.display = 'block';
+                if (fInd >= fDed) {
+                    appState.textoFortaleza = "Debo reforzar la fundamentación conceptual: La materia es todo aquello que tiene masa y volumen. Los objetos de mi vereda se clasifican en naturales (provenientes directamente de la naturaleza) y artificiales (creados por el humano transformando los recursos). Debo aprender a diferenciar las propiedades físicas observables en mi entorno.";
+                } else {
+                    appState.textoFortaleza = "Debo reforzar la Teoría Cinético-Molecular: Las partículas en un SÓLIDO están unidas fuertemente vibrando en su lugar. En un LÍQUIDO están más sueltas y fluyen tomando la forma del recipiente. En un GAS están libres y se expanden con alta energía cinética. El calor (temperatura) es la clave para cambiar de un estado a otro.";
+                }
+            }
+            txtRes.innerText = appState.textoFortaleza;
+        }
+
+        // --- EXPORTACIÓN BLOB TXT ---
+        function descargarReporte() {
+            const f = new Date();
+            const fecha = `${f.getDate()}/${f.getMonth()+1}/${f.getFullYear()}`;
+            
+            let openAnswers = "";
+            for(let i=1; i<=5; i++){
+                openAnswers += `Pregunta Abierta ${i+5}:\n${document.getElementById('oq'+i).value}\n\n`;
+            }
+
+            const contenido = `================================================
+REPORTE DE LABORATORIO VEREDAL - PUEBLO RICO
+================================================
+Estudiante: ${appState.studentName}
+Fecha: ${fecha}
+Nota Final: ${appState.evalScore} / 5.0
+Nivel Alcanzado: ${actualizarElemento(appState.evalScore).name}
+
+--- RESPUESTAS ABIERTAS ---
+${openAnswers}
+
+--- RUTA DE FORTALECIMIENTO PERSONALIZADA ---
+(Para copiar en el cuaderno)
+${appState.textoFortaleza}
+
+================================================
+Generado automáticamente por el OVA HTML5
+`;
+
+            const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Reporte_Materia_${appState.studentName.replace(/\s+/g, '_')}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // =========================================================
+        // === HTML5 CANVAS: SIMULACIÓN DE PARTÍCULAS AVANZADA ===
+        // =========================================================
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationId;
+        let simState = 'solid'; // 'solid', 'liquid', 'gas'
+        let mouseX = -1000;
+        let mouseY = -1000;
+
+        // Ajustar Canvas dinámicamente
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            // Solo ajustar si el contenedor es visible y tiene ancho
+            if (container && container.clientWidth > 0) {
+                canvas.width = container.clientWidth;
+                // La altura de 400px ya está definida en CSS, asegurémosla en JS
+                canvas.height = 400; 
+                
+                // Si ya estamos en la animación y redimensionan la ventana, reposicionamos partículas
+                if (particles.length > 0 && simState === 'solid') {
+                    initParticles();
+                }
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // Interacción Mouse
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        });
+        canvas.addEventListener('mouseleave', () => {
+            mouseX = -1000; mouseY = -1000;
+        });
+
+        // Clase Partícula
+        class Particle {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.baseX = x; this.baseY = y;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.radius = 6;
+                this.color = '#4CAF50';
+                this.mass = 1;
+            }
+
+            update() {
+                // Interacción con mouse (Fuerza Repulsiva)
+                let dx = mouseX - this.x;
+                let dy = mouseY - this.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 80) {
+                    let force = (80 - dist) / 80;
+                    this.vx -= (dx / dist) * force * 2;
+                    this.vy -= (dy / dist) * force * 2;
+                }
+
+                // Lógica según estado
+                if (simState === 'solid') {
+                    // Sólido: Estructura cristalina, vuelven a baseX, baseY
+                    let k = 0.1; 
+                    let fx = (this.baseX - this.x) * k;
+                    let fy = (this.baseY - this.y) * k;
+                    this.vx = (this.vx + fx) * 0.8; 
+                    this.vy = (this.vy + fy) * 0.8;
+                    this.color = '#81D4FA'; 
+                    this.vx += (Math.random() - 0.5) * 0.5;
+                    this.vy += (Math.random() - 0.5) * 0.5;
+                } 
+                else if (simState === 'liquid') {
+                    // Líquido: Gravedad, fricción y colisiones
+                    this.vy += 0.2; 
+                    this.vx *= 0.95; 
+                    this.vy *= 0.95;
+                    this.color = '#29B6F6'; 
+                    
+                    this.vx += (Math.random() - 0.5) * 1.5;
+                    this.vy += (Math.random() - 0.5) * 1.5;
+
+                    // Rebote paredes inferiores
+                    if (this.y > canvas.height - this.radius) {
+                        this.y = canvas.height - this.radius;
+                        this.vy *= -0.5;
+                    }
+                    if (this.x < this.radius) { this.x = this.radius; this.vx *= -0.8; }
+                    if (this.x > canvas.width - this.radius) { this.x = canvas.width - this.radius; this.vx *= -0.8; }
+                }
+                else if (simState === 'gas') {
+                    // Gas: Alta energía, sin gravedad, rebotan por todas partes
+                    this.color = '#E57373'; 
+                    let speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+                    if(speed < 5) {
+                        this.vx *= 1.1; this.vy *= 1.1;
+                    }
+                    this.vx += (Math.random() - 0.5) * 2;
+                    this.vy += (Math.random() - 0.5) * 2;
+
+                    // Límites de velocidad
+                    if(this.vx > 10) this.vx = 10; if(this.vx < -10) this.vx = -10;
+                    if(this.vy > 10) this.vy = 10; if(this.vy < -10) this.vy = -10;
+
+                    // Rebote perfecto en paredes
+                    if (this.x < this.radius) { this.x = this.radius; this.vx *= -1; }
+                    if (this.x > canvas.width - this.radius) { this.x = canvas.width - this.radius; this.vx *= -1; }
+                    if (this.y < this.radius) { this.y = this.radius; this.vy *= -1; }
+                    if (this.y > canvas.height - this.radius) { this.y = canvas.height - this.radius; this.vy *= -1; }
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Colisiones entre partículas
+                if (simState === 'liquid' || simState === 'gas') {
+                    for(let i=0; i<particles.length; i++) {
+                        let p2 = particles[i];
+                        if (p2 === this) continue;
+                        let ddx = p2.x - this.x;
+                        let ddy = p2.y - this.y;
+                        let ddist = ddx*ddx + ddy*ddy;
+                        let minDist = (this.radius + p2.radius) * (this.radius + p2.radius);
+                        
+                        if(ddist < minDist) {
+                            let actualDist = Math.sqrt(ddist);
+                            if(actualDist === 0) actualDist = 0.1;
+                            let overlap = (this.radius + p2.radius) - actualDist;
+                            // Separar
+                            let pushX = (ddx / actualDist) * overlap * 0.5;
+                            let pushY = (ddy / actualDist) * overlap * 0.5;
+                            this.x -= pushX; this.y -= pushY;
+                            p2.x += pushX; p2.y += pushY;
+                        }
+                    }
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                // Brillo
+                ctx.beginPath();
+                ctx.arc(this.x - 2, this.y - 2, 2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            let cols = 15;
+            let rows = 10;
+            let spacing = 18;
+            
+            // Usamos width seguro en caso de que tarde un ms en aplicarse el display:block
+            let cw = canvas.width || 800; 
+            let ch = canvas.height || 400;
+
+            let offsetX = (cw - (cols * spacing)) / 2;
+            let offsetY = (ch - (rows * spacing)) / 2;
+
+            for(let i=0; i<rows; i++){
+                for(let j=0; j<cols; j++){
+                    let px = offsetX + j * spacing;
+                    let py = offsetY + i * spacing;
+                    particles.push(new Particle(px, py));
+                }
+            }
+        }
+
+        function initCanvas() {
+            resizeCanvas();
+            initParticles();
+        }
+
+        function setSimState(newState) {
+            simState = newState;
+            
+            document.querySelectorAll('.canvas-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + newState).classList.add('active');
+            
+            let label = newState === 'solid' ? 'Sólido | Temp: Baja' : 
+                        newState === 'liquid' ? 'Líquido | Temp: Media' : 'Gas | Temp: Alta';
+            document.getElementById('sim-data').innerText = 'Estado: ' + label;
+
+            if(newState === 'solid') {
+                initParticles(); 
+            } else if (newState === 'gas') {
+                particles.forEach(p => {
+                    p.vx = (Math.random()-0.5) * 15;
+                    p.vy = (Math.random()-0.5) * 15;
+                });
+            }
+        }
+
+        function animateLoop() {
+            // Limpiar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Fondo interactivo por temperatura
+            if(simState === 'solid') ctx.fillStyle = 'rgba(0, 50, 100, 0.2)';
+            else if(simState === 'liquid') ctx.fillStyle = 'rgba(0, 100, 150, 0.2)';
+            else ctx.fillStyle = 'rgba(150, 50, 50, 0.2)';
+            ctx.fillRect(0,0, canvas.width, canvas.height);
+
+            // Partículas
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // Enlaces Sólidos
+            if(simState === 'solid') {
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for(let i=0; i<particles.length; i++){
+                    for(let j=i+1; j<particles.length; j++){
+                        let dx = particles[i].x - particles[j].x;
+                        let dy = particles[i].y - particles[j].y;
+                        if(dx*dx + dy*dy < 400) { 
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                        }
+                    }
+                }
+                ctx.stroke();
+            }
+
+            animationId = requestAnimationFrame(animateLoop);
+        }
+
+    </script>
+</body>
+</html>

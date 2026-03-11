@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Cinética, Catálisis y Liderazgo</title>
+    <style>
+        /* ==========================================================================
+           1. VARIABLES Y RESETEO
+           ========================================================================== */
+        :root {
+            --primary: #1A365D; /* Azul profundo - Concentración */
+            --secondary: #2B6CB0; /* Azul claro - Interacción */
+            --accent: #ED8936; /* Naranja - Llamado a la acción */
+            --background: #F7FAFC; /* Gris muy claro - Lectura cómoda */
+            --text-main: #2D3748;
+            --text-light: #718096;
+            --success: #48BB78;
+            --error: #E53E3E;
+            --white: #FFFFFF;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --radius: 12px;
+            --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: var(--font-main);
+            background-color: var(--background);
+            color: var(--text-main);
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        /* ==========================================================================
+           2. PANTALLA DE BIENVENIDA
+           ========================================================================== */
+        #welcome-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 3rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .login-card h1 { color: var(--primary); margin-bottom: 1rem; font-size: 2rem; }
+        .login-card p { color: var(--text-light); margin-bottom: 2rem; }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #E2E8F0;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        .input-group input:focus { border-color: var(--secondary); }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: var(--white);
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: var(--radius);
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            background-color: #DD6B20;
+            transform: translateY(-2px);
+        }
+
+        /* ==========================================================================
+           3. INTERFAZ PRINCIPAL Y NAVEGACIÓN
+           ========================================================================== */
+        #main-content { display: none; padding-top: 80px; }
+
+        nav {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: var(--white);
+            box-shadow: var(--shadow-sm);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            height: 80px;
+        }
+
+        .nav-user { font-weight: bold; color: var(--primary); font-size: 1.1rem; }
+
+        /* Barra de Progreso */
+        .progress-container {
+            flex-grow: 1;
+            margin: 0 2rem;
+            background: #E2E8F0;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Gamificación: Tabla Periódica */
+        .gamification-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .element-tile {
+            width: 50px; height: 50px;
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: var(--shadow-md);
+            border: 2px solid var(--accent);
+            transition: all 0.3s;
+        }
+        
+        .element-tile span.symbol { font-size: 1.2rem; line-height: 1; }
+        .element-tile span.number { font-size: 0.6rem; color: #CBD5E0; }
+
+        /* ==========================================================================
+           4. CONTENEDORES Y TIPOGRAFÍA
+           ========================================================================== */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 20px;
+        }
+
+        section {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        h2 { color: var(--primary); font-size: 1.8rem; margin-bottom: 1.5rem; border-bottom: 2px solid #E2E8F0; padding-bottom: 0.5rem; }
+        h3 { color: var(--secondary); font-size: 1.4rem; margin: 1.5rem 0 1rem 0; }
+        p { margin-bottom: 1.2rem; font-size: 1.05rem; text-align: justify; }
+        
+        /* ==========================================================================
+           5. COMPONENTES INTERACTIVOS
+           ========================================================================== */
+        /* Preguntas Pre-saberes */
+        .pre-question {
+            background: var(--background);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            border-left: 5px solid var(--secondary);
+        }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn-option {
+            background: var(--white); border: 1px solid #CBD5E0; padding: 10px; border-radius: 8px;
+            cursor: pointer; transition: all 0.2s; font-size: 0.95rem;
+        }
+        .btn-option:hover { background: #E2E8F0; }
+        .btn-option.correct { background: var(--success); color: white; border-color: var(--success); }
+        .btn-option.incorrect { background: var(--error); color: white; border-color: var(--error); }
+        .feedback-text { margin-top: 10px; font-weight: bold; display: none; font-size: 0.9rem; }
+
+        /* Pausas Activas */
+        .pausa-activa {
+            background: #FFFCE8; /* Amarillo pastel */
+            border: 2px dashed #D69E2E;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin: 2rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .pausa-content h4 { color: #B7791F; margin-bottom: 0.5rem; }
+        .btn-done {
+            background: #D69E2E; color: white; border: none; padding: 10px 20px;
+            border-radius: 20px; cursor: pointer; font-weight: bold; white-space: nowrap;
+        }
+        .btn-done.completed { background: var(--success); pointer-events: none; }
+
+        /* Pregunta ICFES */
+        .icfes-container { border: 2px solid var(--primary); padding: 2rem; border-radius: var(--radius); background: #FAFCFF; }
+        
+        /* Evaluacion Final */
+        .eval-question { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #E2E8F0; }
+        
+        .open-question textarea {
+            width: 100%; height: 80px; padding: 10px; border-radius: 8px;
+            border: 1px solid #CBD5E0; resize: none; font-family: inherit;
+        }
+        .word-counter { font-size: 0.85rem; font-weight: bold; margin-top: 5px; }
+        .word-counter.valid { color: var(--success); }
+        .word-counter.invalid { color: var(--error); }
+
+        /* Gráficos SVG y CSS */
+        .svg-container {
+            width: 100%; max-width: 600px; margin: 2rem auto; display: block;
+            background: var(--white); box-shadow: var(--shadow-sm); border-radius: var(--radius);
+            padding: 1rem; border: 1px solid #E2E8F0;
+        }
+
+        /* Resultados */
+        #resultados { background: #F0FFF4; border: 2px solid var(--success); }
+        .ruta-fortalecimiento { background: white; padding: 1.5rem; border-radius: 8px; margin-top: 1rem; border-left: 5px solid var(--accent); }
+
+        /* Utilidades */
+        .hidden { display: none !important; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .pausa-activa { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================================================
+         PANTALLA DE BIENVENIDA (Sin <form> para evitar recargas)
+         ========================================================================== -->
+    <div id="welcome-screen">
+        <div class="login-card">
+            <svg width="80" height="80" viewBox="0 0 100 100" style="margin-bottom: 1rem;">
+                <!-- Arte CSS/SVG: Molécula estilizada -->
+                <circle cx="50" cy="50" r="15" fill="var(--primary)" />
+                <circle cx="20" cy="20" r="10" fill="var(--accent)" />
+                <circle cx="80" cy="80" r="10" fill="var(--secondary)" />
+                <circle cx="80" cy="20" r="10" fill="var(--success)" />
+                <path d="M 40 40 L 25 25 M 60 60 L 75 75 M 60 40 L 75 25" stroke="var(--text-light)" stroke-width="3" />
+            </svg>
+            <h1>Cinética y Catálisis</h1>
+            <p>Laboratorio Virtual y Taller Interactivo. Por favor, identifícate para guardar tu progreso.</p>
+            <div class="input-group">
+                <input type="text" id="userName" placeholder="Tus Nombres y Apellidos" autocomplete="off">
+            </div>
+            <button id="btnEnter" class="btn-primary">Ingresar al OVA</button>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         INTERFAZ PRINCIPAL
+         ========================================================================== -->
+    <div id="main-content">
+        <!-- Barra de Navegación -->
+        <nav>
+            <div class="nav-user" id="displayUserName">Estudiante</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="gamification-badge">
+                <span style="font-size: 0.8rem; font-weight: bold; color: var(--text-light);">Nivel:</span>
+                <div class="element-tile" id="elementBadge">
+                    <span class="number">1</span>
+                    <span class="symbol">H</span>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            
+            <!-- 1. INICIO Y PRE-SABERES -->
+            <section id="inicio">
+                <h2>1. Objetivo de Aprendizaje</h2>
+                <p>Al finalizar este módulo, estarás en la capacidad de <strong>analizar el efecto de los catalizadores y las enzimas</strong> en la velocidad de las reacciones químicas (cinética), interpretando la acción de la catalasa de la papa sobre el agua oxigenada (H<sub>2</sub>O<sub>2</sub>), y extrapolando este concepto científico para comprender el papel de un <strong>líder como catalizador de cambio social</strong>.</p>
+                
+                <h3>Activación de Pre-saberes</h3>
+                <p>Antes de sumergirnos en la teoría, responde estas 3 preguntas. Haz clic en la opción que consideres correcta:</p>
+
+                <div class="pre-question" id="pre1">
+                    <p><strong>1.</strong> Si tienes un dolor de cabeza fuerte y tomas una pastilla efervescente, ¿qué harías para que se disuelva lo más rápido posible?</p>
+                    <div class="options-grid">
+                        <button class="btn-option" data-correct="false">Ponerla en agua helada.</button>
+                        <button class="btn-option" data-correct="false">Dejarla entera en agua a temperatura ambiente.</button>
+                        <button class="btn-option" data-correct="true">Triturarla y ponerla en agua tibia.</button>
+                        <button class="btn-option" data-correct="false">Ponerla en aceite.</button>
+                    </div>
+                    <div class="feedback-text"></div>
+                </div>
+
+                <div class="pre-question" id="pre2">
+                    <p><strong>2.</strong> En química, ¿qué crees que significa la frase "Energía de Activación"?</p>
+                    <div class="options-grid">
+                        <button class="btn-option" data-correct="true">La energía mínima necesaria para que una reacción inicie.</button>
+                        <button class="btn-option" data-correct="false">La energía total que libera una explosión.</button>
+                        <button class="btn-option" data-correct="false">La energía de los electrones en reposo.</button>
+                        <button class="btn-option" data-correct="false">La electricidad usada en un laboratorio.</button>
+                    </div>
+                    <div class="feedback-text"></div>
+                </div>
+
+                <div class="pre-question" id="pre3">
+                    <p><strong>3.</strong> Has escuchado la palabra "catalizador" en la vida diaria (ej. en los carros o en las empresas). En términos generales, ¿qué hace un catalizador?</p>
+                    <div class="options-grid">
+                        <button class="btn-option" data-correct="false">Detiene los procesos para hacerlos seguros.</button>
+                        <button class="btn-option" data-correct="true">Acelera un proceso facilitando que ocurra.</button>
+                        <button class="btn-option" data-correct="false">Cambia el resultado final de un proceso.</button>
+                        <button class="btn-option" data-correct="false">Aumenta la cantidad de material obtenido.</button>
+                    </div>
+                    <div class="feedback-text"></div>
+                </div>
+            </section>
+
+            <!-- 2. CUERPO INDUCTIVO -->
+            <section id="inductivo">
+                <h2>2. Fundamentos: La Montaña Rusa de las Reacciones</h2>
+                <p>Imagina que estás al pie de una gran montaña empinada con una roca pesada. Tu objetivo es llevar la roca al valle que está al otro lado. La física y la química nos dicen que la roca en el valle será más estable, pero para que llegue allí, primero debes realizar un esfuerzo masivo para empujarla hasta la cima de la montaña. Una vez en la cima, la roca rodará por sí sola hacia el valle liberando energía. En el mundo de la química, esa "montaña" se llama <strong>Energía de Activación (E<sub>a</sub>)</strong>.</p>
+                
+                <p>Las reacciones químicas no ocurren mágicamente con solo mezclar sustancias. Según la <em>Teoría de las Colisiones</em>, para que los reactivos se transformen en productos, sus moléculas deben chocar. Pero no sirve cualquier choque; deben chocar con la orientación adecuada y, sobre todo, con la energía suficiente para romper sus enlaces originales. Esa energía mínima requerida es la Energía de Activación.</p>
+
+                <!-- PAUSA ACTIVA 1 -->
+                <div class="pausa-activa">
+                    <div class="pausa-content">
+                        <h4>Pausa Activa 1 (Cuaderno)</h4>
+                        <p>Dibuja en tu cuaderno una montaña que separe dos valles. Etiqueta el valle izquierdo como "Reactivos", la cima de la montaña como "Energía de Activación" y el valle derecho como "Productos".</p>
+                    </div>
+                    <button class="btn-done" onclick="marcarPausa(1, this)">Ya lo hice</button>
+                </div>
+
+                <p>Ahora, volvamos a la analogía de la montaña. ¿Qué pasaría si en lugar de empujar la roca hasta la cima, construyeras un túnel que atraviese la montaña por la mitad? El destino de la roca sería exactamente el mismo (el valle al otro lado), la posición inicial sería la misma, pero el esfuerzo (la energía) requerido para cruzar sería muchísimo menor, y por lo tanto, la roca llegaría más rápido al otro lado. En la química, <strong>ese túnel es el Catalizador</strong>.</p>
+
+                <p>Un catalizador es una sustancia que aumenta la velocidad de una reacción química al proporcionar una <em>ruta alternativa</em> que requiere una menor Energía de Activación. Es fundamental entender una regla de oro: <strong>el catalizador participa en la reacción, forma enlaces temporales con los reactivos, pero no se consume ni se altera permanentemente al final del proceso</strong>. Entra a la reacción, hace su trabajo de "túnel" y sale intacto, listo para ayudar a otras moléculas.</p>
+
+                <!-- PAUSA ACTIVA 2 -->
+                <div class="pausa-activa">
+                    <div class="pausa-content">
+                        <h4>Pausa Activa 2 (Cuaderno)</h4>
+                        <p>Escribe en tu cuaderno 3 ejemplos de procesos cotidianos que sean muy lentos y requieran "acelerarse" (Ejemplo: madurar un aguacate envuelto en papel periódico).</p>
+                    </div>
+                    <button class="btn-done" onclick="marcarPausa(2, this)">Ya lo hice</button>
+                </div>
+
+                <p>Existen dos tipos principales de catalizadores en los procesos químicos e industriales: los homogéneos y los heterogéneos. Los <strong>catalizadores homogéneos</strong> se encuentran en la misma fase que los reactivos (por ejemplo, todos son líquidos o todos son gases). Esto permite un contacto íntimo a nivel molecular, pero hace que separar el catalizador al final sea complejo. Por otro lado, los <strong>catalizadores heterogéneos</strong> están en una fase distinta (generalmente un sólido actuando sobre líquidos o gases). Un ejemplo clásico es el convertidor catalítico de tu automóvil, que usa metales sólidos como platino o paladio para acelerar la transformación de gases tóxicos en gases menos dañinos antes de que salgan por el escape.</p>
+
+                <!-- Gráfico SVG: Energía de Activación -->
+                <div class="svg-container">
+                    <svg viewBox="0 0 500 300" width="100%" height="100%">
+                        <defs>
+                            <linearGradient id="gradRed" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#E53E3E;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#FC8181;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="gradGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#48BB78;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#9AE6B4;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Ejes -->
+                        <line x1="40" y1="260" x2="480" y2="260" stroke="#718096" stroke-width="2" /> <!-- X -->
+                        <line x1="40" y1="260" x2="40" y2="20" stroke="#718096" stroke-width="2" /> <!-- Y -->
+                        <text x="200" y="290" fill="#4A5568" font-size="14" font-family="sans-serif">Avance de la Reacción</text>
+                        <text x="15" y="160" fill="#4A5568" font-size="14" font-family="sans-serif" transform="rotate(-90 15,160)">Energía Potencial</text>
+                        
+                        <!-- Curva Sin Catalizador -->
+                        <path d="M 40 180 C 150 180, 200 40, 250 40 C 300 40, 350 220, 480 220" fill="none" stroke="url(#gradRed)" stroke-width="4" stroke-dasharray="5,5" />
+                        <!-- Curva Con Catalizador -->
+                        <path d="M 40 180 C 120 180, 200 120, 250 120 C 300 120, 380 220, 480 220" fill="none" stroke="url(#gradGreen)" stroke-width="5" />
+                        
+                        <!-- Etiquetas -->
+                        <text x="50" y="170" fill="#2D3748" font-size="14" font-weight="bold">Reactivos</text>
+                        <text x="400" y="210" fill="#2D3748" font-size="14" font-weight="bold">Productos</text>
+                        <text x="210" y="30" fill="#E53E3E" font-size="12" font-weight="bold">Sin Catalizador (Ea Alta)</text>
+                        <text x="210" y="110" fill="#48BB78" font-size="12" font-weight="bold">Con Catalizador (Ea Baja)</text>
+                        
+                        <!-- Flechas de Ea -->
+                        <line x1="250" y1="180" x2="250" y2="45" stroke="#E53E3E" stroke-width="1" marker-end="url(#arrow)" />
+                        <line x1="240" y1="180" x2="240" y2="125" stroke="#48BB78" stroke-width="1" />
+                    </svg>
+                    <p style="text-align: center; font-size: 0.9rem; color: var(--text-light); margin-top: 10px;">Fig 1: Perfil de energía de una reacción exotérmica mostrando el efecto del catalizador.</p>
+                </div>
+
+                <!-- PAUSA ACTIVA 3 -->
+                <div class="pausa-activa">
+                    <div class="pausa-content">
+                        <h4>Pausa Activa 3 (Cuaderno)</h4>
+                        <p>Con tus propias palabras, define qué es la "Energía de Activación" y por qué es una barrera para las reacciones químicas.</p>
+                    </div>
+                    <button class="btn-done" onclick="marcarPausa(3, this)">Ya lo hice</button>
+                </div>
+
+                <p>La importancia industrial de los catalizadores es incalculable. Sin ellos, procesos vitales para la humanidad serían económicamente inviables. Un ejemplo majestuoso es el Proceso Haber-Bosch para la síntesis de amoníaco (NH<sub>3</sub>), esencial para fabricar los fertilizantes que alimentan a gran parte de la población mundial. El nitrógeno y el hidrógeno reaccionan muy lentamente de forma natural. Sin embargo, utilizando un catalizador a base de hierro, la velocidad de producción aumenta drásticamente, haciendo posible sostener la agricultura moderna.</p>
+
+                <!-- PAUSA ACTIVA 4 -->
+                <div class="pausa-activa">
+                    <div class="pausa-content">
+                        <h4>Pausa Activa 4 (Cuaderno)</h4>
+                        <p>Dibuja dos moléculas (por ejemplo, dos círculos de diferente color) colisionando violentamente para representar la Teoría de las Colisiones.</p>
+                    </div>
+                    <button class="btn-done" onclick="marcarPausa(4, this)">Ya lo hice</button>
+                </div>
+
+                <p>En resumen, la cinética química (el estudio de la velocidad de las reacciones) encuentra en la catálisis a su mejor aliado. Al manipular la ruta de la reacción, los químicos pueden controlar el tiempo, haciendo que procesos que tardarían siglos ocurran en fracciones de segundo, optimizando la energía, reduciendo costos y minimizando la producción de desechos.</p>
+
+                <!-- PAUSA ACTIVA 5 -->
+                <div class="pausa-activa">
+                    <div class="pausa-content">
+                        <h4>Pausa Activa 5 (Cuaderno)</h4>
+                        <p>Anota la regla de oro de los catalizadores: "Un catalizador participa en la reacción pero no se..." completa la frase.</p>
+                    </div>
+                    <button class="btn-done" onclick="marcarPausa(5, this)">Ya lo hice</button>
+                </div>
+
+            </section>
+
+            <!-- 3. PREGUNTA TIPO ICFES (INDAGAR) -->
+            <section id="icfes">
+                <h2>3. Competencia Científica: Indagar</h2>
+                <div class="icfes-container">
+                    <p><strong>Contexto:</strong> Un laboratorio está estudiando la descomposición del peróxido de hidrógeno (H<sub>2</sub>O<sub>2</sub>) en agua y oxígeno. Han trazado el siguiente modelo esquemático del mecanismo de reacción al introducir la sustancia "X".</p>
+                    
+                    <div class="svg-container" style="background: transparent; border: none; box-shadow: none;">
+                        <svg viewBox="0 0 400 200" width="100%" height="100%">
+                            <!-- Tubo ensayo -->
+                            <rect x="50" y="50" width="40" height="120" rx="20" fill="none" stroke="#2D3748" stroke-width="4"/>
+                            <path d="M 50 70 L 90 70" stroke="#2B6CB0" stroke-width="4" fill="none" />
+                            <rect x="54" y="72" width="32" height="94" rx="15" fill="#EBF8FF" />
+                            
+                            <!-- Moléculas H2O2 -->
+                            <circle cx="70" cy="140" r="6" fill="#4A5568"/>
+                            <circle cx="70" cy="120" r="6" fill="#4A5568"/>
+                            <text x="100" y="135" font-weight="bold" fill="#4A5568">H₂O₂</text>
+
+                            <!-- Sustancia X -->
+                            <polygon points="180,80 220,80 200,120" fill="#ED8936" />
+                            <text x="195" y="110" fill="white" font-weight="bold">X</text>
+
+                            <!-- Flechas -->
+                            <line x1="120" y1="130" x2="160" y2="100" stroke="#718096" stroke-width="2" marker-end="url(#arrow)" />
+                            <line x1="240" y1="100" x2="280" y2="130" stroke="#718096" stroke-width="2" marker-end="url(#arrow)" />
+
+                            <!-- Productos + Sustancia X Intacta -->
+                            <polygon points="300,130 340,130 320,170" fill="#ED8936" />
+                            <text x="315" y="160" fill="white" font-weight="bold">X</text>
+                            <circle cx="360" cy="100" r="6" fill="#48BB78"/> <text x="370" y="105" fill="#48BB78">O₂</text>
+                            <circle cx="300" cy="100" r="6" fill="#2B6CB0"/> <text x="260" y="105" fill="#2B6CB0">H₂O</text>
+                        </svg>
+                    </div>
+
+                    <p><strong>Pregunta:</strong> Basado en el esquema anterior, ¿cuál es el rol de la sustancia "X" y cuál es la evidencia gráfica que lo soporta?</p>
+                    
+                    <div class="options-grid" id="icfesOptions">
+                        <button class="btn-option" data-correct="false">A) Es un reactivo, porque se une temporalmente al peróxido de hidrógeno.</button>
+                        <button class="btn-option" data-correct="true">B) Es un catalizador, porque entra en la reacción y sale exactamente en la misma forma (intacta) al final.</button>
+                        <button class="btn-option" data-correct="false">C) Es un producto, porque aparece al final de la reacción junto al agua y el oxígeno.</button>
+                        <button class="btn-option" data-correct="false">D) Es un inhibidor, porque detiene la formación de burbujas de oxígeno en el tubo.</button>
+                    </div>
+                    <div class="feedback-text" id="icfesFeedback" style="margin-top: 15px; padding: 15px; border-radius: 8px; background: #E2E8F0;"></div>
+                </div>
+            </section>
+
+            <!-- 4. CUERPO DEDUCTIVO -->
+            <section id="deductivo">
+                <h2>4. Aplicación: La Enzima de la Papa y el Catalizador Social</h2>
+                <p>Si los metales actúan como catalizadores en las máquinas, ¿qué acelera las reacciones dentro de los seres vivos? Aquí entran en juego las <strong>enzimas</strong>. Las enzimas son proteínas especializadas que actúan como catalizadores biológicos. Sin ellas, las reacciones metabólicas en nuestras células ocurrirían tan lentamente que la vida, tal como la conocemos, sería imposible.</p>
+
+                <p>Las enzimas son extremadamente específicas. Funcionan mediante un mecanismo llamado <em>"Llave y Cerradura"</em>. La molécula sobre la que actúa la enzima se llama <strong>sustrato</strong>. Este sustrato encaja perfectamente en una región específica de la enzima llamada <em>sitio activo</em>, tal como una llave específica encaja en una cerradura única. Al unirse, la enzima debilita los enlaces del sustrato, bajando la energía de activación y rompiéndolo (o uniéndolo a otro) rápidamente.</p>
+
+                <!-- PAUSA ACTIVA 6 -->
+                <div class="pausa-activa">
+                    <div class="pausa-content">
+                        <h4>Pausa Activa 6 (Cuaderno)</h4>
+                        <p>Dibuja el modelo de "Llave y Cerradura". Dibuja una enzima con una hendidura específica y un sustrato que encaje exactamente en esa forma.</p>
+                    </div>
+                    <button class="btn-done" onclick="marcarPausa(6, this)">Ya lo hice</button>
+                </div>
+
+                <p>Un experimento clásico para observar esto ocurre con la <strong>Catalasa</strong>, una enzima presente en casi todos los seres vivos expuestos al oxígeno, incluyendo vegetales como la papa. El metabolismo celular produce constantemente peróxido de hidrógeno (H<sub>2</sub>O<sub>2</sub>, conocido como agua oxigenada) como desecho. El problema es que el H<sub>2</sub>O<sub>2</sub> es altamente tóxico para la célula. La función de la catalasa es descomponer este veneno rápidamente en sustancias inofensivas: agua (H<sub>2</sub>O) y oxígeno (O<sub>2</sub>).</p>
+                <p style="text-align: center; font-size: 1.2rem; font-weight: bold; color: var(--primary);">2 H<sub>2</sub>O<sub>2</sub> + (Catalasa) &rarr; 2 H<sub>2</sub>O + O<sub>2</sub> + (Catalasa)</p>
+
+                <!-- Gráfico SVG: Experimento Papa -->
+                <div class="svg-container">
+                    <svg viewBox="0 0 400 250" width="100%" height="100%">
+                        <!-- Vaso de precipitados -->
+                        <path d="M 120 50 L 120 220 C 120 230, 130 240, 150 240 L 250 240 C 270 240, 280 230, 280 220 L 280 50" fill="none" stroke="#718096" stroke-width="4" />
+                        <!-- Líquido H2O2 -->
+                        <path d="M 122 150 L 278 150 L 278 220 C 278 230, 270 238, 250 238 L 150 238 C 130 238, 122 230, 122 220 Z" fill="#EBF8FF" opacity="0.8"/>
+                        <!-- Trozo de papa -->
+                        <path d="M 160 220 C 160 190, 180 180, 200 180 C 230 180, 240 200, 240 220 Z" fill="#F6E05E" stroke="#D69E2E" stroke-width="2"/>
+                        <!-- Burbujas de O2 -->
+                        <circle cx="170" cy="170" r="5" fill="#FFFFFF" stroke="#CBD5E0" />
+                        <circle cx="185" cy="150" r="4" fill="#FFFFFF" stroke="#CBD5E0" />
+                        <circle cx="195" cy="130" r="6" fill="#FFFFFF" stroke="#CBD5E0" />
+                        <circle cx="210" cy="160" r="3" fill="#FFFFFF" stroke="#CBD5E0" />
+                        <circle cx="225" cy="140" r="5" fill="#FFFFFF" stroke="#CBD5E0" />
+                        <circle cx="205" cy="100" r="7" fill="#FFFFFF" stroke="#CBD5E0" />
+                        <circle cx="180" cy="80" r="4" fill="#FFFFFF" stroke="#CBD5E0" />
+                        <!-- Textos -->
+                        <text x="290" y="190" fill="#4A5568" font-size="14">Agua Oxigenada</text>
+                        <text x="290" y="220" fill="#D69E2E" font-weight="bold" font-size="14">Papa (Catalasa)</text>
+                        <text x="230" y="100" fill="#2B6CB0" font-weight="bold" font-size="16">Burbujas de O₂</text>
+                    </svg>
+                    <p style="text-align: center; font-size: 0.9rem; color: var(--text-light); margin-top: 10px;">Fig 2: Evidencia de reacción enzimática mediante liberación de gas.</p>
+                </div>
+
+                <!-- PAUSA ACTIVA 7 -->
+                <div class="pausa-activa">
+                    <div class="pausa-content">
+                        <h4>Pausa Activa 7 (Cuaderno)</h4>
+                        <p>Escribe la ecuación química balanceada de la descomposición del peróxido de hidrógeno e identifica en ella cuál es el reactivo, el catalizador y los productos.</p>
+                    </div>
+                    <button class="btn-done" onclick="marcarPausa(7, this)">Ya lo hice</button>
+                </div>
+
+                <p>Si pones un trozo de papa cruda en agua oxigenada, verás inmediatamente un burbujeo intenso: es el gas oxígeno escapando mientras el agua oxigenada se descompone. Sin embargo, las enzimas son muy sensibles al entorno. Si <em>cocinas</em> la papa antes de hacer el experimento, el calor extremo altera la estructura de la enzima (se deforma la cerradura), un proceso llamado <strong>desnaturalización</strong>. La papa cocinada no producirá burbujas porque su catalasa ha sido destruida.</p>
+
+                <!-- PAUSA ACTIVA 8 -->
+                <div class="pausa-activa">
+                    <div class="pausa-content">
+                        <h4>Pausa Activa 8 (Cuaderno)</h4>
+                        <p>Explica en tus palabras por qué una papa cocinada no produce burbujas al agregarle agua oxigenada. Usa el término "desnaturalización".</p>
+                    </div>
+                    <button class="btn-done" onclick="marcarPausa(8, this)">Ya lo hice</button>
+                </div>
+
+                <h3>El Líder como Catalizador de Cambio Social</h3>
+                <p>Ahora, saquemos la química del laboratorio y llevémosla a la sociedad. Los grupos humanos a menudo se encuentran estancados frente a problemas (pobreza, desigualdad, contaminación). La sociedad tiene su propia "Energía de Activación": el miedo al cambio, la pereza, la falta de organización o recursos. Sin un impulso, el cambio social favorable es una reacción extremadamente lenta.</p>
+
+                <p>Aquí es donde entra el líder transformacional. Un líder no hace todo el trabajo por sí solo (igual que el catalizador no es el reactivo), pero su presencia altera el mecanismo del grupo. Al inspirar, organizar, ofrecer una visión clara y dar herramientas, el líder proporciona una <em>ruta alternativa</em> que requiere mucho menos esfuerzo colectivo. Disminuye la resistencia al cambio (la energía de activación social).</p>
+
+                <!-- PAUSA ACTIVA 9 -->
+                <div class="pausa-activa">
+                    <div class="pausa-content">
+                        <h4>Pausa Activa 9 (Cuaderno)</h4>
+                        <p>Nombra a un líder histórico o de tu comunidad que haya actuado como un "catalizador social", acelerando un cambio positivo.</p>
+                    </div>
+                    <button class="btn-done" onclick="marcarPausa(9, this)">Ya lo hice</button>
+                </div>
+
+                <p>Al igual que la catalasa sobrevive a la reacción para seguir ayudando a otras moléculas de peróxido, el verdadero impacto de un líder catalizador se nota en que su legado perdura. El grupo logra la transformación, libera "energía" positiva (progreso, bienestar) y el líder se mantiene íntegro, listo para facilitar el siguiente gran cambio. La educación, en este sentido, es la enzima de la sociedad.</p>
+
+                <!-- PAUSA ACTIVA 10 -->
+                <div class="pausa-activa">
+                    <div class="pausa-content">
+                        <h4>Pausa Activa 10 (Cuaderno)</h4>
+                        <p>Reflexiona y escribe: ¿Cómo podrías actuar tú como un "catalizador" para mejorar el ambiente en tu salón de clases?</p>
+                    </div>
+                    <button class="btn-done" onclick="marcarPausa(10, this)">Ya lo hice</button>
+                </div>
+
+            </section>
+
+            <!-- 5. EVALUACIÓN FINAL -->
+            <section id="evaluacion">
+                <h2>5. Evaluación Final (Taller)</h2>
+                <p>Demuestra lo que has aprendido. Las primeras 5 preguntas son de selección múltiple. Las últimas 5 son abiertas, pero tienen un reto: <strong>debes responder de manera muy concisa, usando estrictamente entre 10 y 15 palabras.</strong></p>
+
+                <div id="evalForm">
+                    <!-- Selección Múltiple -->
+                    <h3>I. Selección Múltiple</h3>
+                    
+                    <div class="eval-question">
+                        <p><strong>1. (Inductivo)</strong> ¿Qué le sucede a un catalizador al finalizar la reacción química?</p>
+                        <label><input type="radio" name="q1" value="A"> A) Se consume totalmente convirtiéndose en producto.</label><br>
+                        <label><input type="radio" name="q1" value="B" class="correct-radio"> B) Sale intacto y puede ser reutilizado.</label><br>
+                        <label><input type="radio" name="q1" value="C"> C) Se evapora debido al calor de la reacción.</label><br>
+                        <label><input type="radio" name="q1" value="D"> D) Se mezcla con el agua perdiendo su función.</label>
+                    </div>
+
+                    <div class="eval-question">
+                        <p><strong>2. (Inductivo)</strong> ¿Cuál es el mecanismo principal por el cual un catalizador acelera la reacción?</p>
+                        <label><input type="radio" name="q2" value="A"> A) Aumentando la energía de activación.</label><br>
+                        <label><input type="radio" name="q2" value="B"> B) Disminuyendo la cantidad de reactivos.</label><br>
+                        <label><input type="radio" name="q2" value="C" class="correct-radio"> C) Ofreciendo una ruta alternativa de menor energía de activación.</label><br>
+                        <label><input type="radio" name="q2" value="D"> D) Enfriando las moléculas para que choquen menos.</label>
+                    </div>
+
+                    <div class="eval-question">
+                        <p><strong>3. (Deductivo)</strong> En el experimento de la papa, ¿qué sustancia es el gas responsable del burbujeo?</p>
+                        <label><input type="radio" name="q3" value="A"> A) Dióxido de carbono (CO2).</label><br>
+                        <label><input type="radio" name="q3" value="B"> B) Hidrógeno (H2).</label><br>
+                        <label><input type="radio" name="q3" value="C" class="correct-radio"> C) Oxígeno (O2).</label><br>
+                        <label><input type="radio" name="q3" value="D"> D) Vapor de agua (H2O).</label>
+                    </div>
+
+                    <div class="eval-question">
+                        <p><strong>4. (Deductivo)</strong> ¿Qué es la catalasa biológicamente hablando?</p>
+                        <label><input type="radio" name="q4" value="A" class="correct-radio"> A) Una enzima (proteína) que actúa como catalizador biológico.</label><br>
+                        <label><input type="radio" name="q4" value="B"> B) Un carbohidrato que da energía a la papa.</label><br>
+                        <label><input type="radio" name="q4" value="C"> C) Un tipo de ácido altamente tóxico.</label><br>
+                        <label><input type="radio" name="q4" value="D"> D) El nombre científico del agua oxigenada.</label>
+                    </div>
+
+                    <div class="eval-question">
+                        <p><strong>5. (Deductivo)</strong> Al comparar un líder con un catalizador, afirmamos que el líder...</p>
+                        <label><input type="radio" name="q5" value="A"> A) Hace todo el trabajo sin ayuda del grupo.</label><br>
+                        <label><input type="radio" name="q5" value="B" class="correct-radio"> B) Disminuye la "resistencia" para facilitar el cambio en su comunidad.</label><br>
+                        <label><input type="radio" name="q5" value="C"> C) Se agota y desaparece rápidamente tras el primer esfuerzo.</label><br>
+                        <label><input type="radio" name="q5" value="D"> D) Aumenta la barrera para que solo los fuertes sobrevivan.</label>
+                    </div>
+
+                    <!-- Abiertas -->
+                    <h3>II. Preguntas Abiertas (Límite: 10 a 15 palabras)</h3>
+                    
+                    <div class="eval-question open-question">
+                        <p><strong>6. (Inductivo)</strong> Define brevemente qué es la energía de activación.</p>
+                        <textarea id="o1" oninput="checkWords('o1')"></textarea>
+                        <div id="count-o1" class="word-counter invalid">0 palabras (Debe ser entre 10 y 15)</div>
+                    </div>
+
+                    <div class="eval-question open-question">
+                        <p><strong>7. (Inductivo)</strong> Explica la función general de cualquier catalizador.</p>
+                        <textarea id="o2" oninput="checkWords('o2')"></textarea>
+                        <div id="count-o2" class="word-counter invalid">0 palabras (Debe ser entre 10 y 15)</div>
+                    </div>
+
+                    <div class="eval-question open-question">
+                        <p><strong>8. (Deductivo)</strong> ¿Qué le ocurre al agua oxigenada al entrar en contacto con la catalasa?</p>
+                        <textarea id="o3" oninput="checkWords('o3')"></textarea>
+                        <div id="count-o3" class="word-counter invalid">0 palabras (Debe ser entre 10 y 15)</div>
+                    </div>
+
+                    <div class="eval-question open-question">
+                        <p><strong>9. (Deductivo)</strong> ¿Por qué el calor excesivo (cocinar la papa) detiene el burbujeo?</p>
+                        <textarea id="o4" oninput="checkWords('o4')"></textarea>
+                        <div id="count-o4" class="word-counter invalid">0 palabras (Debe ser entre 10 y 15)</div>
+                    </div>
+
+                    <div class="eval-question open-question">
+                        <p><strong>10. (Deductivo)</strong> Describe el papel de un líder como catalizador en la sociedad.</p>
+                        <textarea id="o5" oninput="checkWords('o5')"></textarea>
+                        <div id="count-o5" class="word-counter invalid">0 palabras (Debe ser entre 10 y 15)</div>
+                    </div>
+
+                    <button id="btnSubmitEval" class="btn-primary" style="margin-top: 20px; opacity: 0.5; cursor: not-allowed;" disabled onclick="evaluarFinal()">Calificar Evaluación</button>
+                    <p id="evalWarning" style="color: var(--error); font-weight: bold; margin-top: 10px;"></p>
+                </div>
+            </section>
+
+            <!-- 6. RESULTADOS Y RETROALIMENTACIÓN -->
+            <section id="resultados" class="hidden">
+                <h2>Resultados Finales</h2>
+                <div style="font-size: 1.2rem; margin-bottom: 20px;">
+                    <p>Estudiante: <strong id="resName"></strong></p>
+                    <p>Calificación Final: <strong id="resScore" style="color: var(--primary); font-size: 1.5rem;"></strong> / 5.0</p>
+                    <p>Elemento Alcanzado: <strong id="resElement"></strong></p>
+                </div>
+
+                <h3>Ruta de Fortalecimiento Personalizada</h3>
+                <p><strong>Instrucción pedagógica:</strong> De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades:</p>
+                <div class="ruta-fortalecimiento" id="feedbackInteligente">
+                    <!-- Generado dinamicamente -->
+                </div>
+
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button class="btn-primary" style="background-color: var(--success);" onclick="descargarTxt()">Descargar Resultados (.txt)</button>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         JAVASCRIPT LOGIC
+         ========================================================================== -->
+    <script>
+        // ESTADO GLOBAL
+        let state = {
+            name: "",
+            progress: 0, // Porcentaje 0 - 100
+            score: 0, // Escala 0 a 5
+            pausasCompletadas: 0, // Max 10
+            presaberesCompletados: 0, // Max 3
+            evalAnswers: { indErrs: 0, dedErrs: 0 }
+        };
+
+        const ELEMENTS = [
+            { limit: 1.0, sym: 'H', num: 1, name: 'Hidrógeno' },
+            { limit: 2.0, sym: 'He', num: 2, name: 'Helio' },
+            { limit: 3.0, sym: 'Li', num: 3, name: 'Litio' },
+            { limit: 4.0, sym: 'Be', num: 4, name: 'Berilio' },
+            { limit: 5.0, sym: 'B', num: 5, name: 'Boro' },
+            { limit: 6.0, sym: 'C', num: 6, name: 'Carbono' } // Cima
+        ];
+
+        // 1. INICIALIZACIÓN Y LOGIN (Corrección de bug <form>)
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarEstado();
+            
+            // Evento para el botón de ingreso
+            document.getElementById('btnEnter').addEventListener('click', iniciarOVA);
+            
+            // Permitir 'Enter' en el input
+            document.getElementById('userName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') iniciarOVA();
+            });
+
+            configurarPresaberes();
+            configurarIcfes();
+        });
+
+        function iniciarOVA() {
+            const nameInput = document.getElementById('userName').value.trim();
+            if (nameInput.length < 3) {
+                alert("Por favor ingresa tu nombre completo.");
+                return;
+            }
+            
+            state.name = nameInput;
+            guardarEstado();
+            
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('displayUserName').innerText = state.name;
+            
+            actualizarUI();
+            window.scrollTo(0,0);
+        }
+
+        // 2. GESTIÓN DE PROGRESO Y ALMACENAMIENTO
+        function guardarEstado() {
+            localStorage.setItem('ovaCatalisisState', JSON.stringify(state));
+        }
+
+        function cargarEstado() {
+            const saved = localStorage.getItem('ovaCatalisisState');
+            if (saved) {
+                state = JSON.parse(saved);
+                // Si ya había nombre, podemos saltar el login (opcional, pero mejora UX)
+                if (state.name) {
+                    document.getElementById('userName').value = state.name;
+                }
+            }
+        }
+
+        function recalcularProgreso() {
+            // Presaberes (15%), Pausas (50%), Icfes (5%), Eval (30%)
+            let prog = 0;
+            prog += (state.presaberesCompletados / 3) * 15;
+            prog += (state.pausasCompletadas / 10) * 50;
+            // Evaluacion suma el resto al enviarse
+            state.progress = prog;
+            guardarEstado();
+            actualizarUI();
+        }
+
+        function actualizarUI() {
+            // Actualizar barra
+            document.getElementById('progressBar').style.width = state.progress + '%';
+            
+            // Actualizar Badge Gamificación basado en Score (0 a 5)
+            let currEl = ELEMENTS[0];
+            for (let el of ELEMENTS) {
+                if (state.score < el.limit) {
+                    currEl = el;
+                    break;
+                }
+            }
+            if (state.score === 5.0) currEl = ELEMENTS[5]; // Carbono si tiene 5 cerrado
+
+            document.querySelector('#elementBadge .symbol').innerText = currEl.sym;
+            document.querySelector('#elementBadge .number').innerText = currEl.num;
+        }
+
+        // 3. INTERACCIONES: PRE-SABERES E ICFES
+        function configurarPresaberes() {
+            const questions = document.querySelectorAll('.pre-question');
+            questions.forEach(q => {
+                const btns = q.querySelectorAll('.btn-option');
+                btns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        if (q.classList.contains('answered')) return; // Ya respondido
+                        
+                        const isCorrect = this.getAttribute('data-correct') === 'true';
+                        const feedback = q.querySelector('.feedback-text');
+                        
+                        this.classList.add(isCorrect ? 'correct' : 'incorrect');
+                        feedback.style.display = 'block';
+                        
+                        if (isCorrect) {
+                            feedback.innerText = "¡Correcto! Excelente análisis inicial.";
+                            feedback.style.color = "var(--success)";
+                        } else {
+                            feedback.innerText = "No exactamente. ¡No te preocupes! En este módulo descubriremos la respuesta real.";
+                            feedback.style.color = "var(--accent)";
+                            // Mostrar correcta
+                            q.querySelector('[data-correct="true"]').style.border = "2px solid var(--success)";
+                        }
+                        
+                        q.classList.add('answered');
+                        state.presaberesCompletados++;
+                        recalcularProgreso();
+                    });
+                });
+            });
+        }
+
+        function configurarIcfes() {
+            const options = document.getElementById('icfesOptions').querySelectorAll('.btn-option');
+            const feedback = document.getElementById('icfesFeedback');
+            
+            options.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const isCorrect = this.getAttribute('data-correct') === 'true';
+                    
+                    options.forEach(b => { b.style.opacity = '0.5'; b.style.pointerEvents = 'none'; });
+                    this.style.opacity = '1';
+                    this.classList.add(isCorrect ? 'correct' : 'incorrect');
+                    
+                    feedback.style.display = 'block';
+                    if (isCorrect) {
+                        feedback.innerHTML = "<strong style='color:var(--success)'>¡Respuesta Correcta!</strong> El gráfico muestra la sustancia X uniéndose a los reactivos, pero reaparece exactamente igual (el triángulo naranja) al lado de los productos. Esto define a un catalizador: participa sin consumirse.";
+                        state.score += 0.5; // Bono
+                    } else {
+                        feedback.innerHTML = "<strong style='color:var(--error)'>Incorrecto.</strong> Analiza la imagen final: la sustancia X no es un producto nuevo generado, ni se consumió. Entró como un triángulo naranja y salió igual. Es un catalizador que facilitó la ruptura de H2O2.";
+                    }
+                    actualizarUI();
+                });
+            });
+        }
+
+        // 4. PAUSAS ACTIVAS
+        function marcarPausa(num, btn) {
+            btn.classList.add('completed');
+            btn.innerText = "✓ Completado";
+            state.pausasCompletadas++;
+            recalcularProgreso();
+        }
+
+        // 5. EVALUACIÓN Y VALIDACIÓN DE PALABRAS
+        function countWords(str) {
+            return str.trim().split(/\s+/).filter(word => word.length > 0).length;
+        }
+
+        function checkWords(id) {
+            const text = document.getElementById(id).value;
+            const words = countWords(text);
+            const counterDiv = document.getElementById('count-' + id);
+            
+            counterDiv.innerText = `${words} palabras (Debe ser entre 10 y 15)`;
+            
+            if (words >= 10 && words <= 15) {
+                counterDiv.className = 'word-counter valid';
+            } else {
+                counterDiv.className = 'word-counter invalid';
+            }
+            
+            validarBotonEval();
+        }
+
+        function validarBotonEval() {
+            const textareas = ['o1', 'o2', 'o3', 'o4', 'o5'];
+            let allValid = true;
+            
+            textareas.forEach(id => {
+                const words = countWords(document.getElementById(id).value);
+                if (words < 10 || words > 15) allValid = false;
+            });
+            
+            // Revisar radios
+            const radios = ['q1', 'q2', 'q3', 'q4', 'q5'];
+            radios.forEach(name => {
+                if (!document.querySelector(`input[name="${name}"]:checked`)) allValid = false;
+            });
+
+            const btn = document.getElementById('btnSubmitEval');
+            const warn = document.getElementById('evalWarning');
+            
+            if (allValid) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                warn.innerText = "";
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                warn.innerText = "Debes responder toda la selección múltiple y cumplir el rango exacto de palabras (10 a 15) en las abiertas.";
+            }
+        }
+
+        // Agregar listeners a los radios para validar botón
+        document.querySelectorAll('input[type="radio"]').forEach(r => {
+            r.addEventListener('change', validarBotonEval);
+        });
+
+        function evaluarFinal() {
+            let aciertos = 0;
+            let indErrs = 0;
+            let dedErrs = 0;
+
+            // Revisar Selección Múltiple (1 punto c/u)
+            const q1 = document.querySelector('input[name="q1"]:checked');
+            if (q1.classList.contains('correct-radio')) aciertos++; else indErrs++;
+
+            const q2 = document.querySelector('input[name="q2"]:checked');
+            if (q2.classList.contains('correct-radio')) aciertos++; else indErrs++;
+
+            const q3 = document.querySelector('input[name="q3"]:checked');
+            if (q3.classList.contains('correct-radio')) aciertos++; else dedErrs++;
+
+            const q4 = document.querySelector('input[name="q4"]:checked');
+            if (q4.classList.contains('correct-radio')) aciertos++; else dedErrs++;
+
+            const q5 = document.querySelector('input[name="q5"]:checked');
+            if (q5.classList.contains('correct-radio')) aciertos++; else dedErrs++;
+
+            // Nota final (0 a 5.0) basada en la múltiple (las abiertas son cualitativas para el doc)
+            state.score = aciertos; 
+            state.evalAnswers.indErrs = indErrs;
+            state.evalAnswers.dedErrs = dedErrs;
+            state.progress = 100;
+            
+            guardarEstado();
+            actualizarUI();
+            generarRetroalimentacionInteligente();
+            
+            // Mostrar resultados
+            document.getElementById('evalForm').style.display = 'none';
+            const resSection = document.getElementById('resultados');
+            resSection.classList.remove('hidden');
+            
+            document.getElementById('resName').innerText = state.name;
+            document.getElementById('resScore').innerText = state.score.toFixed(1);
+            
+            // Encontrar elemento
+            let finalElement = ELEMENTS[5].name;
+            for (let el of ELEMENTS) {
+                if (state.score < el.limit) {
+                    finalElement = el.name; break;
+                }
+            }
+            if(state.score === 5) finalElement = "Carbono (Diamante)";
+            document.getElementById('resElement').innerText = finalElement;
+
+            // Scroll a resultados
+            resSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generarRetroalimentacionInteligente() {
+            const fBox = document.getElementById('feedbackInteligente');
+            const indErrs = state.evalAnswers.indErrs;
+            const dedErrs = state.evalAnswers.dedErrs;
+            
+            let texto = "";
+
+            if (indErrs === 0 && dedErrs === 0) {
+                texto = "¡Excepcional! Has comprendido a la perfección tanto la teoría de la cinética química como su aplicación en enzimas y liderazgo. Como fortalecimiento, reflexiona: ¿Qué otro proceso biológico crees que depende vitalmente de catalizadores?";
+            } else if (indErrs > dedErrs) {
+                // Falló más en inductivos
+                texto = "<strong>Foco de Mejora: Fundamentos Teóricos (Cinética).</strong><br><br>Repaso clave para tu cuaderno: Recuerda que una reacción química requiere superar una barrera llamada 'Energía de Activación'. El catalizador NO hace parte del producto final, su único propósito es crear una ruta alternativa que requiera menos energía, acelerando el proceso sin desgastarse a sí mismo.";
+            } else if (dedErrs >= indErrs) {
+                // Falló más en deductivos o igual
+                texto = "<strong>Foco de Mejora: Aplicación Práctica (Enzimas y Liderazgo).</strong><br><br>Repaso clave para tu cuaderno: Las enzimas como la catalasa son catalizadores biológicos altamente específicos (modelo llave-cerradura). Son sensibles al calor (se desnaturalizan). En la analogía social, el líder actúa como la enzima: disminuye la resistencia al cambio en la comunidad, acelerando procesos de transformación sin consumirse en el intento.";
+            }
+
+            fBox.innerHTML = texto;
+            // Guardar para el TXT
+            state.feedbackText = texto.replace(/<[^>]*>?/gm, ''); // Quitar HTML tags para el TXT
+        }
+
+        // 6. EXPORTACIÓN DE RESULTADOS (.TXT)
+        function descargarTxt() {
+            const contenido = `
+====================================================
+  REPORTE DE RESULTADOS - OVA: CINÉTICA Y CATÁLISIS
+====================================================
+
+ESTUDIANTE: ${state.name}
+CALIFICACIÓN FINAL: ${state.score.toFixed(1)} / 5.0
+NIVEL ALCANZADO: ${document.getElementById('resElement').innerText}
+
+--- RUTA DE FORTALECIMIENTO PERSONALIZADA ---
+(Copia este texto en tu cuaderno físico)
+${state.feedbackText}
+
+--- RESPUESTAS ABIERTAS DEL ESTUDIANTE ---
+6. Energía de activación: ${document.getElementById('o1').value}
+7. Función del catalizador: ${document.getElementById('o2').value}
+8. H2O2 y Catalasa: ${document.getElementById('o3').value}
+9. Desnaturalización: ${document.getElementById('o4').value}
+10. Líder social: ${document.getElementById('o5').value}
+
+====================================================
+Generado automáticamente por el Sistema de Laboratorio Virtual.
+`;
+            
+            const blob = new Blob([contenido], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Resultados_Quimica_${state.name.replace(/\s+/g, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            
+            // Limpieza
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 0);
+        }
+    </script>
+</body>
+</html>

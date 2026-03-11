@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El pH en la Agricultura - Grado 9</title>
+    <style>
+        :root {
+            --primary-green: #2d5a27;
+            --earth-brown: #5d4037;
+            --accent-lime: #8bc34a;
+            --bg-neutral: #fdfaf6;
+            --text-dark: #333;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-neutral);
+            color: var(--text-dark);
+            margin: 0;
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        /* --- PANTALLA DE LOGUEO --- */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary-green);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 2000;
+        }
+        .login-card {
+            background: var(--white);
+            padding: 40px; border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: center; max-width: 400px;
+        }
+        input[type="text"] {
+            width: 100%; padding: 12px; margin: 20px 0;
+            border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box;
+        }
+
+        /* --- INTERFAZ PRINCIPAL --- */
+        #main-ui { display: none; }
+
+        header {
+            position: sticky; top: 0; background: var(--white);
+            padding: 10px 20px; border-bottom: 4px solid var(--accent-lime);
+            z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .progress-wrapper {
+            max-width: 1000px; margin: 0 auto;
+        }
+        .user-meta { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; }
+        .progress-bar-container {
+            width: 100%; height: 20px; background: #eee; border-radius: 10px; overflow: hidden;
+        }
+        #progress-fill {
+            width: 0%; height: 100%; background: var(--accent-lime); transition: width 0.5s ease;
+        }
+
+        .container { max-width: 1000px; margin: 20px auto; padding: 20px; }
+        section { 
+            background: var(--white); padding: 40px; margin-bottom: 40px; 
+            border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1, h2 { color: var(--primary-green); border-left: 6px solid var(--earth-brown); padding-left: 15px; }
+        .svg-container { text-align: center; margin: 30px 0; }
+        
+        /* --- ESTILOS DE ACTIVIDADES --- */
+        .activity-box {
+            background: #f1f8e9; border: 2px solid #c5e1a5;
+            padding: 20px; margin: 20px 0; border-radius: 8px;
+        }
+        .btn {
+            background: var(--primary-green); color: white; border: none;
+            padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 1rem;
+        }
+        .btn:hover { opacity: 0.9; }
+        .feedback { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; }
+        
+        .icfes-option {
+            display: block; width: 100%; text-align: left; padding: 15px;
+            margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background: #fff;
+            cursor: pointer; transition: background 0.3s;
+        }
+        .icfes-option:hover { background: #f9f9f9; }
+
+        #fortalecimiento-box {
+            display: none; background: #fff3e0; border: 2px solid #ff9800;
+            padding: 30px; margin-top: 40px; border-radius: 12px;
+        }
+
+        .word-count { font-size: 0.85em; color: #666; }
+    </style>
+</head>
+<body>
+
+<div id="login-screen">
+    <div class="login-card">
+        <h2>Suelo & Vida</h2>
+        <p>Ingresa tus datos para iniciar el diagnóstico de suelo.</p>
+        <input type="text" id="full-name" placeholder="Nombres y Apellidos">
+        <button class="btn" onclick="login()">Ingresar al Sistema</button>
+    </div>
+</div>
+
+<header id="main-header">
+    <div class="progress-wrapper">
+        <div class="user-meta">
+            <span>Estudiante: <span id="display-name"></span></span>
+            <span>Elemento Alcanzado: <span id="current-element">Hidrógeno (H)</span></span>
+            <span>Puntos: <span id="display-points">0.0</span>/5</span>
+        </div>
+        <div class="progress-bar-container">
+            <div id="progress-fill"></div>
+        </div>
+    </div>
+</header>
+
+<div class="container" id="main-ui">
+    <section id="inicio">
+        <h1>Objetivo de Aprendizaje</h1>
+        <p>Al finalizar este OVA, serás capaz de relacionar la escala de pH con la fertilidad de los suelos agrícolas de tu región, proponiendo soluciones técnicas para mejorar los cultivos mediante el sentido de pertenencia a tu territorio.</p>
+        
+        <h3>Pre-saberes: ¿Qué sabemos del suelo?</h3>
+        <div class="activity-box">
+            <p>1. Si una planta tiene hojas amarillas en un suelo muy ácido, ¿qué crees que le falta?</p>
+            <button class="btn" onclick="preFeedback(1, 'Nutrientes que se bloquean por la acidez.')">Responder</button>
+            <div id="pre-1" class="feedback"></div>
+        </div>
+        <div class="activity-box">
+            <p>2. ¿Has notado que la tierra de la montaña es diferente a la del río? ¿Cuál crees que es más fértil?</p>
+            <button class="btn" onclick="preFeedback(2, 'Depende del cultivo, pero el pH determina esa diferencia.')">Responder</button>
+            <div id="pre-2" class="feedback"></div>
+        </div>
+        <div class="activity-box">
+            <p>3. ¿Qué sustancia casera conoces que sea ácida?</p>
+            <button class="btn" onclick="preFeedback(3, 'El limón o el vinagre son ejemplos perfectos.')">Responder</button>
+            <div id="pre-3" class="feedback"></div>
+        </div>
+    </section>
+
+    <section id="inductivo">
+        <h2>I. Observación: Visita a la Huerta Escolar</h2>
+        <div class="content">
+            <p>Caminar por la huerta escolar no es solo un acto de recreación; es un acto de ciencia pura. Al observar las plantas de café, hortalizas o frutales de nuestra vereda, estamos viendo el resultado de una interacción química invisible bajo nuestros pies. El suelo no es solo "tierra" inerte; es un laboratorio vivo donde el potencial de Hidrógeno (pH) actúa como el portero de una gran fiesta. Si el pH no es el adecuado, aunque apliquemos el mejor abono del mundo, la planta no podrá "comer".</p>
+            
+            <p>Durante nuestra visita, notamos manchas en las hojas y un crecimiento lento en ciertas zonas. Los agricultores de la región a menudo dicen que la tierra está "cansada" o "quemada". Inductivamente, podemos sospechar que hay un factor limitante. En suelos con pH menor a 5.5 (muy ácidos), elementos como el Aluminio se vuelven tóxicos para las raíces, mientras que nutrientes vitales como el Fósforo se quedan "atrapados" en las partículas del suelo, volviéndose inaccesibles.</p>
+
+            <div class="svg-container">
+                <svg width="400" height="200" viewBox="0 0 400 200">
+                    <rect x="0" y="150" width="400" height="50" fill="#795548" />
+                    <path d="M100 150 L100 100 Q100 80 120 80" stroke="green" stroke-width="4" fill="none" />
+                    <path d="M100 120 Q80 110 80 130" stroke="green" stroke-width="4" fill="none" />
+                    <circle cx="125" cy="80" r="10" fill="#8bc34a" />
+                    <text x="60" y="185" fill="white" font-size="12">Suelo Neutro (Fértil)</text>
+                    
+                    <path d="M300 150 L300 120" stroke="#a1887f" stroke-width="4" fill="none" />
+                    <path d="M300 130 Q320 135 315 145" stroke="#a1887f" stroke-width="2" fill="none" />
+                    <text x="260" y="185" fill="white" font-size="12">Suelo Ácido (Limitado)</text>
+                </svg>
+                <p><em>Gráfico 1: Relación visual entre la salud de la planta y la condición del suelo.</em></p>
+            </div>
+
+            <p>La pertenencia al territorio empieza por entender sus limitaciones. En nuestra vereda, las lluvias constantes lavan las bases del suelo (Calcio, Magnesio, Potasio), dejando atrás un ambiente ácido. Esta observación nos lleva a pensar que la agricultura exitosa no se trata de dominar la naturaleza, sino de equilibrarla. El pH es la medida que nos permite cuantificar ese equilibrio. Una escala que va de 0 a 14, donde el 7 es el punto de paz o neutralidad.</p>
+        </div>
+
+        <div class="activity-box">
+            <h3>Actividades para el Cuaderno (Sección Inductiva)</h3>
+            <ol>
+                <li>Dibuja un croquis de la huerta escolar identificando las zonas con plantas más amarillas. <button class="btn" onclick="addActivityPoint(0.2)">Registrar</button></li>
+                <li>Realiza una tabla comparativa de 3 tipos de plantas de la región y su aspecto actual. <button class="btn" onclick="addActivityPoint(0.2)">Registrar</button></li>
+                <li>Escribe un párrafo sobre qué significa para ti "cuidar la tierra de tus abuelos". <button class="btn" onclick="addActivityPoint(0.2)">Registrar</button></li>
+                <li>Dibuja el Gráfico 1 en tu cuaderno usando colores naturales. <button class="btn" onclick="addActivityPoint(0.2)">Registrar</button></li>
+                <li>Entrevista a un familiar sobre qué usan para "mejorar" la tierra cuando no cosecha bien. <button class="btn" onclick="addActivityPoint(0.2)">Registrar</button></li>
+            </ol>
+        </div>
+
+        <div class="activity-box" style="border-color: var(--primary-green);">
+            <h3>Pregunta ICFES - Competencia: Indagar</h3>
+            <p>Un estudiante de grado noveno observa que en el sector norte de la finca, los cultivos de frijol no crecen, mientras que en el sector sur crecen vigorosamente. Él sospecha que el pH es diferente. Al realizar una prueba rápida con repollo morado, el extracto se torna rojo intenso en el suelo del norte. ¿Cuál es la interpretación correcta de esta observación?</p>
+            <button class="icfes-option" onclick="icfesFeedback(false, 'A', 'El color rojo indica neutralidad, por lo que el problema es la falta de agua.')">A. El suelo es neutro y el frijol muere por exceso de sol.</button>
+            <button class="icfes-option" onclick="icfesFeedback(true, 'B', '¡Correcto! El rojo en indicadores naturales señala acidez extrema, la cual afecta la disponibilidad de nutrientes.')">B. El suelo es altamente ácido, lo que impide que la planta absorba nutrientes.</button>
+            <button class="icfes-option" onclick="icfesFeedback(false, 'C', 'El color rojo no indica basicidad, indica acidez.')">C. El suelo es básico o alcalino, lo que quema las raíces por sales.</button>
+            <button class="icfes-option" onclick="icfesFeedback(false, 'D', 'Si hay cambio de color, hay una propiedad química presente.')">D. El pH no tiene relación con el color del extracto de repollo.</button>
+            <div id="icfes-fb" class="feedback"></div>
+        </div>
+    </section>
+
+    <section id="deductivo">
+        <h2>II. Análisis: La Prueba de pH en el Territorio</h2>
+        <div class="content">
+            <p>Habiendo observado la huerta, pasamos ahora a la deducción científica. Si sabemos que el pH bajo limita el crecimiento, debemos medirlo con precisión. En la vereda, podemos tomar muestras de suelo de diferentes puntos. La técnica consiste en mezclar una parte de suelo con dos partes de agua destilada, agitar y dejar reposar. Al introducir una cinta indicadora o un potenciómetro, deducimos la concentración de iones Hidrógeno presentes.</p>
+
+            <div class="svg-container">
+                <svg width="500" height="100" viewBox="0 0 500 100">
+                    <rect x="0" y="40" width="166" height="30" fill="red" />
+                    <rect x="166" y="40" width="167" height="30" fill="green" />
+                    <rect x="333" y="40" width="167" height="30" fill="blue" />
+                    <text x="5" y="30" font-size="12">Ácido (0-6)</text>
+                    <text x="210" y="30" font-size="12">Neutro (7)</text>
+                    <text x="400" y="30" font-size="12">Alcalino (8-14)</text>
+                    <text x="100" y="90" font-size="10" fill="red">Suelos de la vereda (frecuente)</text>
+                </svg>
+                <p><em>Gráfico 2: Escala de pH aplicada a los suelos típicos de la zona.</em></p>
+            </div>
+
+            <p>Deducción lógica: Si el suelo es ácido, debemos aplicar una reacción de neutralización. La agricultura técnica utiliza la "Cal" (Carbonato de Calcio). Al reaccionar la cal con la acidez del suelo, los iones de Hidrógeno son desplazados y el pH sube hacia la neutralidad. Esto no es solo química; es soberanía alimentaria. Un suelo corregido con cal permite que el campesino use menos fertilizante químico, ya que el suelo por sí mismo empieza a liberar lo que tenía atrapado.</p>
+            
+            <p>La recomendación para el uso de cal depende de la textura del suelo. Suelos arcillosos (pesados) requieren más cal para cambiar su pH que los suelos arenosos. Esta es la ley del "poder amortiguador" o Buffer. Como habitantes del territorio, entender estas leyes nos permite tomar decisiones basadas en evidencia y no solo en la costumbre, protegiendo el recurso suelo para las futuras generaciones.</p>
+        </div>
+
+        <div class="activity-box">
+            <h3>Actividades de Aplicación (Sección Deductiva)</h3>
+            <ol>
+                <li>Dibuja el proceso de toma de muestra de suelo (Ziz-zag) en tu finca o jardín. <button class="btn" onclick="addActivityPoint(0.2)">Registrar</button></li>
+                <li>Calcula: Si un suelo tiene pH 4, ¿cuántas veces es más ácido que uno de pH 5? (Pista: es escala logarítmica). <button class="btn" onclick="addActivityPoint(0.2)">Registrar</button></li>
+                <li>Haz un esquema de la reacción: Suelo Ácido + Cal = Suelo Neutro. <button class="btn" onclick="addActivityPoint(0.2)">Registrar</button></li>
+                <li>Investiga qué cultivos prefieren suelos ligeramente ácidos (como el café). <button class="btn" onclick="addActivityPoint(0.2)">Registrar</button></li>
+                <li>Escribe una carta a un agricultor explicando por qué debe medir el pH antes de abonar. <button class="btn" onclick="addActivityPoint(0.2)">Registrar</button></li>
+            </ol>
+        </div>
+    </section>
+
+    <section id="evaluacion">
+        <h2>Evaluación Final: Taller de Expertos en Suelos</h2>
+        
+        <div id="quiz-container">
+            <div class="activity-box">
+                <p>1. ¿Cuál es el pH ideal para la mayoría de los cultivos generales?</p>
+                <select id="q1">
+                    <option value="">Selecciona...</option>
+                    <option value="a">3.0 - 4.5</option>
+                    <option value="b">6.0 - 7.5</option>
+                    <option value="c">10.0 - 12.0</option>
+                </select>
+            </div>
+            <div class="activity-box">
+                <p>2. ¿Qué elemento químico se vuelve tóxico para las plantas en suelos muy ácidos?</p>
+                <select id="q2">
+                    <option value="">Selecciona...</option>
+                    <option value="a">Aluminio</option>
+                    <option value="b">Oxígeno</option>
+                    <option value="c">Nitrógeno</option>
+                </select>
+            </div>
+            <div class="activity-box">
+                <p>3. La cal agrícola sirve principalmente para:</p>
+                <select id="q3">
+                    <option value="">Selecciona...</option>
+                    <option value="a">Bajar el pH</option>
+                    <option value="b">Subir el pH (neutralizar acidez)</option>
+                    <option value="c">Matar insectos solamente</option>
+                </select>
+            </div>
+            <div class="activity-box">
+                <p>4. El pH se define técnicamente como:</p>
+                <select id="q4">
+                    <option value="">Selecciona...</option>
+                    <option value="a">Potencial de Hidrógeno</option>
+                    <option value="b">Presión de Helio</option>
+                    <option value="c">Peso de Hidratación</option>
+                </select>
+            </div>
+            <div class="activity-box">
+                <p>5. Si un suelo tiene pH 7, se considera:</p>
+                <select id="q5">
+                    <option value="">Selecciona...</option>
+                    <option value="a">Ácido</option>
+                    <option value="b">Básico</option>
+                    <option value="c">Neutro</option>
+                </select>
+            </div>
+
+            <hr>
+            <h3>Preguntas Abiertas (Análisis Crítico)</h3>
+            <p><em>Responde entre 10 y 15 palabras exactas para validar tu respuesta técnica.</em></p>
+            
+            <div class="activity-box">
+                <p>6. ¿Por qué es importante para tu comunidad conocer la química del suelo local?</p>
+                <input type="text" id="a6" oninput="wordCounter(6)">
+                <div class="word-count" id="wc6">Palabras: 0</div>
+            </div>
+            <div class="activity-box">
+                <p>7. Describe el efecto principal de la lluvia constante sobre el pH del suelo.</p>
+                <input type="text" id="a7" oninput="wordCounter(7)">
+                <div class="word-count" id="wc7">Palabras: 0</div>
+            </div>
+            <div class="activity-box">
+                <p>8. ¿Cómo cambia la disponibilidad de nutrientes cuando el pH es menor a cinco?</p>
+                <input type="text" id="a8" oninput="wordCounter(8)">
+                <div class="word-count" id="wc8">Palabras: 0</div>
+            </div>
+            <div class="activity-box">
+                <p>9. ¿Qué relación existe entre el sentido de pertenencia y el cuidado del suelo?</p>
+                <input type="text" id="a9" oninput="wordCounter(9)">
+                <div class="word-count" id="wc9">Palabras: 0</div>
+            </div>
+            <div class="activity-box">
+                <p>10. ¿Cuál es la función química de la cal al entrar en contacto con suelo ácido?</p>
+                <input type="text" id="a10" oninput="wordCounter(10)">
+                <div class="word-count" id="wc10">Palabras: 0</div>
+            </div>
+
+            <button class="btn" style="width: 100%; font-weight: bold;" onclick="evaluateAll()">FINALIZAR EVALUACIÓN</button>
+        </div>
+
+        <div id="fortalecimiento-box">
+            <h2 id="fort-titulo">Ruta de Fortalecimiento Personalizada</h2>
+            <p id="fort-instruccion" style="font-weight: bold; color: var(--earth-brown);"></p>
+            <div id="fort-contenido"></div>
+            <br>
+            <button class="btn" onclick="exportResults()">Descargar Reporte Final (.txt)</button>
+        </div>
+    </section>
+</div>
+
+<script>
+    let points = 0;
+    let userName = "";
+    const elements = ["Hidrógeno (H)", "Litio (Li)", "Sodio (Na)", "Potasio (K)", "Rubidio (Rb)", "Cesio (Cs)"];
+
+    // PERSISTENCIA
+    window.onload = () => {
+        if(localStorage.getItem('ova_user')) {
+            userName = localStorage.getItem('ova_user');
+            points = parseFloat(localStorage.getItem('ova_points')) || 0;
+            showMain();
+        }
+    }
+
+    function login() {
+        userName = document.getElementById('full-name').value;
+        if(userName.length < 5) return alert("Por favor ingresa tu nombre completo.");
+        localStorage.setItem('ova_user', userName);
+        showMain();
+    }
+
+    function showMain() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-ui').style.display = 'block';
+        document.getElementById('display-name').innerText = userName;
+        updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById('display-points').innerText = points.toFixed(1);
+        let percent = (points / 5) * 100;
+        document.getElementById('progress-fill').style.width = percent + "%";
+        
+        let elementIdx = Math.floor(points);
+        if(elementIdx > 5) elementIdx = 5;
+        document.getElementById('current-element').innerText = elements[elementIdx];
+        
+        localStorage.setItem('ova_points', points);
+    }
+
+    function preFeedback(num, text) {
+        let div = document.getElementById('pre-'+num);
+        div.innerText = text;
+        div.style.display = "block";
+        div.style.background = "#e8f5e9";
+    }
+
+    function addActivityPoint(val) {
+        points = Math.min(5, points + val);
+        updateUI();
+        alert("Actividad registrada en el sistema.");
+    }
+
+    function icfesFeedback(correct, letter, msg) {
+        let div = document.getElementById('icfes-fb');
+        div.style.display = "block";
+        div.innerText = `Opción ${letter}: ${msg}`;
+        div.style.background = correct ? "#c8e6c9" : "#ffcdd2";
+        if(correct) {
+            points = Math.min(5, points + 0.5);
+            updateUI();
+        }
+    }
+
+    function wordCounter(id) {
+        let val = document.getElementById('a'+id).value.trim();
+        let count = val ? val.split(/\s+/).length : 0;
+        document.getElementById('wc'+id).innerText = "Palabras: " + count;
+        document.getElementById('wc'+id).style.color = (count >= 10 && count <= 15) ? "green" : "red";
+    }
+
+    function evaluateAll() {
+        let score = 0;
+        let errorsInductive = 0;
+        let errorsDeductive = 0;
+
+        // Evaluación MC
+        if(document.getElementById('q1').value === 'b') score += 0.5; else errorsInductive++;
+        if(document.getElementById('q2').value === 'a') score += 0.5; else errorsInductive++;
+        if(document.getElementById('q3').value === 'b') score += 0.5; else errorsDeductive++;
+        if(document.getElementById('q4').value === 'a') score += 0.5; else errorsInductive++;
+        if(document.getElementById('q5').value === 'c') score += 0.5; else errorsInductive++;
+
+        // Evaluación Abiertas
+        for(let i=6; i<=10; i++) {
+            let val = document.getElementById('a'+i).value.trim();
+            let count = val ? val.split(/\s+/).length : 0;
+            if(count >= 10 && count <= 15) {
+                score += 0.5;
+            } else {
+                errorsDeductive++;
+            }
+        }
+
+        points = Math.min(5, score);
+        updateUI();
+        generateStrengthening(errorsInductive, errorsDeductive);
+    }
+
+    function generateStrengthening(ei, ed) {
+        const box = document.getElementById('fortalecimiento-box');
+        const inst = document.getElementById('fort-instruccion');
+        const cont = document.getElementById('fort-contenido');
+        
+        box.style.display = "block";
+        inst.innerText = "De acuerdo a tus resultados, debes copiar la siguiente retroalimentación en tu cuaderno para fortalecer tus debilidades:";
+        
+        let text = "";
+        if(ei > ed) {
+            text = "REFORZAMIENTO TEÓRICO: Debes repasar los conceptos básicos de la escala de pH. Recuerda que valores menores a 7 indican acidez y que esto ocurre en nuestra vereda por el lavado de nutrientes. El pH es una escala que mide la concentración de Hidrógeno y es vital para la salud de las plantas.";
+        } else if (ed >= ei && ed > 0) {
+            text = "REFORZAMIENTO DE APLICACIÓN: Tu debilidad está en la aplicación técnica. Es fundamental comprender que la cal agrícola es un neutralizador químico. Al aplicarla, transformamos un ambiente tóxico (ácido) en uno productivo. Estudia más sobre las reacciones de neutralización y el cálculo de enmiendas para el territorio.";
+        } else {
+            text = "¡EXCELENTE! Has demostrado dominio total de la química de suelos. Tu sentido de pertenencia y conocimiento técnico ayudarán a que tu comunidad tenga cultivos más sanos y sostenibles.";
+        }
+
+        cont.innerText = text;
+        box.scrollIntoView();
+    }
+
+    function exportResults() {
+        let content = `RESULTADOS OVA: pH EN LA AGRICULTURA\n`;
+        content += `Estudiante: ${userName}\n`;
+        content += `Nota Final: ${points.toFixed(1)}/5.0\n`;
+        content += `Elemento Químico: ${document.getElementById('current-element').innerText}\n`;
+        content += `--------------------------------------------------\n`;
+        content += `RETROALIMENTACIÓN DE FORTALECIMIENTO:\n`;
+        content += document.getElementById('fort-contenido').innerText + `\n`;
+        content += `--------------------------------------------------\n`;
+        content += `Generado el: ${new Date().toLocaleString()}`;
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Reporte_pH_${userName.replace(" ", "_")}.txt`;
+        a.click();
+    }
+</script>
+
+</body>
+</html>

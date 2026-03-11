@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión Atómica: El Despertar del Reactor</title>
+    <style>
+        :root {
+            --space-bg: #0b0e14;
+            --neon-blue: #00f2ff;
+            --neon-green: #39ff14;
+            --electron-color: #ffff00;
+            --proton-color: #ff3131;
+            --neutron-color: #9d9d9d;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--space-bg);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        #game-container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: rgba(20, 25, 35, 0.95);
+            border: 2px solid var(--neon-blue);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px var(--neon-blue);
+            min-height: 600px;
+            position: relative;
+        }
+
+        .screen { display: none; text-align: center; animation: fadeIn 0.5s; }
+        .active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        h1, h2 { color: var(--neon-blue); text-transform: uppercase; letter-spacing: 2px; }
+
+        .btn {
+            background: transparent;
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 10px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: var(--neon-green);
+            color: black;
+            box-shadow: 0 0 15px var(--neon-green);
+        }
+
+        /* Bohr Canvas Styles */
+        #bohr-canvas {
+            background: radial-gradient(circle, #1a1a2e 0%, #000 100%);
+            border-radius: 50%;
+            margin: 20px auto;
+            display: block;
+            border: 1px solid #333;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .mission-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 5px solid var(--neon-blue);
+            text-align: left;
+        }
+
+        .drop-zone {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed var(--neon-blue);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px;
+            border-radius: 10px;
+        }
+
+        .lewis-dot {
+            width: 15px;
+            height: 15px;
+            background: var(--electron-color);
+            border-radius: 50%;
+            display: inline-block;
+            cursor: move;
+            box-shadow: 0 0 5px var(--electron-color);
+        }
+
+        .feedback { font-weight: bold; margin-top: 10px; min-height: 24px; }
+        .correct { color: var(--neon-green); }
+        .error { color: #ff3131; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="screen-intro" class="screen active">
+        <h1>Misión Atómica</h1>
+        <svg width="150" height="150" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="10" fill="red" />
+            <ellipse cx="50" cy="50" rx="40" ry="15" fill="none" stroke="cyan" stroke-width="1" />
+            <ellipse cx="50" cy="50" rx="40" ry="15" fill="none" stroke="cyan" stroke-width="1" transform="rotate(60 50 50)" />
+            <ellipse cx="50" cy="50" rx="40" ry="15" fill="none" stroke="cyan" stroke-width="1" transform="rotate(120 50 50)" />
+        </svg>
+        <p>Bienvenido, Ingeniero/a. El reactor de la estación "Quindío-1" está inestable. <br>Solo reconstruyendo los átomos de los gases de emergencia podremos salvar la misión.</p>
+        <button class="btn" onclick="nextScreen('screen-m1')">INICIAR SECUENCIA</button>
+    </div>
+
+    <div id="screen-m1" class="screen">
+        <h2>Misión 1: El Modelo Planetario</h2>
+        <div class="mission-box">
+            <p><strong>Aprende rápido:</strong> Niels Bohr propuso que los electrones giran alrededor del núcleo en órbitas circulares, como los planetas alrededor del Sol. Cada órbita tiene un límite de energía y de espacio para electrones.</p>
+        </div>
+        <p>¿A qué sistema macroscópico se parece el Modelo de Bohr?</p>
+        <button class="btn" onclick="checkM1(true)">Al Sistema Solar</button>
+        <button class="btn" onclick="checkM1(false)">A un racimo de uvas</button>
+        <p id="feedback-m1" class="feedback"></p>
+    </div>
+
+    <div id="screen-m2" class="screen">
+        <h2>Misión 2: Estabiliza el Litio (Z=3)</h2>
+        <div class="mission-box">
+            <p><strong>Dato Técnico:</strong> El Litio tiene 3 protones y 3 electrones. <br>Regla de oro: En la 1ra órbita solo caben <b>2</b> electrones. Los demás deben ir a la siguiente.</p>
+        </div>
+        <canvas id="bohr-canvas" width="300" height="300"></canvas>
+        <div class="controls">
+            <button class="btn" onclick="addElectron()">Añadir Electrón (-)</button>
+            <button class="btn" onclick="resetBohr()">Reset</button>
+        </div>
+        <p>Electrones colocados: <span id="e-count">0</span> / 3</p>
+        <button class="btn" onclick="checkM2()">Verificar Reactor</button>
+        <p id="feedback-m2" class="feedback"></p>
+    </div>
+
+    <div id="screen-m3" class="screen">
+        <h2>Misión 3: El Club de los Elementos</h2>
+        <div class="mission-box">
+            <p>Los elementos se agrupan en "Familias" según sus <b>electrones de valencia</b> (los que están en la última capa). Todos los de una misma columna en la tabla periódica se comportan igual.</p>
+        </div>
+        <p>Santiago es un átomo con <b>1 electrón</b> en su última capa. ¿A qué familia pertenece para no estar solo?</p>
+        <div style="display: flex; justify-content: space-around;">
+            <div onclick="checkM3(1)" style="cursor:pointer; border:1px solid cyan; padding:10px;">Familia A: Metales Alcalinos (Tienen 1 e-)</div>
+            <div onclick="checkM3(2)" style="cursor:pointer; border:1px solid cyan; padding:10px;">Familia B: Gases Nobles (Tienen 8 e-)</div>
+        </div>
+        <p id="feedback-m3" class="feedback"></p>
+    </div>
+
+    <div id="screen-m4" class="screen">
+        <h2>Misión 4: Diagrama de Lewis</h2>
+        <div class="mission-box">
+            <p><strong>Teoría:</strong> Gilbert Lewis simplificó todo. En lugar de dibujar órbitas, solo ponemos el símbolo del elemento y representamos sus electrones externos como puntos o "brazos" listos para unirse.</p>
+        </div>
+        <p>Arrastra los electrones (puntos amarillos) al Carbono (C). <br>El Carbono tiene <b>4</b> electrones de valencia.</p>
+        
+        <div id="draggables">
+            <div class="lewis-dot" draggable="true" id="dot1" ondragstart="drag(event)"></div>
+            <div class="lewis-dot" draggable="true" id="dot2" ondragstart="drag(event)"></div>
+            <div class="lewis-dot" draggable="true" id="dot3" ondragstart="drag(event)"></div>
+            <div class="lewis-dot" draggable="true" id="dot4" ondragstart="drag(event)"></div>
+            <div class="lewis-dot" draggable="true" id="dot5" ondragstart="drag(event)"></div>
+        </div>
+
+        <div class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <b style="font-size: 2em; color: white;">C</b>
+        </div>
+
+        <p>Electrones en el núcleo: <span id="lewis-count">0</span></p>
+        <button class="btn" onclick="checkM4()">Validar Enlace</button>
+        <p id="feedback-m4" class="feedback"></p>
+    </div>
+
+    <div id="screen-m5" class="screen">
+        <h2>Misión Final: El Material del Futuro</h2>
+        <p>¡Reactor estabilizado! Como experto, debes elegir qué material usarías para representar un modelo atómico físico en tu estación de Pueblo Rico:</p>
+        <select id="material-choice" style="padding: 10px; border-radius: 5px;">
+            <option value="none">--Selecciona--</option>
+            <option value="1">Alambres y esferas de icopor reciclado</option>
+            <option value="2">Frutos de café y cítricos de la región</option>
+            <option value="3">Plastilina y cartón reutilizado</option>
+        </select>
+        <br>
+        <button class="btn" onclick="finishGame()">FINALIZAR REPORTE</button>
+    </div>
+
+    <div id="screen-final" class="screen">
+        <h2>¡Misión Cumplida!</h2>
+        <div id="final-stats"></div>
+        <p>Has demostrado empatía con los elementos y dominio de la física atómica. <br>¡La estación espacial está a salvo!</p>
+        <button class="btn" onclick="location.reload()">REINICIAR</button>
+    </div>
+
+</div>
+
+<script>
+    let currentElectrons = 0;
+    let lewisDropped = 0;
+
+    function nextScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id === 'screen-m2') drawBohr();
+    }
+
+    // --- LÓGICA MISIÓN 1 ---
+    function checkM1(isCorrect) {
+        const f = document.getElementById('feedback-m1');
+        if(isCorrect) {
+            f.innerHTML = "<span class='correct'>¡Correcto! Órbitas como planetas.</span>";
+            setTimeout(() => nextScreen('screen-m2'), 1500);
+        } else {
+            f.innerHTML = "<span class='error'>Incorrecto. Mira bien el diagrama del inicio.</span>";
+        }
+    }
+
+    // --- LÓGICA MISIÓN 2 (Bohr Canvas) ---
+    const canvas = document.getElementById('bohr-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function drawBohr() {
+        ctx.clearRect(0, 0, 300, 300);
+        // Núcleo
+        ctx.beginPath();
+        ctx.arc(150, 150, 20, 0, Math.PI * 2);
+        ctx.fillStyle = '#ff3131';
+        ctx.fill();
+        ctx.fillStyle = "white";
+        ctx.fillText("Li", 143, 155);
+
+        // Órbitas
+        ctx.strokeStyle = '#444';
+        ctx.beginPath(); ctx.arc(150, 150, 50, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(150, 150, 90, 0, Math.PI * 2); ctx.stroke();
+
+        // Dibujar electrones actuales
+        for(let i=0; i<currentElectrons; i++) {
+            let radius = i < 2 ? 50 : 90;
+            let angle = (i < 2) ? (i * Math.PI) : (i * 0.5);
+            let x = 150 + radius * Math.cos(angle);
+            let y = 150 + radius * Math.sin(angle);
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffff00';
+            ctx.fill();
+        }
+    }
+
+    function addElectron() {
+        if(currentElectrons < 3) {
+            currentElectrons++;
+            document.getElementById('e-count').innerText = currentElectrons;
+            drawBohr();
+        }
+    }
+
+    function resetBohr() {
+        currentElectrons = 0;
+        document.getElementById('e-count').innerText = 0;
+        drawBohr();
+    }
+
+    function checkM2() {
+        const f = document.getElementById('feedback-m2');
+        if(currentElectrons === 3) {
+            f.innerHTML = "<span class='correct'>¡Litio estable! Nivel de energía balanceado.</span>";
+            setTimeout(() => nextScreen('screen-m3'), 1500);
+        } else {
+            f.innerHTML = "<span class='error'>Faltan o sobran electrones para el Litio (Z=3).</span>";
+        }
+    }
+
+    // --- LÓGICA MISIÓN 3 ---
+    function checkM3(val) {
+        const f = document.getElementById('feedback-m3');
+        if(val === 1) {
+            f.innerHTML = "<span class='correct'>¡Exacto! Misma cantidad de e- valencia = Misma familia.</span>";
+            setTimeout(() => nextScreen('screen-m4'), 1500);
+        } else {
+            f.innerHTML = "<span class='error'>Los Gases Nobles tienen 8, Santiago no encajaría ahí.</span>";
+        }
+    }
+
+    // --- LÓGICA MISIÓN 4 (Drag & Drop) ---
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+    function drop(ev) {
+        ev.preventDefault();
+        lewisDropped++;
+        document.getElementById('lewis-count').innerText = lewisDropped;
+        let data = ev.dataTransfer.getData("text");
+        document.getElementById(data).style.display = "none";
+    }
+
+    function checkM4() {
+        const f = document.getElementById('feedback-m4');
+        if(lewisDropped === 4) {
+            f.innerHTML = "<span class='correct'>¡Excelente! El Carbono es tetravalente (4 enlaces).</span>";
+            setTimeout(() => nextScreen('screen-m5'), 1500);
+        } else {
+            f.innerHTML = "<span class='error'>El Carbono necesita exactamente 4 puntos.</span>";
+        }
+    }
+
+    // --- FINAL ---
+    function finishGame() {
+        const material = document.getElementById('material-choice').value;
+        if(material === "none") return alert("Elige un material para tu proyecto.");
+        
+        nextScreen('screen-final');
+        document.getElementById('final-stats').innerHTML = `
+            <div class='mission-box'>
+                <p><b>Certificado de Ingeniero Atómico</b></p>
+                <p>Modelos dominados: Bohr y Lewis</p>
+                <p>Material elegido para el modelo real: Opción ${material}</p>
+            </div>
+        `;
+    }
+</script>
+
+</body>
+</html>

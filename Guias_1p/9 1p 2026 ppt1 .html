@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sabores y Saberes: Pantalla Completa</title>
+    <style>
+        :root {
+            --acid-color: #e74c3c;
+            --base-color: #3498db;
+            --text-color: #2c3e50;
+            --bg-color: #fdfefe;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            height: 100vh; /* Altura total de la ventana */
+            width: 100vw;  /* Ancho total de la ventana */
+            overflow: hidden; /* Evita barras de desplazamiento */
+        }
+
+        /* Estilos de las diapositivas a PANTALLA COMPLETA */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none; /* Oculto por defecto */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Centrado vertical */
+            padding: 20px 50px 80px 50px; /* Padding inferior extra para los controles */
+            text-align: center;
+            background-color: white;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .slide.active {
+            display: flex; /* Se activa con Flexbox */
+            z-index: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Tipografía Grande para Proyección */
+        h1 { color: var(--text-color); font-size: 3.5rem; margin-bottom: 0.2em; }
+        h2 { color: var(--text-color); font-size: 2.5rem; margin-bottom: 0.5em; border-bottom: 4px solid #f1c40f; padding-bottom: 10px; display: inline-block;}
+        p { font-size: 1.5rem; line-height: 1.6; color: #555; max-width: 900px; margin-bottom: 30px; }
+        
+        .emoji-big { font-size: 6rem; margin-bottom: 20px; display: block; }
+        
+        /* Cajas de conceptos */
+        .flex-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .concept-box {
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            min-width: 300px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .acid-bg { background-color: var(--acid-color); }
+        .base-bg { background-color: var(--base-color); }
+        .concept-box h3 { margin-top: 0; font-size: 2rem; color: white; border: none; }
+
+        /* Estilos Interactivos (Botones del Quiz) */
+        .quiz-container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 800px;
+            width: 100%;
+        }
+        .quiz-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.3rem;
+        }
+        .quiz-btn {
+            border: 2px solid #ccc;
+            background: white;
+            padding: 10px 25px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: 0.3s;
+        }
+        .quiz-btn:hover { background: #eee; }
+
+        /* Mapa Mental */
+        .mind-map {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+        }
+        .map-node {
+            border: 3px dashed #bdc3c7;
+            padding: 20px;
+            border-radius: 20px;
+            background: #fafafa;
+        }
+        .map-node h3 { font-size: 1.5rem; margin-top:0; color: #333; border:none;}
+        .map-node p { font-size: 1.1rem; margin:0; }
+
+        /* BARRA DE CONTROLES FIJA EN EL FONDO */
+        .controls-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 1000; /* Siempre encima */
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+        }
+
+        .controls-bar span {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        button.nav-btn {
+            background-color: #f1c40f;
+            border: none;
+            color: #2c3e50;
+            padding: 10px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: transform 0.1s;
+        }
+        button.nav-btn:hover { background-color: #f39c12; transform: scale(1.05); }
+        button.nav-btn:disabled { background-color: #7f8c8d; cursor: not-allowed; transform: none; opacity: 0.5; }
+
+    </style>
+</head>
+<body>
+
+    <div class="slide active">
+        <span class="emoji-big">🍋🧼</span>
+        <h1>Sabores y Saberes</h1>
+        <h2>Reconociendo Ácidos y Bases en el Hogar</h2>
+        <p>Una experiencia sensorial y química desde la cocina.</p>
+        <p style="font-size: 1.2rem; margin-top: 50px; font-weight: bold;">Docente: Juan Felipe Ramírez Giraldo</p>
+    </div>
+
+    <div class="slide">
+        <h2>Objetivo de la Clase</h2>
+        <p>Aprenderemos a diferenciar sustancias ácidas y básicas utilizando nuestros sentidos y relacionándolos con productos de uso diario.</p>
+        <div class="flex-row">
+            <div class="concept-box acid-bg">
+                <h3>🕵️‍♂️ Identificar</h3>
+                <p style="color:white; font-size:1.2rem">Usando el gusto y el tacto.</p>
+            </div>
+            <div class="concept-box base-bg">
+                <h3>🧠 Clasificar</h3>
+                <p style="color:white; font-size:1.2rem">Separar ácidos de bases.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <span class="emoji-big">🫣👅</span>
+        <h2>Inicio: La Cata a Ciegas</h2>
+        <div style="background:#fff3cd; padding:30px; border-radius:10px; border: 2px solid #f1c40f;">
+            <p style="margin:0; font-weight:bold;">Instrucciones:</p>
+            <ol style="text-align: left; font-size: 1.4rem; display: inline-block; margin-top:10px;">
+                <li>Cierra los ojos o usa una venda.</li>
+                <li>Prueba una pequeña gota de las muestras (A y B).</li>
+                <li>Concéntrate: ¿Dónde lo sientes en la lengua?</li>
+            </ol>
+        </div>
+        <p style="color:#e74c3c; font-size:1rem; margin-top:20px; font-weight:bold;">⚠️ Precaución: Solo probar alimentos comestibles seguros suministrados por el docente.</p>
+    </div>
+
+    <div class="slide">
+        <h2>El Sabor Ácido</h2>
+        <span class="emoji-big">🍋</span>
+        <p>Los ácidos tienen un sabor característico <strong>AGRIO</strong>.</p>
+        <div class="concept-box acid-bg" style="width: 80%; max-width:800px;">
+            <p style="color:white; margin:0; font-weight:bold;">Química: Liberan iones de Hidrógeno (H+) en agua.</p>
+        </div>
+        <p style="margin-top:30px;"><strong>Ejemplos en casa:</strong> Limón, vinagre, yogurt, frutas cítricas.</p>
+    </div>
+
+    <div class="slide">
+        <h2>El Sabor Básico (Alcalino)</h2>
+        <span class="emoji-big">🥦🫧</span>
+        <p>Las bases suelen tener un sabor <strong>AMARGO</strong>.</p>
+        <div class="concept-box base-bg" style="width: 80%; max-width:800px;">
+            <p style="color:white; margin:0; font-weight:bold;">Química: Liberan iones hidroxilo (OH-) en agua.</p>
+        </div>
+        <p style="margin-top:30px;"><strong>Ejemplos en casa:</strong> Bicarbonato, espinacas crudas, jabón (¡no comer!), antiácidos.</p>
+    </div>
+
+    <div class="slide">
+        <h2>Desarrollo: ¡Tú decides!</h2>
+        <p>Haz clic en la opción correcta:</p>
+        
+        <div class="quiz-container">
+            <div class="quiz-row">
+                <span>1. Jugo de Naranja 🍊</span>
+                <div>
+                    <button class="quiz-btn" onclick="checkAnswer(this, 'acid')">Ácido</button>
+                    <button class="quiz-btn" onclick="checkAnswer(this, 'base')">Base</button>
+                </div>
+            </div>
+            <div class="quiz-row">
+                <span>2. Jabón de manos 🧼</span>
+                <div>
+                    <button class="quiz-btn" onclick="checkAnswer(this, 'acid')">Ácido</button>
+                    <button class="quiz-btn" onclick="checkAnswer(this, 'base')">Base</button>
+                </div>
+            </div>
+            <div class="quiz-row" style="border-bottom:none;">
+                <span>3. Café negro (Sabor amargo) ☕</span>
+                <div>
+                    <button class="quiz-btn" onclick="checkAnswer(this, 'acid')">Ácido</button>
+                    <button class="quiz-btn" onclick="checkAnswer(this, 'base')">Base</button>
+                </div>
+            </div>
+        </div>
+        <p style="font-size:1rem; color:#7f8c8d; margin-top:10px;">*Nota: El café es químicamente ácido, pero su sabor amargo confunde. ¡Cuidado!</p>
+    </div>
+
+    <div class="slide">
+        <h2>Diferencia por el Tacto</h2>
+        <div class="flex-row">
+            <div class="concept-box acid-bg">
+                <h3>Ácidos 🤏</h3>
+                <p style="color:white; font-size:1.3rem;">Se sienten como <strong>agua</strong>.</p>
+                <p style="color:white; font-size:1rem;">(Producen picazón en heridas)</p>
+            </div>
+            <div class="concept-box base-bg">
+                <h3>Bases 🧼</h3>
+                <p style="color:white; font-size:1.3rem;">Se sienten <strong>resbaladizas</strong> o jabonosas.</p>
+                <p style="color:white; font-size:1rem;">(Como cuando tienes jabón en las manos)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>Cierre: Mapa Mental Doméstico</h2>
+        <div class="mind-map">
+            <div class="map-node" style="background: #fadbd8;">
+                <h3>🌭 Cocina</h3>
+                <p>Vinagre (Ácido)<br>Bicarbonato (Base)<br>Cítricos (Ácido)</p>
+            </div>
+            <div class="map-node" style="background: #d6eaf8;">
+                <h3>👕 Lavandería</h3>
+                <p>Cloro/Límpido (Base)<br>Detergente en polvo (Base)</p>
+            </div>
+            <div class="map-node" style="background: #d5f5e3;">
+                <h3>🛁 Baño</h3>
+                <p>Jabón (Base)<br>Limpiador inodoro (Ácido)</p>
+            </div>
+            <div class="map-node" style="background: #fcf3cf;">
+                <h3>💊 Botiquín</h3>
+                <p>Aspirina (Ácido)<br>Antiácido estomacal (Base)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide">
+        <h2>La Escala de pH</h2>
+        <p>Los científicos miden la acidez con una regla del 0 al 14.</p>
+        
+        <div style="display:flex; width:90%; max-width:900px; height:80px; border-radius:40px; overflow:hidden; margin-top:30px; border: 4px solid #333;">
+            <div style="flex:1; background:#e74c3c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">0</div>
+            <div style="flex:1; background:#e67e22;"></div>
+            <div style="flex:1; background:#f1c40f;"></div>
+            <div style="flex:1; background:#2ecc71; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">7</div>
+            <div style="flex:1; background:#3498db;"></div>
+            <div style="flex:1; background:#9b59b6;"></div>
+            <div style="flex:1; background:#8e44ad; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">14</div>
+        </div>
+        
+        <div style="display:flex; width:90%; max-width:900px; justify-content:space-between; font-weight:bold; font-size:1.5rem; margin-top:10px;">
+            <span style="color:#e74c3c">Ácido Fuerte</span>
+            <span style="color:#27ae60">Neutro</span>
+            <span style="color:#8e44ad">Base Fuerte</span>
+        </div>
+    </div>
+
+    <div class="slide">
+        <span class="emoji-big">✅</span>
+        <h2>Conclusión</h2>
+        <p>Los ácidos y las bases equilibran nuestro mundo.</p>
+        <ul style="text-align:left; font-size:1.5rem; display:inline-block; line-height:2;">
+            <li>🍋 <strong>Sabor:</strong> Agrio (Ácido) vs Amargo (Base).</li>
+            <li>🧼 <strong>Tacto:</strong> Acuoso (Ácido) vs Resbaladizo (Base).</li>
+            <li>🏠 <strong>Uso:</strong> ¡Están en toda la casa!</li>
+        </ul>
+        <h3 style="color:var(--base-color); margin-top:40px;">¡Gracias por participar!</h3>
+    </div>
+
+    <div class="controls-bar">
+        <button class="nav-btn" id="prevBtn">⬅ Anterior</button>
+        <span id="slideIndicator">1 / 10</span>
+        <button class="nav-btn" id="nextBtn">Siguiente ➡</button>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const indicator = document.getElementById('slideIndicator');
+
+        // Función Principal de Navegación
+        function updateSlide(index) {
+            // Ocultar todas
+            slides.forEach(s => s.classList.remove('active'));
+            
+            // Mostrar la actual
+            slides[index].classList.add('active');
+            
+            // Actualizar texto indicador
+            indicator.textContent = `Diapositiva ${index + 1} de ${slides.length}`;
+
+            // Lógica de los botones
+            prevBtn.disabled = index === 0;
+            
+            if (index === slides.length - 1) {
+                nextBtn.textContent = "🔄 Reiniciar";
+            } else {
+                nextBtn.textContent = "Siguiente ➡";
+            }
+        }
+
+        // Click en Siguiente
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+            } else {
+                currentSlide = 0; // Vuelve al inicio
+            }
+            updateSlide(currentSlide);
+        });
+
+        // Click en Anterior
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide(currentSlide);
+            }
+        });
+
+        // Habilitar flechas del teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "ArrowRight") nextBtn.click();
+            if (e.key === "ArrowLeft") prevBtn.click();
+        });
+
+        // Iniciar
+        updateSlide(0);
+    });
+
+    // Lógica del Quiz (Diapositiva 6)
+    function checkAnswer(btn, type) {
+        const row = btn.parentElement.parentElement;
+        const text = row.querySelector('span').innerText.toLowerCase();
+        let isCorrect = false;
+
+        // Lógica educativa simplificada
+        if (text.includes("naranja") && type === 'acid') isCorrect = true;
+        if (text.includes("jabón") && type === 'base') isCorrect = true;
+        
+        // Caso especial Café: Químicamente ácido (pH 5), aunque sabe amargo.
+        // Se marca correcto si ponen Ácido (científico) o Base (por sabor amargo escolar).
+        // Para fomentar el debate, marcaremos ÁCIDO como la respuesta correcta "científica".
+        if (text.includes("café")) {
+            if (type === 'acid') {
+                isCorrect = true;
+                btn.innerText = "Correcto (pH 5)";
+            } else {
+                btn.innerText = "Sabe amargo, pero es Ácido";
+                btn.style.backgroundColor = "#e67e22"; // Naranja de advertencia
+                btn.style.color = "white";
+                return;
+            }
+        }
+
+        if (isCorrect) {
+            btn.style.backgroundColor = "#2ecc71"; // Verde
+            btn.style.color = "white";
+            if (!text.includes("café")) btn.innerText = "¡Correcto!";
+        } else {
+            btn.style.backgroundColor = "#e74c3c"; // Rojo
+            btn.style.color = "white";
+            btn.innerText = "X";
+        }
+    }
+</script>
+
+</body>
+</html>

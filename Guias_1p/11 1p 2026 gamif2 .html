@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA Química 11°: Nomenclatura y Carbohidratos</title>
+    <style>
+        :root {
+            --primary: #1a5276;
+            --secondary: #1e8449;
+            --accent: #d35400;
+            --gold: #f4d03f;
+            --silver: #d5dbdb;
+            --iron: #aab7b8;
+            --bg: #ebf5fb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0; padding: 0; color: #333;
+            line-height: 1.6;
+        }
+
+        /* Registro y Pantalla de Logueo */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: white; padding: 2.5rem; border-radius: 15px;
+            text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 350px;
+        }
+
+        /* Header Persistente */
+        header {
+            position: fixed; top: 0; width: 100%;
+            background: white; padding: 12px 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 900; box-sizing: border-box;
+        }
+
+        .user-tag { color: var(--primary); font-weight: bold; font-size: 1.1rem; }
+        .global-score { 
+            background: var(--primary); color: white;
+            padding: 8px 20px; border-radius: 30px; font-weight: bold;
+        }
+
+        /* Contenedor Principal */
+        main {
+            max-width: 900px; margin: 100px auto 50px; padding: 0 20px;
+        }
+
+        .activity-card {
+            background: white; margin-bottom: 30px; padding: 30px;
+            border-radius: 12px; border-top: 5px solid var(--primary);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .activity-card:hover { transform: scale(1.01); }
+
+        .scrambled-text {
+            background: #f8f9f9; border: 2px dashed var(--accent);
+            padding: 15px; border-radius: 8px; margin: 15px 0;
+            font-size: 1.3rem; font-weight: bold; color: var(--accent);
+            letter-spacing: 2px; text-align: center;
+        }
+
+        input[type="text"] {
+            width: 100%; padding: 12px; margin: 10px 0;
+            border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box;
+        }
+
+        .btn-validate {
+            background: var(--secondary); color: white; border: none;
+            padding: 12px 25px; border-radius: 6px; cursor: pointer;
+            font-weight: bold; width: 100%; font-size: 1rem;
+        }
+
+        .btn-validate:disabled { background: #ccd1d1; cursor: not-allowed; }
+
+        /* Gamificación */
+        .badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 50px; height: 50px; border-radius: 50%;
+            margin-top: 15px; font-weight: bold; color: #222;
+            border: 3px solid #fff; box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+        .badge-Au { background: var(--gold); }
+        .badge-Ag { background: var(--silver); }
+        .badge-Fe { background: var(--iron); }
+
+        .feedback { font-weight: bold; margin-top: 10px; }
+        .success { color: var(--secondary); }
+        .error { color: #c0392b; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <h2 style="color: var(--primary);">Química 11°</h2>
+            <p>Laboratorio de Biomoléculas e IUPAC</p>
+            <input type="text" id="reg-name" placeholder="Nombre">
+            <input type="text" id="reg-lastname" placeholder="Apellido">
+            <button class="btn-validate" style="margin-top:20px;" onclick="register()">Iniciar Sesión</button>
+        </div>
+    </div>
+
+    <header id="main-nav" style="display:none;">
+        <div class="user-tag">Estudiante: <span id="user-display">---</span></div>
+        <div class="global-score">Puntaje: <span id="score-display">0</span> pts</div>
+    </header>
+
+    <main id="main-content" style="display:none;">
+        <section style="text-align: center; margin-bottom: 50px;">
+            <h1>Unidad: Nomenclatura y Carbohidratos</h1>
+            <p>Aplica tus conocimientos técnicos en desafíos de precisión y bioquímica regional.</p>
+        </section>
+        <div id="activities-list"></div>
+    </main>
+
+    <script>
+        // --- BASE DE DATOS DE ACTIVIDADES ---
+        const anagrams = [
+            { w: "POLISACARIDO", h: "Carbohidrato complejo como el almidón de la yuca." },
+            { w: "FRUCTOSA", h: "Azúcar natural predominante en las frutas locales." },
+            { w: "BENEDICT", h: "Reactivo para detectar azúcares reductores." },
+            { w: "ISOPROPILO", h: "Grupo funcional común en productos de limpieza." },
+            { w: "ALDEHIDO", h: "Grupo funcional presente en la glucosa (Aldosa)." },
+            { w: "SACAROSA", h: "Nombre químico del azúcar de mesa y la panela." },
+            { w: "GLUCOSIDICO", h: "Tipo de enlace que une a los monosacáridos." },
+            { w: "HIDROXILO", h: "Grupo (-OH) característico de los alcoholes y azúcares." },
+            { w: "ESTEQUIOMETRIA", h: "Precisión en la mezcla de agroinsumos orgánicos." },
+            { w: "CETOHEXOSA", h: "Clasificación técnica de la fructosa por su grupo y carbonos." }
+        ];
+
+        const ordering = [
+            { c: "La prueba de lugol detecta almidon en la yuca", h: "Laboratorio de Carbohidratos" },
+            { c: "El etanoato de etilo es un solvente industrial", h: "Nomenclatura IUPAC" },
+            { c: "La glucosa es la principal fuente de energia", h: "Importancia Biológica" },
+            { c: "Los carbohidratos se clasifican por su numero de unidades", h: "Bioquímica" },
+            { c: "El rotulado tecnico exige honestidad en la formula", h: "Ética Profesional" },
+            { c: "La panela contiene sacarosa y minerales esenciales", h: "Saberes Locales" },
+            { c: "El reactivo de benedict cambia a color ladrillo", h: "Pruebas Químicas" },
+            { c: "La nomenclatura iupac evita confusiones en la industria", h: "Normativa" },
+            { c: "Los polimeros naturales como celulosa dan estructura", h: "Carbohidratos II" },
+            { c: "Las frutas locales aportan fructosa y fibra vital", h: "Nutrición Consciente" }
+        ];
+
+        // --- LÓGICA CORE ---
+        let userData = { name: "", score: 0 };
+        const attemptsTracker = {};
+
+        function register() {
+            const n = document.getElementById('reg-name').value.trim();
+            const l = document.getElementById('reg-lastname').value.trim();
+            if(!n || !l) return alert("Ingresa datos válidos");
+            
+            userData.name = `${n} ${l}`;
+            localStorage.setItem('ova_q11_user', JSON.stringify(userData));
+            renderApp();
+        }
+
+        // Algoritmo Fisher-Yates
+        function shuffle(text, type) {
+            let arr = type === 'word' ? text.split('') : text.split(' ');
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            let result = type === 'word' ? arr.join('-').toUpperCase() : arr.join(' / ');
+            // Evitar que salga resuelto
+            if(result === text.toUpperCase() || result === text) return shuffle(text, type);
+            return result;
+        }
+
+        function renderApp() {
+            const saved = localStorage.getItem('ova_q11_user');
+            if(saved) {
+                userData = JSON.parse(saved);
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-nav').style.display = 'flex';
+                document.getElementById('main-content').style.display = 'block';
+                document.getElementById('user-display').innerText = userData.name;
+                document.getElementById('score-display').innerText = userData.score;
+                buildActivities();
+            }
+        }
+
+        function buildActivities() {
+            const container = document.getElementById('activities-list');
+            container.innerHTML = "";
+
+            // Generar 10 Anagramas
+            anagrams.forEach((item, i) => {
+                createCard(container, i, `Anagrama: ${item.h}`, shuffle(item.w, 'word'), item.w, 'anagram');
+            });
+
+            // Generar 10 Ordenar
+            ordering.forEach((item, i) => {
+                createCard(container, i + 10, `Orden Técnico: ${item.h}`, shuffle(item.c, 'sentence'), item.c, 'order');
+            });
+        }
+
+        function createCard(parent, id, title, display, correct, type) {
+            const card = document.createElement('div');
+            card.className = 'activity-card';
+            card.innerHTML = `
+                <h3>Actividad #${id + 1}</h3>
+                <p><strong>Pista:</strong> ${title}</p>
+                <div class="scrambled-text">${display}</div>
+                <input type="text" id="ans-${id}" placeholder="Escribe tu respuesta técnica aquí...">
+                <div id="feed-${id}" class="feedback"></div>
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <button class="btn-validate" id="btn-${id}" onclick="validate(${id}, '${correct}')">Validar Respuesta</button>
+                    <div id="badge-${id}"></div>
+                </div>
+            `;
+            parent.appendChild(card);
+        }
+
+        function validate(id, correct) {
+            const input = document.getElementById(`ans-${id}`);
+            const val = input.value.trim().toLowerCase();
+            const feedback = document.getElementById(`feed-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+            
+            if(!attemptsTracker[id]) attemptsTracker[id] = 0;
+            attemptsTracker[id]++;
+
+            if(val === correct.toLowerCase()) {
+                let points = 0; let sym = "";
+                if(attemptsTracker[id] === 1) { points = 5; sym = "Au"; }
+                else if(attemptsTracker[id] === 2) { points = 3; sym = "Ag"; }
+                else { points = 1.5; sym = "Fe"; }
+
+                feedback.innerHTML = `<span class="success">¡Excelente! Correcto en intento ${attemptsTracker[id]}.</span>`;
+                updateScore(points, id, sym);
+                btn.disabled = true;
+                input.disabled = true;
+            } else {
+                if(attemptsTracker[id] >= 3) {
+                    feedback.innerHTML = `<span class="error">Intentos agotados. Respuesta: ${correct.toUpperCase()}</span>`;
+                    btn.disabled = true;
+                    input.disabled = true;
+                } else {
+                    feedback.innerHTML = `<span class="error">Incorrecto. Intento ${attemptsTracker[id]}/3</span>`;
+                }
+            }
+        }
+
+        function updateScore(p, id, sym) {
+            userData.score += p;
+            document.getElementById('score-display').innerText = userData.score;
+            document.getElementById(`badge-${id}`).innerHTML = `<div class="badge badge-${sym}">${sym}</div>`;
+            localStorage.setItem('ova_q11_user', JSON.stringify(userData));
+        }
+
+        window.onload = renderApp;
+    </script>
+</body>
+</html>

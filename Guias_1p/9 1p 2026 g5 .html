@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Indicadores Naturales - Grado 9</title>
+    <style>
+        :root {
+            --primary: #4A235A; /* Morado Antocianina Intenso */
+            --secondary: #1E8449; /* Verde Biodiversidad */
+            --accent: #F4D03F; /* Amarillo Precaución/Atención */
+            --bg: #F5EEF8; /* Lavanda muy suave para fondo (descanso visual) */
+            --text: #212F3C;
+            --white: #ffffff;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.7; /* Espaciado para facilitar lectura */
+        }
+
+        /* --- SISTEMA DE LOGUEO --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(74, 35, 90, 0.98);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+
+        .login-box {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            color: var(--text);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* --- BARRA DE NAVEGACIÓN Y PROGRESO --- */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .nav-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .progress-container {
+            flex-grow: 1;
+            margin: 0 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--secondary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .level-badge {
+            background: var(--accent);
+            color: var(--text);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* --- CONTENIDO PRINCIPAL --- */
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            padding-bottom: 100px;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            border-left: 5px solid var(--primary);
+        }
+
+        h1, h2, h3 { color: var(--primary); }
+        
+        .highlight-box {
+            background: #E8F8F5;
+            border: 1px solid var(--secondary);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        /* --- TABLAS Y GRÁFICOS CSS --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th { background: var(--primary); color: white; }
+
+        .ph-scale {
+            display: flex;
+            height: 50px;
+            width: 100%;
+            margin: 20px 0;
+            border-radius: 25px;
+            overflow: hidden;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            line-height: 50px;
+        }
+        .ph-acid { background: linear-gradient(to right, #C0392B, #E74C3C); width: 33%; }
+        .ph-neutral { background: #8E44AD; width: 33%; } /* Color del repollo */
+        .ph-base { background: linear-gradient(to right, #27AE60, #F1C40F); width: 33%; }
+
+        /* --- ACTIVIDADES CUADERNO --- */
+        .notebook-activity {
+            background: #FEF9E7;
+            border: 2px dashed #F39C12;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 10px;
+            position: relative;
+        }
+        .notebook-activity::before {
+            content: "📓 Actividad en Cuaderno";
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: #F39C12;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* --- INTERACCIÓN --- */
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s, background 0.2s;
+            margin-top: 10px;
+        }
+        button:hover { background: #6C3483; transform: scale(1.02); }
+        
+        .btn-check { background: var(--secondary); }
+        .btn-check:hover { background: #196F3D; }
+
+        .btn-disabled {
+            background: #BDC3C7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .feedback {
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct { background: #D5F5E3; color: #196F3D; border: 1px solid #196F3D; }
+        .incorrect { background: #FADBD8; color: #943126; border: 1px solid #943126; }
+
+        /* --- ICFES STYLE --- */
+        .icfes-options label {
+            display: block;
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .icfes-options label:hover { background: #F4F6F6; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>🧪 Laboratorio Virtual de Química</h2>
+            <p>Bienvenido a la experiencia de Indicadores Naturales.</p>
+            <p>Por favor, ingresa tu nombre completo para comenzar.</p>
+            <input type="text" id="student-name-input" placeholder="Nombres y Apellidos">
+            <br>
+            <button onclick="login()">Ingresar al Laboratorio</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="nav-container">
+            <div>
+                <strong>Estudiante:</strong> <span id="display-name">Invitado</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="level-badge" id="level-badge">H (Nivel 1)</div>
+        </div>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2>🎯 Objetivo de Aprendizaje</h2>
+            <p>Determinar cualitativamente el pH de sustancias cotidianas mediante la extracción de antocianinas del repollo morado, elaborando una carta de colores propia y despertando el asombro ante la biodiversidad química presente en la naturaleza.</p>
+        </div>
+
+        <div class="card">
+            <h3>🧠 Activando Pre-saberes</h3>
+            <p>Responde estas preguntas para preparar tu mente. No te preocupes si fallas, estamos aprendiendo.</p>
+            
+            <div class="quiz-item">
+                <p><strong>1. ¿Qué sabor asocias comúnmente con un "ácido" como el limón?</strong></p>
+                <select id="pre1"><option value="0">Selecciona...</option><option value="a">Amargo y jabonoso</option><option value="b">Agrio y punzante</option><option value="c">Salado</option></select>
+            </div>
+            
+            <div class="quiz-item">
+                <p><strong>2. ¿Qué ocurre si mezclas agua y aceite en un vaso?</strong></p>
+                <select id="pre2"><option value="0">Selecciona...</option><option value="a">Se forma una mezcla homogénea (solución)</option><option value="b">Se forma una mezcla heterogénea (se separan)</option><option value="c">El aceite se evapora</option></select>
+            </div>
+
+            <div class="quiz-item">
+                <p><strong>3. ¿Para qué crees que sirven los colores brillantes en las flores?</strong></p>
+                <select id="pre3"><option value="0">Selecciona...</option><option value="a">Solo para verse bonitas</option><option value="b">Para atraer polinizadores y protegerse del sol</option><option value="c">Para asustar a los insectos</option></select>
+            </div>
+            
+            <button class="btn-check" onclick="checkPresaberes()">Verificar Pre-saberes</button>
+            <div id="pre-feedback" class="feedback"></div>
+        </div>
+
+        <div class="card">
+            <h3>🌺 El Lenguaje Oculto de las Plantas</h3>
+            <p>Imagina que caminas por la finca o un parque cercano. Ves rosas rojas, violetas moradas, hortensias azules y el verde profundo de las hojas. ¿Alguna vez te has preguntado de dónde sale tanto color? La naturaleza no pinta por capricho; pinta por química y supervivencia. Dentro de las células de muchas plantas existen unos pigmentos mágicos llamados <strong>Antocianinas</strong>. La palabra viene del griego <em>anthos</em> (flor) y <em>kyanos</em> (azul).</p>
+
+            <p>Las antocianinas son moléculas "camaleónicas". Ellas protegen a la planta de la radiación ultravioleta del sol, actúan como antioxidantes (evitando que la planta se "oxide" o envejezca rápido) y atraen a abejas y colibríes para la polinización. Pero lo más asombroso es su capacidad de cambiar de color según el ambiente químico donde se encuentren. Son como espías que nos revelan secretos invisibles de las sustancias.</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #1 (Dibujar):</strong> Dibuja en tu cuaderno una planta de repollo morado y una flor de color intenso. Señala con una flecha dónde crees que se guardan los pigmentos (pétalos y hojas).</p>
+                <button class="btn-check" onclick="markActivity(1)">¡Dibujo realizado!</button>
+            </div>
+
+            <p>Para descubrir este secreto, necesitamos hacer una <strong>extracción</strong>. Es el mismo principio de hacer un café o un té: usamos agua caliente para sacar las sustancias que nos interesan de la planta. Si picamos repollo morado y le agregamos agua hirviendo, el agua se tiñe de un morado oscuro intenso. ¡Acabas de extraer un indicador natural de pH!</p>
+            
+            
+
+            <p>Este líquido morado es nuestro "chivato" o indicador. Si le agregamos unas gotas de limón, el morado cambia radicalmente a rojo brillante. Si le agregamos bicarbonato o jabón, cambia a verde o azul. La sustancia no cambia de sabor, pero su estructura molecular se retuerce con la acidez, reflejando la luz de manera diferente. Es química cuántica ocurriendo en tu cocina.</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #2 (Contestar):</strong> ¿Qué es una extracción? Explícalo con tus propias palabras usando el ejemplo del repollo o del café.</p>
+                <button class="btn-check" onclick="markActivity(2)">¡Definición escrita!</button>
+            </div>
+
+            <p>Este fenómeno nos permite entender que la materia tiene propiedades ocultas. No todo lo transparente es agua. Una sustancia puede ser ácida (como el jugo gástrico), neutra (como el agua pura) o básica/alcalina (como los detergentes). Las antocianinas son nuestra gafas especiales para "ver" esta propiedad.</p>
+
+            <table border="1">
+                <caption>Tabla 1: Colores de las Antocianinas</caption>
+                <thead>
+                    <tr>
+                        <th>Ambiente Químico</th>
+                        <th>Color Observado</th>
+                        <th>Ejemplo Natural</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Muy Ácido</td>
+                        <td>Rojo Intenso</td>
+                        <td>Fresa, Manzana roja</td>
+                    </tr>
+                    <tr>
+                        <td>Neutro</td>
+                        <td>Morado / Violeta</td>
+                        <td>Repollo, Uvas</td>
+                    </tr>
+                    <tr>
+                        <td>Básico (Alcalino)</td>
+                        <td>Azul / Verde / Amarillo</td>
+                        <td>Hojas secas, Jabones</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #3 (Tabla Comparativa):</strong> Copia la tabla anterior en tu cuaderno. Agrega una cuarta columna llamada "Sustancia de mi casa" y predice qué color daría el vinagre y qué color daría el límpido.</p>
+                <button class="btn-check" onclick="markActivity(3)">¡Tabla copiada y completada!</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #4 (Mapa Mental):</strong> Crea un mapa mental con el término central "ANTOCIANINAS". Ramas: Origen (Plantas), Función (Protección/Color), Propiedad (Cambio de color), Usos (Indicador).</p>
+                <button class="btn-check" onclick="markActivity(4)">¡Mapa mental listo!</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #5 (Reflexión):</strong> Escribe 5 renglones sobre: "¿Por qué crees que es importante que existan tantas sustancias químicas diferentes en la naturaleza (biodiversidad)?"</p>
+                <button class="btn-check" onclick="markActivity(5)">¡Reflexión terminada!</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🔍 Competencia Indagar: Pregunta Tipo ICFES</h3>
+            <div class="highlight-box">
+                <p><strong>Situación:</strong> Un estudiante de grado noveno observa que las hortensias de su jardín cambian de color. Su abuela le dice que si le pone clavos oxidados a la tierra, las flores se vuelven azules, y si le pone cal (ceniza), se vuelven rosadas.</p>
+                <div style="text-align: center; font-size: 3rem;">🌸 ➡️ 🧪 ➡️ 🌺</div>
+                <p>El estudiante decide realizar un experimento. Toma tres macetas con la misma planta (esquejes de la misma madre):</p>
+                <ul>
+                    <li><strong>Maceta 1:</strong> Tierra normal + Agua.</li>
+                    <li><strong>Maceta 2:</strong> Tierra + Vinagre (Ácido) + Agua.</li>
+                    <li><strong>Maceta 3:</strong> Tierra + Cal (Base) + Agua.</li>
+                </ul>
+            </div>
+            
+            <p><strong>Pregunta:</strong> Si el estudiante quiere indagar cómo la acidez del suelo afecta el color de la flor, ¿cuál es la <strong>variable independiente</strong> (la causa que él manipula) en este experimento?</p>
+
+            <div class="icfes-options" id="icfes-options">
+                <label><input type="radio" name="icfes" value="A"> A. El color final de las flores de la hortensia.</label>
+                <label><input type="radio" name="icfes" value="B"> B. La cantidad de agua que le echa a todas las plantas.</label>
+                <label><input type="radio" name="icfes" value="C"> C. El pH o acidez de la sustancia agregada al suelo.</label>
+                <label><input type="radio" name="icfes" value="D"> D. El tamaño de las macetas utilizadas.</label>
+            </div>
+
+            <button onclick="checkICFES()">Enviar Respuesta</button>
+            <div id="icfes-feedback" class="feedback"></div>
+        </div>
+
+        <div class="card">
+            <h3>🧪 El Laboratorio en la Finca: Midiendo el pH</h3>
+            <p>A partir de la experiencia con el repollo y la situación de las hortensias, podemos deducir un concepto científico fundamental: la <strong>Escala de pH</strong>. El término pH significa "Potencial de Hidrógeno". Es una medida que nos dice qué tan ácida o básica es una solución. La escala va matemáticamente de 0 a 14.</p>
+
+            <div class="ph-scale">
+                <div class="ph-acid">0 - Ácido - 6</div>
+                <div class="ph-neutral">7 - Neutro</div>
+                <div class="ph-base">8 - Base - 14</div>
+            </div>
+
+            <p>Cuando extrajiste el jugo de repollo, obtuviste un líquido neutro (pH cercano a 7, color morado). Al mezclarlo con otras sustancias de la finca o la casa, ocurre una reacción ácido-base. Los ácidos (como el limón, pH < 7) donan protones (H+) a la antocianina, volviéndola roja. Las bases (como la ceniza o el jabón, pH > 7) aceptan protones, volviéndola verde o amarilla. ¡Hemos construido un termómetro químico!</p>
+            
+            <p>Imaginemos que tenemos 10 sustancias comunes en una finca. Al aplicar nuestro indicador, podríamos ver lo siguiente:</p>
+
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Sustancia</th>
+                        <th>Color con Repollo</th>
+                        <th>Deducción de pH</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Jugo de Limón</td><td>Rojo Intenso</td><td>Ácido Fuerte (pH 2)</td></tr>
+                    <tr><td>Vinagre</td><td>Rosado / Rojo suave</td><td>Ácido (pH 3)</td></tr>
+                    <tr><td>Gaseosa</td><td>Rosado</td><td>Ácido (pH 3-4)</td></tr>
+                    <tr><td>Orina Humana</td><td>Lila o Morado claro</td><td>Levemente Ácido (pH 6)</td></tr>
+                    <tr><td>Agua Pura</td><td>Morado (Sin cambio)</td><td>Neutro (pH 7)</td></tr>
+                    <tr><td>Bicarbonato</td><td>Azul Turquesa</td><td>Base Débil (pH 9)</td></tr>
+                    <tr><td>Pasta de Dientes</td><td>Azul</td><td>Base (pH 9-10)</td></tr>
+                    <tr><td>Leche de Magnesia</td><td>Verde</td><td>Base (pH 10)</td></tr>
+                    <tr><td>Agua de Ceniza</td><td>Verde Amarillento</td><td>Base Fuerte (pH 11-12)</td></tr>
+                    <tr><td>Límpido (Cloro)</td><td>Amarillo (y luego transparente)</td><td>Base Muy Fuerte (pH 13) - Oxida el pigmento</td></tr>
+                </tbody>
+            </table>
+            
+            
+
+[Image of pH scale chart with household items]
+
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #6 (Colorear/Dibujar):</strong> Dibuja 10 tubos de ensayo o vasos en tu cuaderno. Ponle el nombre de las 10 sustancias de la tabla y colorea el líquido según el resultado esperado.</p>
+                <button class="btn-check" onclick="markActivity(6)">¡Dibujo de escala listo!</button>
+            </div>
+
+            <p>Esta capacidad de medir el pH es vital en la agricultura. Un suelo muy ácido (pH bajo) "quema" las raíces y no deja que la planta coma nutrientes. Por eso los campesinos echan "Cal" (una base) a la tierra: para neutralizar la acidez y equilibrar el pH hacia el centro. Esto se llama <strong>reacción de neutralización</strong>.</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #7 (Contestar):</strong> Si un suelo está muy ácido (rojo con el indicador), ¿qué sustancia de la tabla anterior le agregarías para arreglarlo? Justifica tu respuesta.</p>
+                <button class="btn-check" onclick="markActivity(7)">¡Respuesta justificada!</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #8 (Mapa Conceptual):</strong> Elabora un mapa conceptual sobre "ESCALA DE pH". Ramas: Ácidos (0-6, donan H+), Neutros (7, equilibrio), Bases (8-14, aceptan H+).</p>
+                <button class="btn-check" onclick="markActivity(8)">¡Mapa conceptual terminado!</button>
+            </div>
+
+            <p>La biodiversidad química es asombrosa. Cada planta, cada fruta, cada fluido corporal tiene un pH específico para funcionar. Nuestra sangre debe estar entre 7.35 y 7.45; si cambia un poco, morimos. La vida es un equilibrio delicado de acidez y basicidad.</p>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #9 (Tabla Comparativa):</strong> Compara el pH del estómago humano (muy ácido) con el de la sangre (levemente básico). Investiga o deduce: ¿Por qué el estómago necesita ser tan ácido?</p>
+                <button class="btn-check" onclick="markActivity(9)">¡Comparación realizada!</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p><strong>Actividad #10 (Creatividad):</strong> Diseña una "Carta de Colores" en una hoja aparte que pueda servirle a un campesino para saber si su suelo está ácido o básico usando repollo. Hazla visual y fácil de entender.</p>
+                <button class="btn-check" onclick="markActivity(10)">¡Carta diseñada!</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📝 Taller Final de Evaluación</h3>
+            <p>Demuestra lo aprendido. Tus respuestas se validarán automáticamente.</p>
+
+            <h4>Selección Múltiple</h4>
+            <div id="final-mc-quiz"></div>
+
+            <h4>Preguntas Abiertas (Anti-Copy/Paste)</h4>
+            <p><em>Reglas: Mínimo 10 palabras, máximo 15 palabras. Debes escribir, no pegar.</em></p>
+            <div id="final-open-quiz"></div>
+
+            <button onclick="downloadReport()" style="margin-top:20px; width:100%; background: var(--secondary);">📥 Descargar Reporte de Notas (.txt)</button>
+        </div>
+
+    </main>
+
+    <script>
+        // --- ESTADO Y LÓGICA ---
+        const gameState = {
+            user: "Invitado",
+            progress: 0,
+            score: 0,
+            activities: [],
+            answers: {},
+            elements: ["H", "He", "Li", "Be", "B", "C"] // Elementos tabla periódica niveles 0-5
+        };
+
+        // --- INICIALIZACIÓN ---
+        window.onload = function() {
+            if(localStorage.getItem('ovaIndicadores_v1')) {
+                const saved = JSON.parse(localStorage.getItem('ovaIndicadores_v1'));
+                Object.assign(gameState, saved);
+                if(gameState.user !== "Invitado") {
+                    document.getElementById('login-overlay').style.display = 'none';
+                    updateUI();
+                }
+            }
+            renderFinalQuiz();
+        };
+
+        function login() {
+            const name = document.getElementById('student-name-input').value.trim();
+            if(name.length > 2) {
+                gameState.user = name;
+                saveState();
+                document.getElementById('login-overlay').style.display = 'none';
+                updateUI();
+            } else {
+                alert("Por favor escribe tu nombre completo.");
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('ovaIndicadores_v1', JSON.stringify(gameState));
+        }
+
+        function updateUI() {
+            document.getElementById('display-name').innerText = gameState.user;
+            document.getElementById('progress-bar').style.width = gameState.progress + "%";
+            
+            let lvl = Math.floor(gameState.score);
+            if(lvl > 5) lvl = 5;
+            document.getElementById('level-badge').innerText = `${gameState.elements[lvl]} (Nivel ${lvl})`;
+
+            // Restaurar botones de actividad
+            gameState.activities.forEach(id => {
+                const btn = document.querySelector(`button[onclick="markActivity(${id})"]`);
+                if(btn) disableBtn(btn);
+            });
+        }
+
+        function addPoints(points, progress) {
+            gameState.score = Math.min(5, gameState.score + points);
+            gameState.progress = Math.min(100, gameState.progress + progress);
+            saveState();
+            updateUI();
+        }
+
+        function disableBtn(btn) {
+            btn.classList.add('btn-disabled');
+            btn.innerText = "✅ Completado";
+            btn.disabled = true;
+        }
+
+        // --- LÓGICA PRE-SABERES ---
+        function checkPresaberes() {
+            const p1 = document.getElementById('pre1').value;
+            const p2 = document.getElementById('pre2').value;
+            const p3 = document.getElementById('pre3').value;
+            const fb = document.getElementById('pre-feedback');
+
+            if(p1 === '0' || p2 === '0' || p3 === '0') {
+                alert("Responde todas las preguntas.");
+                return;
+            }
+
+            let hits = 0;
+            if(p1 === 'b') hits++;
+            if(p2 === 'b') hits++;
+            if(p3 === 'b') hits++;
+
+            fb.style.display = 'block';
+            if(hits === 3) {
+                fb.className = "feedback correct";
+                fb.innerHTML = "¡Excelente! Tienes buenas bases sobre ácidos, mezclas y naturaleza.";
+                addPoints(0.5, 5);
+            } else {
+                fb.className = "feedback incorrect";
+                fb.innerHTML = `Acertaste ${hits}/3. Recuerda: Limón=Agrio, Agua+Aceite=Heterogénea, Colores=Función biológica.`;
+                addPoints(0.2, 5);
+            }
+            gameState.answers.presaberes = hits;
+            saveState();
+        }
+
+        // --- LÓGICA ACTIVIDADES CUADERNO ---
+        function markActivity(id) {
+            if(!gameState.activities.includes(id)) {
+                gameState.activities.push(id);
+                addPoints(0.35, 6); // 10 actividades * 0.35 = 3.5 puntos aprox
+                const btn = document.querySelector(`button[onclick="markActivity(${id})"]`);
+                disableBtn(btn);
+            }
+        }
+
+        // --- LÓGICA ICFES ---
+        function checkICFES() {
+            const opts = document.getElementsByName('icfes');
+            let val = null;
+            for(let op of opts) if(op.checked) val = op.value;
+
+            if(!val) { alert("Selecciona una opción"); return; }
+
+            const fb = document.getElementById('icfes-feedback');
+            fb.style.display = 'block';
+
+            if(val === 'C') {
+                fb.className = "feedback correct";
+                fb.innerHTML = "<strong>¡Correcto!</strong> En un experimento, la Variable Independiente es la que el investigador cambia a propósito (en este caso, echar vinagre o cal para cambiar el pH) para ver qué pasa.";
+                addPoints(1.0, 10);
+            } else {
+                fb.className = "feedback incorrect";
+                let msg = "";
+                if(val === 'A') msg = "El color final es el resultado (Variable Dependiente), no la causa.";
+                if(val === 'B') msg = "El agua es una variable controlada (debe ser igual para todos).";
+                if(val === 'D') msg = "El tamaño de la maceta no debe cambiar.";
+                fb.innerHTML = `<strong>Incorrecto.</strong> ${msg} La respuesta correcta es la C (pH).`;
+                addPoints(0.1, 10);
+            }
+            
+            for(let op of opts) op.disabled = true;
+            gameState.answers.icfes = val;
+            saveState();
+        }
+
+        // --- GENERACIÓN TALLER FINAL ---
+        const mcQuestions = [
+            { q: "¿Qué es una antocianina?", ops: ["Un tipo de raíz", "Un pigmento natural indicador", "Un abono químico", "Un tipo de suelo"], c: 1 },
+            { q: "¿Qué pH tiene una sustancia neutra?", ops: ["0", "14", "7", "10"], c: 2 },
+            { q: "¿De qué color se pone el repollo con ácido (limón)?", ops: ["Verde", "Azul", "Rojo", "Amarillo"], c: 2 },
+            { q: "¿Qué sustancia usarías para neutralizar un ácido?", ops: ["Otro ácido", "Una base (como bicarbonato)", "Agua sola", "Aceite"], c: 1 },
+            { q: "¿Qué rango de pH corresponde a las BASES?", ops: ["0 a 6", "Exactamente 7", "8 a 14", "1 a 14"], c: 2 }
+        ];
+
+        const openQuestions = [
+            "Define con tus palabras qué es el pH.",
+            "¿Por qué cambian de color las antocianinas?",
+            "Nombra dos sustancias ácidas que tengas en casa.",
+            "Explica por qué es importante la biodiversidad química.",
+            "¿Qué aprendiste sobre la química del repollo morado?"
+        ];
+
+        function renderFinalQuiz() {
+            // MC
+            let htmlMC = "";
+            mcQuestions.forEach((item, idx) => {
+                htmlMC += `<div style="margin-bottom:15px"><p><strong>${idx+1}. ${item.q}</strong></p>`;
+                item.ops.forEach((op, oIdx) => {
+                    htmlMC += `<label><input type="radio" name="mc_${idx}" value="${oIdx}"> ${op}</label>`;
+                });
+                htmlMC += `</div>`;
+            });
+            document.getElementById('final-mc-quiz').innerHTML = htmlMC;
+
+            // Open
+            let htmlOpen = "";
+            openQuestions.forEach((q, idx) => {
+                htmlOpen += `<div style="margin-bottom:15px">
+                    <p><strong>${idx+1}. ${q}</strong></p>
+                    <textarea id="open_${idx}" rows="2" placeholder="Escribe entre 10 y 15 palabras..." onpaste="return false"></textarea>
+                    <button class="btn-check" id="btn_open_${idx}" onclick="verifyOpen(${idx})">Validar Respuesta</button>
+                    <span id="msg_open_${idx}" style="margin-left:10px; font-weight:bold"></span>
+                </div>`;
+            });
+            document.getElementById('final-open-quiz').innerHTML = htmlOpen;
+        }
+
+        function verifyOpen(idx) {
+            const txt = document.getElementById(`open_${idx}`).value.trim();
+            const msg = document.getElementById(`msg_open_${idx}`);
+            const words = txt.split(/\s+/).filter(w => w.length > 0).length;
+
+            if(words < 10) {
+                msg.style.color = "#C0392B";
+                msg.innerText = `Muy corto (${words} palabras). Mínimo 10.`;
+            } else if (words > 15) {
+                msg.style.color = "#C0392B";
+                msg.innerText = `Muy largo (${words} palabras). Máximo 15.`;
+            } else {
+                msg.style.color = "#1E8449";
+                msg.innerText = "¡Válido! Respuesta guardada.";
+                document.getElementById(`open_${idx}`).disabled = true;
+                document.getElementById(`btn_open_${idx}`).disabled = true;
+                gameState.answers[`open_${idx}`] = txt;
+                addPoints(0.1, 5); // Puntos extra
+            }
+        }
+
+        function downloadReport() {
+            // Recopilar MC
+            let mcScore = 0;
+            let mcLog = "";
+            mcQuestions.forEach((item, idx) => {
+                const radios = document.getElementsByName(`mc_${idx}`);
+                let userVal = "No respondió";
+                for(let r of radios) {
+                    if(r.checked) {
+                        userVal = item.ops[r.value];
+                        if(parseInt(r.value) === item.c) mcScore++;
+                    }
+                }
+                mcLog += `P${idx+1}: ${userVal}\n`;
+            });
+
+            const content = `REPORTE DE LABORATORIO VIRTUAL: INDICADORES
+Estudiante: ${gameState.user}
+Fecha: ${new Date().toLocaleString()}
+Nivel Alcanzado: ${document.getElementById('level-badge').innerText}
+Progreso General: ${gameState.progress}%
+Puntaje: ${gameState.score.toFixed(2)}/5.0
+------------------------------------------------
+ACTIVIDADES EN CUADERNO: ${gameState.activities.length}/10 Realizadas
+------------------------------------------------
+COMPETENCIA INDAGAR (ICFES):
+Respuesta: ${gameState.answers.icfes || 'Pendiente'}
+------------------------------------------------
+TALLER FINAL (Selección Múltiple):
+Aciertos: ${mcScore}/5
+Detalle:
+${mcLog}
+------------------------------------------------
+RESPUESTAS ABIERTAS:
+1. ${gameState.answers.open_0 || '-'}
+2. ${gameState.answers.open_1 || '-'}
+3. ${gameState.answers.open_2 || '-'}
+4. ${gameState.answers.open_3 || '-'}
+5. ${gameState.answers.open_4 || '-'}
+------------------------------------------------
+Fin del reporte.`;
+
+            const blob = new Blob([content], { type: "text/plain" });
+            const anchor = document.createElement("a");
+            anchor.download = `Reporte_Quimica_${gameState.user.replace(/\s+/g, '_')}.txt`;
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.click();
+        }
+
+    </script>
+</body>
+</html>

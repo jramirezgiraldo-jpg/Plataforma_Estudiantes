@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: La Electronegatividad y la Finca Química</title>
+    <style>
+        :root {
+            --primary: #4A235A; /* Morado intenso (Sabiduría/Química) */
+            --secondary: #8E44AD; /* Lila */
+            --accent: #F4D03F; /* Amarillo (Energía/Enlace) */
+            --success: #27AE60;
+            --error: #C0392B;
+            --bg: #F5EEF8;
+            --text: #212F3C;
+            --card: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding-bottom: 80px;
+            line-height: 1.6;
+        }
+
+        /* --- UI: Barra Superior --- */
+        #top-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none; /* Se activa tras login */
+            padding: 10px 0;
+        }
+
+        .bar-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .user-profile {
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Gamificación: Tabla Periódica */
+        .gamification-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-grow: 1;
+            margin-left: 20px;
+        }
+
+        .progress-track {
+            flex-grow: 1;
+            height: 10px;
+            background: #D7BDE2;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            transition: width 0.5s ease;
+        }
+
+        .element-badge {
+            width: 45px;
+            height: 45px;
+            border: 2px solid var(--primary);
+            background: var(--card);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+            font-weight: bold;
+            box-shadow: 2px 2px 0px var(--primary);
+            transition: transform 0.3s;
+        }
+        
+        /* --- Login Overlay --- */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .login-box input {
+            padding: 12px;
+            border-radius: 5px;
+            border: none;
+            width: 250px;
+            margin-bottom: 10px;
+        }
+
+        /* --- Contenedor Principal --- */
+        .container {
+            max-width: 800px;
+            margin: 80px auto 20px auto;
+            padding: 0 20px;
+            display: none;
+        }
+
+        section {
+            background: var(--card);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--secondary);
+        }
+
+        h1, h2, h3 { color: var(--primary); }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        button:hover { background: var(--secondary); }
+
+        /* --- Estilos de Actividades --- */
+        .notebook-activity {
+            background: #FEF9E7;
+            border: 1px dashed var(--accent);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            font-weight: 500;
+        }
+        .correct { background-color: #D5F5E3; color: #145A32; }
+        .incorrect { background-color: #FADBD8; color: #7B241C; }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 5px;
+            font-family: inherit;
+        }
+
+        /* --- Tablas y SVG --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th { background-color: var(--secondary); color: white; }
+
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .mcq-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 5px;
+            background: #f9f9f9;
+            color: var(--text);
+            border: 1px solid #ddd;
+        }
+        .mcq-option:hover { background: #e0e0e0; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <h1>⚗️ La Finca Química</h1>
+        <p>Bienvenido al laboratorio de grado 8. Ingresa tus datos.</p>
+        <div class="login-box">
+            <input type="text" id="username" placeholder="Nombres y Apellidos">
+            <br>
+            <button onclick="login()">Iniciar Exploración</button>
+        </div>
+    </div>
+
+    <div id="top-bar">
+        <div class="bar-content">
+            <div class="user-profile">
+                <span id="display-name">Estudiante</span>
+            </div>
+            <div class="gamification-area">
+                <span>Nivel:</span>
+                <div class="element-badge" id="badge">
+                    <span style="font-size: 0.7em;" id="badge-num">1</span>
+                    <span style="font-size: 1.2em; color: var(--primary);" id="badge-sym">H</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="main-content">
+
+        <section id="inicio">
+            <h2>🎯 Objetivo de Aprendizaje</h2>
+            <p>Predecir el tipo de enlace químico usando la tabla periódica, calcular diferencias de electronegatividad para clasificar sustancias de uso cotidiano (como las de una finca) y reflexionar sobre cómo las diferencias individuales fortalecen al grupo.</p>
+
+            <h3>🧠 Pre-saberes: ¿Qué recuerdas?</h3>
+            
+            <div class="notebook-activity" style="background: white; border: 1px solid #ddd;">
+                <p>1. ¿Qué partícula del átomo tiene carga negativa y gira alrededor del núcleo?</p>
+                <button class="mcq-option" onclick="checkMCQ('pre1', 'a', false)">Protón</button>
+                <button class="mcq-option" onclick="checkMCQ('pre1', 'b', true)">Electrón</button>
+                <button class="mcq-option" onclick="checkMCQ('pre1', 'c', false)">Neutrón</button>
+                <div id="fb-pre1" class="feedback"></div>
+            </div>
+
+            <div class="notebook-activity" style="background: white; border: 1px solid #ddd;">
+                <p>2. En una finca, usamos sal para el ganado. La sal común es NaCl. ¿Qué elementos la forman?</p>
+                <button class="mcq-option" onclick="checkMCQ('pre2', 'a', false)">Nitrógeno y Cloro</button>
+                <button class="mcq-option" onclick="checkMCQ('pre2', 'b', false)">Sodio y Carbono</button>
+                <button class="mcq-option" onclick="checkMCQ('pre2', 'c', true)">Sodio y Cloro</button>
+                <div id="fb-pre2" class="feedback"></div>
+            </div>
+
+            <div class="notebook-activity" style="background: white; border: 1px solid #ddd;">
+                <p>3. ¿Qué ocurre cuando dos imanes se acercan por polos opuestos?</p>
+                <button class="mcq-option" onclick="checkMCQ('pre3', 'a', true)">Se atraen con fuerza</button>
+                <button class="mcq-option" onclick="checkMCQ('pre3', 'b', false)">Se repelen</button>
+                <button class="mcq-option" onclick="checkMCQ('pre3', 'c', false)">No pasa nada</button>
+                <div id="fb-pre3" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="inductivo">
+            <h2>🐄 Parte 1: El "Juego de la Cuerda" Atómico</h2>
+            
+            <p>Imagina que estamos en una finca. Tenemos dos sustancias vitales: la <strong>Sal (NaCl)</strong> para el ganado y el <strong>Agua (H<sub>2</sub>O)</strong> para los cultivos. Aunque ambas son sustancias, sus átomos se comportan de forma muy diferente, como personas con distintas personalidades.</p>
+            
+            <p><strong>La Personalidad de los Átomos:</strong><br>
+            Algunos átomos son muy fuertes y "codiciosos" con los electrones, mientras que otros son más débiles y "generosos". Esta capacidad de atraer electrones hacia sí mismos en un enlace químico se llama <strong>ELECTRONEGATIVIDAD (E.N.)</strong>.</p>
+            
+            <p>Es como un juego de tirar la cuerda. Si uno es mucho más fuerte que el otro, le quita la cuerda (el electrón). Si tienen fuerzas parecidas, comparten la cuerda.</p>
+
+            <div class="svg-container">
+                <svg width="500" height="200" viewBox="0 0 500 200">
+                    <line x1="50" y1="180" x2="450" y2="180" stroke="#888" stroke-width="2"/>
+                    
+                    <circle cx="150" cy="130" r="30" fill="#AED6F1" stroke="#2E86C1" stroke-width="3"/>
+                    <text x="150" y="135" text-anchor="middle" font-weight="bold" fill="#2E86C1">Na</text>
+                    <text x="150" y="90" text-anchor="middle" font-size="12">Débil (E.N. 0.9)</text>
+                    
+                    <circle cx="350" cy="130" r="40" fill="#F5B7B1" stroke="#C0392B" stroke-width="3"/>
+                    <text x="350" y="135" text-anchor="middle" font-weight="bold" fill="#C0392B">Cl</text>
+                    <text x="350" y="80" text-anchor="middle" font-size="12">Fuerte (E.N. 3.0)</text>
+
+                    <line x1="180" y1="130" x2="310" y2="130" stroke="#333" stroke-width="4"/>
+                    <circle cx="280" cy="130" r="8" fill="#F4D03F" stroke="#333"/> <text x="280" y="155" text-anchor="middle" font-size="10">e-</text>
+                </svg>
+            </div>
+
+            <p><strong>Reflexión Social:</strong> Así como el Cloro y el Sodio son muy diferentes (uno es un gas tóxico verde y el otro un metal explosivo), cuando se juntan y respetan su naturaleza (uno cede, el otro recibe), crean algo nuevo y esencial para la vida: la Sal. <strong>Las diferencias individuales son necesarias para crear enlaces fuertes.</strong></p>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 1: Definición Propia</h4>
+                <p>Escribe en tu cuaderno qué entiendes por Electronegatividad usando tus propias palabras (imagina que se lo explicas a un niño). Escribe "Listo" aquí.</p>
+                <input type="text" id="act1">
+                <button onclick="verifyNotebook('act1')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 2: Dibujo</h4>
+                <p>Dibuja en tu cuaderno a dos personas jugando a tirar la cuerda. Una muy grande y una pequeña. Ponles nombres de elementos químicos. Escribe "Dibujado".</p>
+                <input type="text" id="act2">
+                <button onclick="verifyNotebook('act2')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 3: Tabla Comparativa</h4>
+                <p>Crea una tabla con dos columnas: "Átomo Codicioso (Alta E.N.)" y "Átomo Generoso (Baja E.N.)". Clasifica: Flúor, Oxígeno, Sodio, Francio. Escribe "Tabla hecha".</p>
+                <input type="text" id="act3">
+                <button onclick="verifyNotebook('act3')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 4: Mapa Mental</h4>
+                <p>Haz un mapa mental pequeño con el centro "Linus Pauling" (el científico que creó la escala). Ramas: Escala 0 a 4, Predicción de Enlaces. Escribe "Mapa listo".</p>
+                <input type="text" id="act4">
+                <button onclick="verifyNotebook('act4')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 5: Reflexión</h4>
+                <p>¿Por qué crees que es importante que existan personas con diferentes "potenciales" o habilidades en un grupo de trabajo? Responde en tu cuaderno.</p>
+                <input type="text" id="act5" placeholder="Escribe tu reflexión breve aquí...">
+                <button onclick="verifyNotebook('act5')">Verificar</button>
+            </div>
+        </section>
+
+        <section id="icfes">
+            <h2>🕵️ Competencia: Indagar</h2>
+            <div style="background: #EAF2F8; padding: 20px; border-radius: 8px;">
+                <h3>El Misterio de los Bombillos</h3>
+                <p>Un estudiante de grado 8 realiza un experimento en la finca. Prepara dos vasos:</p>
+                <ul>
+                    <li><strong>Vaso A:</strong> Agua con mucha Sal (NaCl).</li>
+                    <li><strong>Vaso B:</strong> Agua con mucha Azúcar (C<sub>12</sub>H<sub>22</sub>O<sub>11</sub>).</li>
+                </ul>
+                <p>Introduce un circuito eléctrico en ambos. Observa lo siguiente:</p>
+
+                <div class="svg-container">
+                    <svg width="400" height="180" viewBox="0 0 400 180">
+                        <path d="M 50,80 L 50,150 Q 100,170 150,150 L 150,80" fill="#D6EAF8" stroke="#2E86C1" stroke-width="2"/>
+                        <text x="100" y="170" text-anchor="middle">Vaso A (Sal)</text>
+                        <line x1="80" y1="40" x2="80" y2="120" stroke="#333" stroke-width="3"/>
+                        <line x1="120" y1="40" x2="120" y2="120" stroke="#333" stroke-width="3"/>
+                        <circle cx="100" cy="30" r="15" fill="#F4D03F" stroke="#F1C40F"/>
+                        <line x1="80" y1="10" x2="70" y2="0" stroke="#F4D03F" stroke-width="2"/>
+                        <line x1="120" y1="10" x2="130" y2="0" stroke="#F4D03F" stroke-width="2"/>
+                        <line x1="100" y1="10" x2="100" y2="-5" stroke="#F4D03F" stroke-width="2"/>
+                        
+                        <path d="M 250,80 L 250,150 Q 300,170 350,150 L 350,80" fill="#D6EAF8" stroke="#2E86C1" stroke-width="2"/>
+                        <text x="300" y="170" text-anchor="middle">Vaso B (Azúcar)</text>
+                        <line x1="280" y1="40" x2="280" y2="120" stroke="#333" stroke-width="3"/>
+                        <line x1="320" y1="40" x2="320" y2="120" stroke="#333" stroke-width="3"/>
+                        <circle cx="300" cy="30" r="15" fill="#DDD" stroke="#999"/>
+                    </svg>
+                </div>
+
+                <p><strong>Pregunta:</strong> Basándote en la diferencia de electronegatividad, ¿cuál es la explicación más probable de por qué el Vaso A enciende el bombillo y el Vaso B no?</p>
+
+                <button class="mcq-option" onclick="checkICFES('a')">A. La sal es más dulce que el azúcar, lo que genera energía eléctrica.</button>
+                <button class="mcq-option" onclick="checkICFES('b')">B. El NaCl tiene una gran diferencia de electronegatividad (Enlace Iónico), formando iones que conducen electricidad. El azúcar tiene enlaces covalentes que no forman iones.</button>
+                <button class="mcq-option" onclick="checkICFES('c')">C. El agua del Vaso B estaba más fría, impidiendo el paso de corriente.</button>
+                <button class="mcq-option" onclick="checkICFES('d')">D. El azúcar tiene átomos de Carbono que bloquean físicamente el paso de los electrones.</button>
+
+                <div id="fb-icfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <section id="deductivo">
+            <h2>📐 Parte 2: El Desafío Matemático</h2>
+            
+            <p>Ya sabemos qué es la electronegatividad. Ahora vamos a usar las matemáticas para <strong>predecir el futuro</strong> de una sustancia. Linus Pauling nos dio una regla de oro basada en la resta.</p>
+            
+            <p>La fórmula es sencilla: <strong>Diferencia = Mayor - Menor</strong></p>
+            
+            <div class="svg-container">
+                <svg width="500" height="150" viewBox="0 0 500 150">
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#F9E79F;stop-opacity:1" /> <stop offset="23%" style="stop-color:#F9E79F;stop-opacity:1" />
+                            <stop offset="24%" style="stop-color:#AED6F1;stop-opacity:1" /> <stop offset="45%" style="stop-color:#AED6F1;stop-opacity:1" />
+                            <stop offset="46%" style="stop-color:#F5B7B1;stop-opacity:1" /> <stop offset="100%" style="stop-color:#F5B7B1;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="50" y="50" width="400" height="30" fill="url(#grad1)" stroke="#333"/>
+                    
+                    <line x1="140" y1="40" x2="140" y2="90" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                    <text x="140" y="35" text-anchor="middle" font-weight="bold">0.4</text>
+                    
+                    <line x1="230" y1="40" x2="230" y2="90" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                    <text x="230" y="35" text-anchor="middle" font-weight="bold">1.7</text>
+                    
+                    <text x="95" y="105" text-anchor="middle" font-size="12">Covalente</text>
+                    <text x="95" y="120" text-anchor="middle" font-size="12">No Polar</text>
+                    
+                    <text x="185" y="105" text-anchor="middle" font-size="12">Covalente</text>
+                    <text x="185" y="120" text-anchor="middle" font-size="12">Polar</text>
+                    
+                    <text x="330" y="110" text-anchor="middle" font-size="12" font-weight="bold">ENLACE IÓNICO (Robo de e-)</text>
+                </svg>
+            </div>
+
+            <p><strong>Las Reglas del Juego:</strong></p>
+            <ul>
+                <li>Si la resta es <strong>menor a 0.4</strong>: Comparten igual (Covalente No Polar).</li>
+                <li>Si la resta es <strong>entre 0.4 y 1.7</strong>: Comparten desigual (Covalente Polar).</li>
+                <li>Si la resta es <strong>mayor a 1.7</strong>: Uno le roba al otro (Iónico).</li>
+            </ul>
+
+            <p><strong>Datos de la Tabla (Valores de Pauling):</strong><br>
+            F=4.0 | O=3.5 | Cl=3.0 | N=3.0 | C=2.5 | H=2.1 | Na=0.9 | K=0.8</p>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 6: Calculando la Sal</h4>
+                <p>Calcula la diferencia para NaCl. Cloro(3.0) - Sodio(0.9). ¿Cuánto da? Escribe el número.</p>
+                <input type="text" id="act6">
+                <button onclick="verifyNotebook('act6')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 7: El Aire que Respiramos</h4>
+                <p>El Oxígeno que respiramos es O<sub>2</sub> (O - O). Resta: 3.5 - 3.5. ¿Qué tipo de enlace es? (Ver gráfico).</p>
+                <input type="text" id="act7">
+                <button onclick="verifyNotebook('act7')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 8: Dibujar la Escala</h4>
+                <p>Dibuja la barra de colores (la escala de arriba) en tu cuaderno con los números 0.4 y 1.7. Escribe "Escala lista".</p>
+                <input type="text" id="act8">
+                <button onclick="verifyNotebook('act8')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 9: Clasificando el Agua</h4>
+                <p>Agua (H-O). Oxígeno(3.5) - Hidrógeno(2.1) = 1.4. Mira la escala. ¿Es Iónico o Covalente Polar? Escribe la respuesta.</p>
+                <input type="text" id="act9">
+                <button onclick="verifyNotebook('act9')">Verificar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <h4>📓 Actividad 10: Importancia en el Suelo</h4>
+                <p>Los fertilizantes son sales iónicas (como KCl) que se disuelven en el suelo húmedo para nutrir plantas. ¿Por qué deben ser solubles (iónicos)? Responde brevemente.</p>
+                <input type="text" id="act10">
+                <button onclick="verifyNotebook('act10')">Verificar</button>
+            </div>
+        </section>
+
+        <section id="final">
+            <h2>🏆 Taller Final: Maestro de los Enlaces</h2>
+            
+            <h3>Parte A: Selección Múltiple</h3>
+            
+            <div class="notebook-activity">
+                <p>1. ¿Cuál es el elemento más electronegativo de la tabla periódica?</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'a', false)">Francio (0.7)</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'b', true)">Flúor (4.0)</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'c', false)">Hidrógeno (2.1)</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f1', 'd', false)">Oxígeno (3.5)</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p>2. Si la diferencia de electronegatividad es 2.1, el enlace es:</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'a', false)">Covalente Polar</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'b', false)">Metálico</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'c', true)">Iónico</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f2', 'd', false)">Covalente No Polar</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p>3. En un enlace Covalente No Polar, los electrones:</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'a', false)">Se transfieren totalmente</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'b', true)">Se comparten por igual</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'c', false)">Desaparecen</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f3', 'd', false)">Giran solo en el núcleo</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p>4. ¿Qué número separa a los enlaces Covalentes de los Iónicos en la escala de Pauling?</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'a', false)">0.4</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'b', false)">1.0</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'c', false)">3.0</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f4', 'd', true)">1.7</button>
+            </div>
+
+            <div class="notebook-activity">
+                <p>5. ¿Por qué el Cloro le quita el electrón al Sodio?</p>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'a', false)">Porque el Sodio es más grande.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'b', true)">Porque el Cloro es mucho más electronegativo.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'c', false)">Porque son del mismo grupo.</button>
+                <button class="mcq-option" onclick="checkFinalMCQ('f5', 'd', false)">Porque el Sodio es negativo.</button>
+            </div>
+
+            <h3>Parte B: Preguntas Abiertas (Responder entre 10 y 15 palabras)</h3>
+            <p><em>El sistema validará que no uses IA ni copy-paste verificando la extensión exacta.</em></p>
+
+            <div class="notebook-activity">
+                <p>6. Define qué es un Ion en tus propias palabras.</p>
+                <input type="text" id="open1">
+                <button onclick="validateOpen('open1')">Validar Extensión</button>
+                <div id="fb-open1" class="feedback"></div>
+            </div>
+
+            <div class="notebook-activity">
+                <p>7. Explica la diferencia principal entre enlace Covalente Polar y No Polar.</p>
+                <input type="text" id="open2">
+                <button onclick="validateOpen('open2')">Validar Extensión</button>
+                <div id="fb-open2" class="feedback"></div>
+            </div>
+
+            <div class="notebook-activity">
+                <p>8. ¿Para qué sirve el número 1.7 en la química?</p>
+                <input type="text" id="open3">
+                <button onclick="validateOpen('open3')">Validar Extensión</button>
+                <div id="fb-open3" class="feedback"></div>
+            </div>
+
+            <div class="notebook-activity">
+                <p>9. Usa la analogía de la cuerda para explicar el enlace Iónico.</p>
+                <input type="text" id="open4">
+                <button onclick="validateOpen('open4')">Validar Extensión</button>
+                <div id="fb-open4" class="feedback"></div>
+            </div>
+
+            <div class="notebook-activity">
+                <p>10. ¿Cómo relacionas la electronegatividad con el respeto a las diferencias?</p>
+                <input type="text" id="open5">
+                <button onclick="validateOpen('open5')">Validar Extensión</button>
+                <div id="fb-open5" class="feedback"></div>
+            </div>
+        </section>
+
+        <section style="text-align: center;">
+            <h2>🎉 ¡Misión Cumplida!</h2>
+            <p>Has completado tu recorrido por la química de los enlaces.</p>
+            <button onclick="downloadResults()" style="background-color: var(--success); padding: 15px 30px; font-size: 1.2rem;">📥 Descargar Resultados (.txt)</button>
+        </section>
+    </div>
+
+    <script>
+        // --- LÓGICA DEL SISTEMA ---
+        
+        const gameState = {
+            user: "",
+            score: 0,
+            answers: {},
+            completedCount: 0,
+            totalActivities: 21 // 3 Pre + 10 Notebook + 1 Icfes + 5 MCQ + 5 Open
+        };
+
+        const levels = [
+            { limit: 20, sym: "H", num: 1 },
+            { limit: 40, sym: "He", num: 2 },
+            { limit: 60, sym: "Li", num: 3 },
+            { limit: 80, sym: "Be", num: 4 },
+            { limit: 100, sym: "B", num: 5 }
+        ];
+
+        // 1. INICIALIZACIÓN Y PERSISTENCIA
+        window.onload = function() {
+            const saved = localStorage.getItem('OVA_Electronegatividad_G8');
+            if(saved) {
+                const parsed = JSON.parse(saved);
+                gameState.user = parsed.user;
+                gameState.score = parsed.score;
+                gameState.answers = parsed.answers;
+                gameState.completedCount = Object.keys(gameState.answers).length;
+                
+                if(gameState.user) {
+                    showApp();
+                }
+            }
+        };
+
+        function login() {
+            const name = document.getElementById('username').value.trim();
+            if(name.length > 3) {
+                gameState.user = name;
+                saveGame();
+                showApp();
+            } else {
+                alert("Por favor ingresa un nombre válido.");
+            }
+        }
+
+        function showApp() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('top-bar').style.display = 'block';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('display-name').textContent = gameState.user;
+            updateGamification();
+        }
+
+        function saveGame() {
+            localStorage.setItem('OVA_Electronegatividad_G8', JSON.stringify(gameState));
+            updateGamification();
+        }
+
+        function updateGamification() {
+            let percent = (gameState.completedCount / gameState.totalActivities) * 100;
+            if(percent > 100) percent = 100;
+
+            document.getElementById('progress-bar').style.width = percent + "%";
+
+            // Determinar Elemento (H -> B)
+            let currentLevel = levels[0];
+            for(let l of levels) {
+                if(percent >= l.limit - 20) currentLevel = l; // Aproximación
+            }
+            // Ajuste fino para asegurar el 100% es B
+            if(percent >= 80) currentLevel = levels[4];
+            else if(percent >= 60) currentLevel = levels[3];
+            else if(percent >= 40) currentLevel = levels[2];
+            else if(percent >= 20) currentLevel = levels[1];
+            else currentLevel = levels[0];
+
+            document.getElementById('badge-sym').textContent = currentLevel.sym;
+            document.getElementById('badge-num').textContent = currentLevel.num;
+        }
+
+        // 2. LÓGICA DE PREGUNTAS
+
+        // Selección Múltiple (Pre-saberes)
+        window.checkMCQ = function(id, option, isCorrect) {
+            if(gameState.answers[id]) return;
+
+            const fb = document.getElementById('fb-' + id);
+            fb.style.display = 'block';
+
+            if(isCorrect) {
+                fb.className = 'feedback correct';
+                fb.innerHTML = "<strong>¡Correcto!</strong> Muy bien recordado.";
+                gameState.score += 2;
+            } else {
+                fb.className = 'feedback incorrect';
+                fb.innerHTML = "<strong>Incorrecto.</strong> Revisa el contenido más adelante.";
+            }
+
+            gameState.answers[id] = option + (isCorrect ? " (Ok)" : " (Err)");
+            gameState.completedCount++;
+            saveGame();
+        }
+
+        // Actividades de Cuaderno
+        window.verifyNotebook = function(id) {
+            const val = document.getElementById(id).value.trim();
+            if(val.length < 2) {
+                alert("Escribe algo válido antes de verificar.");
+                return;
+            }
+            if(!gameState.answers[id]) {
+                gameState.answers[id] = val;
+                gameState.completedCount++;
+                gameState.score += 1;
+                alert("¡Registrado! Asegúrate de tenerlo en tu cuaderno físico.");
+                saveGame();
+            } else {
+                alert("Ya completaste esta actividad.");
+            }
+        }
+
+        // ICFES Competencia Indagar
+        window.checkICFES = function(option) {
+            if(gameState.answers['icfes']) return;
+
+            const fb = document.getElementById('fb-icfes');
+            fb.style.display = 'block';
+
+            if(option === 'b') {
+                fb.className = 'feedback correct';
+                fb.innerHTML = "<strong>¡Excelente!</strong> Relacionaste correctamente la electronegatividad con la formación de iones. La sal (iónica) se separa en partículas cargadas (+ y -) que cierran el circuito eléctrico. El azúcar (covalente) no libera cargas.";
+                gameState.score += 5;
+            } else {
+                fb.className = 'feedback incorrect';
+                let msg = "";
+                if(option === 'a') msg = "El sabor dulce no genera electricidad.";
+                if(option === 'c') msg = "La temperatura no es la variable del experimento.";
+                if(option === 'd') msg = "El carbono no bloquea electrones; es el tipo de enlace el que no permite que fluyan cargas.";
+                fb.innerHTML = "<strong>Incorrecto.</strong> " + msg + " Recuerda: Para que haya electricidad en el agua, necesitamos cargas libres (iones).";
+            }
+            gameState.answers['icfes'] = option;
+            gameState.completedCount++;
+            saveGame();
+        }
+
+        // Final MCQ
+        window.checkFinalMCQ = function(id, option, isCorrect) {
+            if(gameState.answers[id]) return;
+            
+            const btn = event.target;
+            if(isCorrect) {
+                btn.style.background = "#27AE60";
+                btn.style.color = "white";
+                gameState.score += 3;
+            } else {
+                btn.style.background = "#C0392B";
+                btn.style.color = "white";
+            }
+            gameState.answers[id] = option;
+            gameState.completedCount++;
+            saveGame();
+        }
+
+        // Validador de Texto (10-15 palabras)
+        window.validateOpen = function(id) {
+            const txt = document.getElementById(id).value.trim();
+            // Contar palabras (separadas por espacios)
+            const wordCount = txt.split(/\s+/).filter(w => w.length > 0).length;
+            const fb = document.getElementById('fb-' + id);
+            fb.style.display = 'block';
+
+            if(wordCount >= 10 && wordCount <= 15) {
+                fb.className = 'feedback correct';
+                fb.innerHTML = `<strong>Perfecto.</strong> ${wordCount} palabras. Respuesta guardada.`;
+                if(!gameState.answers[id]) {
+                    gameState.answers[id] = txt;
+                    gameState.completedCount++;
+                    gameState.score += 3;
+                    saveGame();
+                }
+            } else {
+                fb.className = 'feedback incorrect';
+                fb.innerHTML = `Tienes <strong>${wordCount}</strong> palabras. Debes usar entre 10 y 15. Ajusta tu respuesta.`;
+            }
+        }
+
+        // Descargar Resultados
+        window.downloadResults = function() {
+            let content = `REPORTE DE OVA: ELECTRONEGATIVIDAD\n`;
+            content += `Estudiante: ${gameState.user}\n`;
+            content += `Fecha: ${new Date().toLocaleString()}\n`;
+            content += `Puntaje: ${gameState.score}\n`;
+            content += `-----------------------------------\nRESPUESTAS:\n`;
+
+            for(let [key, val] of Object.entries(gameState.answers)) {
+                content += `[${key}]: ${val}\n`;
+            }
+
+            const blob = new Blob([content], {type: 'text/plain'});
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Resultados_${gameState.user.replace(/\s+/g, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+</html>

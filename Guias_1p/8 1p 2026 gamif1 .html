@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: La Magia de la Recombinación - Grado 8</title>
+    <style>
+        :root {
+            --primary: #4a148c; /* Morado: Magia/Transformación */
+            --secondary: #00695c; /* Verde: NPK/Naturaleza */
+            --accent: #ff6f00; /* Naranja: Energía/Valencia */
+            --light: #f3e5f5;
+            --white: #ffffff;
+            --gray: #b0bec5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--light);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Cabecera y Login */
+        header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary);
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+        }
+
+        h1 { color: var(--primary); margin: 0; }
+        h2 { color: var(--secondary); font-size: 1.4rem; margin-top: 10px; }
+        p.desc { font-style: italic; color: #666; }
+
+        .login-box {
+            background: #e1bee7;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+            border: 1px solid var(--primary);
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 200px;
+        }
+
+        /* Estilos de los Juegos */
+        .activity-section {
+            margin-bottom: 50px;
+        }
+
+        .game-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .hint { color: var(--secondary); font-weight: bold; font-size: 0.9em; }
+        .score-info { font-size: 0.8em; color: #777; }
+
+        /* Contenedores de fichas */
+        .drop-zone {
+            min-height: 50px;
+            background-color: #f5f5f5;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .drop-zone.filled {
+            border-color: var(--primary);
+            background-color: #f3e5f5;
+        }
+
+        /* Fichas Interactivas */
+        .tile {
+            background: var(--white);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            font-weight: bold;
+            box-shadow: 0 2px 0 var(--primary);
+            transition: all 0.2s;
+        }
+
+        .tile:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .tile.word-tile {
+            background: var(--secondary);
+            border-color: #004d40;
+            color: white;
+            box-shadow: 0 2px 0 #004d40;
+        }
+        
+        .tile.word-tile:hover {
+            background-color: #004d40;
+        }
+
+        /* Controles */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-check { background-color: var(--primary); color: white; }
+        .btn-check:hover { background-color: #38006b; }
+        .btn-check:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .btn-reset { background-color: var(--accent); color: white; }
+        .btn-reset:hover { background-color: #e65100; }
+
+        .feedback { font-weight: bold; margin-left: 10px; }
+        .success { color: #2e7d32; }
+        .error { color: #c62828; }
+
+        /* Panel Final */
+        #final-panel {
+            display: none;
+            text-align: center;
+            background: #fff8e1;
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid var(--accent);
+            margin-top: 30px;
+        }
+
+        .element-reward {
+            width: 120px;
+            height: 120px;
+            border: 4px solid #333;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            font-family: serif;
+            position: relative;
+        }
+        
+        .element-reward span.num { position: absolute; top: 5px; left: 5px; font-size: 0.8em; }
+        .element-reward span.sym { font-size: 3em; font-weight: bold; color: var(--primary); }
+        .element-reward span.name { font-size: 0.9em; }
+
+        .submit-all-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--secondary);
+            color: white;
+            font-size: 1.2rem;
+            margin-top: 40px;
+            border-radius: 8px;
+        }
+        .submit-all-btn:hover { background-color: #004d40; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🧪 La Magia de la Recombinación</h1>
+        <h2>Reordenamiento Atómico y Electrones de Valencia</h2>
+        <p class="desc">"Nada se pierde, todo se transforma. Descubre tu potencial para enlazar." - Grado 8</p>
+    </header>
+
+    <div class="login-box">
+        <div>
+            <label>Nombre:</label>
+            <input type="text" id="fname" placeholder="Ingresa tu nombre">
+        </div>
+        <div>
+            <label>Apellido:</label>
+            <input type="text" id="lname" placeholder="Ingresa tu apellido">
+        </div>
+    </div>
+
+    <div class="activity-section">
+        <h3 style="color: var(--primary);">I. Construyendo Conceptos (Ordenar Letras)</h3>
+        <p>Ordena las letras para descubrir palabras clave sobre cómo los átomos se reordenan y los fertilizantes NPK.</p>
+        <div id="letters-container"></div>
+    </div>
+
+    <div class="activity-section">
+        <h3 style="color: var(--secondary);">II. La Lógica del Enlace (Ordenar Frases)</h3>
+        <p>Ordena las palabras para formar oraciones coherentes sobre la reinvención química y el modelo de Bohr.</p>
+        <div id="sentences-container"></div>
+    </div>
+
+    <button class="submit-all-btn" onclick="calculateFinalGrade()">📊 FINALIZAR Y VER MI ELEMENTO</button>
+
+    <div id="final-panel">
+        <h2 id="user-display"></h2>
+        <h1>Nota: <span id="score-display">0.0</span> / 5.0</h1>
+        <p id="feedback-text"></p>
+        <div id="reward-display"></div>
+    </div>
+</div>
+
+<script>
+    /* --- CONFIGURACIÓN DE DATOS --- */
+    
+    // 10 Juegos de Letras (Recombinación, NPK, Valencia)
+    const letterGames = [
+        { id: 'L1', word: 'REACCION', hint: 'Transformación química donde se reordenan átomos.' },
+        { id: 'L2', word: 'VALENCIA', hint: 'Electrones de la última capa, listos para dar o compartir.' },
+        { id: 'L3', word: 'NITROGENO', hint: 'La "N" del fertilizante NPK, ayuda a crecer hojas.' },
+        { id: 'L4', word: 'FOSFORO', hint: 'La "P" del fertilizante NPK, vital para raíces y flores.' },
+        { id: 'L5', word: 'POTASIO', hint: 'La "K" del fertilizante NPK, da resistencia.' },
+        { id: 'L6', word: 'PRODUCTO', hint: 'El resultado final de una "reinvención" química.' },
+        { id: 'L7', word: 'REACTIVO', hint: 'Sustancias iniciales antes del cambio.' },
+        { id: 'L8', word: 'ENLACE', hint: 'La conexión fuerte entre dos átomos.' },
+        { id: 'L9', word: 'BOHR', hint: 'Científico que imaginó al átomo como un sistema solar.' },
+        { id: 'L10', word: 'MAGIA', hint: 'Metáfora de cómo surgen cosas nuevas de lo viejo.' }
+    ];
+
+    // 10 Juegos de Frases (Reinvención, Empatía Química)
+    const sentenceGames = [
+        { id: 'S1', text: 'LOS ATOMOS SE REORGANIZAN PARA CREAR ALGO NUEVO', hint: 'Ley de conservación.' },
+        { id: 'S2', text: 'LOS ELECTRONES DE VALENCIA DEFINEN TU POTENCIAL', hint: 'Lo que tienes para dar al otro.' },
+        { id: 'S3', text: 'LOS FERTILIZANTES NPK NUTREN EL SUELO', hint: 'Aplicación del modelo de Bohr.' },
+        { id: 'S4', text: 'ROMPER ENLACES ES NECESARIO PARA CRECER', hint: 'Analogía de vida y química.' },
+        { id: 'S5', text: 'EL CARBONO ES ESENCIAL PARA LA VIDA', hint: 'Elemento base.' },
+        { id: 'S6', text: 'COMPARTIR ELECTRONES NOS HACE MAS ESTABLES', hint: 'Trabajo en equipo molecular.' },
+        { id: 'S7', text: 'LA CAPA EXTERNA ES LA PUERTA AL MUNDO', hint: 'Donde ocurre la interacción.' },
+        { id: 'S8', text: 'LOS CAMBIOS QUIMICOS SON NUEVOS COMIENZOS', hint: 'Filosofía de la reacción.' },
+        { id: 'S9', text: 'CADA ELEMENTO TIENE UNA FAMILIA EN LA TABLA', hint: 'Pertenencia y grupo.' },
+        { id: 'S10', text: 'LA MATERIA NO SE CREA NI SE DESTRUYE', hint: 'Principio fundamental.' }
+    ];
+
+    // Estado Global
+    const MAX_ATTEMPTS = 3;
+    let gameState = {}; // Almacena intentos y puntajes por ID
+
+    /* --- INICIALIZACIÓN --- */
+    function init() {
+        const lContainer = document.getElementById('letters-container');
+        const sContainer = document.getElementById('sentences-container');
+
+        // Renderizar Juegos de Letras
+        letterGames.forEach(game => {
+            createGameUI(lContainer, game, 'letter');
+            gameState[game.id] = { attempts: 0, solved: false, score: 0 };
+        });
+
+        // Renderizar Juegos de Frases
+        sentenceGames.forEach(game => {
+            createGameUI(sContainer, game, 'sentence');
+            gameState[game.id] = { attempts: 0, solved: false, score: 0 };
+        });
+    }
+
+    /* --- LÓGICA DE INTERFAZ --- */
+    function createGameUI(container, data, type) {
+        const div = document.createElement('div');
+        div.className = 'game-card';
+        div.innerHTML = `
+            <div class="game-header">
+                <span class="hint">${data.id}. ${data.hint}</span>
+                <span class="score-info" id="att-${data.id}">Intentos: 0/3</span>
+            </div>
+            
+            <div class="drop-zone" id="src-${data.id}"></div>
+            
+            <div class="drop-zone filled" id="dest-${data.id}"></div>
+
+            <div class="controls">
+                <div>
+                    <button class="btn-check" id="btn-${data.id}" onclick="checkGame('${data.id}', '${type}')">Verificar</button>
+                    <button class="btn-reset" onclick="resetGame('${data.id}', '${type}')">Reiniciar</button>
+                </div>
+                <span id="msg-${data.id}" class="feedback"></span>
+            </div>
+        `;
+        container.appendChild(div);
+        
+        // Inicializar fichas
+        resetGame(data.id, type);
+    }
+
+    function resetGame(id, type) {
+        if(gameState[id] && gameState[id].solved) return; // Si ya ganó, no resetear
+
+        const data = type === 'letter' 
+            ? letterGames.find(g => g.id === id) 
+            : sentenceGames.find(g => g.id === id);
+        
+        const srcZone = document.getElementById(`src-${id}`);
+        const destZone = document.getElementById(`dest-${id}`);
+        const msg = document.getElementById(`msg-${id}`);
+
+        srcZone.innerHTML = '';
+        destZone.innerHTML = '';
+        msg.textContent = '';
+        msg.className = 'feedback';
+
+        // Preparar contenido
+        let parts = [];
+        if (type === 'letter') {
+            parts = data.word.split('');
+        } else {
+            parts = data.text.split(' ');
+        }
+
+        // Aleatorizar (Shuffle)
+        parts.sort(() => Math.random() - 0.5);
+
+        // Crear Fichas
+        parts.forEach(part => {
+            const tile = document.createElement('div');
+            tile.className = type === 'letter' ? 'tile' : 'tile word-tile';
+            tile.textContent = part;
+            // Evento Click para mover entre zonas
+            tile.onclick = function() {
+                if(gameState[id].solved) return; // Bloqueado si ya ganó
+                if (this.parentElement === srcZone) {
+                    destZone.appendChild(this);
+                } else {
+                    srcZone.appendChild(this);
+                }
+            };
+            srcZone.appendChild(tile);
+        });
+    }
+
+    /* --- LÓGICA DE VERIFICACIÓN --- */
+    function checkGame(id, type) {
+        if(gameState[id].solved) return;
+
+        // Obtener respuesta del usuario
+        const destZone = document.getElementById(`dest-${id}`);
+        const tiles = Array.from(destZone.children);
+        const userAns = tiles.map(t => t.textContent).join(type === 'letter' ? '' : ' ');
+        
+        // Obtener respuesta correcta
+        const data = type === 'letter' 
+            ? letterGames.find(g => g.id === id).word 
+            : sentenceGames.find(g => g.id === id).text;
+
+        const msg = document.getElementById(`msg-${id}`);
+        const attDisplay = document.getElementById(`att-${id}`);
+        
+        gameState[id].attempts++;
+        attDisplay.textContent = `Intentos: ${gameState[id].attempts}/3`;
+
+        if (userAns === data) {
+            // CORRECTO
+            gameState[id].solved = true;
+            // Cálculo de puntaje (Regla: 100%, 70%, 40%)
+            if(gameState[id].attempts === 1) gameState[id].score = 1.0;
+            else if(gameState[id].attempts === 2) gameState[id].score = 0.7;
+            else gameState[id].score = 0.4;
+
+            msg.textContent = "¡Excelente! Correcto.";
+            msg.className = "feedback success";
+            document.getElementById(`btn-${id}`).disabled = true;
+            
+            // Efecto visual
+            tiles.forEach(t => {
+                t.style.backgroundColor = type === 'letter' ? 'var(--primary)' : '#004d40';
+                t.style.color = 'white';
+                t.style.cursor = 'default';
+            });
+
+        } else {
+            // INCORRECTO
+            if (gameState[id].attempts >= MAX_ATTEMPTS) {
+                gameState[id].score = 0;
+                gameState[id].solved = true; // Bloquear por fallos
+                msg.textContent = `Agotaste intentos. Resp: ${data}`;
+                msg.className = "feedback error";
+                document.getElementById(`btn-${id}`).disabled = true;
+            } else {
+                msg.textContent = "Incorrecto, intenta de nuevo.";
+                msg.className = "feedback error";
+            }
+        }
+    }
+
+    /* --- CÁLCULO FINAL --- */
+    function calculateFinalGrade() {
+        const fname = document.getElementById('fname').value;
+        const lname = document.getElementById('lname').value;
+
+        if (!fname || !lname) {
+            alert("Por favor, ingresa tu Nombre y Apellido al inicio.");
+            window.scrollTo(0,0);
+            return;
+        }
+
+        // Total Items = 20. Max Score = 5.0. 
+        // Cada ítem vale 5.0 / 20 = 0.25 puntos base.
+        // score del item es multiplicador (1, 0.7, 0.4).
+        
+        let totalSum = 0;
+        const basePoints = 0.25;
+
+        Object.values(gameState).forEach(st => {
+            totalSum += (st.score * basePoints);
+        });
+
+        // Mostrar Resultados
+        const panel = document.getElementById('final-panel');
+        panel.style.display = 'block';
+        
+        document.getElementById('user-display').textContent = `Estudiante: ${fname} ${lname}`;
+        document.getElementById('score-display').textContent = totalSum.toFixed(1);
+        
+        // Asignar Recompensa (Elemento de Tabla Periódica)
+        const rewardDiv = document.getElementById('reward-display');
+        const feedbackTxt = document.getElementById('feedback-text');
+        
+        let element = {};
+
+        if (totalSum >= 4.5) {
+            element = { n: 78, s: 'Pt', name: 'Platino', desc: '¡Valioso, resistente y brillante! Dominas la recombinación.' };
+            panel.style.borderColor = "#FFD700";
+        } else if (totalSum >= 3.8) {
+            element = { n: 7, s: 'N', name: 'Nitrógeno', desc: '¡Esencial para el crecimiento! Eres vital como el NPK.' };
+            panel.style.borderColor = "#2e7d32";
+        } else if (totalSum >= 3.0) {
+            element = { n: 15, s: 'P', name: 'Fósforo', desc: 'Portador de luz y energía. Vas por buen camino.' };
+            panel.style.borderColor = "#ff6f00";
+        } else if (totalSum >= 2.0) {
+            element = { n: 6, s: 'C', name: 'Carbono', desc: 'La base de la vida. Tienes potencial, pero debes pulirte (como el diamante).' };
+            panel.style.borderColor = "#555";
+        } else {
+            element = { n: 1, s: 'H', name: 'Hidrógeno', desc: 'El elemento inicial. Necesitas más masa y energía para reaccionar mejor.' };
+            panel.style.borderColor = "#999";
+        }
+
+        feedbackTxt.textContent = element.desc;
+        rewardDiv.innerHTML = `
+            <div class="element-reward">
+                <span class="num">${element.n}</span>
+                <span class="sym">${element.s}</span>
+                <span class="name">${element.name}</span>
+            </div>
+        `;
+
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    // Arrancar la aplicación
+    init();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Notario Químico - Grado 10</title>
+    <style>
+        :root {
+            --primary: #2c3e50; /* Azul Notarial */
+            --secondary: #27ae60; /* Verde Agricultura/Salud */
+            --accent: #e67e22; /* Naranja Reactividad */
+            --paper: #fdfbf7; /* Color papel oficio */
+            --ink: #2c3e50;
+            --stamp-red: #c0392b;
+        }
+
+        body {
+            font-family: 'Garamond', 'Georgia', serif; /* Tipografía seria/notarial */
+            background-color: #ecf0f1;
+            color: var(--ink);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: var(--paper);
+            padding: 40px;
+            border: 1px solid #dcdcdc;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-top: 5px solid var(--primary);
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 { margin: 0; font-size: 2.2rem; text-transform: uppercase; letter-spacing: 2px; }
+        h2 { font-size: 1.2rem; color: var(--secondary); font-style: italic; margin-top: 5px; }
+        .sub-header { font-size: 0.9rem; color: #7f8c8d; margin-top: 10px; }
+
+        /* Login - Estilo Formulario Oficial */
+        .login-panel {
+            background: #e8f4f8;
+            padding: 20px;
+            border: 1px solid #bdc3c7;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .input-group label { font-weight: bold; margin-right: 5px; font-family: sans-serif; font-size: 0.9rem; }
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #95a5a6;
+            width: 200px;
+            font-family: 'Courier New', monospace; /* Estilo máquina de escribir */
+        }
+
+        /* Secciones de Juego */
+        .section-title {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            font-family: sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 40px;
+            border-radius: 4px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .game-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* Tarjeta de Expediente (Juego) */
+        .case-file {
+            border: 1px solid #bdc3c7;
+            background: white;
+            padding: 15px;
+            position: relative;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .case-header {
+            font-family: sans-serif;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .hint { font-weight: bold; color: var(--primary); margin-bottom: 10px; display: block; }
+
+        /* Zonas de Arrastre */
+        .zone {
+            min-height: 40px;
+            background: #f4f6f7;
+            border: 2px dashed #bdc3c7;
+            margin-bottom: 10px;
+            padding: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
+        }
+        
+        .zone.filled { background: #eafaf1; border-color: var(--secondary); }
+
+        /* Fichas */
+        .stamp {
+            background: white;
+            border: 1px solid var(--primary);
+            padding: 4px 10px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 1px 1px 0 #999;
+            transition: transform 0.1s;
+        }
+        .stamp:hover { background: var(--primary); color: white; transform: translateY(-2px); }
+        
+        .stamp.word { font-size: 0.85rem; padding: 4px 8px; background: #fffbe6; border-color: #f1c40f; }
+        .stamp.word:hover { background: #f1c40f; color: black; }
+
+        /* Controles */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-family: sans-serif;
+            font-size: 0.85rem;
+        }
+
+        button {
+            padding: 5px 15px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 3px;
+        }
+        
+        .btn-verify { background: var(--primary); color: white; }
+        .btn-reset { background: #95a5a6; color: white; }
+        .btn-verify:disabled { background: #bdc3c7; cursor: not-allowed; }
+
+        .feedback { margin-left: 10px; font-weight: bold; }
+        .success { color: var(--secondary); }
+        .error { color: var(--stamp-red); }
+
+        /* Panel Final */
+        #final-verdict {
+            display: none;
+            margin-top: 50px;
+            text-align: center;
+            border: 3px double var(--primary);
+            padding: 30px;
+            background: #fff;
+        }
+
+        .seal {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 5px solid var(--primary);
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--primary);
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .seal::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px dashed var(--primary);
+            border-radius: 50%;
+            animation: spin 20s linear infinite;
+        }
+
+        .element-symbol { font-size: 3rem; line-height: 1; }
+        .element-name { font-size: 0.9rem; text-transform: uppercase; }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--secondary);
+            color: white;
+            font-size: 1.2rem;
+            margin-top: 30px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        .submit-btn:hover { background: #1e8449; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🏛️ Notaria Química Nacional</h1>
+        <h2>Departamento de Nomenclatura y Sanidad Vegetal</h2>
+        <div class="sub-header">Expediente: Ácidos, Sales y Salud de la Tierra - Grado 10</div>
+    </header>
+
+    <div class="login-panel">
+        <div class="input-group">
+            <label>Notario(a) Titular:</label>
+            <input type="text" id="fname" placeholder="Nombre">
+        </div>
+        <div class="input-group">
+            <label>Registro (Apellido):</label>
+            <input type="text" id="lname" placeholder="Apellido">
+        </div>
+    </div>
+
+    <div class="section-title">I. Certificación de Términos (Ordenar Letras)</div>
+    <p>Organice las letras para revelar el término químico correcto. El notario no permite errores ortográficos.</p>
+    <div class="game-grid" id="letter-games"></div>
+
+    <div class="section-title">II. Actas de Funciones Químicas (Ordenar Frases)</div>
+    <p>Reconstruya las sentencias verdaderas sobre ácidos, sales y el cuidado del suelo.</p>
+    <div class="game-grid" id="word-games"></div>
+
+    <button class="submit-btn" onclick="emitVerdict()">✍️ FIRMAR Y EMITIR VEREDICTO FINAL</button>
+
+    <div id="final-verdict">
+        <h2>ACTA FINAL DE CALIFICACIÓN</h2>
+        <h3 id="user-name-display"></h3>
+        <p>Puntaje Obtenido: <span id="score-value" style="font-size:1.5rem; font-weight:bold;">0.0</span> / 5.0</p>
+        <p id="feedback-text" style="font-style:italic;"></p>
+        <div id="reward-badge"></div>
+    </div>
+</div>
+
+<script>
+    /* --- CONFIGURACIÓN DE DATOS --- */
+
+    // 10 Juegos de Letras: Términos clave (Ácidos, Sales, NPK)
+    const letterData = [
+        { id: 'L1', target: 'HIDRACIDO', hint: 'Ácido binario sin oxígeno (ej. HCl).' },
+        { id: 'L2', target: 'OXISAL', hint: 'Sal que contiene oxígeno en su estructura.' },
+        { id: 'L3', target: 'SULFATO', hint: 'Sal derivada del ácido sulfúrico (SO4).' },
+        { id: 'L4', target: 'POTASIO', hint: 'La "K" en el fertilizante NPK.' },
+        { id: 'L5', target: 'IUPAC', hint: 'Organización que dicta las normas de nomenclatura.' },
+        { id: 'L6', target: 'NEUTRALIZACION', hint: 'Reacción entre un ácido y una base.' },
+        { id: 'L7', target: 'NITRATO', hint: 'Sal muy usada como fertilizante nitrogenado.' },
+        { id: 'L8', target: 'HIDROGENO', hint: 'Elemento que liberan los ácidos en solución.' },
+        { id: 'L9', target: 'FOSFATO', hint: 'La "P" en los fertilizantes suele venir como...' },
+        { id: 'L10', target: 'NOMENCLATURA', hint: 'Sistema de reglas para nombrar compuestos.' }
+    ];
+
+    // 10 Juegos de Frases: Definiciones, Valores y Salud de la Tierra
+    const wordData = [
+        { id: 'W1', target: 'EL ACIDO NITRICO ES UN OXACIDO FUERTE', hint: 'Clasificación del HNO3.' },
+        { id: 'W2', target: 'LAS SALES SE FORMAN AL SUSTITUIR HIDROGENOS', hint: 'Definición estructural de Sal.' },
+        { id: 'W3', target: 'EL NOTARIO QUIMICO DEBE SER PRECISO', hint: 'Valor ético: La verdad.' },
+        { id: 'W4', target: 'EL FERTILIZANTE NPK NUTRE EL SUELO AGOTADO', hint: 'Salud de la tierra.' },
+        { id: 'W5', target: 'LOS OXIDOS ACIDOS REACCIONAN CON AGUA', hint: 'Formación de oxácidos.' },
+        { id: 'W6', target: 'RESPETAR LA NOMENCLATURA EVITA ACCIDENTES', hint: 'Importancia de las normas.' },
+        { id: 'W7', target: 'EL CLORURO DE SODIO ES UNA SAL HALOIDEA', hint: 'Ejemplo común de sal binaria.' },
+        { id: 'W8', target: 'CUIDAR LA TIERRA ES PROTEGER EL FUTURO', hint: 'Conciencia ambiental.' },
+        { id: 'W9', target: 'LA IUPAC ESTABLECE UN LENGUAJE UNIVERSAL', hint: 'Función de la norma.' },
+        { id: 'W10', target: 'LOS ACIDOS TIENEN UN pH MENOR A SIETE', hint: 'Propiedad escala pH.' }
+    ];
+
+    // Estado del Juego
+    let gameState = {}; 
+    const MAX_ATTEMPTS = 3;
+
+    /* --- INICIALIZACIÓN --- */
+    function init() {
+        const lContainer = document.getElementById('letter-games');
+        const wContainer = document.getElementById('word-games');
+
+        // Renderizar Letras
+        letterData.forEach(game => createGameCard(lContainer, game, 'letter'));
+        // Renderizar Palabras
+        wordData.forEach(game => createGameCard(wContainer, game, 'word'));
+    }
+
+    /* --- CREACIÓN DE INTERFAZ --- */
+    function createGameCard(container, data, type) {
+        // Inicializar estado
+        gameState[data.id] = { 
+            attempts: 0, 
+            solved: false, 
+            score: 0,
+            correctStr: data.target
+        };
+
+        const div = document.createElement('div');
+        div.className = 'case-file';
+        div.innerHTML = `
+            <div class="case-header">
+                <span>EXP: ${data.id}</span>
+                <span id="att-${data.id}">Intentos: 0/3</span>
+            </div>
+            <span class="hint">${data.hint}</span>
+            
+            <div class="zone" id="src-${data.id}"></div>
+            
+            <div class="zone filled" id="dest-${data.id}"></div>
+
+            <div class="controls">
+                <div>
+                    <button class="btn-verify" id="btn-${data.id}" onclick="verify('${data.id}', '${type}')">CERTIFICAR</button>
+                    <button class="btn-reset" onclick="reset('${data.id}', '${type}')">REINICIAR</button>
+                </div>
+                <span id="msg-${data.id}" class="feedback"></span>
+            </div>
+        `;
+        container.appendChild(div);
+        reset(data.id, type);
+    }
+
+    /* --- LÓGICA DE JUEGO --- */
+    function reset(id, type) {
+        if(gameState[id].solved) return;
+
+        const src = document.getElementById(`src-${id}`);
+        const dest = document.getElementById(`dest-${id}`);
+        const msg = document.getElementById(`msg-${id}`);
+
+        src.innerHTML = '';
+        dest.innerHTML = '';
+        msg.textContent = '';
+
+        // Separar y mezclar
+        let parts = type === 'letter' 
+            ? gameState[id].correctStr.split('') 
+            : gameState[id].correctStr.split(' ');
+        
+        parts.sort(() => Math.random() - 0.5);
+
+        // Crear Fichas
+        parts.forEach(part => {
+            const el = document.createElement('div');
+            el.className = type === 'letter' ? 'stamp' : 'stamp word';
+            el.textContent = part;
+            el.onclick = function() {
+                if(gameState[id].solved) return;
+                // Mover al otro contenedor
+                if(this.parentElement === src) dest.appendChild(this);
+                else src.appendChild(this);
+            };
+            src.appendChild(el);
+        });
+    }
+
+    function verify(id, type) {
+        if(gameState[id].solved) return;
+
+        const dest = document.getElementById(`dest-${id}`);
+        // Reconstruir respuesta del usuario
+        const userAns = Array.from(dest.children)
+            .map(c => c.textContent)
+            .join(type === 'letter' ? '' : ' ');
+        
+        const correct = gameState[id].correctStr;
+        const msg = document.getElementById(`msg-${id}`);
+        const btn = document.getElementById(`btn-${id}`);
+
+        gameState[id].attempts++;
+        document.getElementById(`att-${id}`).textContent = `Intentos: ${gameState[id].attempts}/3`;
+
+        if(userAns === correct) {
+            // Correcto
+            msg.textContent = "¡CERTIFICADO!";
+            msg.className = "feedback success";
+            gameState[id].solved = true;
+            gameState[id].score = calcScore(gameState[id].attempts);
+            btn.disabled = true;
+            lockTiles(dest);
+        } else {
+            // Incorrecto
+            if(gameState[id].attempts >= MAX_ATTEMPTS) {
+                msg.textContent = "RECHAZADO. Resp: " + correct;
+                msg.className = "feedback error";
+                gameState[id].solved = true;
+                gameState[id].score = 0;
+                btn.disabled = true;
+                lockTiles(dest);
+            } else {
+                msg.textContent = "ERROR EN ACTA";
+                msg.className = "feedback error";
+            }
+        }
+    }
+
+    function lockTiles(container) {
+        Array.from(container.children).forEach(child => {
+            child.style.pointerEvents = 'none';
+            child.style.opacity = '0.8';
+        });
+    }
+
+    function calcScore(tries) {
+        // Total items = 20. Max Global Score = 5.0.
+        // Base value per item = 0.25
+        const base = 0.25;
+        if(tries === 1) return base * 1.0;
+        if(tries === 2) return base * 0.7;
+        if(tries === 3) return base * 0.4;
+        return 0;
+    }
+
+    /* --- VEREDICTO FINAL --- */
+    function emitVerdict() {
+        const fname = document.getElementById('fname').value;
+        const lname = document.getElementById('lname').value;
+
+        if(!fname || !lname) {
+            alert("El protocolo exige Nombre y Apellido del Notario.");
+            window.scrollTo(0,0);
+            return;
+        }
+
+        let total = 0;
+        Object.values(gameState).forEach(g => total += g.score);
+        total = parseFloat(total.toFixed(2)); // Redondear
+
+        // Mostrar Panel
+        const panel = document.getElementById('final-verdict');
+        panel.style.display = 'block';
+        
+        document.getElementById('user-name-display').textContent = `Notario: ${fname} ${lname}`;
+        document.getElementById('score-value').textContent = total;
+
+        // Determinar Recompensa (Elemento)
+        let reward = {};
+        const feedback = document.getElementById('feedback-text');
+        
+        // Elementos basados en valor/estabilidad/utilidad
+        if(total >= 4.5) {
+            reward = { s: 'Pt', n: 'Platino', num: 78, desc: 'Excelente. Precisión noble y valiosa como el Platino.' };
+        } else if (total >= 4.0) {
+            reward = { s: 'Au', n: 'Oro', num: 79, desc: 'Muy bien. Un trabajo brillante y resistente como el Oro.' };
+        } else if (total >= 3.0) {
+            reward = { s: 'N', n: 'Nitrógeno', num: 7, desc: 'Aprobado. Esencial para el crecimiento, como el Nitrógeno en el suelo.' };
+        } else if (total >= 2.0) {
+            reward = { s: 'Cl', n: 'Cloro', num: 17, desc: 'Regular. Útil, pero cuidado con ser demasiado reactivo ante los errores.' };
+        } else {
+            reward = { s: 'Pb', n: 'Plomo', num: 82, desc: 'Insuficiente. El conocimiento es denso y pesado, necesitas purificarlo.' };
+        }
+
+        feedback.textContent = reward.desc;
+        document.getElementById('reward-badge').innerHTML = `
+            <div class="seal">
+                <span style="font-size:0.8rem; position:absolute; top:15px;">No. ${reward.num}</span>
+                <span class="element-symbol">${reward.s}</span>
+                <span class="element-name">${reward.n}</span>
+            </div>
+        `;
+
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    // Arrancar motores
+    init();
+
+</script>
+
+</body>
+</html>

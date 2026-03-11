@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Propiedades Periódicas y Estabilidad</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --gold: #f1c40f;
+            --silver: #bdc3c7;
+            --iron: #a1887f;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            color: var(--primary);
+        }
+
+        /* Registro y Login */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        /* Header Fijo */
+        header {
+            position: fixed;
+            top: 0; width: 100%;
+            background: var(--primary);
+            color: var(--white);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 900;
+        }
+
+        /* Contenedor Principal */
+        main {
+            margin-top: 80px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;
+        }
+
+        .activity-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--accent);
+            transition: transform 0.3s;
+        }
+
+        .activity-card.solved { border-left-color: var(--success); }
+
+        .scrambled-box {
+            background: #eee;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            font-weight: bold;
+            margin: 15px 0;
+            text-align: center;
+            color: var(--secondary);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:disabled { background: #ccc; }
+
+        /* Insignias */
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+            animation: pop 0.4s ease-out;
+        }
+        .badge-au { background: var(--gold); color: #000; }
+        .badge-ag { background: var(--silver); color: #000; }
+        .badge-fe { background: var(--iron); color: #fff; }
+
+        @keyframes pop {
+            0% { transform: scale(0.5); }
+            100% { transform: scale(1); }
+        }
+
+        .stats-info { font-size: 0.9rem; color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>Bienvenido al Laboratorio Virtual</h2>
+            <p>Ingresa tus datos para comenzar</p>
+            <input type="text" id="reg-nombre" placeholder="Nombre" required>
+            <input type="text" id="reg-apellido" placeholder="Apellido" required>
+            <br><br>
+            <button onclick="iniciarSesion()">Entrar al OVA</button>
+        </div>
+    </div>
+
+    <header>
+        <div id="user-display">Estudiante: ---</div>
+        <div id="score-display">Puntaje: 0 pts</div>
+    </header>
+
+    <main id="game-container">
+        </main>
+
+    <script>
+        // --- DATOS DE LAS ACTIVIDADES ---
+        const actividadesAnagramas = [
+            { id: 1, palabra: "DENSIDAD", pista: "Relación entre masa y volumen de un cuerpo." },
+            { id: 2, palabra: "MERCURIO", pista: "Único metal líquido a temperatura ambiente." },
+            { id: 3, palabra: "EBULLICION", pista: "Cambio de estado de líquido a gas por calor." },
+            { id: 4, palabra: "OCTETO", pista: "Regla que explica la estabilidad de los átomos." },
+            { id: 5, palabra: "ARGON", pista: "Gas noble utilizado en bombillas incandescentes." },
+            { id: 6, palabra: "PACIENCIA", pista: "Virtud necesaria para la toma de datos científicos." },
+            { id: 7, palabra: "FUSION", pista: "Punto de temperatura donde un sólido se vuelve líquido." },
+            { id: 8, palabra: "HELIO", pista: "Gas noble más ligero usado en globos." },
+            { id: 9, palabra: "PERIODICA", pista: "Tipo de tabla que organiza los elementos." },
+            { id: 10, palabra: "ESTABILIDAD", pista: "Lo que buscan los átomos al completar sus electrones." }
+        ];
+
+        const actividadesFrases = [
+            { id: 11, frase: "La densidad permite identificar sustancias puras", pista: "Ordena la frase sobre la utilidad de la densidad." },
+            { id: 12, frase: "El punto de ebullicion cambia segun la presion", pista: "Propiedad física de los líquidos." },
+            { id: 13, frase: "Los gases nobles no reaccionan facilmente", pista: "Sobre la estabilidad atómica." },
+            { id: 14, frase: "La regla del octeto requiere ocho electrones", pista: "Fundamento de los enlaces químicos." },
+            { id: 15, frase: "Debemos ser pacientes al medir metales", pista: "Reflexión sobre el método científico." },
+            { id: 16, frase: "Los cambios de estado son procesos fisicos", pista: "Sobre la naturaleza de la materia." },
+            { id: 17, frase: "El oro tiene una densidad muy alta", pista: "Característica de este metal precioso." },
+            { id: 18, frase: "La estabilidad emocional nos ayuda a crecer", pista: "Reflexión sobre el sentido de vida." },
+            { id: 19, frase: "Los elementos del mismo grupo tienen propiedades similares", pista: "Organización de la tabla periódica." },
+            { id: 20, frase: "El neon es un gas noble estable", pista: "Ejemplo de gas del grupo 18." }
+        ];
+
+        // --- LÓGICA DE PERSISTENCIA Y ESTADO ---
+        let usuario = { nombre: "", apellido: "", puntaje: 0, progreso: {} };
+
+        function iniciarSesion() {
+            const nom = document.getElementById('reg-nombre').value;
+            const ape = document.getElementById('reg-apellido').value;
+            if(nom && ape) {
+                usuario.nombre = nom;
+                usuario.apellido = ape;
+                document.getElementById('login-overlay').style.display = 'none';
+                guardarLocal();
+                renderizarHeader();
+                renderizarActividades();
+            } else {
+                alert("Por favor completa los campos.");
+            }
+        }
+
+        function guardarLocal() {
+            localStorage.setItem('ova_user_data', JSON.stringify(usuario));
+        }
+
+        function cargarLocal() {
+            const data = localStorage.getItem('ova_user_data');
+            if(data) {
+                usuario = JSON.parse(data);
+                document.getElementById('login-overlay').style.display = 'none';
+                renderizarHeader();
+                renderizarActividades();
+            }
+        }
+
+        // --- ALGORITMO FISHER-YATES ---
+        function shuffle(text) {
+            let arr = text.split('');
+            if(text.includes(' ')) arr = text.split(' '); // Para frases
+
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            
+            let resultado = text.includes(' ') ? arr.join(' / ') : arr.join('-');
+            // Evitar que salga ya resuelto
+            return (resultado === text) ? shuffle(text) : resultado;
+        }
+
+        // --- RENDERIZADO ---
+        function renderizarHeader() {
+            document.getElementById('user-display').innerText = `Estudiante: ${usuario.nombre} ${usuario.apellido}`;
+            document.getElementById('score-display').innerText = `Puntaje: ${usuario.puntaje.toFixed(1)} pts`;
+        }
+
+        function renderizarActividades() {
+            const container = document.getElementById('game-container');
+            container.innerHTML = "<h2>I. Desafío de Anagramas (Propiedades Atómicas)</h2>";
+
+            // Mezclar anagramas
+            actividadesAnagramas.forEach(act => {
+                container.innerHTML += crearCard(act, 'anagrama');
+            });
+
+            container.innerHTML += "<br><h2>II. Reconstrucción de Conceptos (Frases Técnicas)</h2>";
+            actividadesFrases.forEach(act => {
+                container.innerHTML += crearCard(act, 'frase');
+            });
+        }
+
+        function crearCard(act, tipo) {
+            const estado = usuario.progreso[act.id] || { intentos: 0, resuelto: false, puntos: 0 };
+            const original = tipo === 'anagrama' ? act.palabra : act.frase;
+            const desordenado = shuffle(original);
+            
+            return `
+                <div class="activity-card ${estado.resuelto ? 'solved' : ''}" id="card-${act.id}">
+                    <h3>Actividad ${act.id}</h3>
+                    <p><strong>Pista:</strong> ${act.pista}</p>
+                    <div class="scrambled-box">${estado.resuelto ? original : desordenado}</div>
+                    <input type="text" id="input-${act.id}" placeholder="Escribe aquí tu respuesta..." ${estado.resuelto ? 'disabled' : ''}>
+                    <button onclick="validar(${act.id}, '${original}', '${tipo}')" ${estado.resuelto ? 'disabled' : ''} id="btn-${act.id}">Validar</button>
+                    <div id="feedback-${act.id}">
+                        ${estado.resuelto ? mostrarInsignia(estado.puntos) : ''}
+                    </div>
+                    <div class="stats-info">Intentos realizados: ${estado.intentos}/3</div>
+                </div>
+            `;
+        }
+
+        // --- LÓGICA DE GAMIFICACIÓN ---
+        function validar(id, correcta, tipo) {
+            const input = document.getElementById(`input-${id}`).value.trim().toUpperCase();
+            const feedback = document.getElementById(`feedback-${id}`);
+            const sol = correcta.toUpperCase();
+
+            if(!usuario.progreso[id]) usuario.progreso[id] = { intentos: 0, resuelto: false, puntos: 0 };
+            let prog = usuario.progreso[id];
+
+            if(prog.intentos < 3) {
+                prog.intentos++;
+                
+                if(input === sol) {
+                    prog.resuelto = true;
+                    // Calcular puntos
+                    if(prog.intentos === 1) prog.puntos = 5;
+                    else if(prog.intentos === 2) prog.puntos = 3;
+                    else prog.puntos = 1.5;
+
+                    usuario.puntaje += prog.puntos;
+                    feedback.innerHTML = `<span style="color:green">¡Correcto!</span> <br> ${mostrarInsignia(prog.puntos)}`;
+                    bloquearActividad(id);
+                } else {
+                    if(prog.intentos >= 3) {
+                        feedback.innerHTML = `<span style="color:red">Intentos agotados. La respuesta era: ${correcta}</span>`;
+                        bloquearActividad(id);
+                    } else {
+                        feedback.innerHTML = `<span style="color:orange">Incorrecto. Intenta de nuevo.</span>`;
+                    }
+                }
+                guardarLocal();
+                renderizarHeader();
+                actualizarStatsCard(id, prog);
+            }
+        }
+
+        function mostrarInsignia(pts) {
+            if(pts === 5) return `<div class="badge badge-au">Medalla de Oro (Au) +5 pts</div>`;
+            if(pts === 3) return `<div class="badge badge-ag">Medalla de Plata (Ag) +3 pts</div>`;
+            return `<div class="badge badge-fe">Medalla de Hierro (Fe) +1.5 pts</div>`;
+        }
+
+        function bloquearActividad(id) {
+            document.getElementById(`input-${id}`).disabled = true;
+            document.getElementById(`btn-${id}`).disabled = true;
+            document.getElementById(`card-${id}`).classList.add('solved');
+        }
+
+        function actualizarStatsCard(id, prog) {
+            const card = document.getElementById(`card-${id}`);
+            card.querySelector('.stats-info').innerText = `Intentos realizados: ${prog.intentos}/3`;
+        }
+
+        // Iniciar al cargar
+        window.onload = cargarLocal;
+    </script>
+</body>
+</html>

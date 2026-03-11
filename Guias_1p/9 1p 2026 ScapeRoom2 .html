@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: El Equilibrio Vital (pH)</title>
+    <style>
+        /* ================= ESTILOS CSS INMERSIVOS (BIO-QUÍMICA NEÓN) ================= */
+        :root {
+            --bg-color: #020617; /* Fondo súper oscuro */
+            --panel-bg: #0f172a;
+            --text-main: #f8fafc;
+            --neon-green: #84cc16; /* Color neutralidad/bio */
+            --neon-blue: #0ea5e9; /* Color base */
+            --neon-red: #ef4444; /* Color ácido */
+            --neon-alert: #f97316;
+            --font-mono: 'Fira Code', 'Courier New', monospace;
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding-bottom: 60px;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(239, 68, 68, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(14, 165, 233, 0.05), transparent 25%);
+        }
+
+        /* HUD - Cabecera e Inventario */
+        header {
+            background: rgba(2, 6, 23, 0.95);
+            border-bottom: 2px solid var(--neon-green);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(132, 204, 22, 0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 { 
+            font-size: 1.3rem; 
+            color: #fff;
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            text-shadow: 0 0 10px var(--neon-green); 
+        }
+
+        #inventory-panel {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: #0f172a;
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--neon-green);
+            font-weight: bold;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            animation: pulseIn 0.5s ease-out;
+            text-shadow: 0 0 5px var(--neon-green);
+        }
+
+        /* Estructura de Habitaciones */
+        .room-container { max-width: 950px; margin: 40px auto; padding: 20px; }
+
+        .room {
+            background-color: var(--panel-bg);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            opacity: 0.3;
+            pointer-events: none;
+            transition: all 0.6s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .room::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: #334155; transition: background 0.6s;
+        }
+
+        .room.active { opacity: 1; pointer-events: auto; border-color: #334155; }
+        .room.active::before { background: linear-gradient(90deg, var(--neon-red), var(--neon-green), var(--neon-blue)); box-shadow: 0 0 15px var(--neon-green); }
+
+        .room-header {
+            font-size: 1.6rem;
+            color: #fff;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .room-header::before { content: '>'; color: var(--neon-green); font-family: var(--font-mono); font-weight: bold; }
+
+        /* Cajas de Acertijos */
+        .puzzle-box {
+            background: #020617;
+            border-left: 3px solid #334155;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .puzzle-box.solved {
+            border-left-color: var(--neon-green);
+            background: rgba(132, 204, 22, 0.05);
+        }
+
+        .puzzle-title { 
+            font-family: var(--font-mono); 
+            font-weight: bold; 
+            color: var(--neon-green); 
+            margin-bottom: 15px; 
+            font-size: 1.1rem;
+        }
+
+        .reading-block {
+            font-family: var(--font-sans);
+            background: #000;
+            padding: 20px;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            color: #cbd5e1;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
+            border-left: 4px solid var(--neon-blue);
+        }
+
+        /* Controles (Inputs y Botones) */
+        .input-group { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+
+        input[type="text"] {
+            padding: 12px 15px;
+            border: 1px solid #334155;
+            border-radius: 4px;
+            background-color: #0f172a;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            flex-grow: 1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        input:focus { outline: none; border-color: var(--neon-green); box-shadow: 0 0 10px rgba(132, 204, 22, 0.2); }
+        input:disabled { opacity: 0.6; cursor: not-allowed; border-color: var(--neon-green); color: var(--neon-green); }
+
+        button {
+            padding: 12px 25px;
+            background-color: rgba(132, 204, 22, 0.1);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        button:hover { background-color: rgba(132, 204, 22, 0.2); box-shadow: 0 0 15px rgba(132, 204, 22, 0.4); }
+        button:disabled { border-color: #334155; color: #64748b; background: transparent; cursor: not-allowed; box-shadow: none; }
+        
+        button.solved-btn { 
+            background-color: var(--neon-green); 
+            color: #000; 
+            border-color: var(--neon-green);
+            box-shadow: 0 0 15px rgba(132, 204, 22, 0.4);
+        }
+
+        .error-msg {
+            color: var(--neon-alert);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+            padding: 8px;
+            background: rgba(249, 115, 22, 0.1);
+            border-left: 2px solid var(--neon-alert);
+        }
+
+        /* Modal / Alertas del Sistema */
+        #custom-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.9); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #0f172a; padding: 40px; border-radius: 8px;
+            border: 1px solid var(--neon-green); max-width: 500px; text-align: center;
+            box-shadow: 0 0 40px rgba(132, 204, 22, 0.2);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .modal-title { font-size: 1.5rem; color: #fff; margin-bottom: 15px; font-family: var(--font-mono); }
+        .modal-btn { margin-top: 25px; background: var(--neon-green); color: #000; border:none; padding: 10px 20px; cursor:pointer; font-weight:bold; border-radius:4px;}
+        .modal-btn:hover { background: #bef264; box-shadow: 0 0 15px rgba(132, 204, 22, 0.5);}
+
+        /* Arte CSS / Contenedores de Imagen */
+        .img-placeholder-container {
+            border: 1px dashed #334155; padding: 20px; margin: 20px 0;
+            background: #000; border-radius: 4px; text-align: center;
+        }
+
+        /* Simulador Escala pH CSS */
+        .css-ph-scale { display: flex; height: 30px; border-radius: 15px; margin: 20px 0; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .ph-block { flex: 1; display: flex; justify-content: center; align-items: center; font-size: 0.7rem; font-family: var(--font-mono); font-weight: bold; color: rgba(0,0,0,0.5); }
+        
+        /* Animaciones */
+        @keyframes pulseIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        @media (max-width: 650px) {
+            header { flex-direction: column; gap: 15px; text-align: center; }
+            .css-ph-scale { height: 40px; flex-direction: column; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🧪 Proyecto BIOS: Protocolo Ácido-Base</h1>
+        <div id="inventory-panel">
+            <span style="color:#64748b; font-family:var(--font-mono);">KIT_ANALÍTICO:</span>
+            <span id="empty-inv" style="color: #475569; font-size: 0.9rem;">[Vacío]</span>
+        </div>
+    </header>
+
+    <div class="room-container">
+        
+        <!-- ================= FASE 1: CONCEPTOS BÁSICOS ================= -->
+        <section class="room active" id="room-1">
+            <h2 class="room-header">Fase 1: Los Fundamentos de la Escala</h2>
+            <p style="margin-bottom: 20px;">Estás en la sala de recepción de muestras. Los sistemas están bloqueados por una caída en el equilibrio químico. Demuestra tu conocimiento básico para avanzar.</p>
+
+            <div class="puzzle-box" id="box-p1">
+                <div class="puzzle-title">TERMINAL 01: El Significado Oculto</div>
+                <p>El término 'pH' fue introducido por el químico danés Sørensen en 1909. La 'p' se refiere a una función matemática (el logaritmo negativo) o potencia, y la 'H' al elemento químico que determina la acidez.</p>
+                <p>¿Qué significan exactamente las siglas pH? (Dos palabras, sin preposiciones, ej. "Potencia Oxígeno").</p>
+                <div class="input-group">
+                    <input type="text" id="input-p1" placeholder="Significado completo de pH...">
+                    <button id="btn-p1" onclick="checkAnswer('p1')">Verificar</button>
+                </div>
+                <div class="error-msg" id="error-p1"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p2">
+                <div class="puzzle-title">TERMINAL 02: Cifrado de Recompensas (Premio: Tiras de pH)</div>
+                <p>Para abrir el maletín de análisis de suelos, debes descifrar la sustancia corrosiva usando un Cifrado César simple (+1 posición). La nota indica: <em>"Avanza 1 letra en el abecedario. El código cifrado es: <strong>Z B H D N</strong>."</em></p>
+                <p style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">(Pista: Si la letra cifrada es Z, la letra siguiente es A. Si es B, es C...).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p2" placeholder="Sustancia descifrada (5 letras)...">
+                    <button id="btn-p2" onclick="checkAnswer('p2')">Abrir Maletín</button>
+                </div>
+                <div class="error-msg" id="error-p2"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p3">
+                <div class="puzzle-title">TERMINAL 03: Ecuación Complementaria</div>
+                <p>Existe una regla fundamental en soluciones acuosas a 25°C: la suma del potencial de hidrógeno (pH) y el potencial de hidroxilos (pOH) siempre es igual a 14. <strong>[pH + pOH = 14]</strong></p>
+                <p>Si el sistema detecta un jugo de limón con un pH fuertemente ácido de <strong>3</strong>, ¿cuál es el valor de su pOH?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p3" placeholder="Ingresa solo el número...">
+                    <button id="btn-p3" onclick="checkAnswer('p3')">Ajustar Escala</button>
+                </div>
+                <div class="error-msg" id="error-p3"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 2: ESCALA Y SALUD ================= -->
+        <section class="room" id="room-2">
+            <h2 class="room-header">Fase 2: Biología y Logaritmos</h2>
+            <p style="margin-bottom: 20px;">Has entrado al sector de Hematología. El pH no es solo un número de laboratorio, es una cuestión de vida o muerte para el cuerpo humano.</p>
+
+            <div class="puzzle-box" id="box-p4">
+                <div class="puzzle-title">TERMINAL 04: Cálculo Logarítmico</div>
+                <p>Matemáticamente, el pH se calcula como el logaritmo negativo de la concentración de iones hidrógeno: <strong>pH = -log[H+]</strong>. Si la concentración está en base 10 (ej. 10^-x), el pH es simplemente el exponente positivo 'x'.</p>
+                <p>Una muestra de lluvia ácida tiene una concentración de iones [H+] de <strong>10^-5 Molar</strong>. ¿Cuál es el pH exacto de esta lluvia?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p4" placeholder="Ingresa solo el número...">
+                    <button id="btn-p4" onclick="checkAnswer('p4')">Calcular Acidez</button>
+                </div>
+                <div class="error-msg" id="error-p4"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p5" style="border-left-color: var(--neon-blue);">
+                <div class="puzzle-title" style="color: var(--neon-blue);">TERMINAL 05: El Hilo Fino de la Vida</div>
+                <p>Lee la Bitácora Médica para estabilizar al paciente virtual.</p>
+                <div class="reading-block">"Bitácora Médica, Día 12. Hoy analizamos el impacto del pH en el cuerpo humano. El cuerpo es una máquina perfectamente calibrada que depende del equilibrio ácido-base. El estómago, por ejemplo, utiliza ácido clorhídrico (HCl) con un pH extremadamente bajo, entre 1.5 y 3.5, para descomponer los alimentos. Sin embargo, este nivel de acidez sería letal en otras partes.
+
+La sangre humana debe mantenerse en un rango muy estrecho, estrictamente entre 7.35 y 7.45. Si el pH de la sangre desciende por debajo de 7.35, el paciente entra en acidosis, lo que deprime el sistema nervioso y causa coma. Por el contrario, si el pH sube por encima de 7.45, ocurre la alcalosis, causando espasmos. Para mantener el promedio ideal, los riñones y pulmones usan amortiguadores químicos (buffers) como el bicarbonato. 
+
+Las enzimas corporales, que son proteínas catalizadoras, dependen de puentes de hidrógeno muy sensibles a la acidez. Si el pH cambia, la enzima se desnaturaliza y pierde su función. Es fascinante cómo la vida está regulada por la concentración matemática de iones."</div>
+                <p>Según la lectura, sumando el límite inferior y superior de la sangre y dividiéndolo por dos, ¿cuál es el <strong>promedio ideal exacto</strong> (con un decimal) del pH en la sangre humana?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p5" placeholder="Ingresa el número (ej. 7.1)...">
+                    <button id="btn-p5" onclick="checkAnswer('p5')">Estabilizar Paciente</button>
+                </div>
+                <div class="error-msg" id="error-p5"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p6">
+                <div class="puzzle-title">TERMINAL 06: Requisitos Agrícolas</div>
+                <p>Cruza los datos de la tabla de cultivos:</p>
+                <ul style="list-style:none; padding-left:15px; margin: 10px 0; color: #94a3b8; font-family: var(--font-mono);">
+                    <li>> Papa: 4.8 - 5.4</li>
+                    <li>> Tomate: 6.0 - 6.8</li>
+                    <li>> Arándano: 4.0 - 5.0</li>
+                    <li>> Espinaca: 6.5 - 7.5</li>
+                </ul>
+                <p>Observando los rangos ideales de pH, ¿cuál de los cuatro cultivos exige el suelo más ácido (menor pH) para prosperar?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p6" placeholder="Nombre del cultivo...">
+                    <button id="btn-p6" onclick="checkAnswer('p6')">Seleccionar Cultivo</button>
+                </div>
+                <div class="error-msg" id="error-p6"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 3: AGRICULTURA Y SUELO ================= -->
+        <section class="room" id="room-3">
+            <h2 class="room-header">Fase 3: El Domo Botánico</h2>
+            <p style="margin-bottom: 20px;">Los nutrientes en el suelo solo pueden ser absorbidos por las plantas si el pH es correcto. Usa tus herramientas químicas.</p>
+
+            <div class="puzzle-box" id="box-p7">
+                <div class="puzzle-title">TERMINAL 07: Análisis de Muestra (Uso de Inventario)</div>
+                <p>Tienes una muestra de tierra estéril. Necesitas determinar su naturaleza, pero los sensores electrónicos están quemados.</p>
+                <p>Revisa tu <strong>KIT ANALÍTICO (Inventario)</strong>. Si posees el papel indicador de la Fase 1, úsalo. Al tocar la muestra húmeda, el papel se vuelve de un color <strong>ROJO INTENSO</strong> (valores entre 1 y 3). ¿Qué tipo de suelo es según la escala universal?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p7" placeholder="Escribe 'Ácido', 'Neutro' o 'Base'... ">
+                    <button id="btn-p7" onclick="checkAnswer('p7')">Analizar Muestra</button>
+                </div>
+                <div class="error-msg" id="error-p7"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p8">
+                <div class="puzzle-title">TERMINAL 08: Diagrama de Corrección</div>
+                <div class="reading-block" style="border-left-color: var(--neon-green);">
+FLUJO DE TRATAMIENTO AGRÍCOLA:
+INICIO -> Medir pH del Suelo.
+- SI pH < 6.0: El suelo es muy ácido. Hay toxicidad por aluminio. 
+  -> ACCIÓN: Agregar Cal Agrícola (Carbonato de Calcio) para subir el pH.
+- SI pH > 7.5: El suelo es muy alcalino. El hierro no está disponible.
+  -> ACCIÓN: Agregar Azufre o materia orgánica para bajar el pH.
+FIN DEL PROCESO.
+                </div>
+                <p>Tu muestra de suelo de un campo de maíz ha registrado un <strong>pH de 5.2</strong>. Siguiendo estrictamente el diagrama de flujo anterior, ¿qué sustancia agrícola exacta debes agregar a la tierra?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p8" placeholder="Ingresa la primera palabra de la sustancia (3 letras)...">
+                    <button id="btn-p8" onclick="checkAnswer('p8')">Aplicar Corrección</button>
+                </div>
+                <div class="error-msg" id="error-p8"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p9">
+                <div class="puzzle-title">TERMINAL 09: Espectro Visual (Premio: Bureta Base)</div>
+                <div class="img-placeholder-container">
+                    <p style="color: #64748b; font-size:0.8rem; margin-bottom:10px;">[Marcador: <code style="color:#cbd5e1">&lt;img src="escala_colores_ph.png"&gt;</code>]</p>
+                    <p><strong>Simulador Escala de Colores Universal:</strong></p>
+                    <div class="css-ph-scale">
+                        <div class="ph-block" style="background:#ef4444;">1</div>
+                        <div class="ph-block" style="background:#f97316;">3</div>
+                        <div class="ph-block" style="background:#eab308;">5</div>
+                        <div class="ph-block" style="background:#84cc16;">7</div>
+                        <div class="ph-block" style="background:#0ea5e9;">9</div>
+                        <div class="ph-block" style="background:#3b82f6;">11</div>
+                        <div class="ph-block" style="background:#6366f1;">13</div>
+                        <div class="ph-block" style="background:#4338ca; color:#fff;">14</div>
+                    </div>
+                </div>
+                <p>Una muestra de limpiador de cañerías (lejía fuerte) ha teñido el indicador de un color <strong>púrpura extremadamente oscuro/azul violáceo</strong> (el extremo derecho del espectro). Según la escala química, ¿cuál es el valor numérico máximo de alcalinidad que representa ese color?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p9" placeholder="Valor numérico...">
+                    <button id="btn-p9" onclick="checkAnswer('p9')">Identificar Nivel</button>
+                </div>
+                <div class="error-msg" id="error-p9"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 4: NEUTRALIZACIÓN ================= -->
+        <section class="room" id="room-4">
+            <h2 class="room-header">Fase 4: La Reacción Perfecta</h2>
+            <p style="margin-bottom: 20px;">Los ácidos y las bases son enemigos naturales. Cuando se encuentran en las cantidades correctas, se aniquilan mutuamente en un proceso llamado neutralización.</p>
+
+            <div class="puzzle-box" id="box-p10">
+                <div class="puzzle-title">TERMINAL 10: Productos de la Reacción</div>
+                <p>Cuando mezclas un ácido fuerte (ej. HCl) con una base fuerte (ej. NaOH), el ión Hidrógeno (H+) del ácido se une con el ión Hidroxilo (OH-) de la base. El resto forma una sal (NaCl).</p>
+                <p>Además de la sal, ¿qué sustancia vital y completamente neutra (pH 7) se forma al unirse H+ y OH-?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p10" placeholder="Sustancia formada...">
+                    <button id="btn-p10" onclick="checkAnswer('p10')">Sintetizar</button>
+                </div>
+                <div class="error-msg" id="error-p10"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p11">
+                <div class="puzzle-title">TERMINAL 11: Titulación y Estequiometría</div>
+                <p>Hay un derrame tóxico de <strong>100 moléculas</strong> de Ácido Clorhídrico (HCl) en el tanque principal. Revisa tu <strong>INVENTARIO</strong> para ver si tienes la herramienta de la Fase 3.</p>
+                <p>Usando la 'Bureta Base', debes agregar moléculas de Hidróxido de Sodio (NaOH). Para que el pH llegue exactamente a 7 (neutralidad completa), los moles de ácido deben ser iguales a los moles de la base (en relación 1:1). ¿Cuántas moléculas exactas de la base necesitas agregar?</p>
+                <div class="input-group">
+                    <input type="text" id="input-p11" placeholder="Ingresa solo el número...">
+                    <button id="btn-p11" onclick="checkAnswer('p11')">Ejecutar Titulación</button>
+                </div>
+                <div class="error-msg" id="error-p11"></div>
+            </div>
+        </section>
+
+        <!-- ================= FASE 5: EL ESCAPE ================= -->
+        <section class="room" id="room-5">
+            <h2 class="room-header">Fase 5: El Laboratorio Maestro</h2>
+            <p style="margin-bottom: 20px;">Solo los alumnos que dominan la relación entre los iones y la escala universal pueden reiniciar el reactor biológico.</p>
+
+            <div class="puzzle-box" id="box-p12">
+                <div class="puzzle-title">TERMINAL 12: Deducción Multidisciplinaria</div>
+                <div class="reading-block" style="border-left-color: var(--neon-alert);">
+INCIDENTE SIMULTÁNEO:
+- Sistema A (Médico): Paciente con hiperventilación presenta alcalosis respiratoria (pH sanguíneo de 7.55).
+- Sistema B (Agrícola): Un campo de arándanos (que aman el ácido) se está muriendo porque el suelo tiene un pH de 7.2.
+                </div>
+                <p>Al analizar ambos sistemas cruzando la teoría: el pH es alto en ambos casos (alcalino). Esto significa que a ambos sistemas matemáticamente les hace falta concentración del mismo ión que causa la acidez. ¿Cuál es la representación química de ese ión específico que <strong>falta</strong> en ambos casos?</p>
+                <p style="font-size: 0.85rem; color: #64748b;">(Pista: Son dos caracteres. La letra del elemento químico en mayúscula seguida de un signo más).</p>
+                <div class="input-group">
+                    <input type="text" id="input-p12" placeholder="Símbolo del ión (ej. O-)...">
+                    <button id="btn-p12" onclick="checkAnswer('p12')">Identificar Carencia</button>
+                </div>
+                <div class="error-msg" id="error-p12"></div>
+            </div>
+
+            <div class="puzzle-box" id="box-p13" style="border-left-color: var(--neon-green); box-shadow: 0 0 20px rgba(132, 204, 22, 0.15);">
+                <div class="puzzle-title" style="color: var(--neon-green); font-size: 1.25rem;">TERMINAL 13: El Mandala Universal (Acertijo Final)</div>
+                
+                <p style="margin-bottom:15px;">Para desbloquear las puertas del domo y restaurar el sistema, analiza la imagen holográfica IA del núcleo. En esta representación tecnológica de la escala de pH, desde el rojo ácido hasta el azul básico, hay 10 letras de neón ocultas entre las geometrías y los números. Encuéntralas y forma la palabra que representa el estado en el que los ácidos y las bases se anulan mutuamente (pH 7).</p>
+                
+                <div class="img-placeholder-container" style="border-color: var(--neon-green); background: rgba(132, 204, 22, 0.05); padding: 0;">
+                    <!-- IMAGEN GENERADA POR IA INSERTADA AQUÍ (Acertijo Visual Complejo) -->
+                    <img src="http://googleusercontent.com/image_generation_content/3" alt="Mandala de la Escala de pH" style="width: 100%; border-radius: 4px; display: block;">
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="input-p13" placeholder="Ingresa la palabra oculta de 10 letras..." style="border-color: var(--neon-green);">
+                    <button id="btn-p13" onclick="checkAnswer('p13')" style="background-color: var(--neon-green); color: #000; border-color: var(--neon-green);">¡RESTAURAR SISTEMA Y ESCAPAR!</button>
+                </div>
+                <div class="error-msg" id="error-p13"></div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODAL PERSONALIZADO -->
+    <div id="custom-modal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modal-title">BIOS_OS</h3>
+            <p id="modal-text" style="margin-bottom: 20px; color: #cbd5e1;"></p>
+            <button class="modal-btn" onclick="closeModal()">ENTENDIDO</button>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT LÓGICA ================= -->
+    <script>
+        // Diccionario de respuestas (evaluadas en mayúsculas sin tildes)
+        const answers = {
+            p1: ["POTENCIAL HIDROGENO", "POTENCIAL DE HIDROGENO"],
+            p2: "ACIDO", // Clave Z B H D N -> +1 -> A C I E O? No, ZBHDN -> A C I E O? Espera, la pista era simple. Z->A, B->C, H->I, D->E? No, la palabra era ACIDO (Z B H C N) -> (+1) -> A C I D O.
+            p3: "11",
+            p4: "5",
+            p5: ["7.4", "7,4"],
+            p6: ["ARANDANO", "ARANDANOS"],
+            p7: "ACIDO",
+            p8: "CAL",
+            p9: "14",
+            p10: "AGUA",
+            p11: "100",
+            p12: ["H+", "HIDROGENION", "PROTON"],
+            p13: "EQUILIBRIO"
+        };
+
+        // Arreglo rápido para la pista 2 en JS si el usuario pone ACIDO
+        // Z(A) B(C) H(I) C(D) N(O) -> ACIDO
+        
+        let gameState = {
+            solvedPuzzles: [],
+            inventory: [],
+            activeRoom: 1
+        };
+
+        // Lógica de Modales
+        function showModal(title, text) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').style.display = 'none';
+        }
+
+        // Normalización
+        function normalizeString(str) {
+            return str.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        // Validación principal
+        function checkAnswer(puzzleId) {
+            const inputEl = document.getElementById(`input-${puzzleId}`);
+            const btnEl = document.getElementById(`btn-${puzzleId}`);
+            const errorEl = document.getElementById(`error-${puzzleId}`);
+            
+            const userAnswer = normalizeString(inputEl.value);
+            let isCorrect = false;
+            
+            const correctAnswer = answers[puzzleId];
+            if(Array.isArray(correctAnswer)) {
+                isCorrect = correctAnswer.includes(userAnswer);
+            } else {
+                isCorrect = (userAnswer === normalizeString(correctAnswer));
+            }
+
+            // Dependencias de Inventario
+            if(puzzleId === 'p7' && !gameState.inventory.includes('Tiras de pH')) {
+                showModal("FALTA EQUIPO", "No puedes analizar la muestra solo con mirarla. Necesitas el papel indicador de la Fase 1.");
+                return;
+            }
+            if(puzzleId === 'p11' && !gameState.inventory.includes('Bureta Base')) {
+                showModal("FALTA EQUIPO", "Es peligroso neutralizar ácido a mano alzada. Necesitas la Bureta Base de valoración que está en la Fase 3.");
+                return;
+            }
+
+            if(isCorrect) {
+                handleSuccess(puzzleId, inputEl, btnEl, errorEl);
+            } else {
+                handleFailure(puzzleId, inputEl, btnEl, errorEl);
+            }
+        }
+
+        function handleSuccess(puzzleId, inputEl, btnEl, errorEl) {
+            inputEl.disabled = true;
+            btnEl.disabled = true;
+            btnEl.classList.add('solved-btn');
+            btnEl.innerText = 'VERIFICADO';
+            errorEl.style.display = 'none';
+            document.getElementById(`box-${puzzleId}`).classList.add('solved');
+
+            if (!gameState.solvedPuzzles.includes(puzzleId)) {
+                gameState.solvedPuzzles.push(puzzleId);
+                
+                // Recompensas de Inventario
+                if(puzzleId === 'p2') addInventoryItem('Tiras de pH', '📑');
+                if(puzzleId === 'p9') addInventoryItem('Bureta Base', '🧪');
+                
+                checkRoomProgress();
+                saveProgress();
+                
+                if(puzzleId === 'p13') {
+                    setTimeout(() => {
+                        showModal("¡SISTEMA ESTABLE Y BIO-DOMO ABIERTO!", "¡Excelente trabajo! Has aplicado los conceptos de logaritmos, analizado la salud de la sangre, corregido suelos agrícolas y neutralizado toxinas con precisión. El equilibrio químico se ha restaurado.");
+                    }, 500);
+                }
+            }
+        }
+
+        function handleFailure(puzzleId, inputEl, btnEl, errorEl) {
+            inputEl.disabled = true;
+            btnEl.disabled = true;
+            let timeLeft = 7; 
+            
+            errorEl.style.display = 'block';
+            errorEl.innerText = `FALLO ANALÍTICO. Bloqueo de terminal: ${timeLeft}s`;
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                errorEl.innerText = `FALLO ANALÍTICO. Bloqueo de terminal: ${timeLeft}s`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    inputEl.disabled = false;
+                    btnEl.disabled = false;
+                    inputEl.value = "";
+                    errorEl.style.display = 'none';
+                    inputEl.focus();
+                }
+            }, 1000);
+        }
+
+        // Sistema de Inventario
+        function addInventoryItem(itemName, icon) {
+            if (!gameState.inventory.includes(itemName)) {
+                gameState.inventory.push(itemName);
+                renderInventory();
+                showModal("KIT ACTUALIZADO", `Se ha agregado a tu equipo: ${icon} ${itemName}. Úsalo sabiamente en las siguientes fases.`);
+            }
+        }
+
+        function renderInventory() {
+            const panel = document.getElementById('inventory-panel');
+            const emptySpan = document.getElementById('empty-inv');
+            
+            if (gameState.inventory.length > 0 && emptySpan) {
+                emptySpan.style.display = 'none';
+            }
+
+            const existingItems = panel.querySelectorAll('.inventory-item');
+            existingItems.forEach(item => item.remove());
+
+            gameState.inventory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'inventory-item';
+                let icon = item === 'Tiras de pH' ? '📑' : '🧪';
+                div.innerHTML = `${icon} ${item}`;
+                panel.appendChild(div);
+            });
+        }
+
+        // Progreso de Habitaciones
+        function checkRoomProgress() {
+            const r1 = ['p1', 'p2', 'p3'].every(p => gameState.solvedPuzzles.includes(p));
+            const r2 = ['p4', 'p5', 'p6'].every(p => gameState.solvedPuzzles.includes(p));
+            const r3 = ['p7', 'p8', 'p9'].every(p => gameState.solvedPuzzles.includes(p));
+            const r4 = ['p10', 'p11'].every(p => gameState.solvedPuzzles.includes(p));
+
+            if (r1 && gameState.activeRoom < 2) activateRoom(2);
+            if (r1 && r2 && gameState.activeRoom < 3) activateRoom(3);
+            if (r1 && r2 && r3 && gameState.activeRoom < 4) activateRoom(4);
+            if (r1 && r2 && r3 && r4 && gameState.activeRoom < 5) activateRoom(5);
+        }
+
+        function activateRoom(roomNumber) {
+            gameState.activeRoom = roomNumber;
+            const roomEl = document.getElementById(`room-${roomNumber}`);
+            if(roomEl && !roomEl.classList.contains('active')) {
+                roomEl.classList.add('active');
+                setTimeout(() => roomEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 500);
+            }
+        }
+
+        // Persistencia
+        function saveProgress() {
+            try { localStorage.setItem('escapePH_Grado9', JSON.stringify(gameState)); } 
+            catch (e) { console.error("Error guardando progreso", e); }
+        }
+
+        function loadProgress() {
+            try {
+                const savedData = localStorage.getItem('escapePH_Grado9');
+                if (savedData) {
+                    gameState = JSON.parse(savedData);
+                    
+                    gameState.solvedPuzzles.forEach(puzzleId => {
+                        const inputEl = document.getElementById(`input-${puzzleId}`);
+                        const btnEl = document.getElementById(`btn-${puzzleId}`);
+                        const errorEl = document.getElementById(`error-${puzzleId}`);
+                        
+                        if(inputEl && btnEl) {
+                            let ans = answers[puzzleId];
+                            inputEl.value = Array.isArray(ans) ? ans[0] : ans;
+                            handleSuccess(puzzleId, inputEl, btnEl, errorEl);
+                        }
+                    });
+
+                    renderInventory();
+                    
+                    for(let i = 1; i <= gameState.activeRoom; i++) {
+                        const roomEl = document.getElementById(`room-${i}`);
+                        if(roomEl) roomEl.classList.add('active');
+                    }
+                }
+            } catch (e) { console.error("Error cargando progreso", e); }
+        }
+
+        window.onload = () => {
+            loadProgress();
+        };
+    </script>
+</body>
+</html>
