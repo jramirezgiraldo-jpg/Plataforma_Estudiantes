@@ -1,55 +1,83 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="dashboard-header admin-header">
-    <h1>👨‍🏫 Tablero de Control del Docente</h1>
-    <p>Bienvenido <strong>{{ name }}</strong>. Aquí puedes monitorear el progreso de tus estudiantes en tiempo real.</p>
+<div class="dashboard-header" style="margin-bottom: 3rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--primary-color);">Panel de Control</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem;">Gestión de rendimiento y retención de estudiantes.</p>
+    </div>
+    
+    <div class="admin-filters">
+        <form method="GET" action="{{ url_for('admin_dashboard') }}" style="display: flex; align-items: center; gap: 1rem;">
+            <label for="grade" style="font-weight: 700; color: var(--text-muted);">Filtrar por Grado:</label>
+            <select name="grade" id="grade" onchange="this.form.submit()" class="form-input" style="margin-bottom: 0; padding: 0.5rem 1rem;">
+                <option value="">Todos los Grados</option>
+                {% for g in [6, 7, 8, 9, 10, 11] %}
+                <option value="{{ g }}" {% if selected_grade == g %}selected{% endif %}>Grado {{ g }}°</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
 </div>
 
-<div class="admin-controls">
-    <form method="GET" action="{{ url_for('admin_dashboard') }}" class="filter-form">
-        <label for="grade">Mostrar Grado:</label>
-        <select name="grade" id="grade" onchange="this.form.submit()">
-            <option value="">Todos los Grados</option>
-            <option value="6" {% if selected_grade == 6 %}selected{% endif %}>Grado 6°</option>
-            <option value="7" {% if selected_grade == 7 %}selected{% endif %}>Grado 7°</option>
-            <option value="8" {% if selected_grade == 8 %}selected{% endif %}>Grado 8°</option>
-            <option value="9" {% if selected_grade == 9 %}selected{% endif %}>Grado 9°</option>
-            <option value="10" {% if selected_grade == 10 %}selected{% endif %}>Grado 10°</option>
-            <option value="11" {% if selected_grade == 11 %}selected{% endif %}>Grado 11°</option>
-        </select>
-    </form>
-</div>
+<div class="card-premium">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 800;">Rendimiento en Tiempo Real</h2>
+        <span style="background: var(--secondary-color); padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; color: var(--primary-color);">
+            {{ students|length }} Estudiantes
+        </span>
+    </div>
 
-<div class="scoreboard-container">
-    <h2>🏆 Progreso y Carrera de Estudiantes</h2>
-    <div class="scoreboard">
-        {% if students %}
-            {% for student in students %}
-            <div class="student-bar-wrapper" style="animation-delay: {{ loop.index0 * 0.1 }}s">
-                <div class="student-info">
-                    <span class="student-name">{{ student.name }} <span class="badge">Grado {{ student.grade }}°</span></span>
-                    <span class="student-stats">Puntaje: {{ student.score|round(1) }}/5.0 | Actividades: {{ student.completed }}</span>
-                </div>
-                <div class="progress-track teacher-track">
-                    <div class="progress-fill animal-bg-{{ student.animal }}" style="width: {{ (student.score / 5.0) * 100 }}%;">
-                        <div class="animal-avatar bounce-anim">
-                            {% if student.animal == 'tortoise' %}🐢
-                            {% elif student.animal == 'owl' %}🦉
-                            {% elif student.animal == 'fox' %}🦊
-                            {% elif student.animal == 'tiger' %}🐯
-                            {% elif student.animal == 'eagle' %}🦅
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty-state">
-                <p>No hay estudiantes registrados en este grado aún.</p>
-            </div>
-        {% endif %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Estudiante</th>
+                    <th>Grado</th>
+                    <th>Progreso Visual</th>
+                    <th>Puntaje</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if students %}
+                    {% for student in students %}
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 35px; height: 35px; background: var(--secondary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                    {% if student.animal == 'tortoise' %}🐢
+                                    {% elif student.animal == 'owl' %}🦉
+                                    {% elif student.animal == 'fox' %}🦊
+                                    {% elif student.animal == 'tiger' %}🐯
+                                    {% elif student.animal == 'eagle' %}🦅
+                                    {% endif %}
+                                </div>
+                                <span style="font-weight: 700;">{{ student.name }}</span>
+                            </div>
+                        </td>
+                        <td><span class="period-badge" style="background: var(--secondary-color); color: var(--text-main); margin-bottom: 0;">{{ student.grade }}°</span></td>
+                        <td style="width: 30%;">
+                            <div class="progress-container" style="margin: 0;">
+                                <div class="progress-bar {% if student.score < 2.5 %}prog-low{% elif student.score < 4 %}prog-mid{% else %}prog-high{% endif %}" 
+                                     style="width: {{ (student.score / 5.0) * 100 }}%;"></div>
+                            </div>
+                        </td>
+                        <td><strong style="color: var(--primary-color);">{{ student.score|round(1) }}</strong> <span style="color: var(--text-muted); font-size: 0.8rem;">/ 5.0</span></td>
+                        <td>
+                            <button class="btn btn-ghost" style="padding: 0.4rem; border: 1px solid var(--border-color);">👁️ Ver Detalle</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 4rem; color: var(--text-muted);">
+                            No hay datos disponibles para este filtro.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

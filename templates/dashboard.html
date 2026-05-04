@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h1>📚 Tus Materiales - Grado {{ grade }}°</h1>
-    <p>Bienvenido <strong>{{ name }}</strong>. ¡Aquí encontrarás todas tus aventuras de aprendizaje!</p>
+<div class="dashboard-header" style="margin-bottom: 3rem;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--primary-color);">📚 Mis Materiales</h1>
+    <p style="color: var(--text-muted); font-size: 1.1rem;">Bienvenido de nuevo, <span style="color: var(--text-main); font-weight: 700;">{{ name }}</span>. Continúa tu camino al éxito.</p>
 </div>
 
-<!-- Progreso y Recompensas -->
-<div class="student-progress-section">
-    <div class="progress-card glass">
-        <div class="reward-badge badge-{{ animal }}">
-            <div class="animal-icon pop-anim">
+<!-- Módulo de Progreso Minimalista -->
+<section class="card-premium" style="margin-bottom: 3rem; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem;">
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <div class="reward-icon" style="font-size: 3.5rem;">
                 {% if animal == 'tortoise' %}🐢
                 {% elif animal == 'owl' %}🦉
                 {% elif animal == 'fox' %}🦊
@@ -18,65 +18,85 @@
                 {% elif animal == 'eagle' %}🦅
                 {% endif %}
             </div>
-            <span class="animal-name tooltip">Nivel: {{ animal|capitalize }}</span>
-        </div>
-        <div class="progress-details">
-            <h3>Tu Progreso Actual</h3>
-            <p>Puntaje: <strong>{{ score|round(1) }} / 5.0</strong> &nbsp;|&nbsp; Actividades Completadas: <strong>{{ completed }}</strong></p>
-            <div class="progress-track student-track">
-                <div class="progress-fill animal-bg-{{ animal }}" style="width: {{ (score / 5.0) * 100 }}%;"></div>
+            <div>
+                <h3 style="font-size: 1.25rem; font-weight: 800;">Nivel {{ animal|capitalize }}</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Has completado {{ completed }} actividades este periodo.</p>
             </div>
-            <p class="motivational-text">¡Completa actividades para evolucionar tu animal de recompensa!</p>
+        </div>
+        
+        <div style="flex-grow: 1; max-width: 500px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 700;">
+                <span>Progreso Total</span>
+                <span>{{ score|round(1) }} / 5.0</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar {% if score < 2.5 %}prog-low{% elif score < 4 %}prog-mid{% else %}prog-high{% endif %}" 
+                     style="width: {{ (score / 5.0) * 100 }}%;"></div>
+            </div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="materials-container">
+<!-- Galería de Materiales -->
+<div class="materials-section">
     {% set ns = namespace(current_period='') %}
     {% if files %}
         {% for file in files %}
             {% if ns.current_period != file.periodo %}
                 {% set ns.current_period = file.periodo %}
-                <h2 class="period-title">Periodo {{ file.periodo }}</h2>
+                <div class="period-section">
+                    <span class="period-badge">Periodo {{ file.periodo }}</span>
+                    <div class="gallery-grid">
             {% endif %}
-            <div class="material-card">
-                <div class="material-icon">
-                    {% if 'ScapeRoom' in file['display_name'] %}
-                        🔐
-                    {% elif 'gamif' in file['display_name'] or 'jue' in file['display_name'] %}
-                        🎮
-                    {% elif 'ppt' in file['display_name'] or 'SL' in file['display_name'] %}
-                        📊
-                    {% elif 'concentrece' in file['display_name'] or 'cru' in file['display_name'] %}
-                        🧩
-                    {% else %}
-                        📄
+            
+            <div class="material-item" {% if file.type == 'parental' %}style="border-color: var(--primary-color); background: #f0f7ff;"{% endif %}>
+                <div class="file-icon">
+                    {% if file.type == 'parental' %}🏡
+                    {% elif 'ScapeRoom' in file['display_name'] %}🔐
+                    {% elif 'gamif' in file['display_name'] or 'jue' in file['display_name'] %}🎮
+                    {% elif 'ppt' in file['display_name'] or 'SL' in file['display_name'] %}📊
+                    {% elif 'concentrece' in file['display_name'] or 'cru' in file['display_name'] %}🧩
+                    {% else %}📄
                     {% endif %}
                 </div>
-                <div class="material-info">
-                    <h3>{{ file['display_name'] }}</h3>
-                    <a href="{{ url_for('serve_material', periodo_id=file['periodo'], filename=file['filename']) }}" target="_blank" class="btn-secondary" onclick="simulateCompletion()">Abrir Actividad</a>
+                <div class="material-meta" style="flex-grow: 1;">
+                    <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">{{ file['display_name'] }}</h3>
+                    {% if file.type == 'parental' %}
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">{{ file.norm }}</p>
+                        <button class="btn btn-ghost" style="width: 100%; border: 1px solid var(--primary-color); color: var(--primary-color);" onclick="alert('Guía de Estudio: {{ file.desc }}')">Ver Guía</button>
+                    {% else %}
+                        <a href="{{ url_for('serve_material', periodo_id=file['periodo'], filename=file['filename']) }}" 
+                           target="_blank" 
+                           class="btn btn-primary" 
+                           style="width: 100%; font-size: 0.85rem;"
+                           onclick="simulateCompletion()">
+                            Iniciar Actividad
+                        </a>
+                    {% endif %}
                 </div>
             </div>
+
+            {% if loop.nextitem is not defined or loop.nextitem.periodo != ns.current_period %}
+                    </div> <!-- Close gallery-grid -->
+                </div> <!-- Close period-section -->
+            {% endif %}
         {% endfor %}
     {% else %}
-        <div class="empty-state">
-            <p>No se encontraron materiales para tu grado en este momento.</p>
+        <div class="empty-state" style="padding: 4rem; text-align: center; background: white; border-radius: var(--radius-lg); border: 2px dashed var(--border-color);">
+            <p style="font-size: 1.2rem; color: var(--text-muted);">Aún no hay materiales disponibles para tu grado.</p>
         </div>
     {% endif %}
 </div>
 
 <script>
-// Simulate progress update when opening an activity
 function simulateCompletion() {
     fetch("{{ url_for('complete_activity') }}", {
         method: "POST"
     }).then(res => res.json()).then(data => {
         if(data.status === 'success') {
-            console.log("Score updated!");
             setTimeout(() => {
                 location.reload();
-            }, 3000); // Reload the dashboard after 3 seconds to show new score
+            }, 2000);
         }
     });
 }
