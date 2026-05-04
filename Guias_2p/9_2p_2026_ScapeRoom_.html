@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: AgroGen Quindío - La Semilla Madre</title>
+    <style>
+        :root {
+            --bg-dark: #0d1b2a;
+            --tech-green: #00ff00;
+            --rustic-brown: #8b5a2b;
+            --text-light: #e0e1dd;
+            --error-red: #ff0033;
+            --font-main: 'Arial', sans-serif;
+            --font-code: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: var(--font-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-image: linear-gradient(rgba(13, 27, 42, 0.9), rgba(13, 27, 42, 0.9)), url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M10 10 h 80 v 80 h -80 Z" fill="none" stroke="%231b263b" stroke-width="1"/></svg>');
+        }
+
+        #game-board {
+            width: 95%;
+            max-width: 900px;
+            height: 90vh;
+            background-color: rgba(27, 38, 59, 0.95);
+            border: 2px solid var(--tech-green);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--tech-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: var(--font-code);
+            border-bottom: 1px solid var(--rustic-brown);
+            padding-bottom: 10px;
+        }
+
+        h2 { color: var(--rustic-brown); }
+        
+        .room-screen { display: none; }
+        .active-room { display: block; }
+
+        .story-panel {
+            background-color: rgba(139, 90, 43, 0.1);
+            border-left: 4px solid var(--rustic-brown);
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .highlight { color: var(--tech-green); font-weight: bold; }
+        .code-box {
+            font-family: var(--font-code);
+            background: #000;
+            padding: 10px;
+            border: 1px dashed var(--tech-green);
+            color: var(--tech-green);
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .puzzle-group {
+            border: 1px solid #415a77;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 5px;
+        }
+
+        .puzzle-title {
+            font-family: var(--font-code);
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--tech-green);
+            color: var(--tech-green);
+            font-family: var(--font-code);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        input:focus { outline: none; box-shadow: 0 0 10px var(--tech-green); }
+
+        button {
+            background-color: var(--rustic-brown);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: 0.3s;
+            width: 100%;
+        }
+
+        button:hover { background-color: var(--tech-green); color: #000; }
+        button:disabled { background-color: #555; cursor: not-allowed; }
+
+        .lockout-msg {
+            color: var(--error-red);
+            font-family: var(--font-code);
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .pista-img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid var(--rustic-brown);
+            margin: 15px auto;
+            display: block;
+        }
+
+        #inventory {
+            border-top: 1px solid var(--tech-green);
+            padding-top: 10px;
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .inv-item {
+            background-color: var(--tech-green);
+            color: #000;
+            padding: 5px 10px;
+            font-family: var(--font-code);
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-board">
+    <h1>AgroGen Quindío</h1>
+    
+    <div id="room-1" class="room-screen active-room">
+        <h2>Sector 1: El Invernadero de Cuarentena</h2>
+        <div class="story-panel">
+            Bienvenidos a AgroGen, la instalación secreta en las montañas de Quimbaya. Nuestra misión era crear la variedad de café perfecta, resistente a todo. Pero el sistema de seguridad se ha bloqueado y la "Semilla Madre" está atrapada en la bóveda. Para avanzar, debes demostrar que comprendes la base de la vida.
+        </div>
+        
+        <div class="puzzle-group">
+            <span class="puzzle-title">Acertijo 1/13: Código César Genético</span>
+            <p>La contraseña del primer panel usa un Cifrado César (Desplazamiento +3). Descifra la palabra: <span class="code-box">IHQRWLSR</span></p>
+            <p><em>(Pista: Retrocede 3 letras en el abecedario. I->F, H->E...)</em></p>
+            <input type="text" id="ans-1" placeholder="Palabra descifrada...">
+            <button onclick="check(1, 'FENOTIPO')">Verificar</button>
+            <div id="lock-1" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-group" id="p-group-2" style="display:none;">
+            <span class="puzzle-title">Acertijo 2/13: Concepto Básico</span>
+            <p>El "Fenotipo" es lo que vemos (el color del café, la altura del árbol). Pero ¿cómo se llama el conjunto de genes ocultos en el ADN que determina esas características?</p>
+            <input type="text" id="ans-2" placeholder="Concepto...">
+            <button onclick="check(2, 'GENOTIPO')">Verificar</button>
+            <div id="lock-2" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-group" id="p-group-3" style="display:none;">
+            <span class="puzzle-title">Acertijo 3/13: Carga Cromosómica</span>
+            <p>Una célula somática (del tallo) de nuestra planta de café Quindiana tiene 44 cromosomas (2n). Para crear la semilla, necesitamos el polen (célula sexual o gameto). ¿Cuántos cromosomas (n) tiene el gameto de esta planta?</p>
+            <input type="text" id="ans-3" placeholder="Número...">
+            <button onclick="check(3, '22', 'Llave USB del Laboratorio')">Avanzar al Laboratorio</button>
+            <div id="lock-3" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-2" class="room-screen">
+        <h2>Sector 2: Laboratorio de Meiosis</h2>
+        <div class="story-panel">
+            ¡Acceso concedido! Tienes la Llave USB en tu inventario. Aquí preparamos las células sexuales. La <span class="highlight">Meiosis</span> es crucial: reduce el material genético a la mitad para que, al unirse el polen y el óvulo, la nueva planta tenga el número correcto de cromosomas (44).
+        </div>
+
+        <div class="puzzle-group">
+            <span class="puzzle-title">Acertijo 4/13: El Diagrama Visual</span>
+            <p>Observa el esquema de la división celular (<span class="highlight">pista_1.png</span>). Para activar la centrífuga, ingresa la secuencia de 4 números oculta en la imagen.</p>
+            <img src="pista_1.png" alt="Pista 1: Diagrama de Meiosis" class="pista-img" onerror="this.style.display='none'">
+            <input type="text" id="ans-4" placeholder="Código de 4 dígitos...">
+            <button onclick="check(4, '4213')">Verificar</button>
+            <div id="lock-4" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-group" id="p-group-5" style="display:none;">
+            <span class="puzzle-title">Acertijo 5/13: Lectura Crítica (Bitácora)</span>
+            <div class="story-panel" style="font-size: 0.95rem;">
+                <strong>Registro del Director:</strong> "Para asegurar que las nuevas plantas de cítricos en Montenegro soporten las plagas, dependemos de la variabilidad genética. Esta magia ocurre en la Profase I de la meiosis, en un proceso llamado 'entrecruzamiento' (crossing over). Los cromosomas homólogos intercambian fragmentos de ADN, creando combinaciones únicas. Si esto no ocurriera, todos los gametos serían clones y una sola plaga destruiría toda la cosecha. La clave de seguridad del servidor central se calcula analizando el final de este proceso. Piensa: la meiosis empieza con UNA célula diploide (2n). Al final de las dos divisiones consecutivas (Meiosis I y II), ¿cuántas células resultan en total? Toma ese número, y acompáñalo del número de cromosomas que tiene cada una de esas células resultantes si hablamos del ser humano (cuyo gameto normal es 23). El código de 4 dígitos es la unión de ambos valores."
+            </div>
+            <p>Ingresa el código de 4 dígitos derivado de la lectura.</p>
+            <input type="text" id="ans-5" placeholder="Código numérico...">
+            <button onclick="check(5, '4023')">Verificar</button> <div id="lock-5" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-group" id="p-group-6" style="display:none;">
+            <span class="puzzle-title">Acertijo 6/13: Deducción Lógica</span>
+            <p>Basado en la lectura anterior, ¿cómo se llama el proceso exacto que garantiza que no seamos copias exactas de nuestros padres, donde los cromosomas intercambian ADN?</p>
+            <input type="text" id="ans-6" placeholder="Nombre del proceso...">
+            <button onclick="check(6, 'ENTRECRUZAMIENTO')">Avanzar al Archivo</button>
+            <div id="lock-6" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-3" class="room-screen">
+        <h2>Sector 3: El Archivo de Mendel</h2>
+        <div class="story-panel">
+            Gregor Mendel, el padre de la genética, cultivó guisantes. Nosotros cultivamos café y cítricos. Sus leyes siguen aplicando aquí en Quindío.
+        </div>
+
+        <div class="puzzle-group">
+            <span class="puzzle-title">Acertijo 7/13: Cuadro de Punnett</span>
+            <p>Revisa la <span class="highlight">pista_2.png</span>. Muestra el cruce entre dos líneas puras de café. Ingresa los nombres de los 4 símbolos que aparecen en la esquina inferior derecha en orden, sin espacios.</p>
+            <img src="pista_2.png" alt="Pista 2: Cuadro de Punnett" class="pista-img" onerror="this.style.display='none'">
+            <input type="text" id="ans-7" placeholder="Ej: CUADRADOLUNA...">
+            <button onclick="check(7, 'TRIANGULOCIRCULOHEXAGONOESTRELLA')">Verificar</button>
+            <div id="lock-7" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-group" id="p-group-8" style="display:none;">
+            <span class="puzzle-title">Acertijo 8/13: Alelos</span>
+            <p>En el cuadro, las letras representan versiones de un gen. La letra mayúscula ('R') domina sobre la minúscula ('r'). ¿Cómo se le llama en genética a las diferentes versiones o alternativas que puede tener un gen?</p>
+            <input type="text" id="ans-8" placeholder="Palabra (plural)...">
+            <button onclick="check(8, 'ALELOS')">Verificar</button>
+            <div id="lock-8" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-group" id="p-group-9" style="display:none;">
+            <span class="puzzle-title">Acertijo 9/13: Ley de Dominancia</span>
+            <p>Si la característica dominante (R) es "Cereza de café ROJA" y la recesiva (r) es "Cereza AMARILLA". ¿De qué color será el fenotipo de una planta con el genotipo heterocigoto (Rr)?</p>
+            <input type="text" id="ans-9" placeholder="Color...">
+            <button onclick="check(9, 'ROJA', 'Guía Genética Mendelian')">Avanzar a la Cámara</button>
+            <div id="lock-9" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-4" class="room-screen">
+        <h2>Sector 4: Cámara de Cruce Uniforme</h2>
+        <div class="story-panel">
+            Esta es la sala donde aplicamos la <span class="highlight">Primera Ley de Mendel</span> (Principio de Uniformidad). Al cruzar dos individuos de raza pura (uno dominante AA y otro recesivo aa), toda su descendencia en la primera generación será igual entre sí.
+        </div>
+
+        <div class="puzzle-group">
+            <span class="puzzle-title">Acertijo 10/13: Análisis de Datos</span>
+            <p>Inspecciona la tabla de cítricos en <span class="highlight">pista_3.png</span>. Busca el sello rojo. ¿Cuál es el código de lote impreso en el sello?</p>
+            <img src="pista_3.png" alt="Pista 3: Tabla Cítricos" class="pista-img" onerror="this.style.display='none'">
+            <input type="text" id="ans-10" placeholder="Código de lote...">
+            <button onclick="check(10, 'F1-UNIFORME')">Verificar</button>
+            <div id="lock-10" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-group" id="p-group-11" style="display:none;">
+            <span class="puzzle-title">Acertijo 11/13: Uso de Inventario</span>
+            <p>Para desbloquear el acceso final, necesitas la <span class="highlight">Llave USB del Laboratorio</span> que recolectaste en el Sector 1. Esa llave contiene una constante del genoma del café. Resuelve esto: Si toda la generación F1 es Heterocigota (Aa), y cruzamos dos individuos de esa generación F1 entre sí (Aa x Aa), el porcentaje de descendencia que mostrará el fenotipo RECESIVO en la generación F2 es un número preciso. Escribe ese número acompañado del símbolo de porcentaje.</p>
+            <input type="text" id="ans-11" placeholder="Ej: 50%...">
+            <button onclick="check(11, '25%')">Acceder a la Bóveda</button>
+            <div id="lock-11" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-5" class="room-screen">
+        <h2>Sector 5: Bóveda de la Semilla Madre</h2>
+        <div class="story-panel">
+            ¡Has llegado al núcleo! Frente a ti está la cerradura de ADN que protege la Semilla Madre de AgroGen Quindío.
+        </div>
+
+        <div class="puzzle-group">
+            <span class="puzzle-title">Acertijo 12/13: Patrón Visual Final</span>
+            <p>Analiza la cerradura (<span class="highlight">pista_4.png</span>). Encuentra la secuencia de las 3 letras griegas ocultas en el metal e ingrésalas en texto plano sin espacios.</p>
+            <img src="pista_4.png" alt="Pista 4: Bóveda ADN" class="pista-img" onerror="this.style.display='none'">
+            <input type="text" id="ans-12" placeholder="Ej: OMEGASIGMA...">
+            <button onclick="check(12, 'ALFABETAGAMMA')">Verificar</button>
+            <div id="lock-12" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-group" id="p-group-13" style="display:none;">
+            <span class="puzzle-title">Acertijo 13/13: Ecuación de Maestría</span>
+            <p>Para abrir la bóveda, une los conceptos clave de tu viaje. Escribe todo junto en mayúsculas, sin espacios:</p>
+            <p>1. El nombre del proceso que crea gametos haploides.<br>
+               2. Las dos primeras letras de la palabra que define la apariencia física visible.<br>
+               3. El número de cromosomas del gameto humano que dedujiste en el Sector 2.</p>
+            <input type="text" id="ans-13" placeholder="Respuesta final...">
+            <button onclick="check(13, 'MEIOSISFE23')">EXTRAER SEMILLA MADRE</button>
+            <div id="lock-13" class="lockout-msg">Bloqueo: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-success" class="room-screen">
+        <h2 style="color: var(--tech-green);">¡MISIÓN CUMPLIDA!</h2>
+        <div class="story-panel">
+            Has recuperado la Semilla Madre. Gracias a tu comprensión de la meiosis, el genotipo y las Leyes de Mendel, los cultivos de Montenegro y Quimbaya tienen un futuro asegurado frente al cambio climático y las plagas. ¡Eres un verdadero genetista agrónomo!
+        </div>
+        <button onclick="resetGame()" style="background-color: var(--tech-green); color: #000;">Reiniciar Simulación</button>
+    </div>
+
+    <div id="inventory">
+        <span style="color: var(--tech-green); font-family: var(--font-code);">EQUIPO:</span>
+        </div>
+</div>
+
+<script>
+    // Variables de Estado
+    let currentPuzzle = 1;
+    let inventory = [];
+    let isLocked = false;
+
+    // Inicializar juego desde LocalStorage
+    window.onload = function() {
+        const savedState = localStorage.getItem('agroGenSave');
+        if (savedState) {
+            const state = JSON.parse(savedState);
+            inventory = state.inventory || [];
+            currentPuzzle = state.puzzle || 1;
+            updateInventoryUI();
+            restoreViewState();
+        }
+    };
+
+    // Validación Estricta y Lógica
+    function check(puzzleNum, correctAns, itemReward = null) {
+        if (isLocked) return;
+
+        const inputEl = document.getElementById('ans-' + puzzleNum);
+        const lockEl = document.getElementById('lock-' + puzzleNum);
+        const btnEl = inputEl.nextElementSibling;
+        
+        // Limpiar espacios y normalizar a mayúsculas
+        const playerAns = inputEl.value.replace(/\s+/g, '').toUpperCase();
+        
+        // La respuesta correcta también se procesa igual por seguridad
+        const targetAns = correctAns.replace(/\s+/g, '').toUpperCase();
+
+        if (playerAns === targetAns) {
+            // ACIERTO
+            if (itemReward && !inventory.includes(itemReward)) {
+                inventory.push(itemReward);
+                updateInventoryUI();
+            }
+            
+            // Avanzar progreso
+            currentPuzzle++;
+            saveProgress();
+            
+            // Transición Visual
+            btnEl.style.backgroundColor = "var(--tech-green)";
+            btnEl.style.color = "#000";
+            btnEl.innerText = "COMPLETADO";
+            inputEl.disabled = true;
+            btnEl.disabled = true;
+
+            setTimeout(() => {
+                advanceView(puzzleNum);
+            }, 800);
+
+        } else {
+            // ERROR: Penalización 7 segundos
+            applyLockout(inputEl, btnEl, lockEl);
+        }
+    }
+
+    function applyLockout(input, btn, lockMsg) {
+        isLocked = true;
+        input.disabled = true;
+        btn.disabled = true;
+        input.style.borderColor = "var(--error-red)";
+        lockMsg.style.display = "block";
+        
+        let timeLeft = 7;
+        lockMsg.innerText = `Error crítico. Bloqueo de seguridad: ${timeLeft}s`;
+
+        const timer = setInterval(() => {
+            timeLeft--;
+            lockMsg.innerText = `Error crítico. Bloqueo de seguridad: ${timeLeft}s`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                isLocked = false;
+                input.disabled = false;
+                btn.disabled = false;
+                input.style.borderColor = "var(--tech-green)";
+                input.value = "";
+                lockMsg.style.display = "none";
+                input.focus();
+            }
+        }, 1000);
+    }
+
+    function advanceView(currentP) {
+        // Lógica para mostrar el siguiente acertijo o cambiar de habitación
+        const transitions = {
+            3: 2, // Después del 3, ir a room 2
+            6: 3, // Después del 6, ir a room 3
+            9: 4, // Después del 9, ir a room 4
+            11: 5, // Después del 11, ir a room 5
+            13: 'success' // Final
+        };
+
+        if (transitions[currentP]) {
+            // Cambiar de habitación
+            document.querySelectorAll('.room-screen').forEach(el => el.classList.remove('active-room'));
+            document.getElementById('room-' + transitions[currentP]).classList.add('active-room');
+        } else {
+            // Mostrar siguiente acertijo en la misma habitación
+            const nextP = currentP + 1;
+            const group = document.getElementById('p-group-' + nextP);
+            if (group) group.style.display = "block";
+        }
+    }
+
+    // Restaurar vista al recargar (LocalStorage)
+    function restoreViewState() {
+        // Ocultar todas las habitaciones primero
+        document.querySelectorAll('.room-screen').forEach(el => el.classList.remove('active-room'));
+        
+        let targetRoom = 1;
+        if(currentPuzzle > 13) targetRoom = 'success';
+        else if (currentPuzzle > 11) targetRoom = 5;
+        else if (currentPuzzle > 9) targetRoom = 4;
+        else if (currentPuzzle > 6) targetRoom = 3;
+        else if (currentPuzzle > 3) targetRoom = 2;
+
+        document.getElementById('room-' + targetRoom).classList.add('active-room');
+
+        // Mostrar los acertijos previos completados y el actual en la habitación
+        for(let i=1; i<=currentPuzzle; i++) {
+            let group = document.getElementById('p-group-' + i);
+            if(group) group.style.display = "block";
+            
+            // Si es un puzzle anterior, bloquearlo visualmente
+            if (i < currentPuzzle) {
+                let input = document.getElementById('ans-' + i);
+                let btn = input.nextElementSibling;
+                if(input && btn) {
+                    input.disabled = true;
+                    btn.disabled = true;
+                    btn.style.backgroundColor = "var(--tech-green)";
+                    btn.style.color = "#000";
+                    btn.innerText = "COMPLETADO";
+                }
+            }
+        }
+    }
+
+    function updateInventoryUI() {
+        const invDiv = document.getElementById('inventory');
+        // Mantener el texto "EQUIPO:"
+        invDiv.innerHTML = '<span style="color: var(--tech-green); font-family: var(--font-code);">EQUIPO:</span>';
+        inventory.forEach(item => {
+            let span = document.createElement('span');
+            span.className = 'inv-item';
+            span.innerText = item;
+            invDiv.appendChild(span);
+        });
+    }
+
+    function saveProgress() {
+        const state = { puzzle: currentPuzzle, inventory: inventory };
+        localStorage.setItem('agroGenSave', JSON.stringify(state));
+    }
+
+    function resetGame() {
+        localStorage.removeItem('agroGenSave');
+        location.reload();
+    }
+</script>
+
+</body>
+</html>

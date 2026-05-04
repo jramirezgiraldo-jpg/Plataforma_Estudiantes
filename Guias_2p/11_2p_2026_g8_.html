@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Jóvenes en acción I - Diseñando el cambio</title>
+    <style>
+        /* =========================================
+           PALETA DE COLORES (Inspirada en el PCC)
+           ========================================= */
+        :root {
+            --cafe-grano: #4A2C00;
+            --cafe-tierra: #795548;
+            --verde-cafetal: #2E7D32;
+            --verde-brote: #8BC34A;
+            --naranja-citrico: #E65100;
+            --amarillo-sol: #FFC107;
+            --crema-fondo: #F9FBE7;
+            --blanco: #FFFFFF;
+            --gris-texto: #37474F;
+            --rojo-alerta: #D32F2F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--crema-fondo);
+            color: var(--gris-texto);
+            line-height: 1.7;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* =========================================
+           SISTEMA DE AUTENTICACIÓN
+           ========================================= */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, var(--verde-cafetal), var(--cafe-grano));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.6s ease;
+        }
+
+        .login-box {
+            background: var(--blanco);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border-top: 6px solid var(--naranja-citrico);
+        }
+
+        .login-box h1 {
+            color: var(--cafe-grano);
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        .login-box p {
+            font-size: 0.95em;
+            margin-bottom: 25px;
+            color: #555;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 700;
+            color: var(--cafe-tierra);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #C5E1A5;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--naranja-citrico);
+            outline: none;
+        }
+
+        .btn {
+            background-color: var(--naranja-citrico);
+            color: var(--blanco);
+            border: none;
+            padding: 14px 25px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.1s;
+            width: 100%;
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            background-color: #BF360C;
+            transform: translateY(-2px);
+        }
+
+        /* =========================================
+           INTERFAZ PRINCIPAL Y GAMIFICACIÓN
+           ========================================= */
+        #main-app { display: none; }
+
+        header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background: var(--blanco);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+            z-index: 500;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--verde-brote);
+        }
+
+        .user-info {
+            font-weight: 700;
+            color: var(--cafe-grano);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stats-container {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .unlockables { display: flex; gap: 8px; }
+
+        .icon-unlock {
+            width: 28px; height: 28px;
+            fill: #E0E0E0;
+            transition: fill 0.5s, transform 0.3s;
+        }
+        .icon-unlock.unlocked { 
+            fill: var(--naranja-citrico); 
+            transform: scale(1.15);
+            filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.2));
+        }
+
+        .points-badge {
+            background: var(--verde-cafetal);
+            color: var(--blanco);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .progress-wrapper { text-align: right; }
+        .progress-title { font-size: 0.75em; color: var(--cafe-tierra); font-weight: bold; text-transform: uppercase; margin-bottom: 3px;}
+        .progress-container {
+            width: 250px; background: #E0E0E0; border-radius: 8px; height: 12px; overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%; background: var(--amarillo-sol); width: 0%; transition: width 0.6s ease;
+        }
+
+        main { max-width: 960px; margin: 90px auto 50px auto; padding: 20px; }
+
+        /* =========================================
+           ESTRUCTURA DE CONTENIDO
+           ========================================= */
+        section {
+            background: var(--blanco);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 8px; height: 100%;
+            background: var(--verde-brote);
+            border-radius: 12px 0 0 12px;
+        }
+
+        h2 {
+            color: var(--verde-cafetal);
+            border-bottom: 2px solid var(--amarillo-sol);
+            padding-bottom: 8px;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        h3 { color: var(--cafe-grano); margin-top: 30px; margin-bottom: 12px; font-size: 1.3em;}
+        p { margin-bottom: 18px; text-align: justify; font-size: 1.05em; }
+
+        .highlight {
+            background-color: #FFF3E0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--naranja-citrico);
+        }
+
+        /* =========================================
+           CUADROS COMPARATIVOS
+           ========================================= */
+        .table-responsive { overflow-x: auto; margin: 25px 0; }
+        table {
+            width: 100%; border-collapse: collapse; min-width: 600px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        th, td { padding: 14px 18px; border: 1px solid #E0E0E0; text-align: left; }
+        th { background-color: var(--cafe-tierra); color: var(--blanco); font-size: 1.05em; }
+        tr:nth-child(even) { background-color: #F1F8E9; }
+
+        /* =========================================
+           PAUSAS ACTIVAS
+           ========================================= */
+        .pausa-activa {
+            background: #FFF8E1;
+            border: 2px dashed var(--amarillo-sol);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 10px;
+        }
+        .pausa-activa h4 { color: var(--naranja-citrico); margin-bottom: 12px; font-size: 1.2em;}
+        .pausa-activa ul { margin-left: 20px; margin-bottom: 20px; }
+        .pausa-activa li { margin-bottom: 8px; }
+        
+        .btn-pausa {
+            background: transparent;
+            border: 2px solid var(--naranja-citrico);
+            color: var(--naranja-citrico);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-pausa:hover { background: #FFE0B2; }
+        .btn-pausa.done {
+            background: var(--naranja-citrico);
+            color: var(--blanco);
+            border-color: var(--naranja-citrico);
+        }
+
+        /* =========================================
+           JUEGOS DRAG & DROP
+           ========================================= */
+        .game-container {
+            background: #FAFAFA;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+            border: 1px solid #CFD8DC;
+            text-align: center;
+        }
+        .game-title { color: var(--verde-cafetal); font-weight: bold; margin-bottom: 10px; }
+
+        .draggable-area {
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+            margin-bottom: 25px; min-height: 60px;
+        }
+
+        .drop-area {
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+            background: #ECEFF1; padding: 20px; border-radius: 8px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .drag-item {
+            background: var(--cafe-tierra); color: var(--blanco);
+            padding: 12px 22px; border-radius: 6px; cursor: grab;
+            user-select: none; font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            transition: transform 0.1s;
+        }
+        .drag-item:active { cursor: grabbing; transform: scale(0.95); }
+        .drag-item.letter { padding: 12px 18px; font-size: 1.3em; background: var(--naranja-citrico); }
+
+        .drop-slot {
+            width: auto; min-width: 80px; height: 50px;
+            border: 2px dashed #90A4AE; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--blanco); transition: background 0.2s;
+        }
+        .drop-slot.letter-slot { min-width: 50px; }
+        .drop-slot.hovered { background: #CFD8DC; border-color: var(--verde-cafetal); }
+
+        .game-status {
+            margin-top: 18px; font-weight: bold; color: var(--naranja-citrico); height: 24px; font-size: 1.1em;
+        }
+
+        /* =========================================
+           ANIMACIÓN CANVAS Y SVG GRÁFICAS
+           ========================================= */
+        .canvas-container {
+            width: 100%; background: #E8F5E9; border-radius: 12px; overflow: hidden;
+            position: relative; box-shadow: 0 6px 15px rgba(0,0,0,0.15); margin: 25px 0;
+            border: 2px solid #A5D6A7;
+            display: flex; flex-direction: column;
+        }
+        .canvas-ui {
+            padding: 15px; background: var(--blanco); border-bottom: 2px solid #A5D6A7;
+            display: flex; justify-content: space-around; align-items: center;
+        }
+        .canvas-ui button {
+            padding: 8px 15px; background: var(--verde-cafetal); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+        canvas { display: block; width: 100%; height: 400px; }
+
+        .svg-container {
+            width: 100%; background: var(--blanco); border: 1px solid #E0E0E0;
+            border-radius: 12px; padding: 20px; margin: 25px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* =========================================
+           EVALUACIÓN Y ANTI-FRAUDE
+           ========================================= */
+        .question-block {
+            margin-bottom: 28px; padding: 20px; background: #F5F5F5;
+            border-radius: 8px; border-left: 4px solid var(--verde-cafetal);
+        }
+        .question-block label { display: block; margin-bottom: 10px; cursor: pointer; font-size: 1.05em; }
+        .question-block input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+
+        textarea.anti-fraud {
+            width: 100%; height: 120px; padding: 12px; border: 2px solid #B0BEC5;
+            border-radius: 6px; resize: vertical; font-family: inherit; font-size: 1.05em;
+        }
+        textarea.anti-fraud:focus { border-color: var(--naranja-citrico); outline: none; }
+
+        .alert-fraud {
+            color: var(--rojo-alerta); font-size: 0.95em; font-weight: bold;
+            display: none; margin-top: 8px; background: #FFEBEE; padding: 8px; border-radius: 4px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         PANTALLA DE INGRESO
+         ========================================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>Jóvenes en Acción I</h1>
+            <p>Laboratorio: Diseñando Investigaciones y Acciones Mitigadoras<br><strong>Vereda Pueblo Rico, Quimbaya (Quindío)</strong></p>
+            <div class="input-group">
+                <label for="inp-apellidos">Apellidos del Investigador:</label>
+                <input type="text" id="inp-apellidos" placeholder="Tus apellidos" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="inp-nombres">Nombres del Investigador:</label>
+                <input type="text" id="inp-nombres" placeholder="Tus nombres" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar">Entrar al Campo de Estudio</button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         INTERFAZ PRINCIPAL
+         ========================================= -->
+    <div id="main-app">
+        <header>
+            <div class="user-info">
+                <!-- Icono Estudiante/Investigador -->
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="var(--cafe-grano)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span id="display-name">Investigador</span>
+            </div>
+            
+            <div class="stats-container">
+                <!-- Iconos Desbloqueables (Lupa científica y Planta de café) -->
+                <div class="unlockables">
+                    <svg class="icon-unlock" id="icon-lupa" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                    <svg class="icon-unlock" id="icon-planta" viewBox="0 0 24 24"><path d="M20.68,10.38C21.72,10.38 22.56,11.22 22.56,12.26C22.56,13.3 21.72,14.14 20.68,14.14C19.64,14.14 18.8,13.3 18.8,12.26C18.8,11.22 19.64,10.38 20.68,10.38M17.75,17.25L14,13.5V8.5L12,5L10,8.5V13.5L6.25,17.25H11V22H13V17.25H17.75M3.32,10.38C4.36,10.38 5.2,11.22 5.2,12.26C5.2,13.3 4.36,14.14 3.32,14.14C2.28,14.14 1.44,13.3 1.44,12.26C1.44,11.22 2.28,10.38 3.32,10.38Z"/></svg>
+                </div>
+
+                <div class="points-badge">
+                    <span>★</span>
+                    <span id="display-points">0</span> / 5 Pts
+                </div>
+                
+                <div class="progress-wrapper">
+                    <div class="progress-title">Avance de la Investigación</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- 1. OBJETIVO Y PRE-SABERES -->
+            <section id="sec-inicio">
+                <h2>1. Jóvenes Transformando su Territorio</h2>
+                <p><strong>Objetivo de Aprendizaje (Grado 11):</strong> Diseñar investigaciones científicas estructuradas y formular acciones mitigadoras aplicables a los problemas agroambientales reales de la Vereda Pueblo Rico, Quimbaya.</p>
+                <p>Un verdadero líder juvenil no solo observa los problemas, diseña el cambio. Comprobemos qué tanto sabes de investigación básica:</p>
+                
+                <div class="question-block">
+                    <p><strong>Pre-saber 1:</strong> En el método científico, ¿qué es una Hipótesis?</p>
+                    <label><input type="radio" name="pre1" value="a" onchange="saveAnswer('pre1', this.value)"> a) Una verdad absoluta e innegable dictada por un profesor.</label>
+                    <label><input type="radio" name="pre1" value="b" onchange="saveAnswer('pre1', this.value)"> b) Una explicación provisional o suposición educada que se propone para un fenómeno, la cual debe ser probada.</label>
+                    <label><input type="radio" name="pre1" value="c" onchange="saveAnswer('pre1', this.value)"> c) El resultado final de un experimento en el laboratorio.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>Pre-saber 2:</strong> En un cultivo de cítricos, si quieres saber si la cantidad de abono afecta el tamaño de las naranjas. ¿Cuál es la "Variable Dependiente"?</p>
+                    <label><input type="radio" name="pre2" value="a" onchange="saveAnswer('pre2', this.value)"> a) La cantidad de abono aplicado.</label>
+                    <label><input type="radio" name="pre2" value="b" onchange="saveAnswer('pre2', this.value)"> b) El clima general de Colombia.</label>
+                    <label><input type="radio" name="pre2" value="c" onchange="saveAnswer('pre2', this.value)"> c) El tamaño final de las naranjas, porque "depende" del abono.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>Pre-saber 3:</strong> ¿Qué significa "Mitigar" un impacto ambiental?</p>
+                    <label><input type="radio" name="pre3" value="a" onchange="saveAnswer('pre3', this.value)"> a) Ignorar el problema hasta que desaparezca solo.</label>
+                    <label><input type="radio" name="pre3" value="b" onchange="saveAnswer('pre3', this.value)"> b) Implementar acciones para reducir, atenuar o suavizar los daños ambientales causados por una actividad.</label>
+                    <label><input type="radio" name="pre3" value="c" onchange="saveAnswer('pre3', this.value)"> c) Cambiar el tipo de cultivo sin analizar el suelo.</label>
+                </div>
+            </section>
+
+            <!-- 2. CUERPO INDUCTIVO -->
+            <section id="sec-inductivo">
+                <h2>2. El Problema en el Terreno: Mirada Científica</h2>
+                <p>Imagina que eres un estudiante de grado 11 caminando por la <strong>Vereda Pueblo Rico</strong> en el municipio de Quimbaya. A tu izquierda, observas un hermoso cafetal tradicional, pero notas algo alarmante: muchas hojas de las matas de café y de los árboles de cítricos (mandarinos) están amarillentas. A tu derecha, ves un potrero ganadero severamente erosionado, donde el suelo de ceniza volcánica (típico del Quindío) está siendo lavado por las lluvias hacia las cañadas, ensuciando el agua. Un turista que pasa por allí toma una foto, pero comenta lo triste que se ve el paisaje degradado. Frente a esta crisis, no basta con quejarse; es el momento de que los jóvenes asuman el rol de investigadores.</p>
+
+                <p>El primer paso del diseño científico es el <strong>Planteamiento del Problema</strong>. Consiste en definir claramente qué está fallando sin saltar a conclusiones apresuradas. En nuestro caso, el problema central no es "el clima es malo", sino: "Existe una disminución acelerada de la fertilidad del suelo y un aumento de plagas en la finca X de la Vereda Pueblo Rico durante el último año". A partir de esta observación, la ciencia exige formular una pregunta de investigación precisa y medible.</p>
+
+                <p>Una vez definida la pregunta, el investigador debe establecer sus <span class="highlight">variables</span>. En cualquier experimento de campo, existen factores que cambian. Una <span class="highlight">variable</span> es cualquier característica, número o cantidad que puede medirse o cuantificarse. La "Variable Independiente" es aquella que tú (el investigador) manipulas o cambias a propósito. Por ejemplo, decidir aplicar abono orgánico hecho con pulpa de café. La "Variable Dependiente" es la respuesta que mides; por ejemplo, la cantidad de granos de café cosechados o el nivel de acidez (pH) del suelo. Si no defines bien qué vas a medir, tu investigación no tendrá validez.</p>
+
+                <p>En el contexto agroambiental de Quimbaya, <span class="highlight">la observación científica identifica problemas locales</span> que los adultos a veces pasan por alto por costumbre. Por ejemplo, los jóvenes pueden observar cómo la aplicación excesiva de nitrógeno químico (NO<sub>3</sub><sup>-</sup>) en los potreros ganaderos termina quemando la microfauna del suelo. Sin lombrices ni microorganismos, la tierra se compacta como cemento. Esta observación detallada permite diseñar una solución real y no una suposición.</p>
+
+                <p>Para estructurar la investigación, se debe formular una <strong>Hipótesis</strong>. Si la variable independiente es "plantar barreras vivas (árboles) alrededor del potrero" y la variable dependiente es "la erosión del suelo", la hipótesis sería: "Si se plantan barreras vivas de especies nativas alrededor de los potreros en Pueblo Rico, entonces la pérdida de suelo por erosión hídrica disminuirá en un 30% en seis meses". Esta afirmación ahora puede ser probada científicamente en el campo midiendo los sedimentos en el agua.</p>
+
+                <h3>Cuadro Comparativo: Estructuración de la Investigación</h3>
+                <div class="table-responsive">
+                    <table>
+                        <tr>
+                            <th>Elemento Científico</th>
+                            <th>Ejemplo Erróneo (Subjetivo)</th>
+                            <th>Ejemplo Correcto (Medible en Quimbaya)</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Problema</strong></td>
+                            <td>"Las matas de café están feas."</td>
+                            <td>"Reducción del 20% en la producción de café por alta incidencia de la broca."</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Variable Indep.</strong></td>
+                            <td>"El clima que hace hoy."</td>
+                            <td>"Frecuencia de recolección de granos caídos (control cultural)."</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hipótesis</strong></td>
+                            <td>"Yo creo que el abono va a servir."</td>
+                            <td>"Si aplicamos compostaje de cítricos, el pH del suelo subirá de 4.5 a 6.0."</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- ACTIVIDAD 1: ORDENAR LETRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 1: Concepto Fundamental</div>
+                    <p>Arrastra las letras para formar el concepto que se define como "cualquier característica, número o cantidad que puede medirse o cuantificarse" (mencionado en el texto):</p>
+                    <div class="draggable-area" id="drag-area-1"></div>
+                    <!-- Palabra: VARIABLE -->
+                    <div class="drop-area" id="drop-area-1" data-word="VARIABLE" data-type="letters"></div>
+                    <div class="game-status" id="status-game-1"></div>
+                </div>
+
+                <!-- ACTIVIDAD 2: ORDENAR PALABRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 2: Rol del Joven Investigador</div>
+                    <p>Ordena la frase exacta del texto que explica la importancia de mirar detenidamente nuestro entorno rural:</p>
+                    <div class="draggable-area" id="drag-area-2"></div>
+                    <!-- Frase: La observación científica identifica problemas locales -->
+                    <div class="drop-area" id="drop-area-2" data-word="La observación científica identifica problemas locales" data-type="words"></div>
+                    <div class="game-status" id="status-game-2"></div>
+                </div>
+
+                <!-- PAUSAS ACTIVAS 1-5 -->
+                <div class="pausa-activa">
+                    <h4>Pausas Activas (Cuaderno de Ciencias)</h4>
+                    <p>Desarrolla en tu cuaderno físico los siguientes retos. Luego haz clic en el botón.</p>
+                    <ul>
+                        <li><strong>1. Problematización:</strong> Escribe un "Planteamiento del Problema" medible sobre la basura que dejan los turistas en los cafetales de tu vereda.</li>
+                        <li><strong>2. Identificación:</strong> En el experimento "Medir cómo afecta la cantidad de lluvia al crecimiento del pasto estrella", identifica cuál es la V. Independiente y cuál la V. Dependiente.</li>
+                        <li><strong>3. Cuadro:</strong> Copia el Cuadro Comparativo de Estructuración de la Investigación.</li>
+                        <li><strong>4. Entrevista simulada:</strong> Formula 3 preguntas que le harías a un ganadero para investigar por qué sus suelos están compactados.</li>
+                        <li><strong>5. Química:</strong> Dibuja la fórmula química del nitrato (mencionada en el texto) y explica por qué en exceso compacta el suelo.</li>
+                    </ul>
+                    <button class="btn-pausa" id="btn-pausa-1" onclick="togglePausa(1)">Registrar Actividades Realizadas</button>
+                </div>
+            </section>
+
+            <!-- 3. PREGUNTA ICFES CON GRÁFICA SVG -->
+            <section id="sec-icfes">
+                <h2>3. Análisis de Datos de Campo</h2>
+                <p>Un grupo de jóvenes de grado 11 de Quimbaya realizó una investigación en un potrero ganadero con una fuerte pendiente. Implementaron una "Acción Mitigadora" plantando árboles nativos. Durante 12 meses midieron dos variables: Número de árboles sembrados y Porcentaje de suelo perdido por erosión hídrica (lavado por lluvias).</p>
+                
+                <div class="svg-container">
+                    <svg viewBox="0 0 650 350" width="100%" height="100%">
+                        <!-- Ejes -->
+                        <line x1="60" y1="300" x2="600" y2="300" stroke="#37474F" stroke-width="2"/>
+                        <line x1="60" y1="40" x2="60" y2="300" stroke="#37474F" stroke-width="2"/>
+                        
+                        <!-- Etiquetas Ejes -->
+                        <text x="330" y="340" text-anchor="middle" fill="#37474F" font-weight="bold">Árboles Nativos Sembrados (Variable Independiente)</text>
+                        <text x="20" y="170" transform="rotate(-90 20,170)" text-anchor="middle" fill="#37474F" font-weight="bold">Pérdida de Suelo por Erosión (%)</text>
+                        
+                        <!-- Marcas Eje X -->
+                        <text x="60" y="320" text-anchor="middle" font-size="12">0</text>
+                        <text x="160" y="320" text-anchor="middle" font-size="12">10</text>
+                        <text x="260" y="320" text-anchor="middle" font-size="12">20</text>
+                        <text x="360" y="320" text-anchor="middle" font-size="12">30</text>
+                        <text x="460" y="320" text-anchor="middle" font-size="12">40</text>
+                        <text x="560" y="320" text-anchor="middle" font-size="12">50</text>
+
+                        <!-- Puntos de Dispersión (Correlación negativa) -->
+                        <circle cx="60" cy="60" r="6" fill="var(--rojo-alerta)" /> <!-- 0 árboles, 90% erosión -->
+                        <circle cx="110" cy="80" r="6" fill="var(--rojo-alerta)" />
+                        <circle cx="160" cy="120" r="6" fill="#F57C00" /> <!-- 10 árboles, 70% erosión -->
+                        <circle cx="210" cy="150" r="6" fill="#F57C00" />
+                        <circle cx="260" cy="190" r="6" fill="#FFB300" /> <!-- 20 árboles, 50% erosión -->
+                        <circle cx="360" cy="230" r="6" fill="var(--verde-brote)" /> <!-- 30 árboles, 35% erosión -->
+                        <circle cx="460" cy="260" r="6" fill="var(--verde-cafetal)" /> <!-- 40 árboles, 15% erosión -->
+                        <circle cx="560" cy="285" r="6" fill="var(--verde-cafetal)" /> <!-- 50 árboles, 5% erosión -->
+
+                        <!-- Línea de Tendencia -->
+                        <line x1="60" y1="60" x2="560" y2="285" stroke="#37474F" stroke-width="2" stroke-dasharray="8,4" />
+                        <text x="400" y="160" font-size="13" font-style="italic" fill="#555">Línea de tendencia central</text>
+                    </svg>
+                </div>
+
+                <div class="question-block">
+                    <p><strong>Competencia: Uso de conceptos y análisis de datos (Tipo ICFES)</strong></p>
+                    <p>Al analizar el gráfico de dispersión producto de la investigación de los jóvenes, ¿cuál de las siguientes conclusiones es científicamente correcta respecto a la acción mitigadora?</p>
+                    <label><input type="radio" name="icfes1" value="a" onchange="saveAnswer('icfes1', this.value)"> a) Existe una correlación positiva: a mayor número de árboles sembrados, mayor es la cantidad de suelo perdido.</label>
+                    <label><input type="radio" name="icfes1" value="b" onchange="saveAnswer('icfes1', this.value)"> b) Existe una correlación negativa fuerte: el incremento en la siembra de árboles nativos (acción mitigadora) disminuye significativamente la pérdida de suelo por erosión.</label>
+                    <label><input type="radio" name="icfes1" value="c" onchange="saveAnswer('icfes1', this.value)"> c) No existe ninguna relación entre la siembra de árboles y la conservación del suelo de ceniza volcánica.</label>
+                    <label><input type="radio" name="icfes1" value="d" onchange="saveAnswer('icfes1', this.value)"> d) Los árboles nativos causan el 90% de la erosión en el Quindío.</label>
+                </div>
+            </section>
+
+            <!-- 4. CUERPO DEDUCTIVO Y ANIMACIÓN -->
+            <section id="sec-deductivo">
+                <h2>4. Diseñando el Cambio: Acciones Mitigadoras</h2>
+                <p>Una vez que la investigación arroja datos (como vimos en la gráfica), el joven investigador debe estructurar un Plan de Acción. La investigación sin acción es solo teoría. Aquí es donde entra el concepto de <strong>Mitigación</strong>. Una acción mitigadora en el ámbito agroambiental es cualquier intervención técnica, biológica o de gestión diseñada para reparar, atenuar o compensar un daño causado al ecosistema. En Quimbaya, las acciones mitigadoras deben estar hechas a la medida de la topografía quebrada y el clima cafetero.</p>
+
+                <p>Tomemos como ejemplo la producción de café. Si la investigación determinó que los fertilizantes de síntesis química están acidificando el suelo y bajando la rentabilidad, la acción mitigadora propuesta podría ser la implementación de "Biofábricas". Los estudiantes enseñan a los caficultores a usar los desechos del beneficio del café (la pulpa) y restos de cítricos para crear abonos orgánicos fermentados (Bocashi). <span class="highlight">Las acciones mitigadoras reducen el impacto ambiental</span> directo en las quebradas, al evitar que esta pulpa se pudra al aire libre generando gases de efecto invernadero como el Metano (CH<sub>4</sub>) y Dióxido de Carbono (CO<sub>2</sub>).</p>
+
+                <p>Otro diseño de cambio fundamental son los <strong>Sistemas Silvopastoriles</strong> en la ganadería de la vereda. En lugar de tener vacas en pastizales pelados, los jóvenes diseñan parcelas donde se siembran árboles forrajeros (como el Botón de Oro o el Matarratón) intercalados con el pasto. Estos árboles capturan carbono profundo, sus raíces previenen los derrumbes, y sus hojas sirven de proteína pura para las vacas. Aquí, la ciencia se convierte en rentabilidad: el ganadero produce más leche con menos tierra y salva el agua.</p>
+
+                <p>El éxito de estos diseños radica en que generan <span class="highlight">Resiliencia Climática</span>. Una finca resiliente es como un sistema inmunológico fuerte; cuando llega un Fenómeno del Niño (sequía extrema) o de La Niña (lluvias torrenciales), la finca con acciones mitigadoras sobrevive porque su suelo retiene agua y tiene sombra. La finca convencional, que ignoró la investigación, colapsa económicamente.</p>
+
+                <p>Finalmente, estas investigaciones deben ser socializadas. Los jóvenes deben traducir los gráficos complejos a un lenguaje que el abuelo campesino o el turista internacional entiendan. El Paisaje Cultural Cafetero no se mantendrá por decreto del gobierno, sino por el diseño de investigaciones aplicadas lideradas por jóvenes que convierten el conocimiento científico en acciones que sanan la tierra que pisan.</p>
+
+                <!-- ANIMACIÓN CANVAS (Simulación de Parcelas) -->
+                <h3>Simulador de Investigación: Parcelas Comparativas</h3>
+                <p>Como investigador, prueba tu hipótesis. Abajo tienes dos parcelas de café. La <strong>Parcela A (Control)</strong> no tiene acciones mitigadoras. En la <strong>Parcela B (Experimental)</strong>, haz clic en los botones para aplicar variables independientes (Abono Orgánico y Cobertura Arbórea). Observa los resultados en la salud de las plantas y la retención de agua (azul en el suelo).</p>
+                <div class="canvas-container">
+                    <div class="canvas-ui">
+                        <span style="font-weight:bold; color:var(--cafe-grano)">Parcela B:</span>
+                        <button id="btn-abono">Aplicar Abono Orgánico</button>
+                        <button id="btn-arboles">Plantar Árboles Sombra</button>
+                    </div>
+                    <canvas id="expCanvas"></canvas>
+                </div>
+
+                <!-- ACTIVIDAD 3: ORDENAR LETRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 3: La Reparación del Daño</div>
+                    <p>Forma la palabra clave (del texto) que significa "intervención técnica para reparar, atenuar o compensar un daño causado al ecosistema":</p>
+                    <div class="draggable-area" id="drag-area-3"></div>
+                    <!-- Palabra: MITIGACION -->
+                    <div class="drop-area" id="drop-area-3" data-word="MITIGACION" data-type="letters"></div>
+                    <div class="game-status" id="status-game-3"></div>
+                </div>
+
+                <!-- ACTIVIDAD 4: ORDENAR PALABRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 4: El Propósito de la Intervención</div>
+                    <p>Ordena la frase exacta del texto deductivo que resume el efecto de implementar tecnologías como las Biofábricas:</p>
+                    <div class="draggable-area" id="drag-area-4"></div>
+                    <!-- Frase: Las acciones mitigadoras reducen el impacto ambiental -->
+                    <div class="drop-area" id="drop-area-4" data-word="Las acciones mitigadoras reducen el impacto ambiental" data-type="words"></div>
+                    <div class="game-status" id="status-game-4"></div>
+                </div>
+
+                <!-- PAUSAS ACTIVAS 6-10 -->
+                <div class="pausa-activa">
+                    <h4>Pausas Activas (Cuaderno de Diseño)</h4>
+                    <ul>
+                        <li><strong>6. Mapa Conceptual:</strong> Construye un mapa donde el centro sea "Plan de Mitigación", y se ramifique en "Biofábricas" y "Silvopastoril", anotando los beneficios de cada uno.</li>
+                        <li><strong>7. Cálculo Ecológico:</strong> Si un árbol de Matarratón fija 50g de Nitrógeno al suelo al mes, y un joven diseña un potrero con 200 árboles. ¿Cuántos kilogramos de Nitrógeno natural aporta al mes al potrero?</li>
+                        <li><strong>8. Dibujo de Diseño:</strong> Dibuja la vista aérea de una parcela "Control" (deteriorada) y una parcela "Experimental" (Resiliente) según lo visto en el simulador.</li>
+                        <li><strong>9. Química Ambiental:</strong> Escribe la fórmula del Dióxido de Carbono y el Metano, y explica brevemente por qué la mala gestión de la pulpa de café los produce.</li>
+                        <li><strong>10. Síntesis Escrita:</strong> Define en dos líneas qué es la "Resiliencia Climática" en una finca de Quimbaya.</li>
+                    </ul>
+                    <button class="btn-pausa" id="btn-pausa-2" onclick="togglePausa(2)">Registrar Actividades Realizadas</button>
+                </div>
+            </section>
+
+            <!-- 5. EVALUACIÓN FINAL -->
+            <section id="sec-evaluacion">
+                <h2>5. Taller de Certificación de Jóvenes Investigadores</h2>
+                <p>Evalúa tus competencias de diseño y análisis. Recuerda que las preguntas abiertas cuentan con un <strong style="color:var(--rojo-alerta);">sistema auditor anti-copia</strong>. Redacta analíticamente.</p>
+                
+                <form id="form-evaluacion" onsubmit="event.preventDefault(); finalizarOVA();">
+                    
+                    <h3>A. Competencias de Metodología (Selección Múltiple)</h3>
+                    
+                    <div class="question-block">
+                        <p>1. Según el texto inductivo, la "Variable Independiente" en una investigación de campo es:</p>
+                        <label><input type="radio" name="eval_m1" value="a" required> a) El factor que el investigador manipula o cambia a propósito para observar un efecto.</label>
+                        <label><input type="radio" name="eval_m1" value="b" required> b) El resultado final que arroja la cosecha de café.</label>
+                        <label><input type="radio" name="eval_m1" value="c" required> c) Una planta que crece sola sin ayuda del humano.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>2. ¿Cuál es el propósito principal de una "Acción Mitigadora"?</p>
+                        <label><input type="radio" name="eval_m2" value="a" required> a) Incrementar los gases de efecto invernadero para dar más calor a las plantas.</label>
+                        <label><input type="radio" name="eval_m2" value="b" required> b) Reparar, atenuar o compensar un daño ecológico, como la erosión o acidificación del suelo.</label>
+                        <label><input type="radio" name="eval_m2" value="c" required> c) Talar los árboles nativos para tener potreros más grandes.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>3. ¿Qué problema genera dejar descomponer la pulpa del café al aire libre sin ningún diseño de mitigación?</p>
+                        <label><input type="radio" name="eval_m3" value="a" required> a) Genera gases de efecto invernadero como el Metano (CH4) y contamina las cañadas locales.</label>
+                        <label><input type="radio" name="eval_m3" value="b" required> b) Purifica el aire del Paisaje Cultural Cafetero de forma automática.</label>
+                        <label><input type="radio" name="eval_m3" value="c" required> c) Atrae turismo internacional debido a su excelente olor.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>4. Un Sistema Silvopastoril es un ejemplo de diseño mitigador porque:</p>
+                        <label><input type="radio" name="eval_m4" value="a" required> a) Elimina el pasto para sembrar solo cítricos.</label>
+                        <label><input type="radio" name="eval_m4" value="b" required> b) Intercala árboles con pastos, lo cual previene derrumbes, captura carbono y alimenta mejor al ganado.</label>
+                        <label><input type="radio" name="eval_m4" value="c" required> c) Obliga a los ganaderos a vender sus vacas y comprar cerdos.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>5. En el gráfico de la Sección 3 (Árboles vs Erosión), se observó que:</p>
+                        <label><input type="radio" name="eval_m5" value="a" required> a) La hipótesis fue refutada porque la erosión aumentó al plantar árboles.</label>
+                        <label><input type="radio" name="eval_m5" value="b" required> b) La hipótesis fue comprobada: a mayor cantidad de árboles nativos sembrados (V. Independiente), menor fue la pérdida de suelo por erosión (V. Dependiente).</label>
+                        <label><input type="radio" name="eval_m5" value="c" required> c) Los árboles nativos no tienen relación con la retención de suelos en Quimbaya.</label>
+                    </div>
+
+                    <h3>B. Diseño Analítico Abierto</h3>
+                    <p style="font-size:0.85em; color:#757575;">El algoritmo de seguridad registrará tu cadencia de tecleo natural. Escribe fluidamente tus propias ideas.</p>
+                    
+                    <div class="question-block">
+                        <label>6. Redacta una Hipótesis científica para una investigación que evalúe el impacto de usar "Abono orgánico de cítricos" en el "Tamaño de las naranjas".</label>
+                        <textarea id="eval_o1" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o1"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>7. ¿Por qué es importante identificar la Variable Dependiente y la Independiente antes de iniciar cualquier plan de mitigación en una finca de Pueblo Rico?</label>
+                        <textarea id="eval_o2" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o2"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>8. Explica cómo la creación de una "Biofábrica" (mencionada en el texto) actúa como una acción mitigadora económica y ambiental.</label>
+                        <textarea id="eval_o3" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o3"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>9. Basado en la lectura, ¿qué características hacen que una finca posea "Resiliencia Climática"?</label>
+                        <textarea id="eval_o4" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o4"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>10. Conclusión Crítica: Como estudiante de grado 11, ¿qué acciones tomarías para convencer a los caficultores de tu vereda de adoptar acciones mitigadoras basadas en ciencia?</label>
+                        <textarea id="eval_o5" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o5"></div>
+                    </div>
+
+                    <button type="submit" class="btn">Procesar y Emitir Certificación</button>
+                </form>
+            </section>
+
+            <!-- 6. RESULTADOS Y DESCARGA -->
+            <section id="sec-resultados" style="display:none; text-align:center;">
+                <h2>Certificación de Diseño de Proyectos</h2>
+                <div id="feedback-content" style="font-size: 1.25em; margin-bottom: 20px; color: var(--cafe-grano);"></div>
+                <div id="ruta-content" style="text-align: left; background:#F1F8E9; padding: 25px; border-radius:12px; border: 1px solid #C5E1A5;"></div>
+                
+                <button class="btn" id="btn-descargar" onclick="descargarResultados()" style="margin-top: 35px; background-color: var(--verde-cafetal);">
+                    Descargar Expediente de Investigador (.txt)
+                </button>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- =========================================
+         LÓGICA JAVASCRIPT (VANILLA)
+         ========================================= -->
+    <script>
+        // --- 1. ESTADO GLOBAL Y LOCALSTORAGE ---
+        const LOCAL_KEY = 'ova_quimbaya_investigacion_11_state';
+        let state = {
+            apellidos: '', nombres: '',
+            points: 0, progress: 0, unlocked: [],
+            answers: {}, texts: {}, pausas: [false, false], gamesDone: []
+        };
+
+        // --- 2. INICIALIZACIÓN ---
+        document.addEventListener("DOMContentLoaded", () => {
+            loadState();
+            configurarAntiFraude();
+            initDragAndDrop();
+            initExpCanvas(); // Iniciar simulacion 60fps
+        });
+
+        document.getElementById('btn-iniciar').addEventListener('click', () => {
+            const apellidos = document.getElementById('inp-apellidos').value.trim();
+            const nombres = document.getElementById('inp-nombres').value.trim();
+            
+            if(apellidos === '' || nombres === '') {
+                alert("Para iniciar el proyecto, registra tus Nombres y Apellidos.");
+                return;
+            }
+            state.apellidos = apellidos; state.nombres = nombres;
+            saveState(); mostrarApp();
+        });
+
+        function loadState() {
+            const saved = localStorage.getItem(LOCAL_KEY);
+            if(saved) {
+                state = JSON.parse(saved);
+                if(state.nombres !== '') mostrarApp();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(state));
+            updateUI();
+        }
+
+        function mostrarApp() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                restaurarDOM(); updateUI();
+            }, 600);
+        }
+
+        function updateUI() {
+            document.getElementById('display-name').textContent = `${state.nombres} ${state.apellidos}`;
+            document.getElementById('display-points').textContent = state.points;
+            
+            // Calculo de progreso (4 juegos + 2 pausas + 4 forms (pre1,2,3,icfes)) = 10 ítems
+            let items = state.gamesDone.length + state.pausas.filter(p=>p).length + Object.keys(state.answers).length;
+            let percent = Math.min((items / 10) * 100, 100);
+            document.getElementById('progress-bar').style.width = percent + '%';
+
+            // Unlocks por puntos
+            if(state.points >= 2 && !state.unlocked.includes('lupa')) state.unlocked.push('lupa');
+            if(state.points >= 4 && !state.unlocked.includes('planta')) state.unlocked.push('planta');
+
+            if(state.unlocked.includes('lupa')) document.getElementById('icon-lupa').classList.add('unlocked');
+            if(state.unlocked.includes('planta')) document.getElementById('icon-planta').classList.add('unlocked');
+        }
+
+        function restaurarDOM() {
+            for(let key in state.answers) {
+                let radio = document.querySelector(`input[name="${key}"][value="${state.answers[key]}"]`);
+                if(radio) radio.checked = true;
+            }
+            for(let key in state.texts) {
+                let t = document.getElementById(key);
+                if(t) t.value = state.texts[key];
+            }
+            if(state.pausas[0]) {
+                let b = document.getElementById('btn-pausa-1');
+                b.classList.add('done'); b.textContent = "Protocolo Registrado ✓";
+            }
+            if(state.pausas[1]) {
+                let b = document.getElementById('btn-pausa-2');
+                b.classList.add('done'); b.textContent = "Protocolo Registrado ✓";
+            }
+            state.gamesDone.forEach(gId => {
+                let st = document.getElementById(`status-game-${gId}`);
+                if(st) st.textContent = "¡Teoría Validada! (+1 Punto ★)";
+                let dropArea = document.getElementById(`drop-area-${gId}`);
+                if(dropArea) dropArea.style.pointerEvents = 'none';
+            });
+        }
+
+        function saveAnswer(key, val) {
+            state.answers[key] = val; saveState();
+        }
+
+        function togglePausa(index) {
+            let i = index - 1;
+            if(!state.pausas[i]) {
+                state.pausas[i] = true;
+                let b = document.getElementById(`btn-pausa-${index}`);
+                b.classList.add('done'); b.textContent = "Protocolo Registrado ✓";
+                saveState();
+            }
+        }
+
+        // --- 3. SISTEMA ANTI-FRAUDE ---
+        function configurarAntiFraude() {
+            const textareas = document.querySelectorAll('.anti-fraud');
+            textareas.forEach(ta => {
+                ta.addEventListener('paste', e => { e.preventDefault(); alertFraud(ta, "Error de Integridad: Prohibido pegar contenido externo."); });
+                ta.addEventListener('drop', e => { e.preventDefault(); alertFraud(ta, "Error de Integridad: Inserción bloqueada."); });
+                ta.addEventListener('contextmenu', e => e.preventDefault());
+
+                let keyTimes = [];
+                ta.addEventListener('keydown', e => {
+                    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'v')) {
+                        e.preventDefault(); alertFraud(ta, "Comando de atajo bloqueado por protocolo científico."); return;
+                    }
+                    if(e.key.length > 1) return; // Ignorar Shift, Alt, etc
+                    
+                    const now = Date.now();
+                    keyTimes.push(now);
+                    if(keyTimes.length > 8) keyTimes.shift();
+
+                    if(keyTimes.length === 8) {
+                        let totalDiff = 0;
+                        for(let i=1; i<keyTimes.length; i++){ totalDiff += (keyTimes[i] - keyTimes[i-1]); }
+                        let avg = totalDiff / 7;
+                        
+                        // Si el tipeo promedia menos de 30ms por tecla, es un bot, script o inyección.
+                        if(avg < 30) {
+                            ta.value = ""; keyTimes = [];
+                            alertFraud(ta, "¡INYECCIÓN DETECTADA! Cadencia de tipeo no humana. Texto eliminado.");
+                            e.preventDefault();
+                        }
+                    }
+                });
+
+                ta.addEventListener('input', () => { state.texts[ta.id] = ta.value; saveState(); });
+            });
+        }
+
+        function alertFraud(element, msg) {
+            let alertBox = document.getElementById('alert-' + element.id);
+            alertBox.textContent = msg; alertBox.style.display = 'block';
+            setTimeout(() => { alertBox.style.display = 'none'; }, 4500);
+        }
+
+        // --- 4. SISTEMA DRAG & DROP ---
+        function initDragAndDrop() {
+            const games = [
+                {id: 1, type: 'letters', word: 'VARIABLE'},
+                {id: 2, type: 'words', word: 'La observación científica identifica problemas locales'},
+                {id: 3, type: 'letters', word: 'MITIGACION'},
+                {id: 4, type: 'words', word: 'Las acciones mitigadoras reducen el impacto ambiental'}
+            ];
+
+            games.forEach(game => {
+                if(state.gamesDone.includes(game.id)) return;
+
+                let items = [];
+                if(game.type === 'letters') items = game.word.split('');
+                if(game.type === 'words') items = game.word.split(' ');
+                
+                let shuffled = [...items].sort(() => Math.random() - 0.5);
+
+                const dragArea = document.getElementById(`drag-area-${game.id}`);
+                const dropArea = document.getElementById(`drop-area-${game.id}`);
+
+                shuffled.forEach((item, index) => {
+                    let div = document.createElement('div');
+                    div.className = `drag-item ${game.type === 'letters' ? 'letter' : ''}`;
+                    div.draggable = true; div.id = `drag-${game.id}-${index}`;
+                    div.textContent = item; div.dataset.val = item;
+                    div.addEventListener('dragstart', dragStart);
+                    dragArea.appendChild(div);
+                });
+
+                items.forEach((item) => {
+                    let slot = document.createElement('div');
+                    slot.className = `drop-slot ${game.type === 'letters' ? 'letter-slot' : ''}`;
+                    slot.dataset.targetId = game.id;
+                    slot.addEventListener('dragover', dragOver);
+                    slot.addEventListener('dragenter', dragEnter);
+                    slot.addEventListener('dragleave', dragLeave);
+                    slot.addEventListener('drop', dropEvent);
+                    dropArea.appendChild(slot);
+                });
+            });
+        }
+
+        let draggedElement = null;
+        function dragStart(e) { draggedElement = e.target; e.dataTransfer.effectAllowed = 'move'; }
+        function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+        function dragEnter(e) { e.preventDefault(); this.classList.add('hovered'); }
+        function dragLeave(e) { this.classList.remove('hovered'); }
+
+        function dropEvent(e) {
+            e.preventDefault(); this.classList.remove('hovered');
+            if(this.children.length > 0) {
+                let oldChild = this.children[0];
+                let gameId = this.dataset.targetId;
+                document.getElementById(`drag-area-${gameId}`).appendChild(oldChild);
+            }
+            this.appendChild(draggedElement);
+            checkGameCompletion(this.dataset.targetId);
+        }
+
+        function checkGameCompletion(gameId) {
+            const dropArea = document.getElementById(`drop-area-${gameId}`);
+            const slots = dropArea.querySelectorAll('.drop-slot');
+            const targetWord = dropArea.dataset.word;
+            const type = dropArea.dataset.type;
+            
+            let currentStr = ''; let allFilled = true;
+
+            slots.forEach(slot => {
+                if(slot.children.length === 0) allFilled = false;
+                else currentStr += slot.children[0].dataset.val + (type==='words' ? ' ' : '');
+            });
+
+            currentStr = currentStr.trim();
+
+            if(allFilled) {
+                if(currentStr === targetWord) {
+                    document.getElementById(`status-game-${gameId}`).textContent = "¡Teoría Validada! (+1 Punto ★)";
+                    document.getElementById(`status-game-${gameId}`).style.color = "var(--verde-cafetal)";
+                    dropArea.style.pointerEvents = 'none';
+                    state.points += 1; state.gamesDone.push(parseInt(gameId)); saveState();
+                } else {
+                    document.getElementById(`status-game-${gameId}`).textContent = "Diseño incorrecto. Revisa las variables.";
+                }
+            }
+        }
+
+        // --- 5. ANIMACIÓN HTML5 CANVAS (Simulador Experimental) ---
+        function initExpCanvas() {
+            const canvas = document.getElementById('expCanvas');
+            const ctx = canvas.getContext('2d');
+            let bounds = canvas.parentElement.getBoundingClientRect();
+            
+            function resize() {
+                bounds = canvas.parentElement.getBoundingClientRect();
+                canvas.width = bounds.width; 
+                canvas.height = 400;
+            }
+            window.addEventListener('resize', resize); resize();
+
+            // Variables de la Parcela B (Experimental)
+            let abonoActivo = false;
+            let arbolesActivos = false;
+
+            document.getElementById('btn-abono').addEventListener('click', function() {
+                abonoActivo = true; this.style.backgroundColor = '#795548'; this.textContent = "Abono Aplicado ✓";
+            });
+            document.getElementById('btn-arboles').addEventListener('click', function() {
+                arbolesActivos = true; this.style.backgroundColor = '#795548'; this.textContent = "Árboles Plantados ✓";
+            });
+
+            // Estado de simulación (Tiempo ficticio)
+            let time = 0;
+
+            class CoffeePlant {
+                constructor(x, y) {
+                    this.x = x; this.y = y;
+                    this.health = 100; // 0 a 100
+                    this.moisture = 100; // 0 a 100
+                }
+                update(isControl) {
+                    // El control se degrada con el tiempo (simulando sequía y pérdida de nutrientes)
+                    if(isControl) {
+                        this.moisture -= 0.1;
+                        this.health -= 0.05;
+                    } else {
+                        // Parcela experimental depende de acciones
+                        let evapRate = arbolesActivos ? 0.02 : 0.1; // Sombra reduce evaporación
+                        this.moisture -= evapRate;
+                        
+                        let nutRate = abonoActivo ? 0.05 : -0.05; // Abono mejora o mantiene salud
+                        this.health += nutRate;
+                    }
+                    // Límites
+                    if(this.moisture < 0) this.moisture = 0;
+                    if(this.health > 100) this.health = 100;
+                    if(this.moisture < 30) this.health -= 0.1; // Estrés hídrico
+                    if(this.health < 0) this.health = 0;
+                }
+                draw(ctx) {
+                    // Tallo
+                    ctx.fillStyle = '#4E342E'; ctx.fillRect(this.x-3, this.y-40, 6, 40);
+                    
+                    // Hojas: El color cambia con la salud (verde intenso -> amarillo clorosis -> café muerto)
+                    let r = 46, g = 125, b = 50; // Verde sano
+                    if(this.health < 70) { r=139; g=195; b=74; } // Verde claro
+                    if(this.health < 40) { r=255; g=235; b=59; } // Amarillo (Clorosis)
+                    if(this.health < 15) { r=121; g=85; b=72; } // Café
+                    
+                    ctx.fillStyle = `rgb(${r},${g},${b})`;
+                    ctx.beginPath(); ctx.arc(this.x, this.y-50, 20, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(this.x-15, this.y-35, 15, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(this.x+15, this.y-35, 15, 0, Math.PI*2); ctx.fill();
+
+                    // Granos (rojos) solo si está sano
+                    if(this.health > 60) {
+                        ctx.fillStyle = '#D32F2F';
+                        ctx.beginPath(); ctx.arc(this.x, this.y-50, 4, 0, Math.PI*2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(this.x-10, this.y-40, 4, 0, Math.PI*2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(this.x+10, this.y-40, 4, 0, Math.PI*2); ctx.fill();
+                    }
+                }
+            }
+
+            let pA = [new CoffeePlant(canvas.width*0.15, 280), new CoffeePlant(canvas.width*0.35, 280)];
+            let pB = [new CoffeePlant(canvas.width*0.65, 280), new CoffeePlant(canvas.width*0.85, 280)];
+
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                time += 1;
+
+                // Separador Central
+                ctx.strokeStyle = '#37474F'; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height); ctx.stroke();
+
+                // Textos Titulares
+                ctx.fillStyle = '#37474F'; ctx.font = "bold 20px Arial"; ctx.textAlign="center";
+                ctx.fillText("PARCELA A (Control)", canvas.width*0.25, 40);
+                ctx.fillText("PARCELA B (Experimental)", canvas.width*0.75, 40);
+                
+                // --- DIBUJAR SUELO ---
+                // Parcela A: Suelo se erosiona y seca
+                let avgMoistA = (pA[0].moisture + pA[1].moisture)/2;
+                ctx.fillStyle = `rgb(${160 + (100-avgMoistA)}, ${110 + (100-avgMoistA)/2}, 80)`; 
+                ctx.fillRect(0, 280, canvas.width/2 - 2, 120);
+                
+                // Parcela B: Suelo mejora con abono, retiene agua
+                let avgMoistB = (pB[0].moisture + pB[1].moisture)/2;
+                let rB = abonoActivo ? 90 : 160 + (100-avgMoistB); // Abono oscurece
+                let gB = abonoActivo ? 60 : 110 + (100-avgMoistB)/2;
+                let bB = abonoActivo ? 40 : 80;
+                ctx.fillStyle = `rgb(${rB}, ${gB}, ${bB})`;
+                ctx.fillRect(canvas.width/2 + 2, 280, canvas.width/2, 120);
+
+                // Representación de Agua en Subsuelo (Línea Azul)
+                ctx.fillStyle = 'rgba(33, 150, 243, 0.6)';
+                ctx.fillRect(0, 380, canvas.width/2-2, (avgMoistA/100)*20);
+                ctx.fillRect(canvas.width/2+2, 380, canvas.width/2, (avgMoistB/100)*20);
+
+                // --- DIBUJAR ÁRBOLES DE SOMBRA (Acción Mitigadora) ---
+                if(arbolesActivos) {
+                    ctx.fillStyle = '#795548'; ctx.fillRect(canvas.width*0.75-8, 150, 16, 130);
+                    ctx.fillStyle = 'rgba(76, 175, 80, 0.8)';
+                    ctx.beginPath(); ctx.arc(canvas.width*0.75, 120, 70, 0, Math.PI*2); ctx.fill();
+                }
+
+                // Actualizar y Dibujar Plantas de Café
+                let avgHealthA = 0, avgHealthB = 0;
+                pA.forEach(p => { p.update(true); p.draw(ctx); avgHealthA += p.health; });
+                pB.forEach(p => { p.update(false); p.draw(ctx); avgHealthB += p.health; });
+                avgHealthA /= 2; avgHealthB /= 2;
+
+                // --- UI de Resultados ---
+                ctx.fillStyle = '#37474F'; ctx.font = "14px Arial";
+                
+                ctx.fillText(`Salud Vegetal: ${Math.round(avgHealthA)}%`, canvas.width*0.25, 80);
+                ctx.fillText(`Humedad Suelo: ${Math.round(avgMoistA)}%`, canvas.width*0.25, 100);
+                
+                ctx.fillText(`Salud Vegetal: ${Math.round(avgHealthB)}%`, canvas.width*0.75, 80);
+                ctx.fillText(`Humedad Suelo: ${Math.round(avgMoistB)}%`, canvas.width*0.75, 100);
+
+                // Indicador de Tiempo
+                ctx.fillStyle = '#D32F2F'; ctx.font = "bold 16px Arial";
+                ctx.fillText(`Mes: ${Math.floor(time/60)}`, canvas.width/2, 20);
+
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        // --- 6. EVALUACIÓN Y CIERRE ---
+        function finalizarOVA() {
+            let m1 = document.querySelector('input[name="eval_m1"]:checked');
+            let m2 = document.querySelector('input[name="eval_m2"]:checked');
+            let m3 = document.querySelector('input[name="eval_m3"]:checked');
+            let m4 = document.querySelector('input[name="eval_m4"]:checked');
+            let m5 = document.querySelector('input[name="eval_m5"]:checked');
+
+            if(!m1 || !m2 || !m3 || !m4 || !m5) {
+                alert("Para emitir la certificación, debes responder todo el bloque de selección múltiple."); return;
+            }
+
+            // Calificación (Respuestas correctas: a, b, a, b, b)
+            let correctas = 0;
+            if(m1.value === 'a') correctas++;
+            if(m2.value === 'b') correctas++;
+            if(m3.value === 'a') correctas++;
+            if(m4.value === 'b') correctas++;
+            if(m5.value === 'b') correctas++;
+
+            let notaFinal = (correctas / 5) * 5.0;
+
+            document.getElementById('form-evaluacion').style.display = 'none';
+            document.getElementById('sec-resultados').style.display = 'block';
+
+            let feed = document.getElementById('feedback-content');
+            let ruta = document.getElementById('ruta-content');
+
+            feed.innerHTML = `<strong>Calificación del Proyecto:</strong> ${notaFinal.toFixed(1)} / 5.0<br>
+                              <strong>Insignias de Laboratorio:</strong> ${state.points} / 5<br>`;
+
+            let sugerencias = "<h3>Ruta de Fortalecimiento en Investigación:</h3><ul>";
+            if(notaFinal === 5.0) {
+                sugerencias += "<li>¡Proyecto Aprobado con Excelencia! Dominas el método científico aplicado y comprendes cómo transformar los problemas agroambientales en acciones tangibles. Eres un agente de cambio en Quimbaya.</li>";
+            } else {
+                if(m1.value !== 'a') sugerencias += "<li><strong>Metodología:</strong> Repasa la Sección 2. La Variable Independiente es la causa que tú (el investigador) manipulas, no el resultado.</li>";
+                if(m2.value !== 'b') sugerencias += "<li><strong>Acción:</strong> Revisa la Sección 4. Mitigar significa siempre reparar o atenuar el daño ecológico.</li>";
+                if(m3.value !== 'a') sugerencias += "<li><strong>Problema:</strong> El mal manejo de la pulpa genera Metano (CH4), un gas letal. Repasa el ejemplo de Biofábricas.</li>";
+                if(m4.value !== 'b') sugerencias += "<li><strong>Diseño:</strong> Los Sistemas Silvopastoriles integran árboles y pastos para generar resiliencia, no los eliminan. Repasa la Sección 4.</li>";
+                if(m5.value !== 'b') sugerencias += "<li><strong>Análisis de Datos:</strong> Vuelve a leer el gráfico del ICFES. La línea bajaba, lo que indica que a MÁS árboles, MENOS erosión (Correlación negativa beneficiosa).</li>";
+            }
+            sugerencias += "</ul>";
+            ruta.innerHTML = sugerencias;
+
+            state.notaFinal = notaFinal; saveState();
+        }
+
+        function descargarResultados() {
+            let o1 = document.getElementById('eval_o1').value.replace(/\n/g, ' ');
+            let o2 = document.getElementById('eval_o2').value.replace(/\n/g, ' ');
+            let o3 = document.getElementById('eval_o3').value.replace(/\n/g, ' ');
+            let o4 = document.getElementById('eval_o4').value.replace(/\n/g, ' ');
+            let o5 = document.getElementById('eval_o5').value.replace(/\n/g, ' ');
+
+            let content = `================================================
+EXPEDIENTE DE INVESTIGADOR - GRADO 11
+OVA: Jóvenes en Acción I - Diseñando el Cambio
+Territorio: Vereda Pueblo Rico, Quimbaya
+================================================
+Investigador Titular: ${state.nombres} ${state.apellidos}
+Fecha del Reporte: ${new Date().toLocaleDateString()}
+------------------------------------------------
+GAMIFICACIÓN Y LOGROS:
+Insignias de Laboratorio: ${state.points} / 5
+------------------------------------------------
+EVALUACIÓN DE COMPETENCIAS METODOLÓGICAS: ${state.notaFinal} / 5.0
+------------------------------------------------
+DISEÑO ANALÍTICO (Auditoría Anti-Fraude Superada):
+P6 (Hipótesis Formulación): ${o1}
+P7 (Variables de Mitigación): ${o2}
+P8 (Impacto Biofábricas): ${o3}
+P9 (Resiliencia Climática): ${o4}
+P10 (Acción y Liderazgo Local): ${o5}
+================================================
+* Documento electrónico expedido localmente. Válido para proyectos de ciencias del Paisaje Cultural Cafetero. *`;
+
+            let blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement("a");
+            a.href = url;
+            a.download = `Investigacion_${state.apellidos}_${state.nombres}.txt`;
+            document.body.appendChild(a);
+            a.click(); document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+</html>

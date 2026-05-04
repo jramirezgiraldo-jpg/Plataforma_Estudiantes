@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Bioética en Pueblo Rico - ¿Debemos jugar a ser dioses?</title>
+    <style>
+        /* ================= VARIABLES Y TIPOGRAFÍA ================= */
+        :root {
+            --cafe-oscuro: #4E342E;
+            --cafe-claro: #A1887F;
+            --verde-citrico: #558B2F;
+            --naranja-citrico: #F57C00;
+            --rojo-alerta: #C62828;
+            --fondo-papel: #FAFAFA;
+            --blanco: #FFFFFF;
+            --texto: #263238;
+            --sombra: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;700;900&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            background-color: var(--fondo-papel);
+            color: var(--texto);
+            line-height: 1.7;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Lora', serif;
+            color: var(--cafe-oscuro);
+            margin-bottom: 1.2rem;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            text-align: justify;
+            font-size: 1.05rem;
+        }
+
+        /* ================= ESTRUCTURA Y NAVEGACIÓN ================= */
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .oculto { display: none !important; }
+
+        /* Barra superior fija (Gamificación y Estado) */
+        #top-bar {
+            position: sticky;
+            top: 0;
+            background: var(--blanco);
+            box-shadow: var(--sombra);
+            z-index: 1000;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--naranja-citrico);
+            flex-wrap: wrap;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 12px; font-weight: 900; color: var(--cafe-oscuro);}
+        .score-info { display: flex; align-items: center; gap: 15px; }
+        
+        .progress-container {
+            width: 220px;
+            height: 14px;
+            background: #E0E0E0;
+            border-radius: 7px;
+            overflow: hidden;
+            border: 1px solid #BCAAA4;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--verde-citrico), var(--naranja-citrico));
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nota-box {
+            background: var(--cafe-oscuro);
+            color: var(--blanco);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-weight: 900;
+            font-size: 1.1rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* ================= PANTALLA DE INICIO ================= */
+        #pantalla-bienvenida {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(78, 52, 46, 0.9), rgba(85, 139, 47, 0.9)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.1"><circle cx="50" cy="50" r="40" fill="white"/></svg>');
+            background-size: cover;
+            color: var(--blanco);
+            text-align: center;
+        }
+
+        .login-box {
+            background: var(--blanco);
+            padding: 40px 50px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            max-width: 550px;
+            color: var(--texto);
+            border-top: 8px solid var(--naranja-citrico);
+        }
+
+        .login-box h1 { color: var(--cafe-oscuro); font-size: 2.2rem;}
+        .login-box h2 { color: var(--verde-citrico); font-size: 1.3rem; margin-bottom: 20px;}
+        
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-weight: 700; margin-bottom: 8px; color: var(--cafe-oscuro);}
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #D7CCC8;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus { outline: none; border-color: var(--verde-citrico); box-shadow: 0 0 5px rgba(85,139,47,0.3); }
+
+        .btn {
+            background-color: var(--verde-citrico);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-block;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover { background-color: #33691E; transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
+        .btn:disabled { background-color: #BDBDBD; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ================= COMPONENTES VISUALES ================= */
+        .seccion {
+            background: var(--blanco);
+            padding: 45px;
+            border-radius: 20px;
+            box-shadow: var(--sombra);
+            margin-bottom: 50px;
+            border-left: 6px solid var(--cafe-claro);
+        }
+
+        /* SVG y Canvas */
+        .svg-container, .canvas-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            background: #ECEFF1;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #CFD8DC;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        canvas { max-width: 100%; display: block; cursor: crosshair;}
+
+        /* Cuadro Comparativo */
+        .tabla-responsiva { width: 100%; overflow-x: auto; margin: 30px 0; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);}
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 18px; text-align: left; border-bottom: 1px solid #EEEEEE; }
+        th { background-color: var(--cafe-oscuro); color: white; font-family: 'Lora', serif; font-size: 1.1rem;}
+        tr:nth-child(even) { background-color: #F5F5F5; }
+        tr:hover { background-color: #E8F5E9; }
+
+        /* Pausas Activas */
+        .pausa-activa {
+            background: #FFF3E0;
+            border-left: 6px solid var(--naranja-citrico);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .pausa-activa h4 { color: var(--naranja-citrico); display: flex; align-items: center; gap: 12px; font-weight: 900;}
+        
+        /* Cuestionarios */
+        .pregunta-box { margin-bottom: 30px; background: #FAFAFA; padding: 20px; border-radius: 10px; border: 1px solid #E0E0E0;}
+        .opciones { display: flex; flex-direction: column; gap: 12px; margin-top: 15px;}
+        .opcion-btn {
+            background: var(--blanco); border: 2px solid #CFD8DC; padding: 14px;
+            border-radius: 8px; cursor: pointer; text-align: left; transition: all 0.2s;
+            font-size: 1rem; color: var(--texto); font-weight: 700;
+        }
+        .opcion-btn:hover { background: #ECEFF1; border-color: var(--cafe-claro); transform: translateX(5px); }
+        .opcion-btn.seleccionada { background: #E1F5FE; border-color: #0288D1; box-shadow: 0 0 8px rgba(2,136,209,0.3); }
+
+        /* ================= DRAG AND DROP (JUEGOS) ================= */
+        .juego-dd {
+            background: #E8F5E9;
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px dashed var(--verde-citrico);
+            margin: 40px 0;
+            text-align: center;
+        }
+        
+        .draggable-area {
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; min-height: 60px;
+            margin-bottom: 25px; padding: 20px; background: rgba(255,255,255,0.7); border-radius: 10px;
+        }
+        .drop-zone {
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+            min-height: 70px; padding: 20px; background: rgba(255,255,255,0.9); border-radius: 10px;
+            border: 2px solid var(--cafe-claro);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .drag-item {
+            background: var(--cafe-oscuro); color: white; padding: 12px 18px;
+            border-radius: 8px; cursor: grab; font-weight: 900; user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s, background 0.2s;
+            font-size: 1.1rem; letter-spacing: 1px;
+        }
+        .drag-item:active { cursor: grabbing; transform: scale(1.1); background: var(--naranja-citrico); }
+        
+        .drop-slot {
+            width: 45px; height: 50px; border: 2px dashed var(--cafe-claro); border-radius: 8px;
+            display: inline-block; vertical-align: middle; background: var(--fondo-papel);
+            transition: background 0.2s;
+        }
+        .drop-slot.filled { border: none; background: transparent; }
+        .drop-slot.hovered { background: #D7CCC8; border-color: var(--cafe-oscuro); }
+
+        .btn-check-dd { margin-top: 25px; background-color: var(--cafe-oscuro); }
+        .btn-check-dd:hover { background-color: #3E2723; }
+
+        /* ================= EVALUACIÓN Y ANTI-FRAUDE ================= */
+        .evaluacion-abierta textarea {
+            width: 100%; height: 120px; padding: 15px; border: 2px solid #B0BEC5;
+            border-radius: 10px; resize: vertical; font-size: 1.05rem; margin-top: 15px;
+            transition: border-color 0.3s;
+        }
+        .evaluacion-abierta textarea:focus { border-color: var(--verde-citrico); outline: none; }
+        
+        .alerta-fraude {
+            background: var(--rojo-alerta); color: white; padding: 12px; border-radius: 8px;
+            font-weight: 900; text-align: center; margin-top: 15px; animation: latido 1s infinite;
+            box-shadow: 0 0 15px rgba(198, 40, 40, 0.6);
+        }
+        @keyframes latido { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+        /* Iconos SVG Inline */
+        .icon-local { width: 28px; height: 28px; fill: currentColor; }
+
+        .resaltado { background: rgba(245, 124, 0, 0.15); padding: 2px 5px; border-radius: 4px; font-weight: bold; color: var(--cafe-oscuro);}
+
+    </style>
+</head>
+<body>
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-bienvenida">
+        <div class="login-box">
+            <svg width="90" height="90" viewBox="0 0 24 24" fill="var(--naranja-citrico)">
+                <path d="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M11,19.93C7.05,19.43 4,16.05 4,12C4,7.95 7.05,4.57 11,4.07V19.93M13,4.07C16.95,4.57 20,7.95 20,12C20,16.05 16.95,19.43 13,19.93V4.07Z"/>
+            </svg>
+            <h1>Bioética en Pueblo Rico</h1>
+            <h2>¿Debemos jugar a ser dioses?</h2>
+            <p>Ingresa tus datos para adentrarte en el dilema ético de la manipulación genética en nuestro Paisaje Cultural Cafetero.</p>
+            
+            <div class="input-group">
+                <label for="input-nombres">Nombres del Estudiante:</label>
+                <input type="text" id="input-nombres" placeholder="Ej. Ana María" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="input-apellidos">Apellidos del Estudiante:</label>
+                <input type="text" id="input-apellidos" placeholder="Ej. Rodríguez López" autocomplete="off">
+            </div>
+            <button id="btn-ingresar" class="btn">Iniciar Recorrido Ético</button>
+        </div>
+    </div>
+
+    <!-- ================= BARRA SUPERIOR (GAMIFICACIÓN) ================= -->
+    <div id="top-bar" class="oculto">
+        <div class="user-info">
+            <svg class="icon-local" viewBox="0 0 24 24"><path d="M16,11C16,11 19,14 19,15C19,17.76 16.76,20 14,20C11.24,20 9,17.76 9,15C9,14 12,11 12,11C12,11 10.16,12.84 9.12,14.65C8.42,13.78 8,12.68 8,11.5C8,8.46 10.46,6 13.5,6C14.79,6 15.96,6.44 16.9,7.15C16.71,7.94 16.85,8.81 17.35,9.5C17.65,9.91 18.06,10.22 18.5,10.41C17.5,10.45 16.63,10.96 16,11Z"/></svg>
+            <span id="display-nombre">Estudiante</span>
+        </div>
+        <div class="score-info">
+            <span style="font-size: 0.95rem; font-weight:900; color:var(--texto);">Nivel Biótico:</span>
+            <div class="progress-container">
+                <div class="progress-bar" id="barra-progreso"></div>
+            </div>
+            <span id="texto-progreso" style="font-weight: bold;">0%</span>
+            <div class="nota-box">
+                Puntaje: <span id="display-nota">0.0</span> / 5.0
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CONTENIDO PRINCIPAL ================= -->
+    <div id="contenido-principal" class="container oculto">
+
+        <!-- INTRODUCCIÓN -->
+        <section class="seccion" id="sec-intro">
+            <h1>Objetivo de Aprendizaje</h1>
+            <p>Argumentar los límites éticos de la manipulación genética, aplicando los principios fundamentales de la bioética para analizar los riesgos, beneficios e impactos ecológicos en los sectores productivos agropecuarios y turísticos de la Vereda Pueblo Rico (Quimbaya).</p>
+            
+            <h3 style="margin-top: 30px; border-bottom: 2px solid var(--cafe-claro); padding-bottom: 10px;">Pre-saberes (Diagnóstico Inicial)</h3>
+            <p>Antes de explorar los dilemas morales de la genética, identifica tus nociones previas sobre nuestra vereda y la biología. <i>(Responder esto te otorga progreso, pero no afecta tu calificación final)</i>.</p>
+            
+            <div id="quiz-pre-saberes"></div>
+            <button class="btn" id="btn-evaluar-pre" style="margin-top: 15px;">Guardar Pre-saberes</button>
+        </section>
+
+        <!-- CUERPO INDUCTIVO -->
+        <section class="seccion" id="sec-inductivo">
+            <h2>El Contexto: La Genética en Nuestra Tierra</h2>
+            <p>La Vereda Pueblo Rico, enclavada en el exuberante municipio de Quimbaya, Quindío, es un bastión innegable del Paisaje Cultural Cafetero. Las familias de nuestra región han cimentado su subsistencia sobre cuatro grandes pilares económicos: el legendario cultivo de café en las laderas, la dulce y vibrante producción de cítricos (naranjas y mandarinas), la ganadería de doble propósito (carne y leche) que se extiende por los valles, y un turismo ecológico floreciente que atrae a visitantes maravillados por nuestra inmensa biodiversidad. Cada finca es un ecosistema complejo donde la flora, la fauna y el ser humano coexisten en un delicado equilibrio. Sin embargo, en las últimas décadas, el cambio climático y la aparición de plagas agresivas, como la roya del cafeto o los áfidos en los cítricos, han puesto en jaque la economía de nuestros campesinos.</p>
+
+            <p>Ante estas inmensas amenazas agrícolas, la ciencia de laboratorio nos ofrece una herramienta que parece sacada de la ciencia ficción: la manipulación genética. Tradicionalmente, nuestros abuelos mejoraban sus cultivos seleccionando las mejores semillas año tras año, un proceso lento y natural. Hoy en día, la biotecnología moderna permite a los científicos entrar directamente al núcleo de las células, cortar secuencias de ADN y pegar genes provenientes de especies completamente distintas para otorgar superpoderes a las plantas. Cuando a una planta local se le inserta un gen foráneo en un laboratorio, el resultado es lo que la ciencia denomina un organismo transgénico. Un <span class="resaltado">transgénico</span> es, por lo tanto, un ser vivo modificado artificialmente cuyo material genético ha sido alterado para contener genes de otra especie distinta, buscando características como resistencia a plagas o tolerancia a sequías extremas.</p>
+
+            <p>Imaginemos un escenario hipotético, pero científicamente posible, en Pueblo Rico: para salvar las cosechas de cítricos de los gusanos perforadores, un laboratorio decide introducir genes de una bacteria tóxica en el ADN de los naranjos. El árbol ahora produce su propio insecticida interno en cada hoja y cada flor. A primera vista, es un milagro económico para el finquero que dejará de comprar agroquímicos. Sin embargo, es aquí donde surge la gran interrogante central de nuestro tema: ¿debemos jugar a ser dioses? Si la flor de la naranja modificada produce una toxina letal, ¿qué ocurrirá con las miles de abejas nativas que polinizan esos cultivos y que son la base de la cadena alimenticia de las aves que los turistas vienen a observar? Ante este panorama, <span class="resaltado">la bioética evalúa los riesgos ecológicos</span> y morales de la aplicación de estas tecnologías en ambientes abiertos. No podemos cegarnos únicamente por la promesa de mayor rentabilidad económica; debemos considerar el impacto a largo plazo sobre el tejido mismo de la vida en Quimbaya.</p>
+
+            <p>En el sector de la ganadería, el dilema es igualmente profundo. Los científicos pueden alterar genéticamente el ADN de las vacas lecheras de nuestras fincas para provocar una "doble musculatura" o para que produzcan cantidades antinaturales de leche. Esto aumenta las ganancias, pero frecuentemente condena al animal a sufrir dolores crónicos en sus articulaciones debido al peso excesivo, o a padecer severas infecciones de ubre crónicas. La manipulación genética impulsada únicamente por el deseo de eficiencia productiva corre el riesgo de reducir a seres vivos y sintientes a meras máquinas industriales biológicas, ignorando por completo el sufrimiento animal.</p>
+
+            <p>Para comprender la magnitud del salto tecnológico y moral que estamos presenciando, es fundamental contrastar los métodos campesinos de antaño con las intervenciones moleculares actuales. El siguiente cuadro analítico desgrana las diferencias críticas entre el cruce tradicional y la manipulación transgénica aplicada a la realidad de Pueblo Rico:</p>
+
+            <div class="tabla-responsiva">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aspecto Comparativo</th>
+                            <th>Mejoramiento Tradicional (Selección Campesina)</th>
+                            <th>Manipulación Genética (Transgénicos)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><b>Límites Biológicos</b></td>
+                            <td>Solo ocurre entre especies compatibles (ej. cruzar dos tipos de café).</td>
+                            <td>Rompe la barrera de especies (ej. insertar genes de pez en un tomate).</td>
+                        </tr>
+                        <tr>
+                            <td><b>Velocidad del Proceso</b></td>
+                            <td>Requiere décadas y múltiples generaciones de plantas.</td>
+                            <td>Inmediato; la modificación se logra en una sola generación en el laboratorio.</td>
+                        </tr>
+                        <tr>
+                            <td><b>Riesgo Ecológico Local</b></td>
+                            <td>Bajo. Adaptación co-evolutiva con insectos y suelos locales.</td>
+                            <td>Alto. Riesgo de crear "supermalezas" o exterminar insectos polinizadores (abejas).</td>
+                        </tr>
+                        <tr>
+                            <td><b>Propiedad Intelectual</b></td>
+                            <td>Las semillas son libres y pertenecen al acervo cultural del campesino.</td>
+                            <td>Las semillas están patentadas por corporaciones; el campesino no puede re-sembrarlas legalmente.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- JUEGO 1: ORDENAR LETRAS -->
+            <div class="juego-dd" id="juego1">
+                <h3>Reto Práctico 1: El Organismo de Laboratorio</h3>
+                <p>Lee cuidadosamente el segundo párrafo. Ordena las letras para formar el concepto que define a un ser vivo alterado artificialmente con genes de otra especie:</p>
+                <div class="draggable-area" id="letras-origen-1"></div>
+                <div class="drop-zone" id="letras-destino-1"></div>
+                <button class="btn btn-check-dd" onclick="verificarJuegoLetras(1, 'TRANSGENICO')">Comprobar Concepto</button>
+                <p id="msg-juego1" style="font-weight: 900; margin-top: 15px; font-size: 1.1rem;"></p>
+            </div>
+
+            <!-- JUEGO 2: ORDENAR PALABRAS -->
+            <div class="juego-dd" id="juego2">
+                <h3>Reto Práctico 2: La Función de la Bioética</h3>
+                <p>Basado en el tercer párrafo, arrastra las palabras para armar la frase literal que describe la tarea principal de la bioética frente a los nuevos cítricos:</p>
+                <div class="draggable-area" id="palabras-origen-2"></div>
+                <div class="drop-zone" id="palabras-destino-2" style="flex-direction: row;"></div>
+                <button class="btn btn-check-dd" onclick="verificarJuegoPalabras(2, 'LA BIOETICA EVALUA LOS RIESGOS ECOLOGICOS')">Comprobar Principio</button>
+                <p id="msg-juego2" style="font-weight: 900; margin-top: 15px; font-size: 1.1rem;"></p>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 1 - 3 -->
+            <div class="pausa-activa" id="pausa1">
+                <h4><svg class="icon-local" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,19.93C7.05,19.43 4,16.05 4,12C4,7.95 7.05,4.57 11,4.07V19.93M13,4.07C16.95,4.57 20,7.95 20,12C20,16.05 16.95,19.43 13,19.93V4.07Z"/></svg> Pausa Activa 1: Reflexión Campesina (Cuaderno)</h4>
+                <p><b>Reto Físico:</b> Escribe en tu cuaderno un párrafo de 5 líneas respondiendo: ¿Si un cultivo de Quimbaya pierde a todas sus abejas por culpa de un transgénico, qué le pasaría al turismo de la zona?</p>
+                <button class="btn" onclick="completarPausa(1)">¡Ya lo redacté en mi cuaderno!</button>
+            </div>
+
+            <div class="pausa-activa" id="pausa2">
+                <h4><svg class="icon-local" viewBox="0 0 24 24"><path d="M12,3L1,9L4,10.63V17L12,21L20,17V10.63L23,9M12,5.16L19.5,9.25L12,13.34L4.5,9.25M19,16.28L12,19.44L5,16.28V11.16L12,15L19,11.16V16.28Z"/></svg> Pausa Activa 2: Dibujo del Proceso</h4>
+                <p><b>Reto Físico:</b> Dibuja un diagrama de flujo simple que muestre los 3 pasos: 1. Científico corta ADN, 2. Se inserta gen en semilla de café, 3. La planta crece resistente.</p>
+                <button class="btn" onclick="completarPausa(2)">¡Ya lo dibujé en mi cuaderno!</button>
+            </div>
+
+            <div class="pausa-activa" id="pausa3">
+                <h4><svg class="icon-local" viewBox="0 0 24 24"><path d="M3,5H9V11H3V5M5,7V9H7V7H5M15,5H21V11H15V5M17,7V9H19V7H17M3,13H9V19H3V13M5,15V17H7V15H5M11,13H21V15H11V13M11,17H21V19H11V17Z"/></svg> Pausa Activa 3: Síntesis de Tabla</h4>
+                <p><b>Reto Físico:</b> Transcribe en tu cuaderno únicamente la fila de "Riesgo Ecológico Local" de la tabla comparativa anterior.</p>
+                <button class="btn" onclick="completarPausa(3)">¡Ya copié los datos en mi cuaderno!</button>
+            </div>
+
+        </section>
+
+        <!-- PREGUNTA ICFES (Indagar) con Gráfica SVG -->
+        <section class="seccion" id="sec-icfes">
+            <h2>Análisis Analítico: Competencia Indagar (Tipo ICFES)</h2>
+            <p>La siguiente gráfica lineal ilustra un estudio proyectivo sobre un ecosistema en Pueblo Rico durante un periodo de 10 años, tras la introducción masiva de un cultivo de cítricos transgénicos que produce su propia toxina insecticida. Observa la relación entre la producción económica (línea verde) y la biodiversidad de insectos polinizadores, como las abejas (línea roja discontinua).</p>
+            
+            <div class="svg-container">
+                <svg width="650" height="380" viewBox="0 0 650 380" style="background: white;">
+                    <!-- Ejes -->
+                    <line x1="60" y1="320" x2="600" y2="320" stroke="#37474F" stroke-width="3"/>
+                    <line x1="60" y1="40" x2="60" y2="320" stroke="#37474F" stroke-width="3"/>
+                    <!-- Etiquetas X (Años) -->
+                    <text x="60" y="345" font-size="13" font-family="Nunito" font-weight="bold">Año 1</text>
+                    <text x="240" y="345" font-size="13" font-family="Nunito" font-weight="bold">Año 4</text>
+                    <text x="420" y="345" font-size="13" font-family="Nunito" font-weight="bold">Año 7</text>
+                    <text x="600" y="345" font-size="13" font-family="Nunito" font-weight="bold">Año 10</text>
+                    <text x="330" y="370" font-size="15" font-weight="900" font-family="Lora" text-anchor="middle">Tiempo de Cultivo Transgénico</text>
+                    
+                    <!-- Etiquetas Y (Cantidades) -->
+                    <text x="15" y="45" font-size="12">100%</text>
+                    <text x="20" y="180" font-size="12">50%</text>
+                    <text x="25" y="320" font-size="12">0%</text>
+                    <text x="15" y="180" font-size="15" font-weight="900" font-family="Lora" transform="rotate(-90 15,180)" text-anchor="middle">Niveles Poblacionales / Producción</text>
+                    
+                    <!-- Cuadricula -->
+                    <line x1="60" y1="180" x2="600" y2="180" stroke="#CFD8DC" stroke-width="1" stroke-dasharray="8,8"/>
+                    <line x1="60" y1="40" x2="600" y2="40" stroke="#CFD8DC" stroke-width="1" stroke-dasharray="8,8"/>
+
+                    <!-- Produccion Cítricos (Verde) -->
+                    <polyline points="60,180 150,100 240,60 330,60 420,120 510,200 600,280" fill="none" stroke="#558B2F" stroke-width="4"/>
+                    <!-- Puntos Verdes -->
+                    <circle cx="60" cy="180" r="5" fill="#558B2F"/> <circle cx="240" cy="60" r="5" fill="#558B2F"/> <circle cx="420" cy="120" r="5" fill="#558B2F"/> <circle cx="600" cy="280" r="5" fill="#558B2F"/>
+
+                    <!-- Abejas (Rojo) -->
+                    <polyline points="60,50 150,60 240,150 330,220 420,290 510,310 600,315" fill="none" stroke="#C62828" stroke-width="4" stroke-dasharray="10,5"/>
+                    <!-- Puntos Rojos -->
+                    <circle cx="60" cy="50" r="5" fill="#C62828"/> <circle cx="240" cy="150" r="5" fill="#C62828"/> <circle cx="420" cy="290" r="5" fill="#C62828"/> <circle cx="600" cy="315" r="5" fill="#C62828"/>
+
+                    <!-- Leyenda -->
+                    <rect x="420" y="20" width="15" height="15" fill="#558B2F"/>
+                    <text x="445" y="32" font-size="13" font-weight="bold">Producción Cítricos (Ton)</text>
+                    <line x1="420" y1="50" x2="435" y2="50" stroke="#C62828" stroke-width="4" stroke-dasharray="6,3"/>
+                    <text x="445" y="55" font-size="13" font-weight="bold">Población Abejas Nativas</text>
+                </svg>
+            </div>
+
+            <div class="pregunta-box">
+                <p><b>Pregunta Tipo ICFES:</b> De acuerdo con la información proyectada en la gráfica, ¿cuál es la conclusión ecológica y económica más coherente al llegar al Año 10 en Pueblo Rico?</p>
+                <div class="opciones" id="opciones-icfes">
+                    <button class="opcion-btn" onclick="responderICFES(0)">A) La población de abejas se adapta a la toxina y aumenta exponencialmente después del Año 7.</button>
+                    <button class="opcion-btn" onclick="responderICFES(1)">B) La manipulación genética asegura una producción máxima y sostenida de cítricos a lo largo de toda la década, sin efectos secundarios.</button>
+                    <button class="opcion-btn" onclick="responderICFES(2)">C) El declive casi total de la población de abejas nativas coincide con una caída posterior en la producción de cítricos, sugiriendo que la falta de polinización anuló la ventaja inicial del transgénico.</button>
+                    <button class="opcion-btn" onclick="responderICFES(3)">D) La producción de cítricos cae en el Año 10 porque los campesinos dejaron de usar métodos de cruzamiento tradicional en el Año 1.</button>
+                </div>
+            </div>
+            
+            <div class="pausa-activa" id="pausa4">
+                <h4><svg class="icon-local" viewBox="0 0 24 24"><path d="M16,11H21V13H16V11M16,15H21V17H16V15M16,7H21V9H16V7M3,5H14V19H3V5Z"/></svg> Pausa Activa 4: Extracción de Datos</h4>
+                <p><b>Reto Físico:</b> Observa la gráfica y anota en tu cuaderno en qué año (aprox.) la producción de cítricos alcanzó su punto más alto antes de empezar a caer.</p>
+                <button class="btn" onclick="completarPausa(4)">¡Ya analicé el pico en mi cuaderno!</button>
+            </div>
+
+        </section>
+
+        <!-- CUERPO DEDUCTIVO Y ANIMACIÓN -->
+        <section class="seccion" id="sec-deductivo">
+            <h2>Los Principios Bioéticos: Estableciendo los Límites</h2>
+            <p>Para no caminar a ciegas en el complejo mundo de la biotecnología agrícola y animal, la comunidad científica internacional ha establecido normativas basadas en la bioética, que dictan los límites de lo que es moralmente aceptable. Estos límites no son teóricos, sino que tienen aplicaciones directas y urgentes en campos productivos como los de Quimbaya. Estos límites se organizan en principios fundamentales. El primero y más imperativo es el principio de no maleficencia, el cual nos dicta la obligación ética de "no hacer daño intencionado". Si un laboratorio modifica genéticamente un pasto estrella para alimentar a la ganadería local y este se convierte en una maleza súper-invasiva que destruye irremediablemente la flora endémica de nuestras cuencas, se está violando directa y gravemente este principio fundamental.</p>
+
+            <p>El segundo pilar regulatorio es el principio de justicia. La innovación científica y tecnológica no debe agravar las brechas de pobreza extrema en las zonas rurales. Si una mega-corporación transnacional desarrolla y patenta una semilla de café modificada genéticamente que resiste la broca y el cambio climático, y prohíbe legalmente a los pequeños caficultores de Quimbaya guardar semillas para la próxima cosecha, obligándolos a pagar regalías impagables año tras año, estamos ante un acto antiético. La genética no debe ser un mecanismo de monopolio corporativo. En este contexto, la <span class="resaltado">justicia</span> significa la distribución equitativa de los inmensos beneficios biológicos y los riesgos tecnológicos, garantizando que el campesino humilde no termine en la bancarrota por depender de biotecnología privatizada.</p>
+
+            <p>El tercer dilema ético colosal, que da nombre a nuestro debate de "jugar a ser dioses", es la intervención en la línea germinal. Cuando alteramos genéticamente las células reproductivas de una especie, estamos introduciendo mutaciones artificiales que se heredarán obligatoriamente a todas las generaciones futuras. Un error genético insertado en los insectos de la región para erradicar plagas de cítricos podría descontrolarse, provocando un desequilibrio total en la cadena trófica. Este colapso afectaría severamente la avifauna (las aves), destruyendo de paso el turismo ecológico de avistamiento que sostiene a numerosas familias de la Vereda Pueblo Rico.</p>
+
+            <p>Ante la inmensa incertidumbre que rodea la manipulación del ADN heredable en ecosistemas abiertos, la bioética exige aplicar un mecanismo de defensa vital. Este mandato es claro: <span class="resaltado">el principio de precaución evita daños irreversibles</span>. Este principio dicta que, si una tecnología de manipulación genética tiene el potencial de causar un desastre ambiental catastrófico o daños irreparables a la salud humana y animal, y no existe certeza científica absoluta de su total seguridad, su liberación al medio ambiente debe detenerse inmediatamente. No podemos jugar a la ruleta rusa con el ecosistema de Quimbaya argumentando que "probablemente" todo saldrá bien.</p>
+
+            <p>Para visualizar este delicado equilibrio, hemos diseñado la siguiente simulación interactiva. Imagina que estás observando una doble hélice de ADN en un laboratorio agrícola de Quimbaya. Al hacer clic o arrastrar el ratón sobre el lienzo negro (Canvas), actúas como la herramienta genética "CRISPR-Cas9" (una tijera molecular). Al "cortar" las hebras de ADN, generarás un efecto dominó bioético (partículas) que viajan e impactan violentamente los iconos del ecosistema local (el grano de café, la abeja y la vaca). Esta animación ilustra cómo una intervención microscópica reverbera, alterando macro-sistemas complejos.</p>
+
+            <div class="canvas-container" style="background: #1C2331; border-color: #37474F;">
+                <canvas id="animacionADNCanvas" width="850" height="400"></canvas>
+            </div>
+            <p style="text-align:center; font-size: 0.9rem; color: #78909C;"><i>Simulación HTML5 Canvas (60fps): Interactúa con el ratón sobre el ADN para observar el efecto dominó ecológico.</i></p>
+
+            <!-- JUEGO 3: ORDENAR LETRAS -->
+            <div class="juego-dd" id="juego3">
+                <h3>Reto Práctico 3: El Pilar de la Equidad</h3>
+                <p>Con base en la lectura del segundo párrafo de esta sección, ordena las letras para revelar el principio ético que exige no crear monopolios con las semillas y proteger al campesino:</p>
+                <div class="draggable-area" id="letras-origen-3"></div>
+                <div class="drop-zone" id="letras-destino-3"></div>
+                <button class="btn btn-check-dd" onclick="verificarJuegoLetras(3, 'JUSTICIA')">Comprobar Principio</button>
+                <p id="msg-juego3" style="font-weight: 900; margin-top: 15px; font-size: 1.1rem;"></p>
+            </div>
+
+            <!-- JUEGO 4: ORDENAR PALABRAS -->
+            <div class="juego-dd" id="juego4">
+                <h3>Reto Práctico 4: La Barrera de Seguridad</h3>
+                <p>Lee el cuarto párrafo. Arrastra las palabras para construir la regla dorada que prohíbe liberar transgénicos si no hay certeza absoluta de su seguridad:</p>
+                <div class="draggable-area" id="palabras-origen-4"></div>
+                <div class="drop-zone" id="palabras-destino-4" style="flex-direction: row;"></div>
+                <button class="btn btn-check-dd" onclick="verificarJuegoPalabras(4, 'EL PRINCIPIO DE PRECAUCION EVITA DAÑOS IRREVERSIBLES')">Comprobar Regla</button>
+                <p id="msg-juego4" style="font-weight: 900; margin-top: 15px; font-size: 1.1rem;"></p>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 5 Y 6 -->
+            <div class="pausa-activa" id="pausa5">
+                <h4><svg class="icon-local" viewBox="0 0 24 24"><path d="M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9Z"/></svg> Pausa Activa 5: Análisis Escrito (Ética Aplicada)</h4>
+                <p><b>Reto Físico:</b> ¿Qué principio bioético se viola si un laboratorio produce vacas que sufren dolor crónico en sus articulaciones solo para producir más carne? Responde en tu cuaderno usando los conceptos del texto.</p>
+                <button class="btn" onclick="completarPausa(5)">¡Ya fundamenté la respuesta!</button>
+            </div>
+
+            <div class="pausa-activa" id="pausa6">
+                <h4><svg class="icon-local" viewBox="0 0 24 24"><path d="M19,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,19H5V5H19V19M17,17H7V15H17V17M17,13H7V11H17V13M17,9H7V7H17V9Z"/></svg> Pausa Activa 6: Flujo Matemático de Ganadería</h4>
+                <p><b>Reto Matemático:</b> Si la semilla patentada de café cuesta el triple (3x) que la semilla libre, y un campesino gastaba $1.500.000 COP en semillas libres. ¿Cuánto deberá pagar ahora a la corporación para sembrar la misma área? Realiza el cálculo en tu cuaderno.</p>
+                <button class="btn" onclick="completarPausa(6)">¡Cálculo económico realizado!</button>
+            </div>
+
+        </section>
+
+        <!-- EVALUACIÓN FINAL TALLER -->
+        <section class="seccion" id="sec-evaluacion">
+            <h2>Taller de Evaluación Final: Jueces Bioéticos</h2>
+            <p>Llegó el momento de demostrar tu capacidad argumentativa. Responde las siguientes preguntas basándote estricta y únicamente en la información contenida en los textos de este OVA.</p>
+            
+            <h3 style="color: var(--naranja-citrico);">Parte I: Selección Múltiple</h3>
+            <div id="eval-multiple-container"></div>
+
+            <h3 style="margin-top: 40px; color: var(--naranja-citrico);">Parte II: Argumentación Escrita</h3>
+            <p style="color: var(--rojo-alerta); font-size:0.95rem; background: #FFEBEE; padding: 10px; border-radius: 8px;"><b>⚠️ Nota de Integridad Científica:</b> El sistema anti-fraude está fuertemente activo. Está estrictamente prohibido usar Ctrl+V, menús contextuales, o generar respuestas instantáneas con IAs externas. El sistema evalúa tu velocidad de tipeo humana. Si detecta fraude, el campo se borrará automáticamente.</p>
+            <div id="eval-abierta-container"></div>
+
+            <button class="btn" id="btn-finalizar-eval" style="margin-top:40px; width:100%; font-size: 1.3rem; padding: 18px;">Entregar Veredicto Final</button>
+        </section>
+
+        <!-- RESULTADOS Y EXPORTACIÓN -->
+        <section class="seccion oculto" id="sec-resultados" style="border-left-color: var(--verde-citrico);">
+            <h2 style="color: var(--verde-citrico); font-size: 2.2rem; text-align: center;">¡Análisis Ético Completado!</h2>
+            <div id="feedback-final" style="text-align: center; font-size: 1.2rem; margin: 30px 0;"></div>
+            
+            <div style="background: #F3E5F5; padding: 25px; border-radius: 10px; border: 2px solid #AB47BC;">
+                <h3 style="color: #6A1B9A; margin-top: 0;">Ruta de Fortalecimiento Personalizada:</h3>
+                <p id="ruta-fortalecimiento" style="font-weight: bold;"></p>
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 40px; flex-wrap: wrap;">
+                <button class="btn" id="btn-descargar-txt" style="background-color: #0288D1;"><svg style="width:20px;height:20px;vertical-align:middle;margin-right:8px;" viewBox="0 0 24 24"><path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M15,13H9V11H15V13M15,17H9V15H15V17Z"/></svg>Descargar Reporte (.txt)</button>
+                <button class="btn" id="btn-reiniciar" style="background-color: var(--rojo-alerta);"><svg style="width:20px;height:20px;vertical-align:middle;margin-right:8px;" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>Borrar Datos y Reiniciar</button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ================= SCRIPT PRINCIPAL ================= -->
+    <script>
+        // ================= ESTADO GLOBAL (LOCALSTORAGE) =================
+        let estadoGlobal = {
+            nombres: '',
+            apellidos: '',
+            progreso: 0,
+            nota: 0.0,
+            preSaberes: [null, null, null],
+            pausas: [false, false, false, false, false, false],
+            juegos: { j1: false, j2: false, j3: false, j4: false },
+            icfes: null,
+            evalMultiple: [null, null, null, null, null],
+            evalAbierta: ['', '', '', '', ''],
+            evalFinalizada: false
+        };
+
+        const STORAGE_KEY = 'ova_bioetica_pueblo_rico_v1';
+
+        function guardarEstado() {
+            let calculoNota = 0;
+            let completados = 0;
+            const totalItems = 3 + 6 + 4 + 1 + 10; // 24 items evaluables para progreso
+
+            estadoGlobal.preSaberes.forEach(r => { if(r !== null) completados++; });
+            estadoGlobal.pausas.forEach(r => { if(r) completados++; });
+            
+            // Juegos (0.2 c/u = 0.8 max)
+            if(estadoGlobal.juegos.j1) { completados++; calculoNota += 0.2; }
+            if(estadoGlobal.juegos.j2) { completados++; calculoNota += 0.2; }
+            if(estadoGlobal.juegos.j3) { completados++; calculoNota += 0.2; }
+            if(estadoGlobal.juegos.j4) { completados++; calculoNota += 0.2; }
+            
+            // ICFES (0.7)
+            if(estadoGlobal.icfes !== null) {
+                completados++;
+                if(estadoGlobal.icfes === 2) calculoNota += 0.7; // Respuesta C correcta
+            }
+
+            // Evaluacion Final (3.5 restante)
+            if(estadoGlobal.evalFinalizada) {
+                estadoGlobal.evalMultiple.forEach((r, i) => {
+                    completados++;
+                    // Respuestas correctas: 1(B), 2(C), 0(A), 3(D), 1(B)
+                    const correctas = [1, 2, 0, 3, 1];
+                    if(r === correctas[i]) calculoNota += 0.35;
+                });
+                estadoGlobal.evalAbierta.forEach(r => {
+                    if(r.trim().split(' ').length >= 10) { 
+                        completados++; 
+                        calculoNota += 0.35; 
+                    }
+                });
+            }
+
+            estadoGlobal.progreso = Math.round((completados / totalItems) * 100);
+            estadoGlobal.nota = Math.min(5.0, Math.max(0.0, calculoNota)).toFixed(1);
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(estadoGlobal));
+            actualizarUI();
+        }
+
+        function cargarEstado() {
+            const guardado = localStorage.getItem(STORAGE_KEY);
+            if (guardado) {
+                estadoGlobal = JSON.parse(guardado);
+                return true;
+            }
+            return false;
+        }
+
+        function actualizarUI() {
+            if(estadoGlobal.nombres) {
+                document.getElementById('display-nombre').innerText = `${estadoGlobal.nombres} ${estadoGlobal.apellidos}`;
+                document.getElementById('barra-progreso').style.width = `${estadoGlobal.progreso}%`;
+                document.getElementById('texto-progreso').innerText = `${estadoGlobal.progreso}%`;
+                document.getElementById('display-nota').innerText = estadoGlobal.nota;
+            }
+        }
+
+        // ================= INICIALIZACIÓN =================
+        document.addEventListener('DOMContentLoaded', () => {
+            if (cargarEstado() && estadoGlobal.nombres !== '') {
+                iniciarOVA();
+                restaurarRespuestasUI();
+            }
+
+            document.getElementById('btn-ingresar').addEventListener('click', () => {
+                const nombres = document.getElementById('input-nombres').value.trim();
+                const apellidos = document.getElementById('input-apellidos').value.trim();
+                
+                if (nombres === '' || apellidos === '') {
+                    alert("⚠️ Por favor ingresa tus Nombres y Apellidos completos para iniciar.");
+                    return;
+                }
+
+                estadoGlobal.nombres = nombres;
+                estadoGlobal.apellidos = apellidos;
+                guardarEstado();
+                iniciarOVA();
+            });
+
+            document.getElementById('btn-reiniciar').addEventListener('click', () => {
+                if(confirm("🛑 ATENCIÓN: ¿Estás seguro de borrar irremediablemente todo tu progreso y la nota obtenida?")) {
+                    localStorage.removeItem(STORAGE_KEY);
+                    location.reload();
+                }
+            });
+
+            generarPreSaberes();
+            generarEvalMultiple();
+            generarEvalAbierta();
+            inicializarDragAndDrop();
+        });
+
+        function iniciarOVA() {
+            document.getElementById('pantalla-bienvenida').classList.add('oculto');
+            document.getElementById('top-bar').classList.remove('oculto');
+            document.getElementById('contenido-principal').classList.remove('oculto');
+            iniciarCanvasADN();
+            actualizarUI();
+            if(estadoGlobal.evalFinalizada) mostrarResultados();
+        }
+
+        function restaurarRespuestasUI() {
+            estadoGlobal.preSaberes.forEach((resp, i) => {
+                if(resp !== null) {
+                    let btns = document.querySelectorAll(`#quiz-pre-saberes .pregunta-box:nth-child(${i+2}) .opcion-btn`);
+                    if(btns.length > 0) btns[resp].classList.add('seleccionada');
+                }
+            });
+            estadoGlobal.pausas.forEach((estado, i) => {
+                if(estado) {
+                    let btn = document.querySelector(`#pausa${i+1} button`);
+                    if(btn){
+                        btn.innerText = "✓ Validado en cuaderno";
+                        btn.disabled = true;
+                        btn.style.background = "#AED581";
+                        btn.style.color = "#1B5E20";
+                    }
+                }
+            });
+            
+            if(estadoGlobal.juegos.j1) deshabilitarJuego(1, 'TRANSGENICO');
+            if(estadoGlobal.juegos.j2) deshabilitarJuego(2, 'LA BIOETICA EVALUA LOS RIESGOS ECOLOGICOS');
+            if(estadoGlobal.juegos.j3) deshabilitarJuego(3, 'JUSTICIA');
+            if(estadoGlobal.juegos.j4) deshabilitarJuego(4, 'EL PRINCIPIO DE PRECAUCION EVITA DAÑOS IRREVERSIBLES');
+            
+            if(estadoGlobal.icfes !== null) {
+                let btns = document.querySelectorAll(`#opciones-icfes .opcion-btn`);
+                btns[estadoGlobal.icfes].classList.add('seleccionada');
+            }
+
+            estadoGlobal.evalAbierta.forEach((txt, i) => {
+                let ta = document.getElementById(`text-abierta-${i}`);
+                if(ta) ta.value = txt;
+            });
+        }
+
+        function deshabilitarJuego(id, resp) {
+            let msg = document.getElementById(`msg-juego${id}`);
+            if(msg) {
+                msg.innerText = "✓ Reto Bioético Superado";
+                msg.style.color = "var(--verde-citrico)";
+                document.getElementById(`juego${id}`).style.opacity = "0.6";
+                document.getElementById(`juego${id}`).style.pointerEvents = "none";
+            }
+        }
+
+        // ================= CUESTIONARIOS PRE-SABERES =================
+        const pregPre = [
+            { q: "¿Qué entiendes por 'jugar a ser dioses' en biología?", op: ["A) Rezar por buenas cosechas.", "B) Modificar artificialmente la genética de los seres vivos.", "C) Construir templos en Pueblo Rico.", "D) Seleccionar manualmente las semillas."] },
+            { q: "¿Crees que la ciencia debería tener límites morales?", op: ["A) No, la ciencia debe avanzar sin importar las consecuencias.", "B) Solo si afecta a los humanos, los animales no importan.", "C) Sí, para proteger los ecosistemas y la sociedad.", "D) La ciencia no existe en la agricultura."] },
+            { q: "¿Qué insecto es crucial para la producción agrícola de Quimbaya?", op: ["A) La hormiga arriera.", "B) La mosca de la fruta.", "C) El gusano barrenador.", "D) La abeja polinizadora."] }
+        ];
+
+        function generarPreSaberes() {
+            const container = document.getElementById('quiz-pre-saberes');
+            pregPre.forEach((p, index) => {
+                let html = `<div class="pregunta-box"><p style="font-weight:bold; color:var(--cafe-oscuro); font-size:1.1rem;">${index+1}. ${p.q}</p><div class="opciones">`;
+                p.op.forEach((opcion, i) => {
+                    html += `<button class="opcion-btn" onclick="seleccionarPre(${index}, ${i}, this)">${opcion}</button>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function seleccionarPre(preguntaIdx, opcionIdx, btn) {
+            let hermanos = btn.parentElement.children;
+            for(let h of hermanos) h.classList.remove('seleccionada');
+            btn.classList.add('seleccionada');
+            estadoGlobal.preSaberes[preguntaIdx] = opcionIdx;
+        }
+
+        document.getElementById('btn-evaluar-pre').addEventListener('click', () => {
+            if(estadoGlobal.preSaberes.includes(null)) { alert("⚠️ Responde todas las preguntas de diagnóstico."); return; }
+            guardarEstado();
+            alert("✓ Respuestas de diagnóstico guardadas correctamente.");
+            document.getElementById('btn-evaluar-pre').innerText = "Guardado ✓";
+            document.getElementById('btn-evaluar-pre').disabled = true;
+        });
+
+        // ================= PAUSAS ACTIVAS =================
+        function completarPausa(id) {
+            estadoGlobal.pausas[id-1] = true;
+            let btn = document.querySelector(`#pausa${id} button`);
+            btn.innerText = "✓ Validado en cuaderno";
+            btn.disabled = true;
+            btn.style.background = "#AED581";
+            btn.style.color = "#1B5E20";
+            guardarEstado();
+        }
+
+        // ================= ICFES =================
+        function responderICFES(opcionIdx) {
+            let btns = document.querySelectorAll(`#opciones-icfes .opcion-btn`);
+            btns.forEach(b => b.classList.remove('seleccionada'));
+            btns[opcionIdx].classList.add('seleccionada');
+            estadoGlobal.icfes = opcionIdx;
+            guardarEstado();
+            alert("✓ Respuesta analítica guardada.");
+        }
+
+        // ================= DRAG AND DROP (LÓGICA MEJORADA) =================
+        let draggedItem = null;
+
+        function inicializarDragAndDrop() {
+            setupJuegoLetras(1, "TRANSGENICO", "letras-origen-1", "letras-destino-1");
+            setupJuegoPalabras(2, "LA BIOETICA EVALUA LOS RIESGOS ECOLOGICOS", "palabras-origen-2", "palabras-destino-2");
+            setupJuegoLetras(3, "JUSTICIA", "letras-origen-3", "letras-destino-3");
+            setupJuegoPalabras(4, "EL PRINCIPIO DE PRECAUCION EVITA DAÑOS IRREVERSIBLES", "palabras-origen-4", "palabras-destino-4");
+        }
+
+        function desordenar(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function crearDragEvents(el) {
+            el.addEventListener('dragstart', function(e) {
+                draggedItem = this;
+                setTimeout(() => this.style.opacity = '0.4', 0);
+            });
+            el.addEventListener('dragend', function() {
+                setTimeout(() => {
+                    draggedItem.style.opacity = '1';
+                    draggedItem = null;
+                }, 0);
+            });
+        }
+
+        function crearDropEvents(slot) {
+            slot.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                if(!this.hasChildNodes()) this.classList.add('hovered');
+            });
+            slot.addEventListener('dragleave', function() { this.classList.remove('hovered'); });
+            slot.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('hovered');
+                if(!this.hasChildNodes() && draggedItem) {
+                    this.appendChild(draggedItem);
+                    this.classList.add('filled');
+                }
+            });
+        }
+
+        function setupJuegoLetras(id, palabraReal, origenId, destinoId) {
+            const origen = document.getElementById(origenId);
+            const destino = document.getElementById(destinoId);
+            if(!origen || !destino) return;
+            origen.innerHTML = ''; destino.innerHTML = '';
+            
+            let letras = palabraReal.split('');
+            let letrasDesordenadas = desordenar([...letras]);
+
+            letrasDesordenadas.forEach((letra) => {
+                let div = document.createElement('div');
+                div.className = 'drag-item'; div.draggable = true; div.textContent = letra;
+                div.dataset.val = letra;
+                crearDragEvents(div);
+                origen.appendChild(div);
+            });
+
+            letras.forEach(() => {
+                let slot = document.createElement('div');
+                slot.className = 'drop-slot';
+                crearDropEvents(slot);
+                destino.appendChild(slot);
+            });
+
+            origen.addEventListener('dragover', e => e.preventDefault());
+            origen.addEventListener('drop', function(e) {
+                e.preventDefault();
+                if(draggedItem) { this.appendChild(draggedItem); draggedItem.parentElement.classList.remove('filled'); }
+            });
+        }
+
+        function setupJuegoPalabras(id, fraseReal, origenId, destinoId) {
+            const origen = document.getElementById(origenId);
+            const destino = document.getElementById(destinoId);
+            if(!origen || !destino) return;
+            origen.innerHTML = ''; destino.innerHTML = '';
+
+            let palabras = fraseReal.split(' ');
+            let palabrasDesordenadas = desordenar([...palabras]);
+
+            palabrasDesordenadas.forEach((palabra) => {
+                let div = document.createElement('div');
+                div.className = 'drag-item'; div.draggable = true; div.textContent = palabra;
+                div.dataset.val = palabra;
+                crearDragEvents(div);
+                origen.appendChild(div);
+            });
+
+            palabras.forEach(() => {
+                let slot = document.createElement('div');
+                slot.className = 'drop-slot';
+                slot.style.width = 'auto'; slot.style.minWidth = '80px'; slot.style.padding = '0 5px';
+                crearDropEvents(slot);
+                destino.appendChild(slot);
+            });
+
+            origen.addEventListener('dragover', e => e.preventDefault());
+            origen.addEventListener('drop', function(e) {
+                e.preventDefault();
+                if(draggedItem) { this.appendChild(draggedItem); }
+            });
+        }
+
+        function verificarJuegoLetras(id, palabraReal) {
+            const destino = document.getElementById(`letras-destino-${id}`);
+            let armada = '';
+            Array.from(destino.children).forEach(slot => {
+                if(slot.hasChildNodes()) armada += slot.firstChild.dataset.val;
+            });
+
+            if(armada === palabraReal) {
+                estadoGlobal.juegos[`j${id}`] = true; guardarEstado();
+                deshabilitarJuego(id, palabraReal);
+            } else {
+                let msg = document.getElementById(`msg-juego${id}`);
+                msg.innerText = "❌ Orden incorrecto o incompleto. Verifica el texto.";
+                msg.style.color = "var(--rojo-alerta)";
+            }
+        }
+
+        function verificarJuegoPalabras(id, fraseReal) {
+            const destino = document.getElementById(`palabras-destino-${id}`);
+            let armada = [];
+            Array.from(destino.children).forEach(slot => {
+                if(slot.hasChildNodes()) armada.push(slot.firstChild.dataset.val);
+            });
+
+            if(armada.join(' ') === fraseReal) {
+                estadoGlobal.juegos[`j${id}`] = true; guardarEstado();
+                deshabilitarJuego(id, fraseReal);
+            } else {
+                let msg = document.getElementById(`msg-juego${id}`);
+                msg.innerText = "❌ Frase incorrecta. Lee detenidamente el párrafo anterior.";
+                msg.style.color = "var(--rojo-alerta)";
+            }
+        }
+
+        // ================= EVALUACIÓN FINAL =================
+        const evalMulti = [
+            { q: "1. ¿Qué es un organismo transgénico según el texto?", op: ["A) Una semilla seleccionada por campesinos en Quimbaya.", "B) Un ser vivo cuyo ADN ha sido alterado con genes de otra especie.", "C) Un abono químico para los cítricos.", "D) Una raza de vacas naturales de la región."] },
+            { q: "2. Si se patentan las semillas genéticamente modificadas y se obliga a los caficultores a pagar altas regalías, ¿qué principio bioético se viola?", op: ["A) Beneficencia", "B) No maleficencia", "C) Justicia", "D) Precaución"] },
+            { q: "3. ¿Cuál es el principal riesgo ecológico de modificar los cítricos para que produzcan insecticidas?", op: ["A) Exterminar a las abejas nativas que polinizan y sostienen la cadena trófica.", "B) Que la naranja crezca demasiado rápido.", "C) Que las vacas no puedan comer cítricos.", "D) Ninguno, la tecnología es 100% segura."] },
+            { q: "4. Alterar la línea germinal de una especie significa que:", op: ["A) Solo esa planta se verá afectada.", "B) Se requiere permiso del alcalde de Quimbaya.", "C) El cambio desaparecerá en un año.", "D) La mutación genética se heredará a todas las futuras generaciones."] },
+            { q: "5. Ante la incertidumbre de si una manipulación genética destruirá la avifauna turística de Pueblo Rico, ¿qué regla bioética debe aplicarse?", op: ["A) El libre mercado.", "B) El principio de precaución que evita daños irreversibles.", "C) El principio de la velocidad económica.", "D) Ignorar los riesgos porque la ciencia no se equivoca."] }
+        ];
+
+        const evalAbierta = [
+            "1. Con base exclusivamente en la lectura, define qué significa que la bioética 'evalúa los riesgos ecológicos' en el cultivo de cítricos.",
+            "2. Explica con tus palabras por qué la manipulación genética de vacas lecheras para causar 'doble musculatura' representa un problema ético sobre el sufrimiento animal.",
+            "3. ¿Cuál es la diferencia fundamental en la 'velocidad del proceso' entre el mejoramiento tradicional campesino y la manipulación genética en laboratorio? (Apóyate en el cuadro comparativo).",
+            "4. Argumenta cómo la pérdida de insectos por un cultivo transgénico podría afectar negativamente el turismo ecológico de Pueblo Rico.",
+            "5. Define el 'principio de no maleficencia' dando el ejemplo exacto del pasto estrella mencionado en el texto."
+        ];
+
+        function generarEvalMultiple() {
+            const container = document.getElementById('eval-multiple-container');
+            evalMulti.forEach((p, index) => {
+                let html = `<div class="pregunta-box"><p style="font-weight:900; font-size:1.1rem; color:var(--cafe-oscuro)">${p.q}</p><div class="opciones">`;
+                p.op.forEach((opcion, i) => {
+                    html += `<button class="opcion-btn" onclick="seleccionarEval(${index}, ${i}, this)">${opcion}</button>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function seleccionarEval(preguntaIdx, opcionIdx, btn) {
+            if(estadoGlobal.evalFinalizada) return;
+            let hermanos = btn.parentElement.children;
+            for(let h of hermanos) h.classList.remove('seleccionada');
+            btn.classList.add('seleccionada');
+            estadoGlobal.evalMultiple[preguntaIdx] = opcionIdx;
+        }
+
+        function generarEvalAbierta() {
+            const container = document.getElementById('eval-abierta-container');
+            evalAbierta.forEach((p, index) => {
+                let html = `<div class="pregunta-box eval-abierta">
+                    <p style="font-weight:900; font-size:1.1rem; color:var(--cafe-oscuro)">${p}</p>
+                    <textarea id="text-abierta-${index}" placeholder="Argumenta tu respuesta aquí (Mínimo 10 palabras obligatorias)..."></textarea>
+                    <div id="alerta-fraude-${index}" class="alerta-fraude oculto">⚠️ ¡ALERTA DE FRAUDE! Texto pegado o velocidad inhumana detectada. El campo ha sido borrado.</div>
+                </div>`;
+                container.innerHTML += html;
+            });
+
+            // Motor Anti-Fraude
+            setTimeout(() => {
+                evalAbierta.forEach((_, i) => {
+                    let textarea = document.getElementById(`text-abierta-${i}`);
+                    
+                    // Prevenir eventos nativos de trampa
+                    textarea.addEventListener('paste', e => { e.preventDefault(); dispararAlertaFraude(i, textarea); });
+                    textarea.addEventListener('drop', e => { e.preventDefault(); dispararAlertaFraude(i, textarea); });
+                    textarea.addEventListener('contextmenu', e => e.preventDefault());
+                    
+                    // Algoritmo de cadencia de tecleo
+                    textarea.addEventListener('keydown', e => {
+                        if(!textarea.dataset.startTime) textarea.dataset.startTime = Date.now();
+                        if(!textarea.dataset.charCount) textarea.dataset.charCount = 0;
+                        if(e.key.length === 1) textarea.dataset.charCount++; // Contar solo caracteres reales
+                    });
+
+                    textarea.addEventListener('input', e => {
+                        if(estadoGlobal.evalFinalizada) { textarea.value = estadoGlobal.evalAbierta[i]; return; }
+                        
+                        let length = textarea.value.length;
+                        if(length > 15) {
+                            let start = parseInt(textarea.dataset.startTime);
+                            let timeElapsed = Date.now() - start;
+                            
+                            // Velocidad humana promedio: 150ms a 400ms por tecla.
+                            // Si el tiempo promedio es menor a 35ms por letra, es un pegado por macro o IA.
+                            if((timeElapsed / length) < 35) {
+                                dispararAlertaFraude(i, textarea);
+                            }
+                        }
+                        estadoGlobal.evalAbierta[i] = textarea.value;
+                    });
+                });
+            }, 500);
+        }
+
+        function dispararAlertaFraude(i, textarea) {
+            textarea.value = '';
+            textarea.dataset.startTime = Date.now();
+            textarea.dataset.charCount = 0;
+            estadoGlobal.evalAbierta[i] = '';
+            let alerta = document.getElementById(`alerta-fraude-${i}`);
+            alerta.classList.remove('oculto');
+            setTimeout(() => alerta.classList.add('oculto'), 5000);
+        }
+
+        document.getElementById('btn-finalizar-eval').addEventListener('click', () => {
+            if(estadoGlobal.evalMultiple.includes(null)) { alert("⚠️ Debes responder todas las preguntas de selección múltiple."); return; }
+            
+            let incompletas = false;
+            estadoGlobal.evalAbierta.forEach(txt => { if(txt.trim().split(' ').length < 10) incompletas = true; });
+            if(incompletas) { alert("⚠️ Tus respuestas escritas son muy cortas. Argumenta usando al menos 10 palabras por respuesta."); return; }
+
+            if(confirm("⚖️ ¿Estás seguro de entregar tu análisis ético? No podrás modificar las respuestas después de esto.")) {
+                estadoGlobal.evalFinalizada = true;
+                guardarEstado();
+                mostrarResultados();
+            }
+        });
+
+        function mostrarResultados() {
+            document.getElementById('btn-finalizar-eval').classList.add('oculto');
+            document.getElementById('sec-resultados').classList.remove('oculto');
+            document.getElementById('sec-resultados').scrollIntoView();
+
+            document.querySelectorAll('textarea').forEach(ta => {
+                ta.disabled = true;
+                ta.style.background = "#EEEEEE";
+            });
+            document.querySelectorAll('.opcion-btn').forEach(btn => btn.style.pointerEvents = 'none');
+            
+            let feedback = `<div style="font-size:3rem; font-weight:900; color:var(--cafe-oscuro)">Nota Final: ${estadoGlobal.nota} / 5.0</div>`;
+            feedback += `<p style="font-size:1.3rem;">Completaste el <b>${estadoGlobal.progreso}%</b> de todas las interacciones bióticas.</p>`;
+            document.getElementById('feedback-final').innerHTML = feedback;
+
+            let ruta = "";
+            if(estadoGlobal.nota < 3.0) ruta = "Parece que hubo confusión en los principios bioéticos. Te recomendamos re-leer urgentemente la sección sobre 'Principio de Precaución' y la diferencia con la selección campesina tradicional.";
+            else if(estadoGlobal.nota < 4.0) ruta = "Tienes buenas bases. Para alcanzar el nivel experto, debes profundizar más en cómo la ética se aplica a la economía real (Principio de Justicia corporativa frente a campesinos).";
+            else ruta = "¡Felicidades, Juez Bioético! Has demostrado una comprensión sobresaliente de los límites morales de la ciencia y su profundo impacto en el ecosistema de Quimbaya.";
+            
+            document.getElementById('ruta-fortalecimiento').innerText = ruta;
+        }
+
+        // ================= EXPORTAR A TXT =================
+        document.getElementById('btn-descargar-txt').addEventListener('click', () => {
+            let contenido = `=================================================\n`;
+            contenido += ` REPORTE OFICIAL: BIOÉTICA PUEBLO RICO (QUIMBAYA)\n`;
+            contenido += `=================================================\n\n`;
+            contenido += `Estudiante: ${estadoGlobal.nombres} ${estadoGlobal.apellidos}\n`;
+            contenido += `Progreso General: ${estadoGlobal.progreso}%\n`;
+            contenido += `Nota Final de Argumentación: ${estadoGlobal.nota} / 5.0\n\n`;
+            
+            contenido += `--- RESPUESTAS DE SELECCIÓN MÚLTIPLE ---\n`;
+            estadoGlobal.evalMultiple.forEach((r, i) => { contenido += `Pregunta ${i+1} respondida (Índice interno ${r})\n`; });
+            
+            contenido += `\n--- ARGUMENTACIÓN ESCRITA (Sin Fraude Detectado) ---\n`;
+            estadoGlobal.evalAbierta.forEach((r, i) => { contenido += `Pregunta ${i+1}:\n> ${r}\n\n`; });
+
+            const blob = new Blob([contenido], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ReporteBioetica_${estadoGlobal.apellidos}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
+
+        // ================= ANIMACIÓN CANVAS (EFECTO DOMINÓ CRISPR) =================
+        function iniciarCanvasADN() {
+            const canvas = document.getElementById('animacionADNCanvas');
+            const ctx = canvas.getContext('2d');
+            let frame = 0;
+            let particulas = [];
+            let impactoAmbiental = 0; // Efecto sobre los íconos
+            let interaccionActiva = false;
+            let ratonX = 0;
+            let ratonY = 0;
+
+            // Escuchar el mouse para interactuar como "Tijera"
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                ratonX = e.clientX - rect.left;
+                ratonY = e.clientY - rect.top;
+                interaccionActiva = true;
+            });
+            canvas.addEventListener('mouseleave', () => interaccionActiva = false);
+
+            function dibujarTijera(x, y) {
+                ctx.save();
+                ctx.translate(x, y);
+                // Oscilar tijera
+                let angle = Math.sin(frame * 0.2) * 0.3;
+                
+                // Hoja superior
+                ctx.rotate(angle);
+                ctx.fillStyle = "#ECEFF1";
+                ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-30, -10); ctx.lineTo(-40, 5); ctx.fill();
+                
+                // Hoja inferior
+                ctx.rotate(-angle*2);
+                ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-30, 10); ctx.lineTo(-40, -5); ctx.fill();
+                
+                // Eje central
+                ctx.rotate(angle);
+                ctx.fillStyle = "#F57C00";
+                ctx.beginPath(); ctx.arc(-5, 0, 3, 0, Math.PI*2); ctx.fill();
+                
+                ctx.restore();
+            }
+
+            function crearParticula(x, y) {
+                for(let i=0; i<3; i++){
+                    particulas.push({
+                        x: x, y: y,
+                        vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8,
+                        vida: 1.0, color: (Math.random() > 0.5 ? '#C62828' : '#558B2F')
+                    });
+                }
+            }
+
+            function dibujarIconosEcosistema() {
+                // Dibujar iconos de café, abeja y vaca que reaccionan a las partículas (Impacto Ambiental)
+                let colorBase = `rgb(${255 - impactoAmbiental*10}, ${255 - impactoAmbiental*10}, 255)`;
+                if(impactoAmbiental > 20) colorBase = `rgb(255, ${200 - impactoAmbiental*5}, ${200 - impactoAmbiental*5})`;
+                
+                ctx.fillStyle = colorBase;
+                ctx.font = "40px sans-serif";
+                
+                // Posiciones de los iconos del ecosistema
+                let pos1 = {x: 700, y: 100}; // Café
+                let pos2 = {x: 750, y: 200}; // Abeja
+                let pos3 = {x: 650, y: 300}; // Vaca
+                
+                // Animación de temblor si hay alto impacto
+                let shake = impactoAmbiental > 5 ? (Math.random()-0.5)*impactoAmbiental/2 : 0;
+                
+                ctx.fillText("☕", pos1.x + shake, pos1.y + shake);
+                ctx.fillText("🐝", pos2.x + shake, pos2.y + shake);
+                ctx.fillText("🐄", pos3.x + shake, pos3.y + shake);
+
+                ctx.fillStyle = "#CFD8DC";
+                ctx.font = "14px Nunito";
+                ctx.fillText("ECOSISTEMA", 680, 50);
+                
+                // Línea divisoria
+                ctx.strokeStyle = "rgba(255,255,255,0.2)";
+                ctx.beginPath(); ctx.moveTo(600, 20); ctx.lineTo(600, 380); ctx.stroke();
+            }
+
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                frame++;
+
+                // 1. Dibujar ADN (Doble Hélice)
+                let centroY = 200;
+                ctx.lineWidth = 3;
+                
+                for(let x = 50; x < 500; x += 20) {
+                    let offset = frame * 0.05 + x * 0.05;
+                    let y1 = centroY + Math.sin(offset) * 60;
+                    let y2 = centroY + Math.cos(offset) * 60;
+                    
+                    // Enlaces (Puentes de hidrógeno)
+                    ctx.strokeStyle = "rgba(85, 139, 47, 0.4)"; // Verde
+                    ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke();
+                    
+                    // Nodos
+                    ctx.fillStyle = "#0288D1"; // Azul
+                    ctx.beginPath(); ctx.arc(x, y1, 4, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#F57C00"; // Naranja
+                    ctx.beginPath(); ctx.arc(x, y2, 4, 0, Math.PI*2); ctx.fill();
+
+                    // Interacción: Si la tijera (mouse) toca el enlace de ADN
+                    if(interaccionActiva) {
+                        let distToLineY = Math.abs(ratonY - (y1+y2)/2);
+                        let distToLineX = Math.abs(ratonX - x);
+                        if(distToLineX < 15 && distToLineY < 40) {
+                            crearParticula(x, (y1+y2)/2);
+                            impactoAmbiental = Math.min(impactoAmbiental + 0.5, 30); // Acumular impacto
+                        }
+                    }
+                }
+
+                // Disminuir impacto lentamente (Resiliencia ecológica)
+                if(impactoAmbiental > 0) impactoAmbiental -= 0.1;
+
+                // 2. Actualizar y dibujar partículas (Efecto dominó hacia la derecha)
+                particulas.forEach((p, index) => {
+                    p.x += p.vx + 4; // Flujo constante hacia el ecosistema (derecha)
+                    p.y += p.vy;
+                    p.vida -= 0.01;
+
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.vida;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+                    ctx.globalAlpha = 1.0;
+
+                    if(p.vida <= 0 || p.x > canvas.width) particulas.splice(index, 1);
+                });
+
+                // 3. Dibujar ecosistema
+                dibujarIconosEcosistema();
+
+                // 4. Dibujar tijera (CRISPR)
+                if(interaccionActiva) {
+                    dibujarTijera(ratonX, ratonY);
+                } else {
+                    // Texto indicativo
+                    ctx.fillStyle = "rgba(255,255,255,0.5)";
+                    ctx.font = "18px Nunito";
+                    ctx.fillText("Mueve el ratón aquí para usar la 'Tijera Genética'", 80, 360);
+                }
+
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+    </script>
+</body>
+</html>

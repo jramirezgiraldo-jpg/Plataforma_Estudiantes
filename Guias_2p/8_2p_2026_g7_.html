@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Sistema Inmune - Guardianes de Pueblo Rico</title>
+    <style>
+        :root {
+            --color-cafe: #4E342E;
+            --color-hoja: #2E7D32;
+            --color-citrico: #FFB300;
+            --color-cielo: #E3F2FD;
+            --color-sangre: #C62828;
+            --color-pcc: #F5F5DC;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * { box-sizing: border-box; scroll-behavior: smooth; }
+        body { 
+            margin: 0; 
+            font-family: var(--font-main); 
+            background-color: var(--color-pcc); 
+            color: #333; 
+            overflow-x: hidden;
+        }
+
+        /* Pantalla de Bienvenida */
+        #welcome-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(rgba(78, 52, 46, 0.9), rgba(46, 125, 50, 0.9));
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+        }
+
+        .login-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            color: var(--color-cafe);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .btn-start {
+            background: var(--color-hoja);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        /* Navegación y Progreso */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .progress-container {
+            width: 200px;
+            height: 12px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-left: 10px;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--color-citrico);
+            transition: width 0.3s;
+        }
+
+        /* Contenedor Principal */
+        #content { display: none; padding-top: 80px; }
+
+        .section {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h1, h2 { color: var(--color-hoja); }
+        p { line-height: 1.8; margin-bottom: 20px; text-align: justify; }
+
+        /* Estilos de actividades */
+        .pausa-activa {
+            background: #f0f4f0;
+            border-left: 5px solid var(--color-hoja);
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 0 15px 15px 0;
+        }
+
+        .btn-done {
+            background: var(--color-citrico);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-done.completed {
+            background: #ccc;
+            cursor: default;
+        }
+
+        /* Tablas */
+        .table-wrapper { overflow-x: auto; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; background: #fff; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: var(--color-hoja); color: white; }
+
+        /* Canvas */
+        #canvas-wrap {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        canvas { width: 100%; height: 100%; cursor: crosshair; }
+
+        /* Quiz */
+        .quiz-option {
+            display: block;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9f9f9;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .quiz-option:hover { border-color: var(--color-citrico); }
+        .quiz-option.correct { background: #d4edda; border-color: #28a745; }
+        .quiz-option.wrong { background: #f8d7da; border-color: #dc3545; }
+
+        /* Textareas protegidos */
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-family: inherit;
+            resize: none;
+        }
+
+        .alert-ia {
+            color: red;
+            font-weight: bold;
+            display: none;
+            margin-top: 5px;
+        }
+
+        .puntos-badge {
+            background: var(--color-cafe);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Pantalla de Bienvenida -->
+<div id="welcome-screen">
+    <div class="login-card">
+        <svg width="80" height="80" viewBox="0 0 100 100">
+            <path d="M50 5 L10 25 L10 50 C10 75 50 95 50 95 C50 95 90 75 90 50 L90 25 L50 5 Z" fill="#2E7D32"/>
+            <path d="M50 20 L30 40 L40 40 L40 70 L60 70 L60 40 L70 40 Z" fill="white"/>
+        </svg>
+        <h2>Guardianes de Pueblo Rico</h2>
+        <p>Ingresa tus datos para iniciar la patrulla inmunológica en la vereda.</p>
+        <input type="text" id="input-apellidos" placeholder="Apellidos">
+        <input type="text" id="input-nombres" placeholder="Nombres">
+        <button class="btn-start" id="btn-iniciar">Iniciar OVA</button>
+    </div>
+</div>
+
+<!-- Navegación -->
+<nav>
+    <div style="display: flex; align-items: center;">
+        <strong id="display-user">Usuario</strong>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+    </div>
+    <div class="puntos-badge">Puntos: <span id="pts">0.0</span> / 5.0</div>
+</nav>
+
+<main id="content">
+    <!-- SECCIÓN INICIO -->
+    <div class="section">
+        <h1>Objetivo de Aprendizaje</h1>
+        <p>Al finalizar este recorrido por la **Vereda Pueblo Rico**, serás capaz de identificar los componentes del sistema inmune, diferenciar entre inmunidad innata y adquirida, y comprender cómo tu cuerpo despliega estrategias de defensa similares a las que usan los agricultores de Quimbaya para proteger sus cultivos de cítricos y café.</p>
+        
+        <hr>
+        
+        <h3>Pre-saberes: ¿Qué tanto sabes de la defensa?</h3>
+        <div id="pre-quiz">
+            <div class="quiz-q" data-q="0">
+                <p>1. Si una plaga intenta entrar a un cultivo de naranja en Pueblo Rico y se encuentra con una cerca de alambre de púas, esta barrera sería equivalente en tu cuerpo a:</p>
+                <div class="quiz-option" onclick="checkPre(this, true)">La piel.</div>
+                <div class="quiz-option" onclick="checkPre(this, false)">Los glóbulos rojos.</div>
+                <div class="quiz-option" onclick="checkPre(this, false)">El estómago.</div>
+            </div>
+            <div class="quiz-q" data-q="1" style="margin-top:20px">
+                <p>2. Cuando te vacunan en el puesto de salud de Quimbaya, ¿qué le estás dando a tu sistema inmune?</p>
+                <div class="quiz-option" onclick="checkPre(this, false)">Energía inmediata para correr.</div>
+                <div class="quiz-option" onclick="checkPre(this, true)">Información para reconocer un enemigo futuro.</div>
+                <div class="quiz-option" onclick="checkPre(this, false)">Vitaminas para el crecimiento.</div>
+            </div>
+            <div class="quiz-q" data-q="2" style="margin-top:20px">
+                <p>3. ¿Cuál de estas células es la encargada de "comerse" a los microbios invasores?</p>
+                <div class="quiz-option" onclick="checkPre(this, false)">Neuronas.</div>
+                <div class="quiz-option" onclick="checkPre(this, false)">Plaquetas.</div>
+                <div class="quiz-option" onclick="checkPre(this, true)">Macrófagos.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUERPO INDUCTIVO -->
+    <div class="section">
+        <h2>La Primera Línea: Las Cercas de la Finca</h2>
+        <div class="inductivo-text">
+            <p>Imagina que estás en la entrada de la finca "La Esperanza" en la **Vereda Pueblo Rico**. Para que un extraño llegue hasta los cafetales, primero debe pasar el portón principal, las cercas de limoncillo y evitar a los perros guardianes. En nuestro cuerpo, la piel y las mucosas actúan exactamente igual. Son barreras físicas y químicas que impiden que los patógenos (como bacterias de la tierra o virus del aire quindiano) entren a nuestra "finca" interna.</p>
+            
+            <p>Sin embargo, a veces el portón queda abierto. Un raspón jugando fútbol en la cancha de la vereda o una cortadura con una tijera de podar cítricos abre una brecha. Es aquí donde entran los vigilantes locales: la **Inmunidad Innata**. Estas células no preguntan nombres ni piden cédula; simplemente atacan a todo lo que no reconozcan como propio. Es una respuesta rápida, como cuando los vecinos de Pueblo Rico se alertan ante un ruido extraño en la noche: todos salen a ver qué pasa sin saber exactamente quién es el intruso.</p>
+            
+            <p>La inflamación es parte de este proceso. Si te pica una abeja cerca de un panal en un cultivo de cítricos, verás que la zona se pone roja y caliente. Eso es porque tu cuerpo está enviando más "camiones de bomberos" (sangre y glóbulos blancos) a ese punto exacto para contener el daño. El pus que a veces vemos es, literalmente, el campo de batalla lleno de soldados caídos (glóbulos blancos) y enemigos derrotados (bacterias).</p>
+            
+            <p>En el sector ganadero de Quimbaya, los veterinarios saben que un ternero necesita el calostro de su madre para sobrevivir. Esto es **Inmunidad Pasiva**. El ternero recibe "armas" ya fabricadas por la madre mientras su propio sistema aprende a defenderse. Nosotros también dependemos de ese equilibrio. El sistema inmune es una red de comunicación constante entre el bazo, los ganglios linfáticos y la médula ósea, trabajando como una cooperativa cafetera donde cada socio tiene una función vital para el éxito de la cosecha.</p>
+            
+            <p>Finalmente, debemos entender que el turismo en nuestra vereda también nos expone a nuevos retos. Personas de todo el mundo visitan los miradores de Pueblo Rico, trayendo consigo microorganismos a los que nuestro cuerpo quizás no está acostumbrado. Por eso, mantener el sistema fuerte mediante una buena alimentación con frutas de nuestra zona (naranjas, limones y mandarinas ricas en vitamina C) es como abonar bien el cultivo: una planta sana resiste mejor las plagas que una débil.</p>
+        </div>
+
+        <div class="table-wrapper">
+            <h3>Cuadro Comparativo: Defensa de la Finca vs. Cuerpo Humano</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Elemento de la Finca (Pueblo Rico)</th>
+                        <th>Función de Protección</th>
+                        <th>Equivalente en el Sistema Inmune</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Cerca de Limoncillo / Alambre</td>
+                        <td>Barrera física impenetrable.</td>
+                        <td>Piel y Vellosidades.</td>
+                    </tr>
+                    <tr>
+                        <td>Perros de la finca</td>
+                        <td>Detectan intrusos y ladran (alerta).</td>
+                        <td>Células Dendríticas.</td>
+                    </tr>
+                    <tr>
+                        <td>Trabajadores de la finca</td>
+                        <td>Eliminan maleza y plagas visibles.</td>
+                        <td>Macrófagos (Fagocitosis).</td>
+                    </tr>
+                    <tr>
+                        <td>Administrador de la Finca</td>
+                        <td>Coordina la respuesta y llama refuerzos.</td>
+                        <td>Linfocitos T Cooperadores.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAUSAS ACTIVAS 1-5 -->
+        <div class="pausa-activa">
+            <strong>Pausa Activa 1:</strong> Reflexiona en tu cuaderno: ¿Qué pasaría en una finca de Pueblo Rico si no hubiera cercas? ¿Cómo se relaciona esto con una quemadura grave en la piel?
+            <br><button class="btn-done" id="pa1" onclick="completeAct('pa1', 4)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <strong>Pausa Activa 2:</strong> Realiza un dibujo detallado en tu cuaderno de cómo crees que se ve un macrófago "atrapando" a una bacteria que entró por una herida de café.
+            <br><button class="btn-done" id="pa2" onclick="completeAct('pa2', 4)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <strong>Pausa Activa 3:</strong> Crea un mapa mental que conecte: Piel, Inflamación, Glóbulos Blancos y Vereda Pueblo Rico.
+            <br><button class="btn-done" id="pa3" onclick="completeAct('pa3', 4)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <strong>Pausa Activa 4:</strong> Elabora un cuadro comparativo entre la "Inmunidad Innata" y la "Seguridad Privada" de un hotel turístico de Quimbaya.
+            <br><button class="btn-done" id="pa4" onclick="completeAct('pa4', 4)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <strong>Pausa Activa 5:</strong> Diseña un diagrama de flujo que muestre los pasos desde que un virus entra por la nariz hasta que el cuerpo genera estornudos.
+            <br><button class="btn-done" id="pa5" onclick="completeAct('pa5', 4)">Ya lo hice</button>
+        </div>
+    </div>
+
+    <!-- PREGUNTA ICFES SVG -->
+    <div class="section">
+        <h2>Análisis de Datos: La Batalla en Números</h2>
+        <div style="text-align:center">
+            <svg width="500" height="300" viewBox="0 0 500 300" style="max-width:100%">
+                <!-- Ejes -->
+                <line x1="50" y1="250" x2="450" y2="250" stroke="#333" stroke-width="2"/>
+                <line x1="50" y1="250" x2="50" y2="50" stroke="#333" stroke-width="2"/>
+                <!-- Etiquetas -->
+                <text x="250" y="290" text-anchor="middle">Días de Infección</text>
+                <text x="20" y="150" transform="rotate(-90 20,150)" text-anchor="middle">Cantidad de Anticuerpos</text>
+                
+                <!-- Curva Respuesta Primaria -->
+                <path d="M 50 250 Q 150 240 200 150 T 250 230" fill="none" stroke="blue" stroke-width="3" />
+                <text x="180" y="140" fill="blue" font-size="12">Respuesta 1 (Infección)</text>
+
+                <!-- Curva Respuesta Secundaria -->
+                <path d="M 250 230 Q 300 50 350 30 T 450 20" fill="none" stroke="red" stroke-width="3" />
+                <text x="360" y="60" fill="red" font-size="12">Respuesta 2 (Memoria)</text>
+            </svg>
+        </div>
+        <p><strong>Pregunta tipo ICFES (Competencia: Indagar):</strong> Un agricultor de Pueblo Rico se contagia de un virus mientras recolecta café. La gráfica muestra la producción de anticuerpos en dos momentos diferentes. Si el agricultor vuelve a exponerse al MISMO virus en el día 20, ¿por qué la curva roja es más alta y rápida?</p>
+        <div class="quiz-option" onclick="checkIcfes(this, false)">Porque el cuerpo tiene más energía debido a las vitaminas del cítrico.</div>
+        <div class="quiz-option" onclick="checkIcfes(this, true)">Debido a la memoria inmunológica que permite reconocer al invasor previamente enfrentado.</div>
+        <div class="quiz-option" onclick="checkIcfes(this, false)">Porque el virus se volvió más débil al estar en el clima templado de Quimbaya.</div>
+        <div class="quiz-option" onclick="checkIcfes(this, false)">Porque los anticuerpos se duplican por la presión atmosférica de la vereda.</div>
+    </div>
+
+    <!-- CUERPO DEDUCTIVO -->
+    <div class="section">
+        <h2>La Inteligencia Táctica: Linfocitos y Memoria</h2>
+        <div class="deductivo-text">
+            <p>Cuando la respuesta innata no es suficiente, el cuerpo activa la **Inmunidad Adquirida**. Este es un sistema de inteligencia avanzada. Imaginemos que un hongo específico ataca los cultivos de cítricos en Pueblo Rico. Al principio, los agricultores no saben cómo combatirlo, pero tras analizarlo, crean un fungicida específico. Los **Linfocitos B** hacen algo similar: crean "balas de precisión" llamadas anticuerpos (proteínas en forma de Y<sub>2</sub>) que se pegan exclusivamente a ese enemigo.</p>
+            
+            <p>Los **Linfocitos T Citotóxicos** son los soldados de élite. Su misión es destruir a las células propias que ya han sido invadidas, para evitar que el virus se siga reproduciendo. Es una decisión difícil, como cuando en una finca ganadera de Quimbaya se debe aislar o sacrificar a una vaca enferma para salvar a todo el hato. La precisión es clave; si estos linfocitos se confunden y atacan a células sanas, surgen las enfermedades autoinmunes.</p>
+            
+            <p>La maravilla de este sistema es la **Memoria Inmunológica**. Una vez ganada la batalla, algunas células se quedan patrullando la Vereda Pueblo Rico (nuestro cuerpo) por años. Si el mismo enemigo intenta entrar de nuevo, la respuesta es tan rápida que ni siquiera sentimos los síntomas. Esto explica por qué solo nos da varicela una vez. Las vacunas aprovechan esta ley biológica: nos muestran una "foto" del enemigo (un virus muerto o debilitado) para que entrenemos al ejército sin correr el riesgo de la enfermedad real.</p>
+            
+            <p>En el contexto del turismo de Quimbaya, es vital entender que el estrés y la falta de sueño (comunes en temporadas altas de cosecha o turismo) afectan la producción de citoquinas, que son los mensajes químicos del sistema inmune. Un sistema incomunicado es un sistema vulnerable. Por ello, la ciencia demuestra que el equilibrio emocional y el contacto con la naturaleza de nuestra vereda también son "medicinas" para nuestras defensas.</p>
+            
+            <p>Para resumir, el sistema inmune no es un órgano aislado, sino un proceso dinámico de aprendizaje constante. Desde la médula ósea donde nacen los soldados, hasta el timo donde se entrenan, cada parte de nuestro cuerpo está comprometida con la soberanía de nuestra salud, permitiéndonos disfrutar de la belleza y la productividad de nuestras tierras quindianas.</p>
+        </div>
+
+        <h3>Simulador de Defensa Celular: Patrulla Pueblo Rico</h3>
+        <p>Usa el puntero para destruir los patógenos (esferas verdes) antes de que toquen la "célula madre" de la finca (centro). Los macrófagos (partículas azules) te ayudarán automáticamente.</p>
+        <div id="canvas-wrap">
+            <canvas id="defenseCanvas"></canvas>
+        </div>
+
+        <!-- PAUSAS ACTIVAS 6-10 -->
+        <div class="pausa-activa">
+            <strong>Pausa Activa 6:</strong> Construye un mapa conceptual en tu cuaderno sobre los tipos de Linfocitos (B, T Cooperadores, T Citotóxicos).
+            <br><button class="btn-done" id="pa6" onclick="completeAct('pa6', 4)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <strong>Pausa Activa 7:</strong> Elabora una tabla de datos observando a las personas de tu casa: ¿Quiénes se enferman más seguido y qué hábitos de limpieza o alimentación tienen?
+            <br><button class="btn-done" id="pa7" onclick="completeAct('pa7', 4)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <strong>Pausa Activa 8:</strong> Realiza un dibujo técnico esquemático de un anticuerpo uniéndose a un antígeno (como una llave a su cerradura).
+            <br><button class="btn-done" id="pa8" onclick="completeAct('pa8', 4)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <strong>Pausa Activa 9:</strong> Escribe una síntesis de 10 renglones explicando por qué las vacunas son importantes para los niños de Quimbaya.
+            <br><button class="btn-done" id="pa9" onclick="completeAct('pa9', 4)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <strong>Pausa Activa 10:</strong> Problema matemático: Si una bacteria se duplica cada 20 minutos, ¿cuántas bacterias habrá en 2 horas si el sistema inmune no actúa? Calcula en tu cuaderno.
+            <br><button class="btn-done" id="pa10" onclick="completeAct('pa10', 4)">Ya lo hice</button>
+        </div>
+    </div>
+
+    <!-- EVALUACIÓN FINAL -->
+    <div class="section" id="evaluacion">
+        <h2>Evaluación Final: El Guardián Maestro</h2>
+        
+        <div id="final-quiz">
+            <p>1. ¿En qué lugar del cuerpo se "entrenan" los linfocitos T?</p>
+            <div class="quiz-option" onclick="finalSel(this, false, 0)">En los pulmones.</div>
+            <div class="quiz-option" onclick="finalSel(this, true, 0)">En el Timo.</div>
+            <div class="quiz-option" onclick="finalSel(this, false, 0)">En el estómago.</div>
+
+            <p>2. Las moléculas Y<sub>2</sub> llamadas anticuerpos son producidas por:</p>
+            <div class="quiz-option" onclick="finalSel(this, true, 1)">Linfocitos B.</div>
+            <div class="quiz-option" onclick="finalSel(this, false, 1)">Glóbulos Rojos.</div>
+            <div class="quiz-option" onclick="finalSel(this, false, 1)">Plaquetas.</div>
+
+            <p>3. ¿Qué es un antígeno?</p>
+            <div class="quiz-option" onclick="finalSel(this, false, 2)">Una vitamina del café.</div>
+            <div class="quiz-option" onclick="finalSel(this, true, 2)">Cualquier sustancia extraña que desencadena una respuesta inmune.</div>
+            <div class="quiz-option" onclick="finalSel(this, false, 2)">Una parte del corazón.</div>
+
+            <p>4. La inmunidad adquirida se diferencia de la innata porque:</p>
+            <div class="quiz-option" onclick="finalSel(this, true, 3)">Es específica y tiene memoria.</div>
+            <div class="quiz-option" onclick="finalSel(this, false, 3)">Es más débil.</div>
+            <div class="quiz-option" onclick="finalSel(this, false, 3)">Solo funciona en los bebés.</div>
+
+            <p>5. ¿Cuál es la función de la inflamación?</p>
+            <div class="quiz-option" onclick="finalSel(this, false, 4)">Hacer que el cuerpo se canse.</div>
+            <div class="quiz-option" onclick="finalSel(this, true, 4)">Facilitar la llegada de células de defensa al sitio de la infección.</div>
+            <div class="quiz-option" onclick="finalSel(this, false, 4)">Producir sudor.</div>
+        </div>
+
+        <h3>Preguntas de Análisis (Escritura Manual Obligatoria)</h3>
+        <p>Responde con tus palabras. El sistema detectará si intentas copiar/pegar.</p>
+        
+        <div class="open-q">
+            <p>A. ¿Cómo aplicaría un agricultor de Pueblo Rico el concepto de "Memoria Inmunológica" para cuidar sus cultivos?</p>
+            <textarea id="ans-a" class="secure-text" onkeyup="checkTyping(this, 'alert-a')"></textarea>
+            <div id="alert-a" class="alert-ia">¡Error! Velocidad de escritura no humana detectada. Escribe manualmente.</div>
+        </div>
+
+        <div class="open-q">
+            <p>B. Explica por qué es vital que un turista que visita Quimbaya tenga sus vacunas al día.</p>
+            <textarea id="ans-b" class="secure-text" onkeyup="checkTyping(this, 'alert-b')"></textarea>
+            <div id="alert-b" class="alert-ia">¡Error! Velocidad de escritura no humana detectada. Escribe manualmente.</div>
+        </div>
+
+        <div class="open-q">
+            <p>C. ¿Qué relación hay entre una buena alimentación en la vereda y la eficacia de los macrófagos?</p>
+            <textarea id="ans-c" class="secure-text" onkeyup="checkTyping(this, 'alert-c')"></textarea>
+            <div id="alert-c" class="alert-ia">¡Error! Velocidad de escritura no humana detectada. Escribe manualmente.</div>
+        </div>
+
+        <div class="open-q">
+            <p>D. Describe qué sucede en tu cuerpo cuando te cortas con una hoja de cafeto sucia.</p>
+            <textarea id="ans-d" class="secure-text" onkeyup="checkTyping(this, 'alert-d')"></textarea>
+            <div id="alert-d" class="alert-ia">¡Error! Velocidad de escritura no humana detectada. Escribe manualmente.</div>
+        </div>
+
+        <div class="open-q">
+            <p>E. ¿Por qué crees que el sistema inmune es comparado con un ejército táctico?</p>
+            <textarea id="ans-e" class="secure-text" onkeyup="checkTyping(this, 'alert-e')"></textarea>
+            <div id="alert-e" class="alert-ia">¡Error! Velocidad de escritura no humana detectada. Escribe manualmente.</div>
+        </div>
+
+        <button class="btn-start" style="margin-top:30px" onclick="finalizarTodo()">Finalizar y Descargar Resultados</button>
+    </div>
+</main>
+
+<script>
+    // ESTADO GLOBAL
+    let puntos = 0;
+    let progreso = 0;
+    let typingLog = {};
+    const finalAnswers = [null, null, null, null, null];
+    let preAnswers = [null, null, null];
+
+    // GESTIÓN DE USUARIO
+    document.getElementById('btn-iniciar').addEventListener('click', () => {
+        const nom = document.getElementById('input-nombres').value.trim();
+        const ape = document.getElementById('input-apellidos').value.trim();
+        if(nom && ape) {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+            document.getElementById('display-user').innerText = `${nom} ${ape} - Vereda Pueblo Rico`;
+            initCanvas();
+        } else {
+            alert("Por favor ingresa tus nombres y apellidos.");
+        }
+    });
+
+    function updateUI() {
+        document.getElementById('pts').innerText = puntos.toFixed(1);
+        document.getElementById('progress-bar').style.width = progreso + "%";
+    }
+
+    // ACTIVIDADES
+    function completeAct(id, pVal) {
+        const btn = document.getElementById(id);
+        if(!btn.classList.contains('completed')) {
+            btn.classList.add('completed');
+            btn.innerText = "✓ Completado";
+            puntos += 0.2; 
+            progreso += pVal;
+            updateUI();
+        }
+    }
+
+    // PRE-SABERES
+    function checkPre(el, correct) {
+        const parent = el.parentElement;
+        const qIdx = parent.getAttribute('data-q');
+        if(preAnswers[qIdx] !== null) return;
+
+        if(correct) {
+            el.classList.add('correct');
+            puntos += 0.1;
+        } else {
+            el.classList.add('wrong');
+        }
+        preAnswers[qIdx] = correct;
+        progreso += 2;
+        updateUI();
+    }
+
+    // ICFES
+    let icfesAnswered = false;
+    function checkIcfes(el, correct) {
+        if(icfesAnswered) return;
+        icfesAnswered = true;
+        if(correct) {
+            el.classList.add('correct');
+            puntos += 0.5;
+        } else {
+            el.classList.add('wrong');
+        }
+        progreso += 10;
+        updateUI();
+    }
+
+    // EVALUACIÓN FINAL
+    function finalSel(el, correct, idx) {
+        if(finalAnswers[idx] !== null) return;
+        finalAnswers[idx] = correct;
+        if(correct) {
+            el.classList.add('correct');
+            puntos += 0.4;
+        } else {
+            el.classList.add('wrong');
+        }
+        progreso += 3;
+        updateUI();
+    }
+
+    // ANTI-FRAUDE
+    const secureElements = document.querySelectorAll('.secure-text');
+    secureElements.forEach(el => {
+        el.addEventListener('paste', e => e.preventDefault());
+        el.addEventListener('drop', e => e.preventDefault());
+        el.addEventListener('contextmenu', e => e.preventDefault());
+        el.addEventListener('keydown', e => {
+            if((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    function checkTyping(el, alertId) {
+        const now = Date.now();
+        const id = el.id;
+        if(!typingLog[id]) typingLog[id] = [];
+        typingLog[id].push(now);
+
+        if(typingLog[id].length > 10) {
+            const lastTen = typingLog[id].slice(-10);
+            const duration = lastTen[9] - lastTen[0];
+            // Si escribe 10 caracteres en menos de 200ms es sospechoso
+            if(duration < 200) {
+                document.getElementById(alertId).style.display = 'block';
+                el.value = "";
+                typingLog[id] = [];
+            } else {
+                document.getElementById(alertId).style.display = 'none';
+            }
+        }
+    }
+
+    // CANVAS DEFENSE GAME
+    let canvas, ctx, particles = [], enemies = [];
+    function initCanvas() {
+        canvas = document.getElementById('defenseCanvas');
+        ctx = canvas.getContext('2d');
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            spawnAntibody(e.clientX - rect.left, e.clientY - rect.top);
+        });
+
+        setInterval(spawnEnemy, 1500);
+        requestAnimationFrame(gameLoop);
+    }
+
+    function spawnAntibody(x, y) {
+        particles.push({x, y, r: 5, color: '#E3F2FD', life: 20});
+    }
+
+    function spawnEnemy() {
+        const side = Math.floor(Math.random() * 4);
+        let x, y;
+        if(side === 0) { x = Math.random() * canvas.width; y = 0; }
+        else if(side === 1) { x = canvas.width; y = Math.random() * canvas.height; }
+        else if(side === 2) { x = Math.random() * canvas.width; y = canvas.height; }
+        else { x = 0; y = Math.random() * canvas.height; }
+        enemies.push({x, y, r: 10, speed: 1.2});
+    }
+
+    function gameLoop() {
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+
+        // Centro (La Finca)
+        ctx.beginPath();
+        ctx.arc(canvas.width/2, canvas.height/2, 30, 0, Math.PI*2);
+        ctx.fillStyle = '#2E7D32';
+        ctx.fill();
+
+        // Anticuerpos
+        particles.forEach((p, i) => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+            ctx.strokeStyle = p.color;
+            ctx.stroke();
+            p.life--;
+            if(p.life <= 0) particles.splice(i, 1);
+        });
+
+        // Enemigos
+        enemies.forEach((en, i) => {
+            const dx = canvas.width/2 - en.x;
+            const dy = canvas.height/2 - en.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            en.x += (dx/dist) * en.speed;
+            en.y += (dy/dist) * en.speed;
+
+            ctx.beginPath();
+            ctx.arc(en.x, en.y, en.r, 0, Math.PI*2);
+            ctx.fillStyle = '#C62828';
+            ctx.fill();
+
+            // Colisión con mouse
+            particles.forEach(p => {
+                const dP = Math.sqrt((p.x-en.x)**2 + (p.y-en.y)**2);
+                if(dP < en.r + p.r) enemies.splice(i, 1);
+            });
+
+            if(dist < 30) {
+                enemies.splice(i, 1);
+                // Efecto visual de daño
+            }
+        });
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    // FINALIZACIÓN
+    function finalizarTodo() {
+        // Validar respuestas abiertas mínimas
+        const qA = document.getElementById('ans-a').value.split(' ').length;
+        const qB = document.getElementById('ans-b').value.split(' ').length;
+        if(qA < 10 || qB < 10) {
+            alert("Por favor completa las preguntas abiertas con al menos 10-15 palabras.");
+            return;
+        }
+
+        const notaFinal = puntos.toFixed(2);
+        let feedback = "";
+        if(notaFinal >= 4.5) feedback = "¡Excelente, Guardián Maestro de Pueblo Rico! Conoces la defensa a la perfección.";
+        else if(notaFinal >= 3.0) feedback = "Buen trabajo patrullero. Debes reforzar la diferencia entre Linfocitos T y B.";
+        else feedback = "Alerta: Tu finca está desprotegida. Te sugerimos repasar la sección de Inmunidad Adquirida.";
+
+        const resultado = `
+RESULTADOS DEL OVA: GUARDIANES DE PUEBLO RICO
+Estudiante: ${document.getElementById('display-user').innerText}
+Nota Final: ${notaFinal} / 5.0
+Comentario: ${feedback}
+
+RESPUESTAS ABIERTAS:
+A: ${document.getElementById('ans-a').value}
+B: ${document.getElementById('ans-b').value}
+C: ${document.getElementById('ans-c').value}
+D: ${document.getElementById('ans-d').value}
+E: ${document.getElementById('ans-e').value}
+        `;
+
+        const blob = new Blob([resultado], {type: "text/plain"});
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "resultados_inmune_quimbaya.txt";
+        link.click();
+        
+        alert("¡Proceso terminado! Se ha descargado tu informe.");
+    }
+</script>
+
+</body>
+</html>

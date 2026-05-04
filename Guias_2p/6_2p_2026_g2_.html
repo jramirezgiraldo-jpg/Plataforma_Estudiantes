@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA · Membrana celular: el cerco inteligente</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #d9e9f5;  /* cielo suave */
+            color: #034b61;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+        /* login */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #1f6b8bdd;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .login-card {
+            background: #fffef7;
+            border-radius: 3rem 1rem 3rem 1rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 20px 30px #023047, inset 0 0 0 4px #9ac7d9;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        .login-card h1 {
+            font-size: 2.2rem;
+            color: #1b6b85;
+            border-bottom: 4px solid #72bcd4;
+            display: inline-block;
+            padding-bottom: 6px;
+        }
+        .login-card input {
+            display: block;
+            width: 100%;
+            margin: 1.4rem 0;
+            padding: 1rem 1.2rem;
+            border: 2px solid #9ac7d9;
+            border-radius: 40px;
+            background: #f0faff;
+            font-size: 1.1rem;
+        }
+        .login-card input:focus {
+            outline: none;
+            border-color: #0d4b63;
+        }
+        .login-card button {
+            background: #2b879e;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.4rem;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            border-bottom: 5px solid #0a4c63;
+            cursor: pointer;
+            width: 100%;
+        }
+        .login-card button:hover {
+            background: #3da5c0;
+        }
+        /* contenido principal */
+        #mainContent {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+        /* header fijo */
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            background: #c2e2f0;
+            border-radius: 0 0 40px 40px;
+            padding: 0.8rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 12px #2b6f8b66;
+            z-index: 100;
+            border: 2px solid #7fb6d0;
+            backdrop-filter: blur(4px);
+            margin-bottom: 2.5rem;
+        }
+        .user-name {
+            background: #126b84;
+            color: #f0fcff;
+            padding: 0.4rem 1.4rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .progress-area {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        .barra-wrapper {
+            width: 220px;
+            height: 22px;
+            background: #b2d3e2;
+            border-radius: 30px;
+            border: 2px solid #136b87;
+            overflow: hidden;
+        }
+        #progresoFill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #6ac5db, #1d8fb0);
+        }
+        .tabla-puntos {
+            display: flex;
+            gap: 8px;
+        }
+        .elem {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #a6b9c2;
+            color: #1c3a47;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.3rem;
+            box-shadow: inset 0 -4px 0 #4e6973;
+            border: 2px solid #2a505e;
+            transition: 0.2s;
+        }
+        .elem.unlocked {
+            background: #f0c45a;
+            box-shadow: 0 0 15px #f5b041, inset 0 -4px 0 #b37b2e;
+            border-color: #d4a259;
+        }
+        /* secciones */
+        .seccion {
+            background: #f6fbfe;
+            border-radius: 50px 20px 50px 20px;
+            padding: 2.2rem;
+            margin-bottom: 3rem;
+            box-shadow: 15px 15px 0 #90c2d4;
+            border: 2px solid #57a6c2;
+        }
+        h2 {
+            font-size: 2.2rem;
+            color: #0d607b;
+            border-left: 16px solid #ffb347;
+            padding-left: 1.3rem;
+            margin-bottom: 1.8rem;
+        }
+        button {
+            background: #2f94b0;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            border-bottom: 4px solid #0d556b;
+            cursor: pointer;
+            margin: 0.4rem 0;
+        }
+        button:hover {
+            background: #4cb1cf;
+        }
+        .pausa-box {
+            background: #d9effa;
+            border-radius: 30px;
+            padding: 1.2rem 1.8rem;
+            margin: 2rem 0;
+            border-left: 12px solid #f0a55a;
+        }
+        .pregunta {
+            background: #e7f3fa;
+            padding: 1.5rem;
+            border-radius: 25px;
+            margin: 1.2rem 0;
+        }
+        .feedback {
+            margin-top: 0.6rem;
+            padding: 0.6rem;
+            border-radius: 20px;
+        }
+        .correcto { background: #c9e9c0; color: #1b6b1b; }
+        .incorrecto { background: #fad7cf; color: #a0371e; }
+        canvas {
+            display: block;
+            margin: 2rem auto;
+            border-radius: 40px;
+            background: #1f4959;  /* fondo oscuro para resaltar partículas */
+            box-shadow: 0 12px 0 #1f6b7c, 0 20px 22px #063b4b55;
+            max-width: 100%;
+            border: 3px solid #f5b342;
+        }
+        .svg-membrana {
+            width: 100%;
+            background: #c9e2ed;
+            border-radius: 40px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .word-counter {
+            font-size: 0.95rem;
+        }
+        .valido { color: #1f731f; font-weight: bold; }
+        .invalido { color: #b33; }
+        .ruta-card {
+            background: #d2ecf5;
+            border-radius: 30px;
+            padding: 1.5rem;
+            border: 3px dashed #31849c;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN Apellidos y Nombres -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <h1>🧪 El cerco vivo</h1>
+            <p style="color:#1b6d84;">membrana celular</p>
+            <input type="text" id="apellidosInput" placeholder="Apellidos" autocomplete="off">
+            <input type="text" id="nombresInput" placeholder="Nombres" autocomplete="off">
+            <button id="btnIngresar">🚪 Entrar a la célula</button>
+            <p style="margin-top:1.8rem; background:#d0e6f0; border-radius:40px; padding:0.5rem;">Apellidos luego Nombres</p>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="mainContent">
+        <!-- header fijo con nombre, barra y elementos químicos -->
+        <div class="fixed-header">
+            <span class="user-name" id="headerNombre">Cargando...</span>
+            <div class="progress-area">
+                <div class="barra-wrapper">
+                    <div id="progresoFill"></div>
+                </div>
+                <div class="tabla-puntos" id="tablaPuntos">
+                    <span class="elem" id="elem1">H</span>
+                    <span class="elem" id="elem2">He</span>
+                    <span class="elem" id="elem3">Li</span>
+                    <span class="elem" id="elem4">Be</span>
+                    <span class="elem" id="elem5">B</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- INICIO: objetivo y pre-saberes -->
+        <section class="seccion">
+            <h2>🎯 Objetivo: La membrana, un cerco inteligente</h2>
+            <p style="font-size:1.3rem;"><strong>Explicar el rol de la membrana plasmática en el equilibrio interno de la célula.</strong> Así como en nuestra casa decidimos qué entra y qué sale (personas, animales, agua), la célula usa su membrana para protegerse y alimentarse. También aprenderemos sobre el respeto por los límites personales.</p>
+            <h3>📝 Pre-saberes: lo que ya sabemos</h3>
+            <div class="pregunta" id="presaber1">
+                <p>1. ¿Qué crees que rodea a una célula y la separa del exterior?</p>
+                <label><input type="radio" name="pre1" value="a"> a) Una pared de ladrillos</label><br>
+                <label><input type="radio" name="pre1" value="b"> b) Una membrana delgada</label><br>
+                <label><input type="radio" name="pre1" value="c"> c) Una capa de gelatina</label><br>
+                <div class="feedback" id="feedPre1"></div>
+            </div>
+            <div class="pregunta" id="presaber2">
+                <p>2. ¿Qué necesita una célula para vivir?</p>
+                <label><input type="radio" name="pre2" value="a"> a) Nutrientes y agua</label><br>
+                <label><input type="radio" name="pre2" value="b"> b) Solo luz</label><br>
+                <label><input type="radio" name="pre2" value="c"> c) Nada, es autosuficiente</label><br>
+                <div class="feedback" id="feedPre2"></div>
+            </div>
+            <div class="pregunta" id="presaber3">
+                <p>3. ¿Qué pasa si entra demasiada agua a una célula?</p>
+                <label><input type="radio" name="pre3" value="a"> a) Se encoge</label><br>
+                <label><input type="radio" name="pre3" value="b"> b) Puede hincharse y reventar</label><br>
+                <label><input type="radio" name="pre3" value="c"> c) Nada, todo sigue igual</label><br>
+                <div class="feedback" id="feedPre3"></div>
+            </div>
+        </section>
+
+        <!-- CUERPO INDUCTIVO (texto extenso + 5 pausas) -->
+        <section class="seccion">
+            <h2>🏡 Camino inductivo: la finca y sus cercos</h2>
+            <div>
+                <p>Imagina que tienes una finca con animales y cultivos. Para protegerla, pones un cerco: evita que los animales se escapen y que los depredadores entren. Pero el cerco no es completamente sólido; tiene una puerta por donde entras tú, y quizás un pequeño hueco para que pase el agua de la quebrada. La membrana celular es así: una barrera selectiva. En la historia, las primeras células aparecieron cuando se formaron membranas que podían separar un medio interno del externo, hace millones de años.</p>
+                <p>En nuestra vida cotidiana usamos filtros: un colador deja pasar el agua pero retiene los fideos. La membrana de la célula tiene proteínas que actúan como "porteros": algunas sustancias pequeñas (como el oxígeno) pasan libremente; otras necesitan una llave (transporte activo) o un portero que las ayude. Por ejemplo, la glucosa entra con ayuda de transportadores, igual que en tu casa no dejas pasar a cualquiera, pero sí a tus amigos si los invitas.</p>
+                <p>Pensemos en la yema de huevo: está rodeada por una membrana delgada que la separa de la clara. Si rompes esa membrana, la yema se mezcla. Algo similar ocurre en nuestras células: si la membrana se rompe, la célula muere. Por eso es tan importante mantenerla sana. Los científicos descubrieron la membrana observando células al microscopio en el siglo XVII. Hoy sabemos que es como una bicapa de grasa con proteínas flotando.</p>
+                <p>En la vereda, cuando llueve mucho, el agua puede inundar la casa; si no tenemos un buen desagüe, el agua se estanca y daña los muebles. La célula también regula la entrada de agua mediante un proceso llamado ósmosis. Si hay mucha agua afuera, entra y la célula se hincha; si hay poca, se encoge. Las células de nuestras raíces tienen mecanismos para no reventar. Las vacuolas ayudan a almacenar el exceso.</p>
+                <p>El respeto por los límites personales es igual de importante. Cada persona tiene su espacio y decide qué comparte y qué no. Así como la membrana elige qué sustancias pasan, nosotros podemos decidir hasta dónde permitimos que otros influyan en nosotros. Decir "no" es como cerrar un canal iónico. Reconocer nuestros propios límites y respetar los ajenos nos ayuda a vivir en equilibrio.</p>
+            </div>
+            <!-- 5 pausas inductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 1: Dibuja en tu cuaderno una finca con su cerco. Señala qué cosas entran (agua, alimentos) y qué cosas no entran (depredadores).</p><button class="pausa-btn" data-id="0">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 2: Escribe tres ejemplos de filtros que uses en casa (colador, mosquitero, etc.) y explica qué dejan pasar y qué retienen.</p><button class="pausa-btn" data-id="1">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 3: Pregunta a un adulto: ¿cómo cuidan el agua en tu casa para que no se desperdicie? Anota la respuesta.</p><button class="pausa-btn" data-id="2">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 4: Observa un huevo crudo. Con cuidado, identifica la membrana que separa la clara de la cáscara (la telita). Dibújala.</p><button class="pausa-btn" data-id="3">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 5: Reflexiona: ¿qué significa para ti tener un límite personal? Escribe un ejemplo de cuando has dicho "no" para protegerte.</p><button class="pausa-btn" data-id="4">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- PREGUNTA TIPO ICFES con SVG -->
+        <section class="seccion">
+            <h2>🔬 Pregunta ICFES (Indagar)</h2>
+            <div class="svg-membrana">
+                <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- bicapa lipídica -->
+                    <rect x="50" y="70" width="400" height="15" fill="#bfa77a" rx="5" />
+                    <rect x="50" y="100" width="400" height="15" fill="#bfa77a" rx="5" />
+                    <!-- cabezas polares -->
+                    <circle cx="100" cy="62" r="6" fill="#e06b6b" />
+                    <circle cx="150" cy="62" r="6" fill="#e06b6b" />
+                    <circle cx="200" cy="62" r="6" fill="#e06b6b" />
+                    <circle cx="250" cy="62" r="6" fill="#e06b6b" />
+                    <circle cx="300" cy="62" r="6" fill="#e06b6b" />
+                    <circle cx="350" cy="62" r="6" fill="#e06b6b" />
+                    <!-- canales proteicos -->
+                    <rect x="280" y="50" width="20" height="40" fill="#6b8e9b" rx="3" />
+                    <rect x="380" y="50" width="20" height="40" fill="#6b8e9b" rx="3" />
+                    <!-- partículas -->
+                    <circle cx="140" cy="130" r="5" fill="#42946b" />
+                    <text x="130" y="150" fill="#0f4f4f">glucosa</text>
+                    <circle cx="400" cy="130" r="4" fill="#d46b2b" />
+                    <text x="390" y="180" fill="#0f4f4f">ion</text>
+                </svg>
+            </div>
+            <p>En el esquema, las esferas rojas representan las cabezas de los lípidos y los rectángulos grises son proteínas que forman canales. ¿Qué función cumplen principalmente esas proteínas?</p>
+            <div class="pregunta">
+                <label><input type="radio" name="icfes" value="a"> a) Dar color a la membrana</label><br>
+                <label><input type="radio" name="icfes" value="b"> b) Permitir el paso de sustancias específicas</label><br>
+                <label><input type="radio" name="icfes" value="c"> c) Producir energía</label><br>
+                <label><input type="radio" name="icfes" value="d"> d) Unir células entre sí</label><br>
+                <button id="revisarIcfes">Revisar</button>
+                <div id="feedIcfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <!-- CUERPO DEDUCTIVO (con canvas central) -->
+        <section class="seccion">
+            <h2>⚙️ Camino deductivo: la membrana en detalle</h2>
+            <p><strong>Estructura:</strong> La membrana plasmática es una bicapa de fosfolípidos. Cada lípido tiene una cabeza hidrofílica (que ama el agua) y dos colas hidrofóbicas (que odian el agua). Se organizan en dos capas con las colas hacia adentro, formando una barrera que impide el paso de sustancias solubles en agua. Pero la célula necesita intercambiar materiales, por eso hay proteínas incrustadas: canales, bombas, receptores.</p>
+            <p><strong>Transporte pasivo:</strong> No gasta energía. Incluye la difusión simple (moléculas pequeñas como O<sub>2</sub>, CO<sub>2</sub>) y la difusión facilitada (glucosa, iones) mediante proteínas transportadoras. La ósmosis es el paso de agua a través de la membrana, desde donde hay menos solutos hacia donde hay más. Si ponemos una célula en agua destilada, entra agua y puede estallar (hemólisis).</p>
+            <p><strong>Transporte activo:</strong> Gasta energía (ATP) para mover sustancias contra su gradiente. Ejemplo: la bomba de sodio-potasio saca 3 Na<sup>+</sup> y mete 2 K<sup>+</sup>. Es como cuando en la finca usas una bomba para subir agua al tanque.</p>
+            <p><strong>Endocitosis y exocitosis:</strong> Para partículas grandes, la membrana se invagina y forma una vesícula. Así la célula come (fagocitosis) o bebe (pinocitosis). Es como cuando abres la puerta grande de la finca para que entre un camión.</p>
+            <p><strong>Límites personales:</strong> Así como las proteínas deciden qué pasa, nosotros decidimos qué permitimos en nuestra vida. A veces hay que decir "no" a cosas que nos dañan, igual que la célula no deja pasar toxinas. Respetar los límites de los demás también es importante para convivir.</p>
+            <p>La membrana no es una pared rígida; es dinámica, fluida. Los lípidos y proteínas se mueven lateralmente. Esto permite reparar pequeñas rupturas y adaptarse. En la vida, también debemos ser flexibles pero firmes en lo esencial.</p>
+
+            <!-- CANVAS: simulación de membrana con partículas -->
+            <canvas id="canvasMembrana" width="700" height="300"></canvas>
+            <p style="text-align:center;">Mueve el mouse para abrir/cerrar canales (proteínas). Las partículas verdes (nutrientes) pasan cuando el canal está cerca. Las rojas (toxinas) no pueden pasar.</p>
+
+            <!-- 5 pausas deductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 6: Dibuja un esquema de la bicapa lipídica con sus cabezas y colas.</p><button class="pausa-btn" data-id="5">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 7: Explica con tus palabras la diferencia entre transporte pasivo y activo.</p><button class="pausa-btn" data-id="6">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 8: Investiga qué es la ósmosis con un ejemplo casero (ej. pasa con uvas en agua).</p><button class="pausa-btn" data-id="7">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 9: ¿Qué crees que pasaría si la membrana no tuviera proteínas?</p><button class="pausa-btn" data-id="8">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 10: Escribe una situación donde hayas respetado el límite de un amigo o familiar.</p><button class="pausa-btn" data-id="9">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- EVALUACIÓN FINAL (TALLER) -->
+        <section class="seccion">
+            <h2>📋 Taller: la membrana y yo</h2>
+            <h3>Selección múltiple (autocalifica)</h3>
+            <div><p>1. La membrana celular está formada principalmente por:</p>
+                <label><input type="radio" name="m1" value="0"> a) Celulosa</label><br>
+                <label><input type="radio" name="m1" value="1"> b) Fosfolípidos y proteínas</label><br>
+                <label><input type="radio" name="m1" value="2"> c) ADN</label><br>
+                <label><input type="radio" name="m1" value="3"> d) Agua</label><br></div>
+            <div><p>2. ¿Qué tipo de transporte NO gasta energía?</p>
+                <label><input type="radio" name="m2" value="0"> a) Activo</label><br>
+                <label><input type="radio" name="m2" value="1"> b) Pasivo</label><br>
+                <label><input type="radio" name="m2" value="2"> c) Bomba de sodio-potasio</label><br>
+                <label><input type="radio" name="m2" value="3"> d) Endocitosis</label><br></div>
+            <div><p>3. La ósmosis es el paso de:</p>
+                <label><input type="radio" name="m3" value="0"> a) Solutos</label><br>
+                <label><input type="radio" name="m3" value="1"> b) Agua</label><br>
+                <label><input type="radio" name="m3" value="2"> c) Proteínas</label><br>
+                <label><input type="radio" name="m3" value="3"> d) Lípidos</label><br></div>
+            <div><p>4. Las cabezas de los fosfolípidos son:</p>
+                <label><input type="radio" name="m4" value="0"> a) Hidrofóbicas (odian el agua)</label><br>
+                <label><input type="radio" name="m4" value="1"> b) Hidrofílicas (aman el agua)</label><br>
+                <label><input type="radio" name="m4" value="2"> c) No tienen afinidad</label><br>
+                <label><input type="radio" name="m4" value="3"> d) Son gaseosas</label><br></div>
+            <div><p>5. ¿Qué proteína actúa como "bomba" que gasta energía?</p>
+                <label><input type="radio" name="m5" value="0"> a) Canal de potasio</label><br>
+                <label><input type="radio" name="m5" value="1"> b) Bomba de sodio-potasio</label><br>
+                <label><input type="radio" name="m5" value="2"> c) Acuaporina</label><br>
+                <label><input type="radio" name="m5" value="3"> d) Receptor de insulina</label><br></div>
+            <button id="calificarMultiple">Calificar múltiple</button>
+            <div id="resultadoMultiple"></div>
+
+            <h3>Preguntas abiertas (10-15 palabras c/u)</h3>
+            <div>
+                <p>1. ¿Qué función cumple la membrana celular?</p>
+                <textarea id="open1" rows="2"></textarea><div class="word-counter" id="wc1">0 palabras</div>
+                <p>2. Nombra dos sustancias que pasan fácilmente la membrana.</p>
+                <textarea id="open2" rows="2"></textarea><div class="word-counter" id="wc2">0 palabras</div>
+                <p>3. ¿Cómo se llama el transporte de agua a través de la membrana?</p>
+                <textarea id="open3" rows="2"></textarea><div class="word-counter" id="wc3">0 palabras</div>
+                <p>4. Explica brevemente qué significa "transporte activo".</p>
+                <textarea id="open4" rows="2"></textarea><div class="word-counter" id="wc4">0 palabras</div>
+                <p>5. ¿Qué relación tiene la membrana con el respeto a los límites personales?</p>
+                <textarea id="open5" rows="2"></textarea><div class="word-counter" id="wc5">0 palabras</div>
+                <button id="validarAbiertas">Validar respuestas</button> <span id="msgAbiertas"></span>
+            </div>
+
+            <!-- Ruta de fortalecimiento -->
+            <div style="margin:2rem 0">
+                <h3>🧭 Ruta de fortalecimiento personalizada</h3>
+                <button id="generarRuta">Analizar debilidades</button>
+                <div id="rutaTexto" class="ruta-card" style="margin-top:1rem;"></div>
+            </div>
+
+            <!-- descarga -->
+            <footer>
+                <button id="descargarResultados">📥 Descargar resultados (.txt)</button>
+            </footer>
+        </section>
+    </div>
+
+    <script>
+        (function(){
+            // Estado global
+            let usuario = { apellidos: '', nombres: '' };
+            let pausasHechas = new Array(10).fill(false);
+            let respuestasMulti = [null, null, null, null, null];
+            const correctasMulti = [1, 1, 1, 1, 1]; // según opciones (base 0)
+            let respuestasAbiertas = ['','','','',''];
+            let notaMultiple = 0;
+
+            // Elementos
+            const loginScreen = document.getElementById('loginScreen');
+            const mainContent = document.getElementById('mainContent');
+            const btnIngresar = document.getElementById('btnIngresar');
+            const apellidosInput = document.getElementById('apellidosInput');
+            const nombresInput = document.getElementById('nombresInput');
+            const headerNombre = document.getElementById('headerNombre');
+            const progresoFill = document.getElementById('progresoFill');
+            const elementos = ['elem1','elem2','elem3','elem4','elem5'].map(id => document.getElementById(id));
+
+            // Funciones de progreso y elementos
+            function actualizarProgresoElementos() {
+                const totalHechas = pausasHechas.filter(v => v).length;
+                const porcentaje = (totalHechas / 10) * 100;
+                progresoFill.style.width = porcentaje + '%';
+                const elementosDesbloqueados = Math.min(5, Math.floor(totalHechas / 2)); // cada 2 pausas desbloquea un elemento
+                for (let i = 0; i < 5; i++) {
+                    if (i < elementosDesbloqueados) elementos[i].classList.add('unlocked');
+                    else elementos[i].classList.remove('unlocked');
+                }
+                guardarLocal();
+            }
+
+            // localStorage
+            function guardarLocal() {
+                if (!usuario.apellidos) return;
+                const data = {
+                    apellidos: usuario.apellidos,
+                    nombres: usuario.nombres,
+                    pausas: pausasHechas,
+                    abiertas: respuestasAbiertas,
+                    multi: respuestasMulti
+                };
+                localStorage.setItem('ova_membrana', JSON.stringify(data));
+            }
+
+            function cargarLocal() {
+                const saved = localStorage.getItem('ova_membrana');
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        usuario = { apellidos: data.apellidos || '', nombres: data.nombres || '' };
+                        pausasHechas = data.pausas || new Array(10).fill(false);
+                        respuestasAbiertas = data.abiertas || ['','','','',''];
+                        respuestasMulti = data.multi || [null,null,null,null,null];
+                        // restaurar textareas
+                        document.getElementById('open1').value = respuestasAbiertas[0] || '';
+                        document.getElementById('open2').value = respuestasAbiertas[1] || '';
+                        document.getElementById('open3').value = respuestasAbiertas[2] || '';
+                        document.getElementById('open4').value = respuestasAbiertas[3] || '';
+                        document.getElementById('open5').value = respuestasAbiertas[4] || '';
+                        // restaurar radios multiple
+                        for (let i=1; i<=5; i++) {
+                            const val = respuestasMulti[i-1];
+                            if (val !== null) {
+                                const radio = document.querySelector(`input[name="m${i}"][value="${val}"]`);
+                                if (radio) radio.checked = true;
+                            }
+                        }
+                        if (usuario.apellidos && usuario.nombres) {
+                            loginScreen.style.display = 'none';
+                            mainContent.style.display = 'block';
+                            headerNombre.innerText = `${usuario.apellidos} ${usuario.nombres}`;
+                            actualizarProgresoElementos();
+                            actualizarTodosWordCount();
+                        }
+                        // deshabilitar pausas ya hechas
+                        pausasHechas.forEach((h, idx) => {
+                            if (h) {
+                                const btn = document.querySelector(`.pausa-btn[data-id="${idx}"]`);
+                                if (btn) { btn.disabled = true; btn.innerText = '✔️ Hecho'; }
+                            }
+                        });
+                    } catch (e) {}
+                }
+            }
+
+            // contador de palabras
+            function contarPalabras(t) {
+                return t.trim().split(/\s+/).filter(p => p.length>0).length;
+            }
+            function actualizarWordCount(taId, ctId) {
+                const ta = document.getElementById(taId);
+                const num = contarPalabras(ta.value);
+                document.getElementById(ctId).innerText = num + ' palabras';
+                return num;
+            }
+            function actualizarTodosWordCount() {
+                for (let i=1; i<=5; i++) {
+                    actualizarWordCount(`open${i}`, `wc${i}`);
+                }
+            }
+
+            // LOGIN
+            btnIngresar.addEventListener('click', (e) => {
+                e.preventDefault();
+                const ap = apellidosInput.value.trim();
+                const nom = nombresInput.value.trim();
+                if (!ap || !nom) { alert('Completa ambos campos'); return; }
+                usuario.apellidos = ap; usuario.nombres = nom;
+                headerNombre.innerText = `${ap} ${nom}`;
+                loginScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                if (!localStorage.getItem('ova_membrana')) {
+                    pausasHechas = new Array(10).fill(false);
+                } else {
+                    cargarLocal();
+                }
+                actualizarProgresoElementos();
+                guardarLocal();
+            });
+
+            // PAUSAS
+            document.querySelectorAll('.pausa-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'), 10);
+                    if (!isNaN(id) && id>=0 && id<10 && !pausasHechas[id]) {
+                        pausasHechas[id] = true;
+                        e.target.disabled = true;
+                        e.target.innerText = '✔️ Hecho';
+                        actualizarProgresoElementos();
+                    }
+                });
+            });
+
+            // Pre-saberes
+            function configPre(ind, correctVal, feedId) {
+                document.querySelectorAll(`input[name="pre${ind}"]`).forEach(r => {
+                    r.addEventListener('change', function() {
+                        const f = document.getElementById(feedId);
+                        if (this.value === correctVal) {
+                            f.innerText = '✅ Correcto.';
+                            f.className = 'feedback correcto';
+                        } else {
+                            f.innerText = '❌ Vuelve a intentar.';
+                            f.className = 'feedback incorrecto';
+                        }
+                    });
+                });
+            }
+            configPre(1, 'b', 'feedPre1');
+            configPre(2, 'a', 'feedPre2');
+            configPre(3, 'b', 'feedPre3');
+
+            // ICFES
+            document.getElementById('revisarIcfes').addEventListener('click', () => {
+                const selec = document.querySelector('input[name="icfes"]:checked');
+                const feed = document.getElementById('feedIcfes');
+                if (!selec) { feed.innerText = 'Elige una opción'; return; }
+                if (selec.value === 'b') {
+                    feed.innerText = '✅ ¡Correcto! Las proteínas de canal permiten el paso selectivo de sustancias.';
+                    feed.className = 'feedback correcto';
+                } else {
+                    feed.innerText = '❌ No es correcto. Las proteínas facilitan el paso de sustancias específicas.';
+                    feed.className = 'feedback incorrecto';
+                }
+            });
+
+            // Múltiple
+            document.getElementById('calificarMultiple').addEventListener('click', () => {
+                let aciertos = 0;
+                for (let i=1; i<=5; i++) {
+                    const radios = document.getElementsByName(`m${i}`);
+                    let val = null;
+                    for (let r of radios) if (r.checked) { val = r.value; break; }
+                    if (val !== null) {
+                        respuestasMulti[i-1] = parseInt(val,10);
+                        if (respuestasMulti[i-1] === correctasMulti[i-1]) aciertos++;
+                    } else respuestasMulti[i-1] = null;
+                }
+                notaMultiple = aciertos;
+                document.getElementById('resultadoMultiple').innerText = `Obtuviste ${aciertos}/5 correctas.`;
+                guardarLocal();
+            });
+
+            // Abiertas
+            ['open1','open2','open3','open4','open5'].forEach((id, idx) => {
+                document.getElementById(id).addEventListener('input', function() {
+                    actualizarWordCount(id, 'wc'+(idx+1));
+                    respuestasAbiertas[idx] = this.value;
+                    guardarLocal();
+                });
+            });
+            document.getElementById('validarAbiertas').addEventListener('click', () => {
+                let ok = true;
+                for (let i=1; i<=5; i++) {
+                    const num = contarPalabras(document.getElementById(`open${i}`).value);
+                    if (num<10 || num>15) ok = false;
+                }
+                document.getElementById('msgAbiertas').innerText = ok ? '✅ Todas entre 10-15 palabras.' : '❌ Revisa el contador de palabras (deben ser 10-15).';
+            });
+
+            // Ruta fortalecimiento
+            document.getElementById('generarRuta').addEventListener('click', () => {
+                // inductivas: preguntas 1,2 / deductivas: 3,4,5 (aproximadamente)
+                let indAc=0, indTot=0, dedAc=0, dedTot=0;
+                for (let i=0; i<5; i++) {
+                    if (respuestasMulti[i] !== null) {
+                        if (i<2) { indTot++; if (respuestasMulti[i]===correctasMulti[i]) indAc++; }
+                        else { dedTot++; if (respuestasMulti[i]===correctasMulti[i]) dedAc++; }
+                    }
+                }
+                let msg = '';
+                if (indTot>0 && indAc/indTot < 0.6) msg += '🏡 Fortalece lo inductivo: repasa las analogías de la finca y los filtros. ';
+                if (dedTot>0 && dedAc/dedTot < 0.6) msg += '🧪 Refuerza conceptos deductivos: estructura de la membrana y tipos de transporte. ';
+                if (msg === '') msg = '🌟 ¡Excelente! Sigues construyendo un buen cerco de conocimiento.';
+                document.getElementById('rutaTexto').innerText = msg;
+            });
+
+            // CANVAS animación (membrana con partículas)
+            const canvas = document.getElementById('canvasMembrana');
+            const ctx = canvas.getContext('2d');
+            let mouseX = 350; // posición para abrir canales
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+            });
+
+            // partículas: verdes (nutrientes), rojas (toxinas)
+            let particulas = [];
+            for (let i=0; i<30; i++) {
+                particulas.push({
+                    x: Math.random()*700,
+                    y: Math.random()*300,
+                    vx: (Math.random()-0.5)*1.2,
+                    vy: (Math.random()-0.5)*1.2,
+                    tipo: Math.random()>0.6 ? 'toxina' : 'nutriente' // más nutrientes
+                });
+            }
+
+            function dibujarCanvas() {
+                ctx.clearRect(0,0,700,300);
+                // dibujar membrana (dos líneas)
+                ctx.fillStyle = '#f5d79c';
+                ctx.fillRect(0,130,700,15);
+                ctx.fillRect(0,160,700,15);
+                // canales (proteínas) que se abren según mouseX
+                for (let x=100; x<600; x+=100) {
+                    let apertura = Math.max(0, 1 - Math.abs(x - mouseX)/150);
+                    ctx.fillStyle = '#5f9ea0';
+                    ctx.fillRect(x, 115, 20, 60);
+                    // si apertura >0, dibujar un hueco
+                    if (apertura > 0.2) {
+                        ctx.clearRect(x+5, 135, 10, 20); // hueco
+                    }
+                }
+
+                // mover y dibujar partículas
+                for (let p of particulas) {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x<0 || p.x>700) p.vx *= -1;
+                    if (p.y<0 || p.y>300) p.vy *= -1;
+
+                    // cruce de membrana (solo si hay canal abierto)
+                    if (p.y > 130 && p.y < 175) {
+                        // verificar si está cerca de un canal abierto
+                        for (let x=100; x<600; x+=100) {
+                            let apertura = Math.max(0, 1 - Math.abs(x - mouseX)/150);
+                            if (apertura > 0.2 && Math.abs(p.x - x) < 15) {
+                                // puede pasar
+                                if (p.tipo === 'nutriente') {
+                                    // pasa
+                                    p.y += p.vy*2;
+                                } else {
+                                    // toxina rebota
+                                    p.vy *= -1;
+                                }
+                            } else {
+                                // rebota
+                                if (p.y < 145) p.vy = Math.abs(p.vy);
+                                else p.vy = -Math.abs(p.vy);
+                            }
+                        }
+                    }
+
+                    ctx.beginPath();
+                    if (p.tipo === 'nutriente') {
+                        ctx.fillStyle = '#7ed957';
+                    } else {
+                        ctx.fillStyle = '#ff6b6b';
+                    }
+                    ctx.arc(p.x, p.y, 5, 0, 2*Math.PI);
+                    ctx.fill();
+                }
+
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillStyle = '#fcf9ea';
+                ctx.fillText('Mueve el ratón para abrir canales', 200, 50);
+                requestAnimationFrame(dibujarCanvas);
+            }
+            dibujarCanvas();
+
+            // Descarga resultados
+            document.getElementById('descargarResultados').addEventListener('click', () => {
+                const nombre = `${usuario.apellidos} ${usuario.nombres}`;
+                const elemIndex = Math.min(5, Math.floor(pausasHechas.filter(v=>v).length / 2));
+                const elemento = ['H','He','Li','Be','B'][elemIndex-1] || 'Ninguno';
+                const multiStr = respuestasMulti.map((v,i)=>`P${i+1}:${v!==null?v:'-'}`).join(' ');
+                const abiertasStr = respuestasAbiertas.map((t,i)=>`A${i+1}:${t.substring(0,30)}`).join(' | ');
+                const contenido = `Nombre: ${nombre}\nNota final múltiple: ${notaMultiple}/5\nElemento químico: ${elemento}\nRespuestas: ${multiStr}\nAbiertas: ${abiertasStr}`;
+                const blob = new Blob([contenido], {type:'text/plain'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `membrana_${usuario.apellidos}.txt`;
+                a.click();
+            });
+
+            window.addEventListener('load', () => {
+                cargarLocal();
+                actualizarTodosWordCount();
+            });
+        })();
+    </script>
+</body>
+</html>

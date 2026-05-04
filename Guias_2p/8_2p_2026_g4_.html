@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Endocrino: Las Cabañuelas Corporales - Pueblo Rico</title>
+    <style>
+        :root {
+            --cafe-tierra: #3e2723;
+            --verde-montaña: #2e7d32;
+            --ocre-quindio: #f57f17;
+            --cielo-quimbaya: #0288d1;
+            --blanco-nube: #fafafa;
+            --rojo-cafe: #d32f2f;
+            --shadow-soft: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; scroll-behavior: smooth; }
+
+        body { background-color: #efebe9; color: var(--cafe-tierra); }
+
+        /* --- Pantalla de Acceso --- */
+        #login-overlay {
+            position: fixed; inset: 0; z-index: 5000;
+            background: linear-gradient(rgba(46,125,50,0.9), rgba(62,39,35,0.95));
+            display: flex; justify-content: center; align-items: center;
+        }
+        .card-login {
+            background: white; padding: 40px; border-radius: 20px; width: 90%; max-width: 400px;
+            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .card-login h1 { font-size: 1.5rem; margin-bottom: 20px; color: var(--verde-montaña); }
+        .card-login input {
+            width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;
+        }
+
+        /* --- Interfaz General --- */
+        #main-app { display: none; }
+        
+        nav {
+            background: var(--cafe-tierra); color: white; padding: 15px 5%;
+            position: sticky; top: 0; z-index: 1000; display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .progress-bar-bg { width: 150px; height: 12px; background: rgba(255,255,255,0.2); border-radius: 6px; overflow: hidden; }
+        #progress-fill { width: 0%; height: 100%; background: var(--ocre-quindio); transition: 0.5s; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+        section {
+            background: white; padding: 60px 40px; border-radius: 25px; margin-bottom: 40px;
+            box-shadow: var(--shadow-soft); border-top: 8px solid var(--verde-montaña);
+        }
+
+        h2 { color: var(--verde-montaña); font-size: 2.2rem; margin-bottom: 25px; }
+        h3 { color: var(--ocre-quindio); margin: 25px 0 15px; }
+        p { margin-bottom: 22px; text-align: justify; font-size: 1.15rem; line-height: 1.8; }
+
+        /* --- Componentes Visuales --- */
+        .svg-container { background: #f1f8e9; border-radius: 15px; padding: 20px; margin: 30px 0; text-align: center; }
+
+        .comparative-table { width: 100%; border-collapse: collapse; margin: 30px 0; border-radius: 15px; overflow: hidden; }
+        .comparative-table th { background: var(--verde-montaña); color: white; padding: 15px; }
+        .comparative-table td { padding: 15px; border: 1px solid #eee; background: white; text-align: center; }
+
+        .pausa-activa {
+            background: #fff8e1; border: 3px dashed var(--ocre-quindio); padding: 30px;
+            border-radius: 20px; margin: 40px 0;
+        }
+        .pausa-activa h4 { color: #bf360c; display: flex; align-items: center; gap: 10px; }
+
+        #canvas-wrap {
+            width: 100%; height: 450px; background: #1a1a1a; border-radius: 15px;
+            margin: 30px 0; overflow: hidden; position: relative;
+        }
+
+        .btn-action {
+            background: var(--verde-montaña); color: white; border: none; padding: 12px 25px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .btn-action:hover { background: var(--cafe-tierra); transform: translateY(-2px); }
+
+        /* --- Taller --- */
+        .quiz-box { background: #f5f5f5; padding: 25px; border-radius: 15px; margin-bottom: 20px; }
+        textarea {
+            width: 100%; height: 100px; padding: 15px; border-radius: 10px; border: 2px solid #ccc;
+            margin-top: 10px; font-size: 1rem; resize: none;
+        }
+        .fraud-alert { color: var(--rojo-cafe); font-weight: bold; font-size: 0.8rem; display: none; margin-top: 5px; }
+
+        #report-screen { display: none; text-align: center; padding: 100px 20px; background: white; border-radius: 30px; }
+
+        sub { font-size: 0.75em; }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN -->
+    <div id="login-overlay">
+        <div class="card-login">
+            <svg width="60" height="60" viewBox="0 0 100 100">
+                <path d="M50 10 C 20 10, 10 40, 50 90 C 90 40, 80 10, 50 10" fill="#2e7d32"/>
+                <circle cx="50" cy="35" r="10" fill="#fff176"/>
+            </svg>
+            <h1>Endocrino: Cabañuelas</h1>
+            <input type="text" id="user-lastname" placeholder="Tus Apellidos">
+            <input type="text" id="user-firstname" placeholder="Tu Nombre">
+            <button class="btn-action" style="width: 100%" id="enter-btn">Iniciar Recorrido</button>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div id="main-app">
+        <nav>
+            <div>🏠 Pueblo Rico | <span id="display-name"></span></div>
+            <div style="display: flex; gap: 15px; align-items: center">
+                <div class="progress-bar-bg"><div id="progress-fill"></div></div>
+                <div id="score-val">⭐ 0.0</div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- INICIO -->
+            <section>
+                <h2>Objetivo: El Clima Interno</h2>
+                <p>Comprender cómo el sistema endocrino actúa como un mensajero químico que regula el equilibrio (homeostasis), el crecimiento y la reproducción, utilizando analogías climáticas y productivas de nuestra Vereda Pueblo Rico.</p>
+                
+                <div class="quiz-box">
+                    <p><strong>Pre-saberes 1:</strong> Cuando un ternero en la finca de Pueblo Rico empieza a crecer y desarrollar músculos, ¿qué crees que envía la orden para ese cambio?</p>
+                    <label><input type="radio" name="pre1" value="0"> Solo el pasto que come.</label><br>
+                    <label><input type="radio" name="pre1" value="1"> Hormonas que viajan por la sangre.</label>
+                </div>
+
+                <div class="quiz-box">
+                    <p><strong>Pre-saberes 2:</strong> ¿Has notado que cuando te asustas al ver una serpiente en el cafetal, tu corazón late rápido? Eso es una hormona llamada:</p>
+                    <label><input type="radio" name="pre2" value="1"> Adrenalina.</label><br>
+                    <label><input type="radio" name="pre2" value="0"> Melatonina.</label>
+                </div>
+
+                <div class="quiz-box">
+                    <p><strong>Pre-saberes 3:</strong> ¿Qué órgano regula el azúcar después de tomar un jugo de naranja dulce?</p>
+                    <label><input type="radio" name="pre3" value="1"> El Páncreas.</label><br>
+                    <label><input type="radio" name="pre3" value="0"> El Corazón.</label>
+                </div>
+            </section>
+
+            <!-- INDUCTIVO -->
+            <section>
+                <h2>Las Cabañuelas de la Sangre</h2>
+                <p>
+                    En la Vereda Pueblo Rico, los abuelos hablan de las "cabañuelas" en enero para saber cómo será el clima del resto del año. Si el primer día llueve, enero será húmedo. Esta forma de predicción y regulación es exactamente lo que hace el **Sistema Endocrino** en nuestro cuerpo. No usa nubes ni vientos, sino glándulas que sueltan mensajeros químicos llamados **Hormonas**. Estas hormonas son como cartas enviadas por correo que viajan por el torrente sanguíneo buscando una "dirección" específica: las células blanco.
+                </p>
+                <p>
+                    Imagina que la glándula Pituitaria (la jefa) es como el dueño de una finca grande en Quimbaya. Él no puede ir a cada árbol de café personalmente, así que envía mensajes a sus trabajadores (otras glándulas como la tiroides o las suprarrenales) para decirles cuándo deben producir energía o cuándo prepararse para una emergencia. En nuestra vereda, vemos esto en la naturaleza: los árboles de cítricos florecen cuando reciben ciertas señales químicas internas provocadas por el cambio de luz y agua. De igual forma, nosotros crecemos y cambiamos gracias a estas señales invisibles.
+                </p>
+                <p>
+                    El sistema endocrino es el encargado de la **Homeostasis**, que es el equilibrio perfecto. Es como cuando un caficultor regula el pH del suelo; si está muy ácido, le echa cal. Si tu cuerpo tiene mucha azúcar después de un buen almuerzo en la fonda, el páncreas libera insulina para bajarla. Es un juego de balances constantes que permite que, a pesar del frío de la madrugada o el calor de las dos de la tarde en Pueblo Rico, tu cuerpo funcione siempre a la misma "temperatura" interna.
+                </p>
+                <p>
+                    Un aspecto vital en grado octavo es entender la **Reproducción**. Las hormonas sexuales (estrógenos, progesterona y testosterona) son las que orquestan los cambios físicos que estás viviendo. Son como la época de cosecha en Quimbaya: hay un tiempo para preparar la tierra, un tiempo para la floración y un tiempo para el fruto. Estas hormonas preparan tu cuerpo para la vida adulta, regulando no solo lo físico, sino también cómo te sientes y cómo interactúas con los demás jóvenes de la vereda.
+                </p>
+                <p>
+                    Finalmente, debemos entender que este sistema es de "retroalimentación". Si hay mucha hormona, la glándula deja de producirla; si hay poca, produce más. Es como el tanque de agua de la finca: tiene un flotador que cierra la llave cuando está lleno y la abre cuando está vacío. Este mecanismo asegura que nunca estemos "desbordados" o "secos" de energía, permitiéndonos realizar las faenas diarias, estudiar y disfrutar del paraíso que es nuestro municipio.
+                </p>
+
+                <div class="comparative-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Glándula</th>
+                                <th>Hormona Clave</th>
+                                <th>Función en el "Clima" Corporal</th>
+                                <th>Analogía Pueblo Rico</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Páncreas</td>
+                                <td>Insulina</td>
+                                <td>Regula la glucosa (azúcar)</td>
+                                <td>El regulador del azúcar en el melado</td>
+                            </tr>
+                            <tr>
+                                <td>Suprarrenales</td>
+                                <td>Adrenalina</td>
+                                <td>Respuesta al estrés y alerta</td>
+                                <td>Grito de alerta ante un peligro en el monte</td>
+                            </tr>
+                            <tr>
+                                <td>Gónadas</td>
+                                <td>Testosterona / Estrógenos</td>
+                                <td>Caracteres sexuales y reproducción</td>
+                                <td>La maduración de la cosecha</td>
+                            </tr>
+                            <tr>
+                                <td>Tiroides</td>
+                                <td>Tiroxina</td>
+                                <td>Ritmo metabólico (energía)</td>
+                                <td>El motor de la despulpadora</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pausa-activa">
+                    <h4>☕ Pausa Activa 1: Reflexión del Suelo</h4>
+                    <p>En tu cuaderno, escribe un párrafo comparando cómo un campesino regula su cultivo y cómo el sistema endocrino regula tu cuerpo.</p>
+                    <button class="btn-action" onclick="addProgress(5, this)">Ya lo hice</button>
+                </div>
+                <div class="pausa-activa">
+                    <h4>🎨 Pausa Activa 2: Dibujo Técnico</h4>
+                    <p>Dibuja una silueta humana y ubica las 5 glándulas principales mencionadas arriba usando colores de la bandera de Quimbaya.</p>
+                    <button class="btn-action" onclick="addProgress(5, this)">Ya lo hice</button>
+                </div>
+                <div class="pausa-activa">
+                    <h4>🧠 Pausa Activa 3: Mapa Mental</h4>
+                    <p>Crea un mapa mental en tu cuaderno cuyo centro sea "SISTEMA ENDOCRINO" y sus ramas sean las glándulas.</p>
+                    <button class="btn-action" onclick="addProgress(5, this)">Ya lo hice</button>
+                </div>
+            </section>
+
+            <!-- GRÁFICA INTERACTIVA -->
+            <section>
+                <h2>Análisis de Datos: El Ciclo de la Insulina</h2>
+                <p>Observa la siguiente gráfica que representa los niveles de glucosa en un habitante de Pueblo Rico después de desayunar un tamal con chocolate.</p>
+                <div class="svg-container">
+                    <svg width="600" height="300" viewBox="0 0 600 300">
+                        <line x1="50" y1="250" x2="550" y2="250" stroke="#333" stroke-width="2" />
+                        <line x1="50" y1="250" x2="50" y2="50" stroke="#333" stroke-width="2" />
+                        <path d="M 50 200 L 150 80 L 250 150 L 350 220 L 550 200" fill="none" stroke="var(--rojo-cafe)" stroke-width="3" />
+                        <text x="300" y="285" text-anchor="middle">Tiempo (Horas después del desayuno)</text>
+                        <text x="25" y="150" transform="rotate(-90, 25, 150)" text-anchor="middle">Nivel de Glucosa</text>
+                        <circle cx="150" cy="80" r="6" fill="var(--ocre-quindio)" />
+                        <text x="160" y="70">Pico de Azúcar</text>
+                    </svg>
+                </div>
+                <div class="quiz-box">
+                    <p><strong>Pregunta tipo ICFES:</strong> Al observar el descenso de la curva entre la hora 1 y la hora 3, ¿qué proceso fisiológico se está activando?</p>
+                    <label><input type="radio" name="icfes" value="0"> La planta de café está absorbiendo luz.</label><br>
+                    <label><input type="radio" name="icfes" value="1"> El páncreas liberó insulina para que las células capturen la glucosa.</label><br>
+                    <label><input type="radio" name="icfes" value="0"> La persona tiene mucha sed.</label>
+                </div>
+            </section>
+
+            <!-- DEDUCTIVO -->
+            <section>
+                <h2>Leyes de Regulación y Feedback</h2>
+                <p>
+                    Para profundizar, debemos deducir las leyes que permiten que el sistema no falle. La ley principal es el **Feedback Negativo** (Retroalimentación Negativa). En la ganadería de Pueblo Rico, esto se ve en los bebederos automáticos: cuando el nivel de agua baja, la válvula se abre; cuando sube, se cierra. En el cuerpo, si la glándula Tiroides produce demasiada Tiroxina, el Hipotálamo (el sensor maestro en el cerebro) detecta el exceso y envía una señal química para frenar la producción. Es un ciclo cerrado de control.
+                </p>
+                <p>
+                    Otra ley fundamental es la **Especificidad**. No cualquier hormona sirve para cualquier célula. Es como las llaves de los candados de las bodegas de café: la llave del beneficiadero no abre la bodega de herramientas. Cada hormona tiene una estructura molecular única que solo encaja en receptores específicos de la membrana celular. Esto evita confusiones químicas; por ejemplo, que la hormona del crecimiento termine activando por error la respuesta de huida ante un perro bravo.
+                </p>
+
+                <h3>Simulador de Retroalimentación (Feedback)</h3>
+                <p>Mueve el mouse (el sensor) para recolectar las hormonas (círculos rojos) y mantener el nivel de equilibrio (barra verde central). Si dejas que se acumulen demasiadas o muy pocas, el sistema entrará en crisis.</p>
+                <div id="canvas-wrap">
+                    <canvas id="hormone-sim"></canvas>
+                </div>
+
+                <div class="pausa-activa">
+                    <h4>📋 Pausa Activa 7: Tabla de Datos</h4>
+                    <p>Observa a tu alrededor y crea una tabla en el cuaderno con 3 situaciones de estrés que vivas en la vereda y qué hormona crees que actúa.</p>
+                    <button class="btn-action" onclick="addProgress(5, this)">Ya lo hice</button>
+                </div>
+                <div class="pausa-activa">
+                    <h4>📐 Pausa Activa 8: Dibujo Esquemático</h4>
+                    <p>Dibuja el esquema de "Llave-Cerradura" entre una hormona y su receptor celular.</p>
+                    <button class="btn-action" onclick="addProgress(5, this)">Ya lo hice</button>
+                </div>
+            </section>
+
+            <!-- EVALUACIÓN FINAL -->
+            <section id="eval-final">
+                <h2>Taller: Maestros de las Cabañuelas</h2>
+                
+                <div id="multiple-choice"></div>
+
+                <h3>Desarrollo Crítico (Individual)</h3>
+                <p><small>La vereda exige honestidad: no copies, el sistema detecta velocidad de IA.</small></p>
+                <div id="open-questions"></div>
+
+                <button class="btn-action" style="width: 100%; margin-top: 30px; font-size: 1.2rem" onclick="processFinal()">Entregar Evaluación</button>
+            </section>
+
+            <!-- REPORTE -->
+            <div id="report-screen">
+                <h2 id="final-status">Procesando...</h2>
+                <div style="font-size: 5rem" id="final-grade">0.0</div>
+                <p id="final-feedback"></p>
+                <button class="btn-action" onclick="downloadTXT()">Descargar Resultados (.txt)</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- Estado Global ---
+        let appData = {
+            user: { nom: '', ape: '', grade: 0 },
+            progress: 0,
+            score: 0,
+            tasks: new Set(),
+            startTime: Date.now()
+        };
+
+        // --- Lógica de Acceso ---
+        document.getElementById('enter-btn').addEventListener('click', () => {
+            const n = document.getElementById('user-firstname').value.trim();
+            const a = document.getElementById('user-lastname').value.trim();
+            if(!n || !a) return alert("¡Ey! En Pueblo Rico todos nos conocemos por nombre y apellido.");
+            appData.user.nom = n; appData.user.ape = a;
+            document.getElementById('display-name').innerText = `${n} ${a}`;
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            initApp();
+        });
+
+        function addProgress(amt, btn) {
+            if(btn) { btn.disabled = true; btn.innerText = "✅ Logrado"; }
+            appData.progress += amt;
+            appData.score += 0.2;
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('progress-fill').style.width = Math.min(100, appData.progress) + "%";
+            document.getElementById('score-val').innerText = `⭐ ${Math.min(5, appData.score).toFixed(1)}`;
+        }
+
+        // --- Simulador Canvas ---
+        function initCanvas() {
+            const cv = document.getElementById('hormone-sim');
+            const ctx = cv.getContext('2d');
+            cv.width = cv.parentElement.offsetWidth;
+            cv.height = 450;
+
+            let hormones = [];
+            let mouse = { x: 0, y: 0 };
+            let equilibrium = 50;
+
+            cv.addEventListener('mousemove', e => {
+                const r = cv.getBoundingClientRect();
+                mouse.x = e.clientX - r.left;
+                mouse.y = e.clientY - r.top;
+            });
+
+            function spawn() {
+                hormones.push({
+                    x: Math.random() * cv.width,
+                    y: -20,
+                    r: 8 + Math.random()*10,
+                    v: 2 + Math.random()*3
+                });
+            }
+
+            setInterval(spawn, 800);
+
+            function loop() {
+                ctx.fillStyle = '#111';
+                ctx.fillRect(0,0,cv.width,cv.height);
+
+                // Sensor
+                ctx.strokeStyle = 'cyan'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 40, 0, Math.PI*2); ctx.stroke();
+
+                hormones.forEach((h, i) => {
+                    h.y += h.v;
+                    ctx.fillStyle = '#ff5252';
+                    ctx.beginPath(); ctx.arc(h.x, h.y, h.r, 0, Math.PI*2); ctx.fill();
+
+                    // Captura
+                    let d = Math.sqrt((h.x-mouse.x)**2 + (h.y-mouse.y)**2);
+                    if(d < 40 + h.r) {
+                        hormones.splice(i, 1);
+                        equilibrium += 2;
+                    }
+                    if(h.y > cv.height) {
+                        hormones.splice(i, 1);
+                        equilibrium -= 3;
+                    }
+                });
+
+                // Barra de equilibrio
+                equilibrium = Math.max(0, Math.min(100, equilibrium - 0.05));
+                ctx.fillStyle = '#333'; ctx.fillRect(20, 20, 200, 20);
+                ctx.fillStyle = equilibrium > 30 && equilibrium < 70 ? '#4caf50' : '#f44336';
+                ctx.fillRect(20, 20, equilibrium * 2, 20);
+                ctx.fillStyle = "white"; ctx.fillText("EQUILIBRIO ENDOCRINO", 25, 35);
+
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        // --- Evaluación ---
+        const mc = [
+            {q: "¿Cuál es la función principal de la insulina?", a: "Subir la presión", b: "Bajar el azúcar", c: "Dar sueño", r: "b"},
+            {q: "¿Qué glándula se activa en una emergencia?", a: "Pituitaria", b: "Tiroides", c: "Suprarrenal", r: "c"},
+            {q: "La homeostasis se define como:", a: "Crecimiento rápido", b: "Equilibrio interno", c: "Mala digestión", r: "b"},
+            {q: "Las hormonas viajan principalmente por:", a: "Los nervios", b: "La orina", c: "La sangre", r: "c"},
+            {q: "El feedback negativo sirve para:", a: "Gritar fuerte", b: "Regular y frenar procesos", c: "Perder energía", r: "b"}
+        ];
+
+        const openQ = [
+            "Explica cómo el páncreas actúa como las 'cabañuelas' del azúcar.",
+            "¿Qué pasaría en una finca si no hubiera comunicación? Compara esto con el sistema endocrino.",
+            "Describe un cambio físico que hayas notado y qué hormona crees que lo causó.",
+            "¿Por qué es importante que las hormonas tengan receptores específicos (llave-cerradura)?",
+            "Relaciona el equilibrio del sistema endocrino con el cuidado del medio ambiente en Quimbaya."
+        ];
+
+        function initApp() {
+            const mcContainer = document.getElementById('multiple-choice');
+            mc.forEach((item, i) => {
+                mcContainer.innerHTML += `
+                    <div class="quiz-box">
+                        <p><strong>${i+1}. ${item.q}</strong></p>
+                        <label><input type="radio" name="mc${i}" value="a"> ${item.a}</label><br>
+                        <label><input type="radio" name="mc${i}" value="b"> ${item.b}</label><br>
+                        <label><input type="radio" name="mc${i}" value="c"> ${item.c}</label>
+                    </div>
+                `;
+            });
+
+            const opContainer = document.getElementById('open-questions');
+            openQ.forEach((item, i) => {
+                opContainer.innerHTML += `
+                    <div class="quiz-box">
+                        <p><strong>${i+6}. ${item}</strong></p>
+                        <textarea id="op-ans-${i}" class="detect-ia" placeholder="Mínimo 15 palabras sobre tu vereda..."></textarea>
+                        <div id="fraud-${i}" class="fraud-alert">⚠️ Escritura inhumana detectada. Por favor redacta manualmente.</div>
+                    </div>
+                `;
+                bindAntiFraud(document.getElementById(`op-ans-${i}`), i);
+            });
+            initCanvas();
+        }
+
+        // --- Anti-Fraude ---
+        function bindAntiFraud(el, idx) {
+            let lastKey = Date.now();
+            el.addEventListener('paste', e => {
+                e.preventDefault();
+                alert("¡Prohibido copiar! En Pueblo Rico valoramos tu propia palabra.");
+            });
+            el.addEventListener('keydown', () => {
+                let now = Date.now();
+                if(now - lastKey < 10) { // Menos de 10ms es IA
+                    document.getElementById(`fraud-${idx}`).style.display = "block";
+                    el.style.borderColor = "red";
+                }
+                lastKey = now;
+            });
+            el.addEventListener('contextmenu', e => e.preventDefault());
+        }
+
+        function processFinal() {
+            let grade = 0;
+            
+            // MC (40%)
+            mc.forEach((item, i) => {
+                const sel = document.querySelector(`input[name="mc${i}"]:checked`);
+                if(sel && sel.value === item.r) grade += 0.4;
+            });
+
+            // Open (40%)
+            let openValid = true;
+            openQ.forEach((_, i) => {
+                const val = document.getElementById(`op-ans-${i}`).value.trim();
+                const fraud = document.getElementById(`fraud-${i}`).style.display === "block";
+                if(val.split(' ').length < 10 || fraud) openValid = false;
+                else grade += 0.4;
+            });
+
+            // Progress (20%)
+            grade += (appData.progress / 100) * 2.0;
+
+            const final = Math.min(5, grade).toFixed(1);
+            showReport(final);
+        }
+
+        function showReport(grade) {
+            document.querySelector('.container').style.display = 'none';
+            document.getElementById('report-screen').style.display = 'block';
+            document.getElementById('final-grade').innerText = grade;
+            
+            let msg = "";
+            if(grade < 3) msg = "⚠️ RUTA DE FORTALECIMIENTO: Necesitas revisar el concepto de Homeostasis. Las cabañuelas fallaron un poco, vuelve a leer sobre el Páncreas.";
+            else if(grade < 4.5) msg = "🌾 RUTA QUINDIANA: ¡Buen trabajo! Entiendes cómo fluyen las hormonas en la vereda. Repasa los ciclos de feedback negativo.";
+            else msg = "🌟 RUTA DE EXCELENCIA: ¡Eres un experto en el clima corporal de Quimbaya! Dominas la regulación y la reproducción.";
+            
+            document.getElementById('final-feedback').innerText = msg;
+        }
+
+        function downloadTXT() {
+            const content = `RESULTADOS OVA ENDOCRINO - PUEBLO RICO\nEstudiante: ${appData.user.ape} ${appData.user.nom}\nNota: ${document.getElementById('final-grade').innerText}\nFeedback: ${document.getElementById('final-feedback').innerText}`;
+            const blob = new Blob([content], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Resultados_${appData.user.ape}.txt`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

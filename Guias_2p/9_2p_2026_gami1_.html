@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Raíces y Semillas - Genética</title>
+    <style>
+        /* =========================================
+           VARIABLES Y DISEÑO BASE (ADN y Naturaleza)
+           ========================================= */
+        :root {
+            --morado-adn: #6A1B9A;
+            --morado-claro: #E1BEE7;
+            --verde-semilla: #2E7D32;
+            --verde-claro: #C8E6C9;
+            --naranja-tierra: #EF6C00;
+            --cafe-suelo: #4E342E;
+            --crema-fondo: #FAFAFA;
+            --blanco: #FFFFFF;
+            --gris-texto: #263238;
+            
+            /* Gamificación: Tabla Periódica */
+            --oro-au: #FFD700;
+            --plata-ag: #C0C0C0;
+            --hierro-fe: #A19D94;
+            --rojo-error: #D32F2F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--crema-fondo);
+            color: var(--gris-texto);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* =========================================
+           PANTALLA DE LOGUEO
+           ========================================= */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, var(--morado-adn), var(--verde-semilla));
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 0.6s ease;
+        }
+
+        .login-box {
+            background: var(--blanco); padding: 40px; border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; max-width: 450px; width: 90%;
+            border-top: 6px solid var(--naranja-tierra);
+        }
+
+        .login-box h1 { color: var(--morado-adn); margin-bottom: 10px; font-size: 1.8em; }
+        .login-box p { font-size: 0.95em; margin-bottom: 25px; color: #555; }
+
+        .input-group { margin-bottom: 18px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 6px; font-weight: 700; color: var(--cafe-suelo); }
+        .input-group input {
+            width: 100%; padding: 12px; border: 2px solid var(--morado-claro); border-radius: 8px; font-size: 1em;
+            background-color: #F3E5F5; transition: border-color 0.3s;
+        }
+        .input-group input:focus { border-color: var(--naranja-tierra); outline: none; background-color: var(--blanco);}
+
+        .btn {
+            background-color: var(--naranja-tierra); color: var(--blanco); border: none;
+            padding: 14px 25px; border-radius: 8px; font-size: 1.1em; cursor: pointer;
+            font-weight: bold; transition: transform 0.2s, background-color 0.3s; width: 100%;
+        }
+        .btn:hover { background-color: #E65100; transform: scale(1.02); }
+        .btn:disabled { background-color: #B0BEC5; cursor: not-allowed; transform: none; }
+
+        /* =========================================
+           INTERFAZ PRINCIPAL (SINGLE-PAGE)
+           ========================================= */
+        #main-app { display: none; }
+
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; background: var(--blanco);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1); z-index: 500; padding: 12px 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 4px solid var(--morado-adn);
+        }
+
+        .user-badge { font-weight: bold; color: var(--cafe-suelo); display: flex; align-items: center; gap: 10px; font-size: 1.1em;}
+        
+        .score-board {
+            display: flex; align-items: center; gap: 15px; background: var(--morado-adn);
+            color: white; padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 1.2em;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            border: 2px solid var(--morado-claro);
+        }
+
+        main { max-width: 850px; margin: 90px auto 50px auto; padding: 20px; }
+
+        /* =========================================
+           CONTENEDORES DE TEXTO (PEDAGOGÍA)
+           ========================================= */
+        .content-section {
+            background: var(--blanco); padding: 30px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 40px;
+            border-left: 6px solid var(--verde-semilla);
+        }
+
+        h2 { color: var(--morado-adn); border-bottom: 2px solid var(--naranja-tierra); padding-bottom: 8px; margin-bottom: 20px; }
+        p { margin-bottom: 15px; text-align: justify; font-size: 1.1em; }
+        .highlight { background-color: var(--verde-claro); padding: 2px 5px; font-weight: bold; color: var(--verde-semilla); border-radius: 3px;}
+
+        /* =========================================
+           DISEÑO DE ACTIVIDADES (GAMIFICACIÓN)
+           ========================================= */
+        .activity-card {
+            background: #FFFFFF; border: 2px solid #E0E0E0; border-radius: 10px;
+            padding: 25px; margin: 25px 0; position: relative;
+            transition: border-color 0.3s, background-color 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .activity-card.solved { border-color: var(--verde-semilla); background: #E8F5E9; }
+        .activity-card.failed { border-color: var(--rojo-error); background: #FFEBEE; }
+
+        .act-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .act-type { font-size: 0.85em; font-weight: bold; color: var(--blanco); background: var(--cafe-suelo); padding: 6px 12px; border-radius: 15px; text-transform: uppercase;}
+        .act-attempts { font-size: 0.9em; font-weight: bold; color: var(--naranja-tierra); background: #FFE0B2; padding: 4px 10px; border-radius: 10px; border: 1px solid var(--naranja-tierra);}
+        
+        /* Juego 1: Anagramas (Letras Explicitas) */
+        .anagram-display {
+            font-size: 2.2em; font-weight: bold; color: var(--morado-adn);
+            text-align: center; letter-spacing: 4px; margin: 20px 0;
+            background: #F3E5F5; padding: 20px; border-radius: 8px; font-family: monospace;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.1); border: 2px dashed var(--morado-claro);
+        }
+        
+        .answer-input {
+            width: 100%; padding: 15px; font-size: 1.2em; border: 2px solid #B0BEC5; border-radius: 8px;
+            text-align: center; text-transform: uppercase; margin-bottom: 15px;
+            background-color: var(--blanco); font-weight: bold; letter-spacing: 2px;
+        }
+        .answer-input:focus { border-color: var(--verde-semilla); outline: none; }
+
+        /* Juego 2: Ordenar Palabras (Frases) */
+        .word-bank {
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 20px 0; min-height: 50px;
+        }
+        .word-btn {
+            background: var(--blanco); color: var(--cafe-suelo); border: 2px solid var(--verde-semilla); padding: 10px 18px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.05em;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s, background-color 0.2s;
+        }
+        .word-btn:hover { background-color: var(--verde-claro); }
+        .word-btn:active { transform: scale(0.95); }
+        
+        .sentence-builder {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start;
+            background: #ECEFF1; padding: 20px; border-radius: 8px; min-height: 80px; margin-bottom: 15px;
+            border: 2px dashed #90A4AE; align-items: center; font-size: 1.1em;
+        }
+        .word-btn.selected { background: var(--morado-adn); color: var(--blanco); border-color: var(--morado-adn); opacity: 0.5; pointer-events: none;}
+
+        .btn-clear { background: #90A4AE; margin-top: 5px; width: auto; padding: 10px 20px;}
+        .btn-clear:hover { background: #78909C; }
+
+        /* Insignias Químicas (Tabla Periódica) */
+        .medal-badge {
+            position: absolute; top: -20px; right: -20px; width: 65px; height: 65px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.6em; color: var(--cafe-suelo);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 4px solid white; display: none;
+            flex-direction: column; line-height: 1; z-index: 10;
+        }
+        .medal-badge span { font-size: 0.35em; text-transform: uppercase; margin-top: 2px; }
+        .medal-au { background: linear-gradient(135deg, #FFD700, #FBC02D); display: flex; }
+        .medal-ag { background: linear-gradient(135deg, #E0E0E0, #9E9E9E); display: flex; }
+        .medal-fe { background: linear-gradient(135deg, #8D6E63, #5D4037); color: white; display: flex; }
+
+        .feedback-msg { margin-top: 15px; font-weight: bold; text-align: center; font-size: 1.2em; min-height: 28px;}
+
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         PILARES 1: PANTALLA DE LOGUEO
+         ========================================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>Raíces y Semillas</h1>
+            <p>Laboratorio de Genética Mendeliana - Grado 9°<br>Vereda Pueblo Rico, Quimbaya</p>
+            <div class="input-group">
+                <label for="inp-nombre">Nombre del Estudiante:</label>
+                <input type="text" id="inp-nombre" placeholder="Ingresa tu nombre" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="inp-apellido">Apellido del Estudiante:</label>
+                <input type="text" id="inp-apellido" placeholder="Ingresa tu apellido" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar">Ingresar al Laboratorio</button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         PILARES 2 & 3: INTERFAZ PRINCIPAL
+         ========================================= -->
+    <div id="main-app">
+        <header>
+            <div class="user-badge">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--verde-semilla)"><path d="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M11,19.93C7.05,19.43 4,16.05 4,12C4,7.95 7.05,4.57 11,4.07V19.93M13,4.07C16.95,4.57 20,7.95 20,12C20,16.05 16.95,19.43 13,19.93V4.07Z"/></svg>
+                <span id="display-name">Estudiante</span>
+            </div>
+            <div class="score-board">
+                <span>Puntaje:</span>
+                <span id="display-score">0</span>
+            </div>
+        </header>
+
+        <main id="content-container">
+            <!-- Las 20 actividades se generan aquí de forma dinámica -->
+        </main>
+    </div>
+
+    <!-- =========================================
+         LÓGICA JAVASCRIPT (VANILLA)
+         ========================================= -->
+    <script>
+        // --- 1. DATOS PEDAGÓGICOS (20 ACTIVIDADES DE GRADO 9) ---
+        const courseContent = [
+            // SECCIÓN 1: HERENCIA, GENOTIPO Y FENOTIPO
+            {
+                type: 'text',
+                title: '1. Raíces y Semillas: ¿De dónde venimos?',
+                content: `Cuando un campesino en Pueblo Rico siembra una semilla de café variedad Castillo, sabe exactamente qué tipo de árbol crecerá. Esto no es magia, es <span class="highlight">Herencia</span>. Es la transmisión del código de instrucciones de padres a hijos.<br><br>
+                Cada semilla guarda en su interior un código secreto y oculto llamado <strong>Genotipo</strong>. Es como el manual de instrucciones. Cuando la semilla germina, crece y muestra sus hojas y granos rojos, a esas características físicas y visibles las llamamos <strong>Fenotipo</strong>. El fenotipo es la suma del código oculto más la influencia del ambiente (como el sol o la lluvia).`
+            },
+            { type: 'anagram', id: 'a1', answer: 'GENOTIPO', hint: 'El código de información genética que está oculto en la semilla.' },
+            { type: 'anagram', id: 'a2', answer: 'FENOTIPO', hint: 'Las características físicas que podemos ver, como el color del café.' },
+            { type: 'sentence', id: 's1', answer: 'El genotipo es la información genética que heredamos', hint: 'Definición del manual de instrucciones.' },
+            { type: 'sentence', id: 's2', answer: 'El fenotipo son los rasgos físicos que podemos observar', hint: 'Definición de lo visible en un organismo.' },
+            { type: 'anagram', id: 'a3', answer: 'HERENCIA', hint: 'La transmisión de características de una generación a otra.' },
+            
+            // SECCIÓN 2: LA MEIOSIS
+            {
+                type: 'text',
+                title: '2. La Meiosis: Preparando la semilla de la vida',
+                content: `Para que una planta o un animal pueda tener hijos, no puede simplemente partirse a la mitad. Necesita crear células especiales de reproducción llamadas <span class="highlight">Gametos</span> (como el polen o los óvulos).<br><br>
+                Para formar estos gametos, la célula usa un proceso de división llamado <strong>Meiosis</strong>. A diferencia de la división celular normal, la meiosis reduce a la mitad el número de <strong>Cromosomas</strong> (los paquetes de ADN). Así, cuando el polen (mitad de información) fertiliza el óvulo de la flor (otra mitad), la nueva semilla tiene la información genética completa. Además, la meiosis mezcla el ADN, garantizando que cada semilla sea única. A esto se le llama recombinación genética, y asegura la diversidad de los cultivos en la finca.`
+            },
+            { type: 'anagram', id: 'a4', answer: 'MEIOSIS', hint: 'División celular especial que forma las semillas de la vida.' },
+            { type: 'anagram', id: 'a5', answer: 'GAMETO', hint: 'Célula sexual reproductora (como el polen o el óvulo).' },
+            { type: 'sentence', id: 's3', answer: 'La meiosis reduce a la mitad el número de cromosomas', hint: 'El propósito principal de esta división.' },
+            { type: 'sentence', id: 's4', answer: 'La recombinación genética asegura la diversidad de los cultivos', hint: 'Por qué no todas las semillas son idénticas.' },
+            { type: 'sentence', id: 's5', answer: 'Los gametos se unen para formar una nueva planta', hint: 'El resultado de la fertilización.' },
+            { type: 'anagram', id: 'a6', answer: 'CROMOSOMA', hint: 'El paquete en forma de "X" que guarda el ADN en el núcleo.' },
+
+            // SECCIÓN 3: LEYES DE MENDEL
+            {
+                type: 'text',
+                title: '3. El Huerto de Mendel: Dominantes y Recesivos',
+                content: `En el siglo XIX, un monje científico llamado Gregor <span class="highlight">Mendel</span> cultivó guisantes y descubrió las reglas de cómo se heredan los rasgos. Descubrió que para cada característica tenemos dos versiones de un gen, llamadas <strong>Alelos</strong> (uno viene de la madre y otro del padre).<br><br>
+                Si tienes un alelo fuerte, este siempre se mostrará en el fenotipo; a este se le llama gen <strong>Dominante</strong>. Si tienes un alelo débil que queda oculto, se le llama <strong>Recesivo</strong>. <br>
+                Si un organismo recibe dos alelos exactamente iguales (ej. ambos recesivos), se le llama Homocigoto. Si recibe dos alelos diferentes mezclados, se llama Heterocigoto. Estas leyes nos permiten cruzar plantas en Quimbaya para obtener café resistente a las plagas.`
+            },
+            { type: 'anagram', id: 'a7', answer: 'MENDEL', hint: 'El monje científico considerado el padre de la genética.' },
+            { type: 'anagram', id: 'a8', answer: 'ALELO', hint: 'Las diferentes versiones o variaciones de un mismo gen.' },
+            { type: 'sentence', id: 's6', answer: 'Un gen dominante siempre se expresa en el fenotipo', hint: 'La regla del rasgo más fuerte.' },
+            { type: 'sentence', id: 's7', answer: 'Un gen recesivo queda oculto si hay uno dominante', hint: 'El destino del rasgo débil.' },
+            { type: 'anagram', id: 'a9', answer: 'DOMINANTE', hint: 'El rasgo o alelo que siempre gana y se muestra.' },
+            { type: 'anagram', id: 'a10', answer: 'RECESIVO', hint: 'El rasgo o alelo que puede quedar oculto.' },
+            { type: 'sentence', id: 's8', answer: 'Un organismo homocigoto tiene dos alelos exactamente iguales', hint: 'Definición de raza pura o línea pura.' },
+            { type: 'sentence', id: 's9', answer: 'Un organismo heterocigoto tiene dos alelos diferentes mezclados', hint: 'Cuando los padres aportan información distinta.' },
+            { type: 'sentence', id: 's10', answer: 'Las leyes de la genética ayudan a mejorar nuestras cosechas', hint: 'La aplicación práctica de la ciencia de Mendel.' }
+        ];
+
+        // --- 2. PILAR 1: PERSISTENCIA LOCAL (ESTADO GLOBAL) ---
+        const LOCAL_KEY = 'ova_quimbaya_genetica_g9_state';
+        let gameState = {
+            nombre: '',
+            apellido: '',
+            score: 0,
+            activities: {} 
+        };
+
+        // --- 3. ALGORITMOS DE MEZCLA (FISHER-YATES PURO Y ESTRICTO) ---
+        function fisherYatesShuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex > 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Desordenar Letras: Asegura que no quede igual y usa formato con guiones
+        function shuffleLetters(word) {
+            let arr = word.split('');
+            let shuffled;
+            do {
+                shuffled = fisherYatesShuffle([...arr]);
+            } while (shuffled.join('') === word && word.length > 2); 
+            
+            return shuffled.join('-'); // Retorna explícitamente formato E-J-E-M-P-L-O
+        }
+
+        // Desordenar Palabras: Asegura que no quede en el mismo orden
+        function shuffleWords(sentence) {
+            let arr = sentence.split(' ');
+            let shuffled;
+            do {
+                shuffled = fisherYatesShuffle([...arr]);
+            } while (shuffled.join(' ') === sentence && arr.length > 2);
+            
+            return shuffled;
+        }
+
+        // --- 4. INICIALIZACIÓN E INTERFAZ ---
+        document.addEventListener("DOMContentLoaded", () => {
+            configurarLogin();
+            loadState();
+        });
+
+        function configurarLogin() {
+            document.getElementById('btn-iniciar').addEventListener('click', () => {
+                const nombre = document.getElementById('inp-nombre').value.trim();
+                const apellido = document.getElementById('inp-apellido').value.trim();
+                
+                if (nombre === '' || apellido === '') {
+                    alert("Es necesario registrar tu Nombre y Apellido para iniciar.");
+                    return;
+                }
+                gameState.nombre = nombre;
+                gameState.apellido = apellido;
+                saveState();
+                mostrarApp();
+            });
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(LOCAL_KEY);
+            if (saved) {
+                gameState = JSON.parse(saved);
+                if (gameState.nombre !== '') {
+                    mostrarApp();
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(gameState));
+            updateHeader();
+        }
+
+        function mostrarApp() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                updateHeader();
+                renderContent(); // Generar las 20 actividades dinámicamente
+            }, 600);
+        }
+
+        function updateHeader() {
+            document.getElementById('display-name').textContent = `${gameState.nombre} ${gameState.apellido}`;
+            document.getElementById('display-score').textContent = gameState.score % 1 === 0 ? gameState.score : gameState.score.toFixed(1);
+        }
+
+        // --- 5. PILAR 2: ESTRUCTURA SCROLL (20 ACTIVIDADES) ---
+        function renderContent() {
+            const container = document.getElementById('content-container');
+            container.innerHTML = ''; 
+
+            let anagramCount = 1;
+            let sentenceCount = 1;
+
+            courseContent.forEach(item => {
+                if (item.type === 'text') {
+                    const div = document.createElement('div');
+                    div.className = 'content-section';
+                    div.innerHTML = `<h2>${item.title}</h2><p>${item.content}</p>`;
+                    container.appendChild(div);
+                } 
+                else if (item.type === 'anagram') {
+                    const div = createAnagramUI(item, anagramCount);
+                    container.appendChild(div);
+                    anagramCount++;
+                }
+                else if (item.type === 'sentence') {
+                    const div = createSentenceUI(item, sentenceCount);
+                    container.appendChild(div);
+                    sentenceCount++;
+                }
+            });
+
+            configurarAntiFraudeInputs();
+        }
+
+        function getActState(id) {
+            if (!gameState.activities[id]) {
+                gameState.activities[id] = { attempts: 0, solved: false, medal: null };
+            }
+            return gameState.activities[id];
+        }
+
+        function getMedalHTML(medal) {
+            if (!medal || medal === 'Failed') return '';
+            let symbol = medal === 'Au' ? 'Au' : (medal === 'Ag' ? 'Ag' : 'Fe');
+            let text = medal === 'Au' ? 'Oro' : (medal === 'Ag' ? 'Plata' : 'Hierro');
+            return `<div class="medal-badge medal-${medal.toLowerCase()}">${symbol}<br><span>${text}</span></div>`;
+        }
+
+        // --- 5.1 CONSTRUCTOR: ANAGRAMAS ---
+        function createAnagramUI(item, index) {
+            const state = getActState(item.id);
+            const div = document.createElement('div');
+            
+            let statusClass = state.solved ? (state.medal === 'Failed' ? 'failed' : 'solved') : '';
+            div.className = `activity-card ${statusClass}`;
+            div.id = `card-${item.id}`;
+
+            // Si está resuelto y ganado, muestra la palabra desordenada original. 
+            // Si no, la desordena.
+            let displayWord = state.solved && state.medal !== 'Failed' ? item.answer.split('').join('-') : shuffleLetters(item.answer);
+            let attemptsLeft = 3 - state.attempts;
+            
+            let html = `
+                ${getMedalHTML(state.medal)}
+                <div class="act-header">
+                    <span class="act-type">Anagrama #${index}</span>
+                    <span class="act-attempts" id="att-${item.id}">Intentos restantes: ${attemptsLeft}</span>
+                </div>
+                <p>Ordena las letras para revelar el término genético. Pista: <em>${item.hint}</em></p>
+                <div class="anagram-display" id="disp-${item.id}">${displayWord}</div>
+            `;
+
+            if (state.solved) {
+                if (state.medal === 'Failed') {
+                    html += `<div class="feedback-msg" style="color: var(--rojo-error);">Límite de intentos agotado. La respuesta era: <br><strong>${item.answer}</strong></div>`;
+                } else {
+                    html += `<div class="feedback-msg" style="color: var(--verde-semilla);">¡Validación exitosa! Insignia de ${state.medal} ganada.</div>`;
+                }
+            } else {
+                html += `
+                    <input type="text" class="answer-input anti-fraud" id="inp-${item.id}" placeholder="Digita la respuesta..." autocomplete="off">
+                    <button class="btn" id="btn-${item.id}" onclick="validateAnagram('${item.id}', '${item.answer}')">Validar Término</button>
+                    <div class="feedback-msg" id="feed-${item.id}"></div>
+                `;
+            }
+            div.innerHTML = html;
+            return div;
+        }
+
+        // --- 5.2 CONSTRUCTOR: ORDENAR FRASES ---
+        function createSentenceUI(item, index) {
+            const state = getActState(item.id);
+            const div = document.createElement('div');
+            
+            let statusClass = state.solved ? (state.medal === 'Failed' ? 'failed' : 'solved') : '';
+            div.className = `activity-card ${statusClass}`;
+            div.id = `card-${item.id}`;
+
+            let attemptsLeft = 3 - state.attempts;
+            
+            let html = `
+                ${getMedalHTML(state.medal)}
+                <div class="act-header">
+                    <span class="act-type">Reconstruir Frase #${index}</span>
+                    <span class="act-attempts" id="att-${item.id}">Intentos restantes: ${attemptsLeft}</span>
+                </div>
+                <p>Haz clic en las palabras en el orden correcto para reconstruir la oración científica.</p>
+            `;
+
+            if (state.solved) {
+                if (state.medal === 'Failed') {
+                    html += `<div class="feedback-msg" style="color: var(--rojo-error);">Intentos agotados. La oración correcta era:<br><strong>${item.answer}</strong></div>`;
+                } else {
+                    html += `<div class="sentence-builder" style="border-color: var(--verde-semilla); justify-content:center; text-align:center;"><strong>${item.answer}</strong></div>`;
+                    html += `<div class="feedback-msg" style="color: var(--verde-semilla);">¡Estructura Gramatical Correcta! Insignia ${state.medal} acreditada.</div>`;
+                }
+            } else {
+                let words = shuffleWords(item.answer);
+                
+                html += `<div class="sentence-builder" id="builder-${item.id}"></div>`;
+                html += `<div class="word-bank" id="bank-${item.id}">`;
+                words.forEach((w, i) => {
+                    html += `<button class="word-btn" id="wb-${item.id}-${i}" onclick="selectWord('${item.id}', '${w}', this.id)">${w}</button>`;
+                });
+                html += `</div>`;
+                
+                html += `
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-clear" onclick="clearSentence('${item.id}')">🔄 Reiniciar Frase</button>
+                        <button class="btn" id="btn-${item.id}" onclick="validateSentence('${item.id}', '${item.answer}')">Validar Oración</button>
+                    </div>
+                    <div class="feedback-msg" id="feed-${item.id}"></div>
+                `;
+            }
+            div.innerHTML = html;
+            return div;
+        }
+
+        // Lógica interactiva para Oraciones
+        let sentenceMemory = {};
+
+        function selectWord(actId, word, btnId) {
+            let btn = document.getElementById(btnId);
+            if(btn.classList.contains('selected')) return; 
+            
+            btn.classList.add('selected'); 
+            if(!sentenceMemory[actId]) sentenceMemory[actId] = [];
+            sentenceMemory[actId].push(word);
+            
+            renderSentenceBuilder(actId);
+        }
+
+        function clearSentence(actId) {
+            sentenceMemory[actId] = [];
+            renderSentenceBuilder(actId);
+            let bank = document.getElementById(`bank-${actId}`);
+            let btns = bank.querySelectorAll('.word-btn');
+            btns.forEach(b => b.classList.remove('selected'));
+        }
+
+        function renderSentenceBuilder(actId) {
+            let builder = document.getElementById(`builder-${actId}`);
+            let arr = sentenceMemory[actId] || [];
+            builder.innerHTML = arr.map(w => `<span class="word-btn" style="background:var(--morado-adn); color:white; border-color:var(--morado-adn); cursor:default;">${w}</span>`).join('');
+        }
+
+        // --- 6. PILAR 3 Y 4: GAMIFICACIÓN Y VALIDACIONES INDEPENDIENTES ---
+        function processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl) {
+            let state = gameState.activities[id];
+            
+            if (isCorrect) {
+                state.solved = true;
+                let points = 0; let medal = '';
+                
+                // Puntajes Dinámicos
+                if(state.attempts === 0) { points = 5; medal = 'Au'; }
+                else if(state.attempts === 1) { points = 3; medal = 'Ag'; }
+                else if(state.attempts === 2) { points = 1.5; medal = 'Fe'; }
+
+                state.medal = medal;
+                gameState.score += points;
+                
+                cardEl.classList.add('solved');
+                feedEl.style.color = 'var(--verde-semilla)';
+                feedEl.textContent = `¡Respuesta Correcta! Sumas +${points} pts (Medalla de ${medal}).`;
+                btnEl.disabled = true;
+                cardEl.insertAdjacentHTML('afterbegin', getMedalHTML(medal));
+                
+                // Refrescar el DOM de la actividad para bloquearla visualmente
+                setTimeout(renderContent, 1800); 
+
+            } else {
+                state.attempts++;
+                let remaining = 3 - state.attempts;
+                attEl.textContent = `Intentos restantes: ${remaining}`;
+                
+                if (state.attempts >= 3) {
+                    state.solved = true;
+                    state.medal = 'Failed';
+                    cardEl.classList.add('failed');
+                    btnEl.disabled = true;
+                    feedEl.style.color = 'var(--rojo-error)';
+                    feedEl.textContent = `Límite de intentos superado. La actividad se ha bloqueado.`;
+                    setTimeout(renderContent, 2500);
+                } else {
+                    feedEl.style.color = 'var(--rojo-error)';
+                    feedEl.textContent = `Error en la respuesta. Analiza la pista y vuelve a intentarlo.`;
+                    
+                    // Efecto de vibración
+                    cardEl.style.transform = 'translateX(6px)';
+                    setTimeout(()=> cardEl.style.transform = 'translateX(-6px)', 100);
+                    setTimeout(()=> cardEl.style.transform = 'translateX(6px)', 200);
+                    setTimeout(()=> cardEl.style.transform = 'translateX(0)', 300);
+                }
+            }
+            saveState(); 
+        }
+
+        // Validación Anagramas
+        function validateAnagram(id, correctAnswer) {
+            let state = getActState(id);
+            if(state.solved || state.attempts >= 3) return;
+
+            let inputEl = document.getElementById(`inp-${id}`);
+            let feedEl = document.getElementById(`feed-${id}`);
+            let attEl = document.getElementById(`att-${id}`);
+            let cardEl = document.getElementById(`card-${id}`);
+            let btnEl = document.getElementById(`btn-${id}`);
+
+            let userVal = inputEl.value.trim().toUpperCase();
+            if(userVal === '') return;
+
+            // Normalizar acentos
+            const normalize = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            let isCorrect = (normalize(userVal) === normalize(correctAnswer.toUpperCase()));
+            processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl);
+        }
+
+        // Validación Oraciones
+        function validateSentence(id, correctAnswer) {
+            let state = getActState(id);
+            if(state.solved || state.attempts >= 3) return;
+
+            let feedEl = document.getElementById(`feed-${id}`);
+            let attEl = document.getElementById(`att-${id}`);
+            let cardEl = document.getElementById(`card-${id}`);
+            let btnEl = document.getElementById(`btn-${id}`);
+
+            let currentArr = sentenceMemory[id] || [];
+            if(currentArr.length === 0) return;
+
+            let userVal = currentArr.join(' ');
+            let isCorrect = (userVal === correctAnswer);
+            
+            processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl);
+            if(!isCorrect && state.attempts < 3) {
+                clearSentence(id); // Limpia para facilitar el siguiente intento
+            }
+        }
+
+        // --- SISTEMA ANTI-FRAUDE ---
+        function configurarAntiFraudeInputs() {
+            const inputs = document.querySelectorAll('.anti-fraud');
+            inputs.forEach(inp => {
+                // Bloqueo de copia, pegado y arrastre 
+                inp.addEventListener('paste', e => { e.preventDefault(); alert("Laboratorio restringido: Prohibido pegar respuestas."); });
+                inp.addEventListener('drop', e => { e.preventDefault(); });
+                inp.addEventListener('contextmenu', e => { e.preventDefault(); });
+
+                // Detección de cadencia de tipeo (Prevención de Scripts/Bots)
+                let keyTimes = [];
+                inp.addEventListener('keydown', e => {
+                    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'v')) {
+                        e.preventDefault(); return;
+                    }
+                    if(e.key.length > 1) return; 
+                    
+                    const now = Date.now();
+                    keyTimes.push(now);
+                    if(keyTimes.length > 4) keyTimes.shift();
+
+                    if(keyTimes.length === 4) {
+                        let totalDiff = 0;
+                        for(let i=1; i<keyTimes.length; i++){ totalDiff += (keyTimes[i] - keyTimes[i-1]); }
+                        let avg = totalDiff / 3;
+                        
+                        if(avg < 25) { 
+                            inp.value = ""; keyTimes = [];
+                            alert("¡Aviso de Integridad! Sistema automatizado de tecleo detectado. Campo borrado.");
+                            e.preventDefault();
+                        }
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

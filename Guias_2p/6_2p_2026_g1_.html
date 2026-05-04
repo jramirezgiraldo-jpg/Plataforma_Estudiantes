@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: La Célula, Nuestra Finca Microscópica</title>
+    <style>
+        /* ================= VARIABLES Y RESET ================= */
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-dark: #1b5e20;
+            --secondary: #8d6e63;
+            --accent: #ffb300;
+            --bg-color: #f1f8e9;
+            --text-dark: #333333;
+            --text-light: #ffffff;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+            --shadow: 0 8px 16px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ================= NAVEGACIÓN Y PROGRESO ================= */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--primary-dark);
+            color: var(--text-light);
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 600;
+        }
+
+        .gamification-badge {
+            background: var(--accent);
+            color: var(--primary-dark);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* ================= PANTALLA DE LOGIN ================= */
+        #login-screen {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-dark));
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 2000;
+        }
+
+        .login-box {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .login-box h1 {
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .login-box p {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 0.9em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--primary-dark);
+            font-size: 0.9em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: var(--transition);
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-light);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+
+        .btn-main {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+
+        .btn-main:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .error-msg {
+            color: #d32f2f;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* ================= CONTENIDO PRINCIPAL ================= */
+        #main-content {
+            display: none;
+            padding-top: 80px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+
+        section {
+            background: var(--card-bg);
+            margin: 30px 15px;
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        h2 {
+            color: var(--primary-dark);
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+
+        h3 {
+            color: var(--primary);
+            margin: 25px 0 15px 0;
+            font-size: 1.4em;
+        }
+
+        p {
+            margin-bottom: 20px;
+            text-align: justify;
+            font-size: 1.1em;
+        }
+
+        .highlight {
+            background: #e8f5e9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        /* ================= PAUSAS ACTIVAS ================= */
+        .active-pause {
+            background: #fff3e0;
+            border-left: 5px solid #ff9800;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .active-pause h4 {
+            color: #e65100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .active-pause h4::before {
+            content: "✍️";
+            font-size: 1.5em;
+        }
+
+        .btn-pause {
+            align-self: flex-start;
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+
+        .btn-pause:hover:not(:disabled) {
+            background: #e65100;
+        }
+
+        .btn-pause:disabled {
+            background: #a5d6a7;
+            color: #1b5e20;
+            cursor: not-allowed;
+        }
+
+        /* ================= PREGUNTAS PRE-SABARES & ICFES ================= */
+        .question-card {
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid var(--primary-light);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: var(--transition);
+            font-size: 1em;
+        }
+
+        .option-btn:hover {
+            background: #e8f5e9;
+        }
+
+        .feedback-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-weight: bold;
+        }
+        .feedback-box.success { background: #c8e6c9; color: #2e7d32; }
+        .feedback-box.error { background: #ffcdd2; color: #c62828; }
+
+        /* ================= SVG ART ================= */
+        .svg-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 30px auto;
+            display: block;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        /* ================= CANVAS ANIMATION ================= */
+        .canvas-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #263238; /* Dark bg for contrast */
+            padding: 20px;
+            border-radius: 12px;
+            margin: 40px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .canvas-wrapper h3 {
+            color: #eceff1;
+            margin-top: 0;
+        }
+
+        .canvas-wrapper p {
+            color: #b0bec5;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        canvas {
+            background: #eceff1;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+            cursor: crosshair;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ================= TALLER Y EVALUACIÓN ================= */
+        .textarea-group {
+            margin-bottom: 25px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            resize: vertical;
+            transition: var(--transition);
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .word-counter {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        
+        .wc-error { color: #d32f2f; }
+        .wc-success { color: #2e7d32; }
+
+        #resultados-section {
+            display: none;
+            background: linear-gradient(135deg, #f1f8e9, #c8e6c9);
+            text-align: center;
+            border: 2px solid var(--primary);
+        }
+
+        .element-display {
+            font-size: 4em;
+            font-weight: bold;
+            color: var(--accent);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin: 20px 0;
+        }
+
+        /* ================= RESPONSIVE ================= */
+        @media (max-width: 768px) {
+            .options-grid { grid-template-columns: 1fr; }
+            section { padding: 25px 15px; margin: 20px 10px; }
+            h2 { font-size: 1.6em; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= PANTALLA DE LOGIN ================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>🔬 La Finca Microscópica</h1>
+            <p>Descubre cómo funciona la vida desde lo más pequeño.</p>
+            
+            <div class="input-group">
+                <label for="input-apellidos">Apellidos (Estrictamente)</label>
+                <input type="text" id="input-apellidos" placeholder="Ej: García Pérez" autocomplete="off">
+                <div id="err-apellidos" class="error-msg">Por favor ingresa tus apellidos.</div>
+            </div>
+            
+            <div class="input-group">
+                <label for="input-nombres">Nombres (Estrictamente)</label>
+                <input type="text" id="input-nombres" placeholder="Ej: Juan David" autocomplete="off">
+                <div id="err-nombres" class="error-msg">Por favor ingresa tus nombres.</div>
+            </div>
+            
+            <!-- Uso de botón normal con JS puro en lugar de <form> -->
+            <button type="button" id="btn-ingresar" class="btn-main">Iniciar Aventura</button>
+        </div>
+    </div>
+
+    <!-- ================= BARRA SUPERIOR FIJA ================= -->
+    <header id="main-header" style="display: none;">
+        <div class="nav-content">
+            <div class="user-info">
+                <span>👤 <span id="display-fullname">Estudiante</span></span>
+                <span class="gamification-badge" id="badge-element">
+                    🧪 Elemento: Hidrógeno (H)
+                </span>
+            </div>
+            <div>Grado 6° - Ciencias Naturales</div>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" id="main-progress"></div>
+        </div>
+    </header>
+
+    <!-- ================= CONTENIDO PRINCIPAL ================= -->
+    <div id="main-content">
+
+        <!-- SECCIÓN 1: INICIO & PRE-SABERES -->
+        <section id="inicio">
+            <h2>🎯 Objetivo de Aprendizaje</h2>
+            <p><strong>Reconocer la estructura celular base para entender sus funciones.</strong> A través de esta unidad, compararás las partes de una célula con las áreas de una finca (cerca, cocina, bodega, administrador) para comprender que, desde la escala microscópica hasta la Tierra entera, <em>todos somos parte de un gran sistema</em> y dependemos de la interacción entre factores bióticos y abióticos.</p>
+            
+            <h3>🧠 Activa tu Mente (Pre-saberes)</h3>
+            
+            <div class="question-card" id="pre-q1">
+                <p><strong>1. Si observas tu entorno en este instante, ¿cuál de los siguientes es un factor estrictamente "abiótico" (sin vida) pero esencial para que tú vivas?</strong></p>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="checkPreSaber(1, false, this)">A) Las plantas de mi casa</button>
+                    <button class="option-btn" onclick="checkPreSaber(1, false, this)">B) Mis mascotas</button>
+                    <button class="option-btn" onclick="checkPreSaber(1, true, this)">C) El oxígeno del aire</button>
+                    <button class="option-btn" onclick="checkPreSaber(1, false, this)">D) Las bacterias del suelo</button>
+                </div>
+                <div class="feedback-box" id="fb-pre1"></div>
+            </div>
+
+            <div class="question-card" id="pre-q2">
+                <p><strong>2. ¿Qué crees que tienen en común una vaca, un árbol de mango y tú mismo?</strong></p>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="checkPreSaber(2, false, this)">A) Que todos fabricamos nuestro alimento.</button>
+                    <button class="option-btn" onclick="checkPreSaber(2, true, this)">B) Que estamos formados por pequeñas unidades llamadas células.</button>
+                    <button class="option-btn" onclick="checkPreSaber(2, false, this)">C) Que no necesitamos agua para sobrevivir.</button>
+                    <button class="option-btn" onclick="checkPreSaber(2, false, this)">D) Que todos nos desplazamos de un lugar a otro.</button>
+                </div>
+                <div class="feedback-box" id="fb-pre2"></div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: CUERPO INDUCTIVO -->
+        <section id="inductivo">
+            <h2>🌍 El Gran Tejido de la Vida: Biótico y Abiótico</h2>
+            
+            <p>Imagina por un momento el lugar más hermoso que hayas visitado: quizás un bosque lluvioso, una playa bañada por el sol, o la finca de tus abuelos en el campo. Si te detienes a observar con cuidado, notarás que ese paisaje es un teatro gigante donde se desarrolla una obra maestra. En esta obra, existen dos tipos de "actores" fundamentales. Por un lado, están los <span class="highlight">Factores Bióticos</span>, que son todos los seres vivos: los árboles majestuosos, los insectos zumbadores, los animales de granja, los hongos en la corteza de los árboles e incluso las millones de bacterias invisibles en el suelo. Ellos nacen, crecen, se reproducen y mueren.</p>
+
+            <p>Pero estos seres vivos no podrían existir en el vacío. Dependen de manera absoluta del segundo grupo de actores: los <span class="highlight">Factores Abióticos</span>. Estos son los componentes inertes, los que no tienen vida biológica, pero dictan las reglas del juego. Hablamos de la luz solar (la batería principal del planeta), el agua de los ríos y las lluvias, la temperatura del ambiente, los minerales de la tierra y el oxígeno que respiramos. Un ecosistema es, precisamente, esa danza perfecta y continua entre lo biótico y lo abiótico. Si quitas el agua (abiótico), las plantas (biótico) se marchitan, y los animales (biótico) que comen esas plantas desaparecen. Todo está conectado de forma invisible.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 1: Observación del Entorno</h4>
+                <p>Abre tu cuaderno físico. Título: "Mi Entorno Inmediato". Mira por la ventana más cercana o a tu alrededor en la habitación. Dibuja una línea dividiendo la hoja. En la izquierda anota 3 factores bióticos que veas (o sepas que están ahí, como tú mismo). En la derecha, anota 3 factores abióticos.</p>
+                <button class="btn-pause" onclick="marcarPausa(1, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Esta conexión profunda nos enseña un principio vital: <span class="highlight">Sentido de Pertenencia</span>. Ningún ser vivo es una isla aislada. Todos somos hilos de una gran red. Cuando contaminamos el agua (alterando un factor abiótico), no solo ensuciamos un líquido, sino que cortamos el suministro vital de miles de organismos bióticos, incluyéndonos. Comprender esto en sexto grado es dar el primer paso para convertirnos en guardianes conscientes de nuestro planeta. Entender el mundo exterior es fascinante, pero el misterio no se detiene allí.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 2: El aire y yo</h4>
+                <p>En tu cuaderno, escribe un párrafo corto respondiendo: ¿Cómo crees que el aire (factor abiótico) que entra a tus pulmones se conecta con la energía que tienes para correr o jugar?</p>
+                <button class="btn-pause" onclick="marcarPausa(2, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>A lo largo de la historia, la humanidad solo podía estudiar aquello que sus ojos le permitían ver. Veían el lobo cazar, la semilla germinar y la lluvia caer. Sin embargo, a mediados del siglo XVII, un científico inglés llamado Robert Hooke perfeccionó un instrumento revolucionario: el microscopio. Al observar un fino corte de corcho (la corteza de un árbol), descubrió que estaba formado por diminutas celdas repetitivas, que le recordaron a las pequeñas habitaciones de los monjes en los monasterios. Las llamó <span class="highlight">"Células"</span>. Sin saberlo, Hooke había descubierto la unidad fundamental de toda la vida.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 3: Dibujando lo invisible</h4>
+                <p>Dibuja en tu cuaderno un gran microscopio antiguo. Dentro de la lente que apunta hacia abajo, dibuja cómo te imaginas que se vería una hoja de un árbol si la pudieras aumentar un millón de veces.</p>
+                <button class="btn-pause" onclick="marcarPausa(3, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Con el paso de los años y mejores microscopios, los científicos confirmaron una verdad asombrosa: absolutamente todo lo biótico está hecho de células. La bacteria más simple es una sola célula (unicelular), mientras que un ser humano está formado por más de 30 billones de ellas (pluricelular). Pero la célula no es solo un "ladrillo" inerte que construye un edificio; es una entidad dinámica, viva y asombrosamente compleja. Dentro de ese espacio microscópico ocurren miles de reacciones químicas por segundo, necesarias para mantener las funciones vitales de nutrición, relación y reproducción.</p>
+
+            <p>Para entender esta complejidad sin perdernos en nombres difíciles, vamos a cambiar nuestra perspectiva. No mires a la célula como un concepto aburrido de un libro de texto; mírala como lo que realmente es: una sociedad perfectamente organizada, una empresa eficiente, o mejor aún, <span class="highlight">una finca altamente productiva</span>. En una finca grande hay una cerca que protege, un administrador que da las órdenes, una cocina donde se prepara la energía y bodegas para almacenar. La célula tiene exactamente lo mismo, pero a escala nanométrica.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 4: Estiramiento y Energía</h4>
+                <p>Levántate de tu silla. Estira los brazos hacia el cielo lo más que puedas durante 15 segundos y respira profundo. Luego, en tu cuaderno, anota: ¿De dónde crees que sacan la energía tus músculos para poder estirarse?</p>
+                <button class="btn-pause" onclick="marcarPausa(4, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 5: Preparando la Finca</h4>
+                <p>Dibuja en tu cuaderno el contorno (un óvalo grande) de lo que será tu "Célula-Finca" para la siguiente sección. Déjalo en blanco por dentro por ahora.</p>
+                <button class="btn-pause" onclick="marcarPausa(5, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: PREGUNTA TIPO ICFES (INDAGAR) -->
+        <section id="icfes">
+            <h2>🕵️ Pregunta Tipo Prueba de Estado (Competencia Indagar)</h2>
+            <p>Observa cuidadosamente el siguiente esquema ecológico generado por código que muestra el flujo de energía en una finca real, y luego responde la pregunta.</p>
+            
+            <!-- ARTE SVG: Ecosistema / Finca -->
+            <svg class="svg-container" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#81D4FA"/>
+                        <stop offset="100%" stop-color="#E1F5FE"/>
+                    </linearGradient>
+                    <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#8D6E63"/>
+                        <stop offset="100%" stop-color="#5D4037"/>
+                    </linearGradient>
+                </defs>
+                <!-- Fondo -->
+                <rect width="600" height="250" fill="url(#skyGrad)" />
+                <rect y="250" width="600" height="150" fill="url(#groundGrad)" />
+                <path d="M0,250 Q150,220 300,250 T600,250 L600,400 L0,400 Z" fill="#66BB6A" opacity="0.8"/>
+                
+                <!-- Sol (Abiótico) -->
+                <circle cx="80" cy="70" r="40" fill="#FFEB3B" />
+                <path d="M80,10 L80,20 M80,120 L80,130 M20,70 L30,70 M130,70 L140,70 M40,30 L45,35 M115,105 L120,110 M40,110 L45,105 M115,30 L120,35" stroke="#FFCA28" stroke-width="4" stroke-linecap="round"/>
+                <text x="135" y="75" font-family="Arial" font-size="14" font-weight="bold" fill="#F57F17">A (Luz Solar)</text>
+
+                <!-- Lluvia / Nube (Abiótico) -->
+                <path d="M450,60 Q470,40 500,60 Q530,50 540,80 Q560,90 530,100 L450,100 Q430,90 450,60 Z" fill="#CFD8DC"/>
+                <line x1="460" y1="110" x2="455" y2="130" stroke="#1976D2" stroke-width="2" stroke-dasharray="4,4"/>
+                <line x1="480" y1="110" x2="475" y2="140" stroke="#1976D2" stroke-width="2" stroke-dasharray="4,4"/>
+                <line x1="500" y1="115" x2="495" y2="145" stroke="#1976D2" stroke-width="2" stroke-dasharray="4,4"/>
+                <line x1="520" y1="105" x2="515" y2="135" stroke="#1976D2" stroke-width="2" stroke-dasharray="4,4"/>
+                <text x="550" y="85" font-family="Arial" font-size="14" font-weight="bold" fill="#455A64">B (Agua)</text>
+
+                <!-- Planta (Biótico) -->
+                <path d="M300,250 Q280,200 300,150 Q320,200 300,250" fill="#2E7D32"/>
+                <path d="M300,200 Q260,180 250,150 Q280,180 300,200" fill="#4CAF50"/>
+                <path d="M300,180 Q340,150 350,120 Q320,150 300,180" fill="#4CAF50"/>
+                <text x="210" y="160" font-family="Arial" font-size="14" font-weight="bold" fill="#1B5E20">C (Productor)</text>
+
+                <!-- Vaca (Biótico) -->
+                <path d="M400,220 L440,220 L440,250 L430,250 L430,230 L410,230 L410,250 L400,250 Z" fill="#BCAAA4"/>
+                <circle cx="390" cy="210" r="15" fill="#BCAAA4"/>
+                <circle cx="385" cy="205" r="2" fill="#000"/>
+                <text x="450" y="230" font-family="Arial" font-size="14" font-weight="bold" fill="#3E2723">D (Consumidor)</text>
+
+                <!-- Minerales Suelo (Abiótico) -->
+                <circle cx="280" cy="300" r="4" fill="#E0E0E0"/>
+                <circle cx="320" cy="320" r="5" fill="#FFCC80"/>
+                <circle cx="250" cy="340" r="3" fill="#B0BEC5"/>
+                <text x="340" y="320" font-family="Arial" font-size="14" font-weight="bold" fill="#FFF">E (Minerales del suelo)</text>
+
+                <!-- Flechas de flujo -->
+                <path d="M110,90 Q200,120 280,160" stroke="#FFCA28" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+                <path d="M320,200 Q350,210 370,215" stroke="#4CAF50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+                <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke" />
+                    </marker>
+                </defs>
+            </svg>
+
+            <div class="question-card" style="margin-top: 30px;">
+                <p><strong>En el ecosistema ilustrado arriba, ocurre un flujo constante de energía y materia. Un estudiante afirma que si se elimina el factor B (Agua) y el factor E (Minerales), el factor D (Consumidor) no se vería afectado porque este solo se alimenta del factor C (Productor). A partir de tus conocimientos sobre factores bióticos y abióticos, ¿la afirmación del estudiante es correcta o incorrecta y por qué?</strong></p>
+                <div class="options-grid" style="grid-template-columns: 1fr;">
+                    <button class="option-btn" onclick="checkIcfes(false, 'Incorrecto. Es un distractor. Aunque C es biótico y depende de B y E, el consumidor SÍ se vería afectado indirectamente.', this)">
+                        A) Correcta, porque los factores abióticos solo interactúan con las plantas y no con los animales de forma directa en la cadena trófica.
+                    </button>
+                    <button class="option-btn" onclick="checkIcfes(false, 'Incorrecto. El factor D (vaca) es un consumidor primario (herbívoro) y no tiene la capacidad de realizar fotosíntesis ni absorber minerales directamente del suelo para sobrevivir sin las plantas.', this)">
+                        B) Correcta, porque el factor D tiene células especializadas que pueden reemplazar la función de nutrición utilizando directamente la luz solar (A).
+                    </button>
+                    <button class="option-btn" onclick="checkIcfes(false, 'Incorrecto. Es una verdad a medias. Los consumidores primarios sí comen plantas, pero la conclusión de que esto hace correcta la afirmación es falsa.', this)">
+                        C) Incorrecta, porque el factor D es un consumidor primario y su única función es transformar el oxígeno en dióxido de carbono.
+                    </button>
+                    <button class="option-btn" id="btn-icfes-correct" onclick="checkIcfes(true, '¡Excelente análisis! Los factores abióticos (agua, suelo) son la base. Sin ellos, el productor (planta) muere, y sin productor, el consumidor muere. Todo es un sistema interdependiente.', this)">
+                        D) Incorrecta, porque los factores C (productores) dependen vitalmente de B y E para sobrevivir; si C desaparece, el factor D morirá de hambre por falta de alimento.
+                    </button>
+                </div>
+                <div class="feedback-box" id="fb-icfes"></div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: CUERPO DEDUCTIVO -->
+        <section id="deductivo">
+            <h2>🔬 La Célula: Tu Finca Microscópica</h2>
+
+            <p>Hemos visto cómo un ecosistema grande funciona como un sistema interconectado. Ahora, preparemos nuestra mente deductiva y hagamos un "zoom" extremo hacia nuestro interior. Entremos a la célula. Toda célula eucariota (las que forman a plantas, animales y a ti) posee una estructura organizada que se divide el trabajo. ¿Recuerdas que dijimos que la célula es como una finca? Vamos a recorrer sus instalaciones principales (los organelos celulares) para entender sus leyes y principios de funcionamiento.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 6: La Cerca de la Finca</h4>
+                <p>En el dibujo del óvalo que hiciste antes, repasa el borde con un color fuerte. Al lado, escribe: "Membrana Celular = La Cerca".</p>
+                <button class="btn-pause" onclick="marcarPausa(6, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>La primera estructura con la que nos topamos es la <span class="highlight">Membrana Celular</span>. Imagina que es la cerca perimetral de la finca, pero no es una simple pared de ladrillos. Es una barrera "semipermeable" e inteligente, con portones de seguridad. Su principio fundamental es el control de acceso: decide qué factores externos (como el agua y nutrientes) pueden entrar y qué desechos deben salir. Si la membrana falla, la finca se inunda de toxinas o pierde sus recursos valiosos.</p>
+
+            <p>En el centro de esta finca se levanta el edificio principal, la oficina de gerencia: el <span class="highlight">Núcleo</span>. Aquí reside el Administrador Supremo, una molécula larga y retorcida llamada ADN (Ácido Desoxirribonucleico). El principio rector del núcleo es la custodia de la información. El ADN contiene el manual de instrucciones absoluto para fabricar todas las piezas de la célula, decidir cuándo debe dividirse (reproducirse) y cómo debe reaccionar. Sin el administrador, la finca entra en caos y muere rápidamente porque nadie sabe qué hacer.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 7: El Administrador</h4>
+                <p>Dibuja un círculo en el centro de tu célula. Dentro de él, dibuja un pequeño libro abierto o un pergamino. Etiquétalo como: "Núcleo (Contiene el ADN manual de instrucciones)".</p>
+                <button class="btn-pause" onclick="marcarPausa(7, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Pero una finca no se mueve solo con órdenes; necesita energía para trabajar los campos. Aquí entran los generadores de energía o las cocinas. En nuestras células (animales), estos generadores son las <span class="highlight">Mitocondrias</span>. Ellas aplican el principio de la respiración celular: toman los nutrientes que entraron por la membrana, los mezclan con oxígeno, y "queman" este combustible para liberar energía utilizable (llamada ATP). Si la célula fuera una finca agrícola (célula vegetal), tendría también <span class="highlight">Cloroplastos</span>, paneles solares mágicos que atrapan la luz del sol (factor abiótico) para fabricar su propio alimento (fotosíntesis).</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 8: La Cocina de Energía</h4>
+                <p>En tu dibujo, añade pequeños "frijoles" con líneas en zig-zag por dentro. Etiquétalos como "Mitocondrias = Generadores de energía".</p>
+                <button class="btn-pause" onclick="marcarPausa(8, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Finalmente, toda finca necesita un lugar de almacenamiento para épocas de sequía. Ese rol lo cumplen las <span class="highlight">Vacuolas</span>, que son como grandes bodegas o tanques de reserva. En las plantas, hay una sola vacuola gigante que almacena mucha agua para mantener la planta firme. Todo este complejo de edificios flota sobre un terreno gelatinoso llamado <span class="highlight">Citoplasma</span>, que es el "suelo" de nuestra finca celular, donde ocurren las reacciones químicas y se mueven los tractores microscópicos transportando materiales.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 9: La Bodega</h4>
+                <p>Añade a tu dibujo un saco o bolsa grande y píntalo de azul claro. Escribe: "Vacuola = Bodega de reservas".</p>
+                <button class="btn-pause" onclick="marcarPausa(9, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <!-- ANIMACIÓN CANVAS -->
+            <div class="canvas-wrapper">
+                <h3>🖥️ Simulación Interactiva: La Dinámica de la Célula-Finca</h3>
+                <p>Mueve tu ratón sobre los organelos para identificarlos. Observa cómo los nutrientes (puntos azules) entran atravesando la membrana (cerca). Si llegan a las mitocondrias (naranjas), se transforman en moléculas de energía ATP (estrellas brillantes) que dan vida a la finca.</p>
+                <canvas id="cellCanvas" width="800" height="500"></canvas>
+            </div>
+
+            <p>Al entender la célula deductivamente, desglosando sus leyes y partes, volvemos a nuestro punto de partida: el <span class="highlight">Sentido de Pertenencia</span>. Así como una mitocondria es inútil sin los nutrientes que deja pasar la membrana, y la membrana no podría trabajar sin la energía de la mitocondria, cada parte de tu cuerpo trabaja en equipo. Tus billones de "fincas microscópicas" cooperan para que tú respires, pienses y leas esto. A su vez, tú eres una "célula" en la gran "finca" que es la Tierra. Si dañas tu entorno, estás rompiendo la membrana de tu propia casa a gran escala.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 10: Mi Rol en el Sistema</h4>
+                <p>Reflexión final en tu cuaderno: Escribe en dos líneas por qué cuidar los ríos y los bosques es tan importante para la "finca" de la Tierra como lo es que la membrana celular funcione bien en tu cuerpo.</p>
+                <button class="btn-pause" onclick="marcarPausa(10, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+        </section>
+
+        <!-- SECCIÓN 5: EVALUACIÓN / TALLER -->
+        <section id="evaluacion">
+            <h2>📝 Taller Final: Demuestra tu Conocimiento</h2>
+            <p>Aplica lo que has aprendido. Las primeras 5 preguntas son de selección múltiple (autocalificables) y formarán tu puntaje para desbloquear tu elemento químico final. Las últimas 5 son de redacción estricta para el cuaderno y revisión del profesor.</p>
+
+            <h3>Parte I: Selección Múltiple (Autocalificable)</h3>
+            
+            <div class="question-card">
+                <p><strong>1. ¿Qué organelo celular funciona como el "Administrador" de la finca, guardando el manual de instrucciones (ADN)?</strong></p>
+                <select id="eval-q1" style="width:100%; padding:10px; margin-top:10px; border-radius:5px;">
+                    <option value="">Selecciona una opción...</option>
+                    <option value="A">A) La Vacuola</option>
+                    <option value="B">B) La Mitocondria</option>
+                    <option value="C">C) El Núcleo</option> <!-- Correcta -->
+                    <option value="D">D) La Membrana celular</option>
+                </select>
+            </div>
+
+            <div class="question-card">
+                <p><strong>2. ¿Cuál de los siguientes es un ejemplo de un factor abiótico interactuando con uno biótico?</strong></p>
+                <select id="eval-q2" style="width:100%; padding:10px; margin-top:10px; border-radius:5px;">
+                    <option value="">Selecciona una opción...</option>
+                    <option value="A">A) Un león cazando a una cebra.</option>
+                    <option value="B">B) Una planta absorbiendo luz solar para hacer fotosíntesis.</option> <!-- Correcta -->
+                    <option value="C">C) Dos pájaros peleando por un territorio.</option>
+                    <option value="D">D) Una célula dividiéndose en dos.</option>
+                </select>
+            </div>
+
+            <div class="question-card">
+                <p><strong>3. Si comparamos la célula con una finca, la Membrana Celular cumpliría el papel de:</strong></p>
+                <select id="eval-q3" style="width:100%; padding:10px; margin-top:10px; border-radius:5px;">
+                    <option value="">Selecciona una opción...</option>
+                    <option value="A">A) La cocina donde se produce la energía.</option>
+                    <option value="B">B) La bodega donde se almacena el agua.</option>
+                    <option value="C">C) El libro de contabilidad con las instrucciones.</option>
+                    <option value="D">D) La cerca con portones de seguridad que controla quién entra y sale.</option> <!-- Correcta -->
+                </select>
+            </div>
+
+            <div class="question-card">
+                <p><strong>4. ¿Qué organelo es el responsable de "quemar" los nutrientes para generar energía utilizable (como la cocina o planta eléctrica de la finca)?</strong></p>
+                <select id="eval-q4" style="width:100%; padding:10px; margin-top:10px; border-radius:5px;">
+                    <option value="">Selecciona una opción...</option>
+                    <option value="A">A) La Mitocondria</option> <!-- Correcta -->
+                    <option value="B">B) El Citoplasma</option>
+                    <option value="C">C) El Núcleo</option>
+                    <option value="D">D) El microscopio</option>
+                </select>
+            </div>
+
+            <div class="question-card">
+                <p><strong>5. El "Sentido de pertenencia" explicado en la lección nos enseña que:</strong></p>
+                <select id="eval-q5" style="width:100%; padding:10px; margin-top:10px; border-radius:5px;">
+                    <option value="">Selecciona una opción...</option>
+                    <option value="A">A) Las células pueden sobrevivir por sí solas en el espacio exterior.</option>
+                    <option value="B">B) Solo importan los factores bióticos, los abióticos son de relleno.</option>
+                    <option value="C">C) Todos somos parte de un sistema interconectado y depender de nuestro entorno nos hace responsables de cuidarlo.</option> <!-- Correcta -->
+                    <option value="D">D) Las fincas son más importantes que las células.</option>
+                </select>
+            </div>
+
+            <h3>Parte II: Preguntas Abiertas (Validación Estricta)</h3>
+            <p class="highlight">⚠️ REGLA: Cada respuesta debe tener <strong>EXACTAMENTE entre 10 y 15 palabras</strong>. Ni una más, ni una menos. Usa tus palabras sabiamente.</p>
+
+            <div class="textarea-group">
+                <p><strong>6. ¿Por qué la célula se parece a una finca productiva?</strong></p>
+                <textarea id="oq1" oninput="validateWordCount('oq1', 'wc1')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div class="word-counter">
+                    <span>Palabras: <span id="wc1">0</span></span>
+                    <span id="msg-oq1"></span>
+                </div>
+            </div>
+
+            <div class="textarea-group">
+                <p><strong>7. ¿Qué función cumple la membrana celular en este sistema microscópico?</strong></p>
+                <textarea id="oq2" oninput="validateWordCount('oq2', 'wc2')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div class="word-counter">
+                    <span>Palabras: <span id="wc2">0</span></span>
+                    <span id="msg-oq2"></span>
+                </div>
+            </div>
+
+            <div class="textarea-group">
+                <p><strong>8. Explica la relación entre factores bióticos y abióticos del entorno.</strong></p>
+                <textarea id="oq3" oninput="validateWordCount('oq3', 'wc3')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div class="word-counter">
+                    <span>Palabras: <span id="wc3">0</span></span>
+                    <span id="msg-oq3"></span>
+                </div>
+            </div>
+
+            <div class="textarea-group">
+                <p><strong>9. ¿Qué sucede si la vacuola (bodega) se queda sin agua?</strong></p>
+                <textarea id="oq4" oninput="validateWordCount('oq4', 'wc4')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div class="word-counter">
+                    <span>Palabras: <span id="wc4">0</span></span>
+                    <span id="msg-oq4"></span>
+                </div>
+            </div>
+
+            <div class="textarea-group">
+                <p><strong>10. ¿Por qué es importante entender que todos somos un gran sistema?</strong></p>
+                <textarea id="oq5" oninput="validateWordCount('oq5', 'wc5')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div class="word-counter">
+                    <span>Palabras: <span id="wc5">0</span></span>
+                    <span id="msg-oq5"></span>
+                </div>
+            </div>
+
+            <button type="button" id="btn-finalizar" class="btn-main" onclick="evaluarTaller()">Evaluar y Generar Resultados</button>
+            <div id="eval-error-msg" class="error-msg" style="text-align:center; font-size:1.1em; margin-top:10px;"></div>
+        </section>
+
+        <!-- SECCIÓN 6: RESULTADOS Y RETROALIMENTACIÓN -->
+        <section id="resultados-section">
+            <h2>🏆 ¡Misión Completada!</h2>
+            <p>Has finalizado el recorrido por la finca microscópica.</p>
+            
+            <h3 style="color: var(--primary-dark);">Tu Calificación Final: <span id="nota-final"></span> / 5.0</h3>
+            
+            <p>Con este puntaje, has desbloqueado el siguiente elemento químico en la tabla periódica del conocimiento:</p>
+            <div class="element-display" id="elemento-ganado"></div>
+            <p><em id="elemento-desc"></em></p>
+
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left;">
+                <h4 style="color: #e65100; margin-bottom: 10px;">🧠 Ruta de Fortalecimiento Personalizada</h4>
+                <p id="feedback-personalizado"></p>
+                <p style="font-weight: bold; margin-top: 10px;">Copia esta ruta en tu cuaderno físico y muéstrasela a tu profesor.</p>
+            </div>
+
+            <button type="button" class="btn-main" style="background: var(--accent); color: #333;" onclick="descargarResultados()">
+                📥 Descargar Resultados (.txt)
+            </button>
+        </section>
+
+    </div>
+
+    <!-- ================= JAVASCRIPT LÓGICA CORE ================= -->
+    <script>
+        // --- 1. GESTIÓN DE ESTADO Y USUARIO ---
+        let userData = {
+            apellidos: "",
+            nombres: "",
+            pausasCompletadas: 0,
+            nota: 0,
+            elemento: "",
+            evaluado: false
+        };
+
+        const totalPausas = 10;
+        const correctAnswers = ["C", "B", "D", "A", "C"];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Revisar localStorage al cargar
+            const savedData = localStorage.getItem("ovaFincaData");
+            if (savedData) {
+                userData = JSON.parse(savedData);
+                document.getElementById("input-apellidos").value = userData.apellidos;
+                document.getElementById("input-nombres").value = userData.nombres;
+                // No saltamos automático para permitir editar, pero mostramos datos guardados.
+            }
+            initCanvas(); // Iniciar animación en background
+        });
+
+        document.getElementById("btn-ingresar").addEventListener("click", () => {
+            const apellidos = document.getElementById("input-apellidos").value.trim().toUpperCase();
+            const nombres = document.getElementById("input-nombres").value.trim().toUpperCase();
+            let valid = true;
+
+            if (apellidos === "") {
+                document.getElementById("err-apellidos").style.display = "block";
+                valid = false;
+            } else {
+                document.getElementById("err-apellidos").style.display = "none";
+            }
+
+            if (nombres === "") {
+                document.getElementById("err-nombres").style.display = "block";
+                valid = false;
+            } else {
+                document.getElementById("err-nombres").style.display = "none";
+            }
+
+            if (valid) {
+                userData.apellidos = apellidos;
+                userData.nombres = nombres;
+                guardarProgreso();
+                
+                // Transición UI
+                document.getElementById("login-screen").style.display = "none";
+                document.getElementById("main-header").style.display = "block";
+                document.getElementById("main-content").style.display = "block";
+                document.getElementById("display-fullname").innerText = `${apellidos} ${nombres}`;
+                
+                actualizarBarraProgreso();
+            }
+        });
+
+        function guardarProgreso() {
+            localStorage.setItem("ovaFincaData", JSON.stringify(userData));
+        }
+
+        // --- 2. INTERACTIVIDAD BÁSICA Y PAUSAS ---
+        function checkPreSaber(qNum, isCorrect, btnElement) {
+            const fbBox = document.getElementById(`fb-pre${qNum}`);
+            fbBox.style.display = "block";
+            
+            // Deshabilitar botones de ese grupo
+            const siblings = btnElement.parentElement.children;
+            for(let btn of siblings) {
+                btn.style.pointerEvents = "none";
+                btn.style.opacity = "0.6";
+            }
+            btnElement.style.opacity = "1";
+            btnElement.style.border = isCorrect ? "2px solid #4CAF50" : "2px solid #F44336";
+
+            if(isCorrect) {
+                fbBox.className = "feedback-box success";
+                fbBox.innerHTML = "¡Excelente deducción! Vas por buen camino.";
+            } else {
+                fbBox.className = "feedback-box error";
+                fbBox.innerHTML = "Intento valioso, pero revisa bien la definición a medida que avances en la lectura.";
+            }
+        }
+
+        function checkIcfes(isCorrect, feedbackText, btnElement) {
+            const fbBox = document.getElementById("fb-icfes");
+            fbBox.style.display = "block";
+            
+            const siblings = btnElement.parentElement.children;
+            for(let btn of siblings) {
+                btn.style.pointerEvents = "none";
+                btn.style.opacity = "0.6";
+            }
+            btnElement.style.opacity = "1";
+            
+            if(isCorrect) {
+                fbBox.className = "feedback-box success";
+                btnElement.style.border = "2px solid #4CAF50";
+            } else {
+                fbBox.className = "feedback-box error";
+                btnElement.style.border = "2px solid #F44336";
+                document.getElementById("btn-icfes-correct").style.border = "2px solid #4CAF50";
+                document.getElementById("btn-icfes-correct").style.opacity = "1";
+            }
+            fbBox.innerHTML = feedbackText;
+        }
+
+        function marcarPausa(num, btnElement) {
+            btnElement.disabled = true;
+            btnElement.innerText = "✓ Completado";
+            userData.pausasCompletadas++;
+            actualizarBarraProgreso();
+            guardarProgreso();
+        }
+
+        function actualizarBarraProgreso() {
+            const porcentaje = (userData.pausasCompletadas / totalPausas) * 100;
+            document.getElementById("main-progress").style.width = `${porcentaje}%`;
+        }
+
+        // --- 3. VALIDACIÓN DE PALABRAS ESTRICTA ---
+        function validateWordCount(inputId, counterId) {
+            const text = document.getElementById(inputId).value.trim();
+            // Contar palabras manejando múltiples espacios o saltos de línea
+            const words = text === "" ? [] : text.split(/\s+/);
+            const count = words.length;
+            
+            const counterSpan = document.getElementById(counterId);
+            const msgSpan = document.getElementById(`msg-${inputId}`);
+            
+            counterSpan.innerText = count;
+
+            if (count < 10) {
+                msgSpan.innerText = "Faltan palabras (mínimo 10)";
+                msgSpan.className = "wc-error";
+                return false;
+            } else if (count > 15) {
+                msgSpan.innerText = "Demasiadas palabras (máximo 15)";
+                msgSpan.className = "wc-error";
+                return false;
+            } else {
+                msgSpan.innerText = "¡Rango perfecto!";
+                msgSpan.className = "wc-success";
+                return true;
+            }
+        }
+
+        // --- 4. EVALUACIÓN Y RETROALIMENTACIÓN ---
+        function evaluarTaller() {
+            // 1. Validar que las abiertas cumplen el rango
+            let allOpenValid = true;
+            for(let i=1; i<=5; i++) {
+                if(!validateWordCount(`oq${i}`, `wc${i}`)) {
+                    allOpenValid = false;
+                }
+            }
+
+            if(!allOpenValid) {
+                document.getElementById("eval-error-msg").innerText = "⚠️ Revisa las preguntas abiertas. TODAS deben tener exactamente entre 10 y 15 palabras.";
+                return;
+            }
+
+            // 2. Validar que las cerradas estén respondidas
+            let score = 0;
+            let fallosInductivos = 0; // Preguntas 2, 5
+            let fallosDeductivos = 0; // Preguntas 1, 3, 4
+
+            for(let i=1; i<=5; i++) {
+                const select = document.getElementById(`eval-q${i}`);
+                if(select.value === "") {
+                    document.getElementById("eval-error-msg").innerText = "⚠️ Por favor responde todas las preguntas de selección múltiple.";
+                    return;
+                }
+                
+                if(select.value === correctAnswers[i-1]) {
+                    score++;
+                } else {
+                    if(i === 2 || i === 5) fallosInductivos++;
+                    if(i === 1 || i === 3 || i === 4) fallosDeductivos++;
+                }
+            }
+
+            document.getElementById("eval-error-msg").innerText = "";
+            userData.nota = score; // 1 punto por cada una, total 5
+
+            // 3. Asignar Elemento Químico y Feedback
+            let elementoInfo = {};
+            if(score <= 1) elementoInfo = {sym: "H", name: "Hidrógeno", desc: "El comienzo de todo. Tienes el potencial básico, necesitas estructurarlo."};
+            else if(score === 2) elementoInfo = {sym: "C", name: "Carbono", desc: "La base de la vida. Vas formando cadenas de conocimiento."};
+            else if(score === 3) elementoInfo = {sym: "O", name: "Oxígeno", desc: "Vital y energético. Entiendes los conceptos, pero falta precisión."};
+            else if(score === 4) elementoInfo = {sym: "Fe", name: "Hierro", desc: "Estructura fuerte. Gran comprensión analítica."};
+            else if(score === 5) elementoInfo = {sym: "Au", name: "Oro", desc: "¡Excelencia pura! Brillante y valioso dominio del tema."};
+
+            userData.elemento = elementoInfo.name;
+            
+            // Ruta de fortalecimiento
+            let ruta = "Has completado la unidad con éxito. Sigue reforzando la conexión entre lo macro (ecosistema) y lo micro (célula).";
+            if(score < 5) {
+                if(fallosInductivos > fallosDeductivos) {
+                    ruta = "📝 TU RUTA: Repasa los textos de la Sección 2 (Cuerpo Inductivo). Tienes debilidades diferenciando cómo lo biótico interactúa globalmente con lo abiótico y la visión de sistemas (Sentido de pertenencia).";
+                } else if(fallosDeductivos > fallosInductivos) {
+                    ruta = "📝 TU RUTA: Repasa los textos de la Sección 4 (Cuerpo Deductivo). Te falta precisión asociando las partes de la Célula-Finca (Membrana, Núcleo, Mitocondria) con sus funciones específicas.";
+                } else {
+                    ruta = "📝 TU RUTA: Debes realizar una lectura general de nuevo. Elabora un mapa conceptual en tu cuaderno conectando 'Factores Abióticos' -> 'Planta' -> 'Célula' -> 'Organelos'.";
+                }
+            }
+
+            // Actualizar UI
+            document.getElementById("nota-final").innerText = score.toFixed(1);
+            document.getElementById("elemento-ganado").innerText = elementoInfo.sym;
+            document.getElementById("elemento-desc").innerText = `${elementoInfo.name}: ${elementoInfo.desc}`;
+            document.getElementById("badge-element").innerText = `🧪 Elemento: ${elementoInfo.name} (${elementoInfo.sym})`;
+            document.getElementById("feedback-personalizado").innerText = ruta;
+            
+            document.getElementById("resultados-section").style.display = "block";
+            
+            // Scroll a resultados
+            document.getElementById("resultados-section").scrollIntoView({behavior: "smooth"});
+            
+            // Bloquear botón de enviar
+            document.getElementById("btn-finalizar").disabled = true;
+            document.getElementById("btn-finalizar").style.background = "#9E9E9E";
+            userData.evaluado = true;
+            guardarProgreso();
+        }
+
+        // --- 5. EXPORTACIÓN A .TXT ---
+        function descargarResultados() {
+            let contenido = `=======================================\n`;
+            contenido += `   REPORTE: LA FINCA MICROSCÓPICA\n`;
+            contenido += `=======================================\n\n`;
+            contenido += `Estudiante: ${userData.apellidos} ${userData.nombres}\n`;
+            contenido += `Nota Final: ${userData.nota} / 5.0\n`;
+            contenido += `Nivel Alcanzado: ${userData.elemento}\n`;
+            contenido += `Pausas Activas (Cuaderno): ${userData.pausasCompletadas} / 10\n\n`;
+            
+            contenido += `--- PREGUNTAS ABIERTAS (Evidencia) ---\n`;
+            for(let i=1; i<=5; i++) {
+                contenido += `Q${i+5}: ${document.getElementById(`oq${i}`).value.trim()}\n`;
+            }
+            
+            contenido += `\n--- RUTA DE FORTALECIMIENTO ---\n`;
+            contenido += document.getElementById("feedback-personalizado").innerText + "\n\n";
+            contenido += `Fecha de generación: ${new Date().toLocaleString()}\n`;
+
+            const blob = new Blob([contenido], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Reporte_${userData.apellidos.replace(/\s+/g, "_")}_Celulas.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- 6. ANIMACIÓN AVANZADA CANVAS (SISTEMA CELULAR) ---
+        function initCanvas() {
+            const canvas = document.getElementById("cellCanvas");
+            const ctx = canvas.getContext("2d");
+            
+            let w = canvas.width;
+            let h = canvas.height;
+            let cx = w/2;
+            let cy = h/2;
+
+            // Coordenadas Mouse para Tooltips
+            let mouseX = 0;
+            let mouseY = 0;
+            let isHovering = false;
+            let hoverText = "";
+
+            canvas.addEventListener("mousemove", (e) => {
+                const rect = canvas.getBoundingClientRect();
+                // Ajustar resolución interna vs visual
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                mouseX = (e.clientX - rect.left) * scaleX;
+                mouseY = (e.clientY - rect.top) * scaleY;
+            });
+
+            // Definición de Organelos Fijos
+            const organelos = [
+                { id: "nucleo", x: cx, y: cy, r: 60, color: "#9C27B0", name: "Núcleo", func: "Administrador / ADN" },
+                { id: "mitocondria1", x: cx - 120, y: cy + 80, rx: 40, ry: 20, angle: 0.5, color: "#E65100", name: "Mitocondria", func: "Generador de Energía (Cocina)" },
+                { id: "mitocondria2", x: cx + 130, y: cy - 60, rx: 40, ry: 20, angle: -0.3, color: "#E65100", name: "Mitocondria", func: "Generador de Energía (Cocina)" },
+                { id: "vacuola", x: cx + 100, y: cy + 100, r: 50, color: "#03A9F4", name: "Vacuola", func: "Bodega de Reserva (Agua)" }
+            ];
+
+            const radioMembrana = 220;
+
+            // Sistema de Partículas (Nutrientes / ATP)
+            class Particula {
+                constructor() {
+                    this.reset();
+                    // Iniciar aleatoriamente dentro o fuera para empezar lleno
+                    const r = Math.random() * 300;
+                    const theta = Math.random() * Math.PI * 2;
+                    this.x = cx + r * Math.cos(theta);
+                    this.y = cy + r * Math.sin(theta);
+                }
+
+                reset() {
+                    // Aparecer fuera de la célula
+                    const r = radioMembrana + 20 + Math.random() * 50;
+                    const theta = Math.random() * Math.PI * 2;
+                    this.x = cx + r * Math.cos(theta);
+                    this.y = cy + r * Math.sin(theta);
+                    this.vx = (Math.random() - 0.5) * 1.5;
+                    this.vy = (Math.random() - 0.5) * 1.5;
+                    this.type = "nutriente"; // nutriente -> atp
+                    this.size = 4 + Math.random() * 3;
+                    this.life = 1000;
+                }
+
+                update() {
+                    // Gravedad débil hacia el centro si es nutriente
+                    if(this.type === "nutriente") {
+                        const dx = cx - this.x;
+                        const dy = cy - this.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if(dist > radioMembrana) {
+                            // "Atravesando la cerca"
+                            this.vx += (dx/dist) * 0.05;
+                            this.vy += (dy/dist) * 0.05;
+                        } else {
+                            // Flotar en el citoplasma
+                            this.vx += (Math.random() - 0.5) * 0.2;
+                            this.vy += (Math.random() - 0.5) * 0.2;
+                        }
+                    } else {
+                        // Es ATP, moverse rápido aleatorio
+                        this.vx += (Math.random() - 0.5) * 0.5;
+                        this.vy += (Math.random() - 0.5) * 0.5;
+                        this.life--;
+                        if(this.life <= 0) this.reset();
+                    }
+
+                    // Limitar velocidad
+                    const maxV = this.type === "nutriente" ? 1.5 : 3;
+                    const speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+                    if(speed > maxV) {
+                        this.vx = (this.vx/speed) * maxV;
+                        this.vy = (this.vy/speed) * maxV;
+                    }
+
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Colisión con la cerca (rebote suave si es ATP)
+                    const dxFromCenter = this.x - cx;
+                    const dyFromCenter = this.y - cy;
+                    const distCenter = Math.sqrt(dxFromCenter*dxFromCenter + dyFromCenter*dyFromCenter);
+                    
+                    if(distCenter > radioMembrana && this.type === "atp") {
+                        this.vx *= -1;
+                        this.vy *= -1;
+                        this.x += this.vx;
+                        this.y += this.vy;
+                    }
+
+                    // Chequear colisión con mitocondrias para transformar
+                    if(this.type === "nutriente") {
+                        for(let org of organelos) {
+                            if(org.id.includes("mitocondria")) {
+                                const dx = this.x - org.x;
+                                const dy = this.y - org.y;
+                                // Colisión elíptica simplificada a radio promedio
+                                if(Math.sqrt(dx*dx + dy*dy) < 35) {
+                                    this.type = "atp";
+                                    this.life = 200 + Math.random()*200; // brilla un tiempo
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    if(this.type === "nutriente") {
+                        ctx.fillStyle = "#29B6F6";
+                        ctx.shadowBlur = 5;
+                        ctx.shadowColor = "#03A9F4";
+                    } else {
+                        ctx.fillStyle = "#FFEA00";
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = "#FFC107";
+                        // Estrella si es ATP
+                        // Simulado con sombra alta y color
+                    }
+                    ctx.fill();
+                    ctx.shadowBlur = 0; // reset
+                }
+            }
+
+            const particulas = Array.from({length: 80}, () => new Particula());
+
+            function drawMembrana() {
+                ctx.beginPath();
+                ctx.arc(cx, cy, radioMembrana, 0, Math.PI * 2);
+                ctx.lineWidth = 8;
+                ctx.strokeStyle = "#4CAF50";
+                ctx.stroke();
+                
+                // Efecto "portones" o textura
+                ctx.setLineDash([15, 10]);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = "#81C784";
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Citoplasma bg
+                ctx.beginPath();
+                ctx.arc(cx, cy, radioMembrana - 4, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(232, 245, 233, 0.6)"; // Fondo claro citoplasma
+                ctx.fill();
+            }
+
+            function drawOrganelo(org) {
+                ctx.save();
+                ctx.translate(org.x, org.y);
+                if(org.angle) ctx.rotate(org.angle);
+
+                ctx.beginPath();
+                if(org.rx) { // Ovalo (Mitocondria)
+                    ctx.ellipse(0, 0, org.rx, org.ry, 0, 0, Math.PI * 2);
+                } else { // Circulo (Nucleo, Vacuola)
+                    ctx.arc(0, 0, org.r, 0, Math.PI * 2);
+                }
+                
+                ctx.fillStyle = org.color;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "rgba(0,0,0,0.3)";
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "rgba(255,255,255,0.5)";
+                ctx.stroke();
+
+                // Detalles internos
+                if(org.id === "nucleo") {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, org.r - 10, 0, Math.PI * 2);
+                    ctx.fillStyle = "rgba(255,255,255,0.2)";
+                    ctx.fill();
+                    // ADN simulado
+                    ctx.beginPath();
+                    ctx.moveTo(-20, -10);
+                    ctx.quadraticCurveTo(0, 20, 20, -10);
+                    ctx.quadraticCurveTo(0, -30, -20, 10);
+                    ctx.strokeStyle = "white";
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+
+                if(org.id.includes("mitocondria")) {
+                    ctx.beginPath();
+                    ctx.moveTo(-org.rx+10, 0);
+                    for(let i = -org.rx+15; i < org.rx-10; i+=10) {
+                        ctx.lineTo(i, i%20===0 ? 10 : -10);
+                    }
+                    ctx.strokeStyle = "rgba(255,255,255,0.7)";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                if(org.id === "vacuola") {
+                    ctx.beginPath();
+                    ctx.arc(-10, -10, 15, 0, Math.PI * 2);
+                    ctx.fillStyle = "rgba(255,255,255,0.4)";
+                    ctx.fill();
+                }
+
+                ctx.restore();
+
+                // Check Hover para Tooltip
+                let distHover;
+                if(org.rx) {
+                    // aproximación de colisión para elipses rotadas
+                    const dx = mouseX - org.x;
+                    const dy = mouseY - org.y;
+                    distHover = Math.sqrt(dx*dx + dy*dy);
+                    if(distHover < Math.max(org.rx, org.ry)) {
+                        isHovering = true;
+                        hoverText = `${org.name}: ${org.func}`;
+                        canvas.style.cursor = "pointer";
+                    }
+                } else {
+                    const dx = mouseX - org.x;
+                    const dy = mouseY - org.y;
+                    distHover = Math.sqrt(dx*dx + dy*dy);
+                    if(distHover < org.r) {
+                        isHovering = true;
+                        hoverText = `${org.name}: ${org.func}`;
+                        canvas.style.cursor = "pointer";
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, w, h);
+                
+                isHovering = false;
+                hoverText = "";
+                canvas.style.cursor = "crosshair";
+
+                drawMembrana();
+
+                // Dibujar y actualizar partículas detrás de organelos
+                for(let p of particulas) {
+                    p.update();
+                    p.draw();
+                }
+
+                for(let org of organelos) {
+                    drawOrganelo(org);
+                }
+
+                // Dibujar Tooltip flotante si hay hover
+                if(isHovering) {
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+                    ctx.roundRect = function (x, y, w, h, r) {
+                        if (w < 2 * r) r = w / 2;
+                        if (h < 2 * r) r = h / 2;
+                        this.beginPath();
+                        this.moveTo(x+r, y);
+                        this.arcTo(x+w, y,   x+w, y+h, r);
+                        this.arcTo(x+w, y+h, x,   y+h, r);
+                        this.arcTo(x,   y+h, x,   y,   r);
+                        this.arcTo(x,   y,   x+w, y,   r);
+                        this.closePath();
+                        return this;
+                    };
+                    
+                    ctx.font = "bold 16px Arial";
+                    const textWidth = ctx.measureText(hoverText).width;
+                    const boxX = mouseX + 15;
+                    const boxY = mouseY - 40;
+                    
+                    // Asegurar que el tooltip no salga del canvas
+                    let adjX = boxX;
+                    if(boxX + textWidth + 20 > w) adjX = w - textWidth - 30;
+
+                    ctx.roundRect(adjX, boxY, textWidth + 20, 30, 8).fill();
+                    
+                    ctx.fillStyle = "#FFF";
+                    ctx.fillText(hoverText, adjX + 10, boxY + 21);
+                }
+
+                // Check hover en membrana (Cerca)
+                const distToCenter = Math.sqrt((mouseX-cx)*(mouseX-cx) + (mouseY-cy)*(mouseY-cy));
+                if(distToCenter > radioMembrana - 15 && distToCenter < radioMembrana + 15) {
+                     canvas.style.cursor = "pointer";
+                     ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+                     const txtMem = "Membrana Celular: La Cerca (Control de acceso)";
+                     const tw = ctx.measureText(txtMem).width;
+                     ctx.roundRect(mouseX + 15, mouseY - 40, tw + 20, 30, 8).fill();
+                     ctx.fillStyle = "#FFF";
+                     ctx.fillText(txtMem, mouseX + 25, mouseY - 19);
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+    </script>
+</body>
+</html>

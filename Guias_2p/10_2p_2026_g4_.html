@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Clonación - Multiplicando la Vida en Pueblo Rico</title>
+    <style>
+        /* =========================================
+           PALETA DE COLORES (Paisaje Cultural Cafetero)
+           ========================================= */
+        :root {
+            --cafe-oscuro: #3E2723;
+            --cafe-rojo: #8C3B26;
+            --verde-bosque: #2E4A1F;
+            --verde-hoja: #4A7C2A;
+            --amarillo-citrico: #D9B650;
+            --crema-pergamino: #F2E8CF;
+            --blanco: #FFFFFF;
+            --gris-texto: #333333;
+            --rojo-alerta: #D32F2F;
+        }
+
+        /* =========================================
+           ESTILOS BASE Y TIPOGRAFÍA
+           ========================================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--crema-pergamino);
+            color: var(--gris-texto);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4 { color: var(--verde-bosque); margin-bottom: 1rem; }
+        p { margin-bottom: 1.2rem; text-align: justify; font-size: 1.1rem; }
+        
+        /* =========================================
+           INTERFAZ Y NAVEGACIÓN
+           ========================================= */
+        #navbar {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background-color: var(--cafe-oscuro);
+            color: var(--blanco);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: none; /* Oculto hasta el login */
+        }
+
+        .nav-info { display: flex; align-items: center; gap: 20px; }
+        .user-name { font-weight: bold; color: var(--amarillo-citrico); }
+        
+        .progress-container {
+            width: 200px; height: 15px;
+            background-color: var(--verde-bosque);
+            border-radius: 10px; overflow: hidden;
+            border: 1px solid var(--amarillo-citrico);
+        }
+        .progress-bar {
+            width: 0%; height: 100%;
+            background-color: var(--amarillo-citrico);
+            transition: width 0.5s ease-in-out;
+        }
+
+        .gamification-icons { display: flex; gap: 10px; }
+        .icon-slot {
+            width: 30px; height: 30px;
+            fill: #555; opacity: 0.3; transition: all 0.5s;
+        }
+        .icon-slot.unlocked { fill: var(--amarillo-citrico); opacity: 1; transform: scale(1.2); }
+
+        /* =========================================
+           PANTALLA DE BIENVENIDA (Gestión de Usuario)
+           ========================================= */
+        #welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: linear-gradient(135deg, var(--verde-bosque) 0%, var(--cafe-rojo) 100%);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 2000; transition: opacity 0.5s;
+        }
+        .login-box {
+            background-color: var(--crema-pergamino);
+            padding: 40px; border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center; max-width: 400px; width: 90%;
+        }
+        .login-box h2 { color: var(--cafe-rojo); }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 5px; color: var(--verde-bosque); }
+        .input-group input {
+            width: 100%; padding: 10px; border: 2px solid var(--verde-hoja);
+            border-radius: 5px; font-size: 1rem; outline: none;
+        }
+        .input-group input:focus { border-color: var(--cafe-rojo); }
+        .btn-primary {
+            background-color: var(--verde-hoja); color: white;
+            border: none; padding: 12px 25px; border-radius: 5px;
+            font-size: 1.1rem; cursor: pointer; transition: background 0.3s;
+            font-weight: bold; width: 100%;
+        }
+        .btn-primary:hover { background-color: var(--verde-bosque); }
+        .btn-secondary {
+            background-color: var(--amarillo-citrico); color: var(--cafe-oscuro);
+            border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+
+        /* =========================================
+           CONTENEDOR PRINCIPAL Y SECCIONES
+           ========================================= */
+        #main-content {
+            padding: 80px 20px 40px 20px;
+            max-width: 1000px; margin: 0 auto;
+            display: none; /* Oculto hasta login */
+        }
+        
+        .section-card {
+            background: var(--blanco);
+            padding: 30px; border-radius: 10px; margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--verde-hoja);
+        }
+
+        /* =========================================
+           CUADROS COMPARATIVOS Y TABLAS
+           ========================================= */
+        .table-responsive { overflow-x: auto; margin: 20px 0; }
+        table {
+            width: 100%; border-collapse: collapse;
+            background-color: var(--blanco);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: var(--verde-bosque); color: var(--blanco); font-weight: bold; }
+        tr:hover { background-color: #f5f5f5; }
+        tr:nth-child(even) { background-color: #fafafa; }
+
+        /* =========================================
+           PAUSAS ACTIVAS
+           ========================================= */
+        .pausa-activa {
+            background-color: #e8f5e9; border: 2px dashed var(--verde-hoja);
+            padding: 20px; border-radius: 10px; margin: 20px 0;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .pausa-activa h4 { color: var(--cafe-rojo); margin-bottom: 0; display: flex; align-items: center; gap: 10px; }
+        .btn-done {
+            align-self: flex-start; background-color: var(--amarillo-citrico);
+            border: none; padding: 8px 15px; border-radius: 5px;
+            font-weight: bold; cursor: pointer; color: var(--cafe-oscuro);
+        }
+        .btn-done:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        /* =========================================
+           EVALUACIÓN Y ANTI-FRAUDE
+           ========================================= */
+        .question-block { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .options label { display: block; margin-bottom: 10px; cursor: pointer; padding: 8px; border-radius: 5px; transition: background 0.2s; }
+        .options label:hover { background-color: #f0f0f0; }
+        
+        textarea {
+            width: 100%; height: 100px; padding: 10px; border: 2px solid var(--cafe-rojo);
+            border-radius: 5px; font-family: inherit; font-size: 1rem; resize: vertical;
+        }
+        .word-count { font-size: 0.9rem; color: var(--cafe-oscuro); font-weight: bold; }
+        .fraud-alert { color: var(--rojo-alerta); font-weight: bold; display: none; margin-top: 5px; }
+
+        /* =========================================
+           CANVAS Y GRÁFICOS SVG
+           ========================================= */
+        .canvas-container {
+            width: 100%; display: flex; flex-direction: column; align-items: center;
+            background: #111; border-radius: 10px; padding: 20px; margin: 20px 0;
+        }
+        canvas { background: #000; border: 2px solid var(--verde-hoja); border-radius: 5px; max-width: 100%; }
+        .canvas-controls { margin-top: 15px; display: flex; gap: 10px; }
+        
+        .svg-container {
+            width: 100%; background: var(--blanco); padding: 20px;
+            border-radius: 10px; border: 1px solid #ccc; margin: 20px 0;
+        }
+        
+        /* Resultados */
+        #results-area { display: none; background: var(--verde-bosque); color: white; padding: 30px; border-radius: 10px; text-align: center; }
+        .feedback-box { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-top: 20px; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE BIENVENIDA -->
+    <div id="welcome-screen">
+        <div class="login-box">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="var(--verde-hoja)">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+            <h2>Laboratorio Virtual Pueblo Rico</h2>
+            <p>Ingresa tus datos para iniciar la experiencia de aprendizaje.</p>
+            <div class="input-group">
+                <label for="input-apellidos">Apellidos:</label>
+                <input type="text" id="input-apellidos" placeholder="Ej: Gómez Pérez" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="input-nombres">Nombres:</label>
+                <input type="text" id="input-nombres" placeholder="Ej: María Camila" autocomplete="off">
+            </div>
+            <button class="btn-primary" id="btn-iniciar">Comenzar Aventura</button>
+            <p id="login-error" style="color: red; display: none; margin-top: 10px;">Debes ingresar nombres y apellidos.</p>
+        </div>
+    </div>
+
+    <!-- BARRA DE NAVEGACIÓN Y GAMIFICACIÓN -->
+    <nav id="navbar">
+        <div class="nav-info">
+            <span>Estudiante: <span id="display-name" class="user-name"></span></span>
+            <div class="gamification-icons" id="icon-container">
+                <!-- Iconos SVG insertados por JS -->
+            </div>
+        </div>
+        <div class="nav-info">
+            <span>Progreso:</span>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <span id="score-display">Puntos: 0 / 5</span>
+        </div>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="main-content">
+        
+        <!-- INICIO -->
+        <section class="section-card" id="inicio">
+            <h1>Clonación: Multiplicando la Vida en el Quindío</h1>
+            <p><strong>Objetivo de Aprendizaje:</strong> Diferenciar con rigor científico los procesos de clonación natural (propagación vegetativa) de la clonación artificial (transferencia nuclear), reconociendo sus aplicaciones prácticas, ventajas y dilemas en los sectores productivos de la Vereda Pueblo Rico, municipio de Quimbaya.</p>
+            
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+            
+            <h3>Pre-saberes: ¿Qué sabemos de la célula?</h3>
+            <p>Antes de recorrer nuestra vereda, responde estas 3 preguntas. Selecciona la opción correcta:</p>
+            
+            <div class="question-block">
+                <p>1. ¿Qué estructura de la célula vegetal y animal contiene la información genética (ADN) necesaria para crear un organismo completo?</p>
+                <div class="options">
+                    <label><input type="radio" name="pre1" value="a"> a) La pared celular.</label>
+                    <label><input type="radio" name="pre1" value="b"> b) El núcleo.</label>
+                    <label><input type="radio" name="pre1" value="c"> c) La mitocondria.</label>
+                </div>
+            </div>
+            <div class="question-block">
+                <p>2. En la reproducción sexual (como al sembrar una semilla de café), el nuevo individuo:</p>
+                <div class="options">
+                    <label><input type="radio" name="pre2" value="a"> a) Es genéticamente idéntico a una sola planta madre.</label>
+                    <label><input type="radio" name="pre2" value="b"> b) Es una mezcla genética de dos progenitores.</label>
+                    <label><input type="radio" name="pre2" value="c"> c) No posee material genético propio.</label>
+                </div>
+            </div>
+            <div class="question-block">
+                <p>3. El proceso de división celular por el cual una célula madre origina dos células hijas idénticas se llama:</p>
+                <div class="options">
+                    <label><input type="radio" name="pre3" value="a"> a) Meiosis.</label>
+                    <label><input type="radio" name="pre3" value="b"> b) Fotosíntesis.</label>
+                    <label><input type="radio" name="pre3" value="c"> c) Mitosis.</label>
+                </div>
+            </div>
+            <button class="btn-secondary" id="btn-presaberes">Verificar Pre-saberes</button>
+            <p id="presaberes-feedback" style="margin-top: 10px; font-weight: bold;"></p>
+        </section>
+
+        <!-- CUERPO INDUCTIVO -->
+        <section class="section-card" id="inductivo">
+            <h2>La Clonación Natural: El motor verde de Pueblo Rico</h2>
+            
+            <p>Al adentrarnos por las vías terciarias de la Vereda Pueblo Rico en nuestro municipio de Quimbaya, el Paisaje Cultural Cafetero nos abraza con una marea verde infinita. Los turistas que recorren la zona en los tradicionales Jeeps Willys suelen maravillarse con la uniformidad de los cultivos. Sin embargo, pocos comprenden que esta perfección paisajística y productiva es el resultado de un proceso biológico fascinante que los campesinos quindianos han dominado por generaciones: la clonación natural o propagación vegetativa. En términos biológicos, clonar no es más que crear un organismo genéticamente idéntico a otro a partir de una de sus células somáticas. En el reino vegetal, gracias a la <em>totipotencia celular</em> (la capacidad de una célula vegetal de desdiferenciarse y generar un organismo completo), la naturaleza lleva millones de años clonándose a sí misma.</p>
+
+            <p>Tomemos como principal ejemplo la base de nuestra economía: el cultivo de café. Cuando un caficultor de Pueblo Rico decide renovar su cafetal con variedades resistentes como la variedad Castillo o Colombia, a menudo recurre a la propagación por estacas o injertos en etapas tempranas. Aunque la siembra por semilla (chapola) es común y representa reproducción sexual, la necesidad de garantizar tazas de café con un perfil de sabor idéntico para exportación, ha impulsado técnicas de clonación. Al cortar una rama de un arbusto de café excepcional (ortotrópica) y enraizarla, no se está creando un nuevo ser; biológicamente, el nuevo arbusto es una extensión de la planta madre. Comparten exactamente el mismo ADN. Esto es clonación natural asistida, una estrategia vital para estandarizar la producción, asegurar el rendimiento y mantener la calidad que buscan los turistas y compradores internacionales.</p>
+
+            <p>Si desviamos la mirada hacia las laderas más cálidas de la vereda, encontraremos los cultivos de cítricos: naranjos, mandarinos y limones. Aquí, la clonación es una ley inquebrantable. Ningún citricultor profesional siembra un naranjo desde una pepa (semilla). La reproducción sexual en los cítricos genera una variabilidad genética altísima; una semilla de la naranja más dulce podría dar un árbol de frutos amargos y llenos de espinas. Por ello, se recurre al injerto. Se toma una yema (el clon) del árbol deseado y se fusiona sobre el tallo de un patrón rústico (como la mandarina Cleopatra) que aporta raíces fuertes. La copa del árbol resultante será un clon genéticamente exacto de la planta que originó la yema. Es un milagro biológico donde los tejidos vasculares (xilema y floema) se unen, permitiendo a los campesinos multiplicar la excelencia productiva.</p>
+
+            <p>Pero quizás el ejemplo más puro y milenario de clonación natural en Quimbaya lo encontramos en el compañero inseparable del café: el plátano. El plátano que consumimos no produce semillas viables. Su única forma de sobrevivir es mediante la propagación vegetativa a través de rizomas o "colinos". La planta madre desarrolla brotes laterales subterráneos. Cuando el campesino separa este colino con su machete y lo siembra a unos metros de distancia, está plantando un clon absoluto. Toda una finca platanera puede estar conformada por individuos que, desde el punto de vista del ADN, son exactamente la misma planta repetida miles de veces. Esta clonación garantiza frutos idénticos, pero también plantea un riesgo grave: al no haber variabilidad genética, si surge un hongo letal (como el Fusarium), todas las plantas de la vereda son igualmente vulnerables.</p>
+
+            <p>Esta inmersión en nuestra realidad agrícola nos demuestra que la clonación no es exclusiva de laboratorios futuristas. Es una herramienta empírica que sostiene el agroturismo, captura toneladas de CO<sub>2</sub> en nuestras fincas y mueve la economía de Quimbaya. No obstante, al depender de genomas idénticos, la responsabilidad del manejo agronómico es inmensa. Ahora, habiendo comprendido cómo la naturaleza se multiplica a sí misma manteniendo su código fuente, nos preparamos para cruzar la frontera del conocimiento hacia lo artificial, hacia cómo el ser humano ha intentado replicar este fenómeno en organismos donde la naturaleza había cerrado la puerta: los animales.</p>
+
+            <div class="table-responsive">
+                <table>
+                    <caption><strong>Cuadro Comparativo: Métodos de Multiplicación en Fincas de Quimbaya</strong></caption>
+                    <thead>
+                        <tr>
+                            <th>Característica</th>
+                            <th>Reproducción Sexual (Semillas)</th>
+                            <th>Clonación Natural / Vegetativa (Estacas, Injertos, Colinos)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Origen genético</strong></td>
+                            <td>Unión de gametos (polen y óvulo). Mezcla de dos progenitores.</td>
+                            <td>Células somáticas de un único progenitor. Mitosis exclusiva.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Aplicación local</strong></td>
+                            <td>Germinadores de café tradicional, árboles de sombra (Guamo).</td>
+                            <td>Renovación de cítricos (injerto), siembra de plátano, café élite.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Uniformidad de la cosecha</strong></td>
+                            <td>Alta variabilidad (diferentes tamaños, sabores y resistencias).</td>
+                            <td>Uniformidad total (perfil de taza idéntico, calibres iguales).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Vulnerabilidad a plagas</strong></td>
+                            <td>Menor. La diversidad genética actúa como escudo natural.</td>
+                            <td>Muy alta. Si la planta original es susceptible a una plaga, todas lo son.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- PAUSAS ACTIVAS 1-5 -->
+        <section class="section-card">
+            <h3>Pausas Activas (Cuaderno de Biología)</h3>
+            <p>Realiza las siguientes actividades en tu cuaderno. Al finalizar cada una, haz clic en "Ya lo hice" para ganar puntos de progreso.</p>
+            
+            <div class="pausa-activa">
+                <h4>1. Reflexión Crítica <span>🌿</span></h4>
+                <p>Responde en un párrafo: ¿Por qué crees que una epidemia de un hongo destruiría más rápido una hectárea de plátano (clonado) que un bosque nativo? Usa los conceptos de genética del texto.</p>
+                <button class="btn-done" id="btn-pausa1" onclick="completarPausa(1, 'grano')">Ya lo hice</button>
+            </div>
+            
+            <div class="pausa-activa">
+                <h4>2. Observación y Dibujo <span>✏️</span></h4>
+                <p>Dibuja detalladamente un "colino" de plátano o una "chapola" de café. Señala en tu dibujo qué partes son producto de mitosis y si representan clonación o no.</p>
+                <button class="btn-done" id="btn-pausa2" onclick="completarPausa(2, 'hoja')">Ya lo hice</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>3. Mapa Mental <span>🧠</span></h4>
+                <p>Crea un mapa mental cuyo nodo central sea "Clonación Natural en Quimbaya" y saca 3 ramas principales: Café, Cítricos y Plátano, detallando el método en cada uno.</p>
+                <button class="btn-done" id="btn-pausa3" onclick="completarPausa(3, 'naranja')">Ya lo hice</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>4. Cuadro Comparativo Propio <span>📊</span></h4>
+                <p>Basado en la lectura, elabora tu propio cuadro de ventajas y desventajas económicas de usar clones en una finca turística de Pueblo Rico.</p>
+                <button class="btn-done" id="btn-pausa4" onclick="completarPausa(4, 'sombrero')">Ya lo hice</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>5. Diagrama de Flujo <span>🛤️</span></h4>
+                <p>Diseña un diagrama de flujo paso a paso sobre cómo un campesino realiza un injerto de naranja dulce sobre una raíz resistente.</p>
+                <button class="btn-done" id="btn-pausa5" onclick="completarPausa(5, 'jeep')">Ya lo hice</button>
+            </div>
+        </section>
+
+        <!-- GRÁFICA ANALÍTICA Y PREGUNTA ICFES -->
+        <section class="section-card">
+            <h2>Análisis de Datos: El impacto de la Genética en la Producción</h2>
+            <p>Observa detenidamente la siguiente gráfica vectorial. Representa datos recolectados en dos lotes de café en la vereda Pueblo Rico durante 6 años. El Lote A fue propagado por semillas (reproducción sexual) y el Lote B mediante clones selectos (propagación vegetativa).</p>
+            
+            <div class="svg-container">
+                <svg viewBox="0 0 600 350" width="100%" height="100%">
+                    <!-- Fondo y ejes -->
+                    <rect width="600" height="350" fill="#fafafa" rx="5" />
+                    <line x1="50" y1="300" x2="550" y2="300" stroke="#333" stroke-width="2" />
+                    <line x1="50" y1="50" x2="50" y2="300" stroke="#333" stroke-width="2" />
+                    
+                    <!-- Cuadrícula Y -->
+                    <line x1="50" y1="250" x2="550" y2="250" stroke="#e0e0e0" stroke-width="1" />
+                    <line x1="50" y1="200" x2="550" y2="200" stroke="#e0e0e0" stroke-width="1" />
+                    <line x1="50" y1="150" x2="550" y2="150" stroke="#e0e0e0" stroke-width="1" />
+                    <line x1="50" y1="100" x2="550" y2="100" stroke="#e0e0e0" stroke-width="1" />
+                    
+                    <!-- Etiquetas Y (Rendimiento Ton/Ha) -->
+                    <text x="40" y="305" font-size="12" text-anchor="end" fill="#333">0</text>
+                    <text x="40" y="255" font-size="12" text-anchor="end" fill="#333">2</text>
+                    <text x="40" y="205" font-size="12" text-anchor="end" fill="#333">4</text>
+                    <text x="40" y="155" font-size="12" text-anchor="end" fill="#333">6</text>
+                    <text x="40" y="105" font-size="12" text-anchor="end" fill="#333">8</text>
+                    <text x="20" y="175" font-size="14" font-weight="bold" fill="#333" transform="rotate(-90 20 175)" text-anchor="middle">Rendimiento (Ton/Ha)</text>
+
+                    <!-- Etiquetas X (Años) -->
+                    <text x="100" y="320" font-size="12" text-anchor="middle" fill="#333">2018</text>
+                    <text x="180" y="320" font-size="12" text-anchor="middle" fill="#333">2019</text>
+                    <text x="260" y="320" font-size="12" text-anchor="middle" fill="#333">2020</text>
+                    <text x="340" y="320" font-size="12" text-anchor="middle" fill="#333">2021</text>
+                    <text x="420" y="320" font-size="12" text-anchor="middle" fill="#333">2022</text>
+                    <text x="500" y="320" font-size="12" text-anchor="middle" fill="#333">2023</text>
+                    <text x="300" y="340" font-size="14" font-weight="bold" fill="#333" text-anchor="middle">Años de Cosecha</text>
+
+                    <!-- Línea Lote B (Clones) - Azul estable y alta -->
+                    <polyline points="100,120 180,110 260,115 340,100 420,105 500,95" fill="none" stroke="#2196F3" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="100" cy="120" r="4" fill="#2196F3" />
+                    <circle cx="180" cy="110" r="4" fill="#2196F3" />
+                    <circle cx="260" cy="115" r="4" fill="#2196F3" />
+                    <circle cx="340" cy="100" r="4" fill="#2196F3" />
+                    <circle cx="420" cy="105" r="4" fill="#2196F3" />
+                    <circle cx="500" cy="95" r="4" fill="#2196F3" />
+
+                    <!-- Línea Lote A (Semillas) - Verde variable y más baja -->
+                    <polyline points="100,200 180,160 260,240 340,180 420,220 500,170" fill="none" stroke="#4CAF50" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="100" cy="200" r="4" fill="#4CAF50" />
+                    <circle cx="180" cy="160" r="4" fill="#4CAF50" />
+                    <circle cx="260" cy="240" r="4" fill="#4CAF50" />
+                    <circle cx="340" cy="180" r="4" fill="#4CAF50" />
+                    <circle cx="420" cy="220" r="4" fill="#4CAF50" />
+                    <circle cx="500" cy="170" r="4" fill="#4CAF50" />
+
+                    <!-- Leyenda -->
+                    <rect x="380" y="20" width="20" height="10" fill="#2196F3" />
+                    <text x="410" y="30" font-size="12" fill="#333">Lote B (Clonado)</text>
+                    <rect x="380" y="40" width="20" height="10" fill="#4CAF50" />
+                    <text x="410" y="50" font-size="12" fill="#333">Lote A (Semillas)</text>
+                    
+                    <!-- Anotación -->
+                    <text x="260" y="270" font-size="11" fill="#D32F2F" font-style="italic" text-anchor="middle">En 2020 hubo fuerte ola invernal</text>
+                    <line x1="260" y1="260" x2="260" y2="245" stroke="#D32F2F" stroke-width="1" stroke-dasharray="4" />
+                </svg>
+            </div>
+
+            <div class="pausa-activa" style="border-color: var(--cafe-rojo);">
+                <h4>Pregunta Tipo ICFES (Competencia: Indagar)</h4>
+                <p>Basado EXCLUSIVAMENTE en la información de la gráfica, ¿qué conclusión es biológica y agronómicamente correcta respecto al comportamiento de los lotes frente al factor climático adverso (ola invernal) de 2020?</p>
+                <div class="options">
+                    <label><input type="radio" name="icfes1" value="a"> a) El Lote B (clonado) sufrió una caída dramática en su rendimiento porque los clones no tienen sistema inmunológico.</label>
+                    <label><input type="radio" name="icfes1" value="b"> b) El Lote A (semillas) mostró una caída significativa en 2020, evidenciando que la variabilidad genética produjo individuos débiles ante el clima, mientras el Lote B mantuvo estabilidad debido a la selección de un clon resistente.</label>
+                    <label><input type="radio" name="icfes1" value="c"> c) Ambos lotes reaccionaron igual frente a la ola invernal, lo que demuestra que la genética no influye en la producción.</label>
+                    <label><input type="radio" name="icfes1" value="d"> d) El Lote B bajó su producción a casi 2 Ton/Ha en 2020 debido a la falta de fertilizante.</label>
+                </div>
+                <button class="btn-secondary" id="btn-evaluar-icfes" style="margin-top: 10px;">Evaluar Respuesta</button>
+                <p id="icfes-feedback" style="margin-top: 10px; font-weight: bold;"></p>
+            </div>
+        </section>
+
+        <!-- CUERPO DEDUCTIVO Y ANIMACIÓN CANVAS -->
+        <section class="section-card" id="deductivo">
+            <h2>De la Planta al Laboratorio: Clonación Artificial en Ganadería</h2>
+            
+            <p>Mientras que clonar una planta de plátano en Pueblo Rico requiere apenas de un machete y tierra fértil, clonar un animal exige desafiar las reglas fundamentales de la biología celular. Las células animales, a diferencia de las vegetales, pierden su "totipotencia" rápidamente durante el desarrollo embrionario. Una célula de la piel de una vaca está especializada y "olvida" cómo ser un hígado, un corazón o un organismo entero. Para lograr la clonación artificial en mamíferos, los científicos tuvieron que idear una técnica que lograra "reiniciar" el reloj genético de una célula adulta. A este proceso altamente tecnológico se le conoce como Transferencia Nuclear de Células Somáticas (SCNT, por sus siglas en inglés), el mismo método que dio vida a la famosa oveja Dolly en 1996.</p>
+
+            <p>Imaginemos un escenario en las fincas ganaderas de las partes altas de Quimbaya. Un productor de la región posee una vaca lechera de raza Normando excepcionalmente productiva, adaptada al trópico y resistente a las garrapatas de la zona. Llamémosla "La Quimbayuna". El ganadero sabe que si cruza a La Quimbayuna con un toro (reproducción sexual), la cría recibirá solo la mitad de los genes maternos; la magia genética podría perderse en la recombinación. Para obtener una copia exacta de esta vaca élite, se requiere la SCNT. El primer paso ocurre en un laboratorio avanzado: se extraen células somáticas (por ejemplo, del tejido de la oreja) de La Quimbayuna. Estas células contienen su ADN completo, los 60 cromosomas bovinos exactos en su núcleo.</p>
+
+            <p>Paralelamente, se necesita el vehículo que gestará la nueva vida. Se toma un óvulo no fecundado de otra vaca cualquiera. Mediante un microscopio de alta precisión y una micropipeta más delgada que un cabello humano, el científico realiza el paso crítico: la enucleación. Extrae y desecha el núcleo de este óvulo, vaciándolo de su propia información genética. El óvulo queda como una "pizarra en blanco". A continuación, se toma la célula somática extraída de La Quimbayuna y se introduce en este óvulo vacío. En este momento, tenemos una estructura híbrida: el citoplasma de una vaca común y el núcleo genético de nuestra vaca élite.</p>
+
+            <p>El siguiente reto es "despertar" al óvulo y hacerle creer que ha sido fecundado por un espermatozoide. Esto se logra aplicando una leve descarga eléctrica. Este pulso eléctrico no solo fusiona las membranas, sino que activa el metabolismo celular. El óvulo, engañado por la electricidad, comienza a dividirse por mitosis: 2 células, 4, 8, 16... formando un embrión. Este embrión in vitro es luego implantado en el útero de una tercera vaca, conocida como "madre sustituta". Tras los 9 meses de gestación bovina, nacerá una ternera que no tendrá parentesco genético con la madre que la parió, sino que será el clon exacto de La Quimbayuna original.</p>
+
+            <p>Esta tecnología promete revolucionar la ganadería, permitiendo multiplicar ejemplares de altísimo valor que mejoren la economía de los ganaderos del Quindío. Sin embargo, trae consigo dilemas éticos y técnicos profundos. Los animales clonados suelen presentar problemas de envejecimiento prematuro debido a la longitud de los telómeros (las terminaciones de los cromosomas, que ya vienen acortadas desde la célula adulta original), y el porcentaje de éxito de la SCNT sigue siendo bajo, lo que implica pérdidas embrionarias significativas. La ciencia nos permite multiplicar la vida, pero la naturaleza impone sus límites. Interactúa con el simulador inferior para comprender el mecanismo a nivel microscópico.</p>
+
+            <!-- ANIMACIÓN CANVAS -->
+            <div class="canvas-container">
+                <h3 style="color: var(--blanco);">Simulador SCNT: Transferencia Nuclear</h3>
+                <p style="color: #aaa; text-align: center; margin-bottom: 15px;">Visualización de fluidos y partículas a 60fps.</p>
+                <canvas id="cloneCanvas" width="800" height="400"></canvas>
+                <div class="canvas-controls">
+                    <button class="btn-primary" id="btn-enuclear">1. Enuclear Óvulo</button>
+                    <button class="btn-secondary" id="btn-transferir" disabled>2. Transferir Núcleo Somático</button>
+                    <button class="btn-primary" id="btn-estimular" style="background-color: var(--amarillo-citrico); color: var(--cafe-oscuro);" disabled>3. Estimular (Shock Eléctrico)</button>
+                </div>
+                <p id="canvas-status" style="color: var(--amarillo-citrico); margin-top: 10px; font-weight: bold;">Estado: Observando células iniciales.</p>
+            </div>
+        </section>
+
+        <!-- PAUSAS ACTIVAS 6-10 -->
+        <section class="section-card">
+            <h3>Pausas Activas (Cuaderno de Biología)</h3>
+            
+            <div class="pausa-activa">
+                <h4>6. Mapa Conceptual <span>🕸️</span></h4>
+                <p>Construye un mapa conceptual sobre la "Transferencia Nuclear de Células Somáticas" usando conectores lógicos y los términos: Óvulo, Núcleo, Madre Sustituta, Descarga Eléctrica, Clon.</p>
+                <button class="btn-done" id="btn-pausa6" onclick="completarPausa(6, 'vaca')">Ya lo hice</button>
+            </div>
+            
+            <div class="pausa-activa">
+                <h4>7. Tabla de Datos <span>📝</span></h4>
+                <p>Elabora una tabla listando a los 3 "personajes" animales que intervienen en la SCNT (Donante somática, Donante de óvulo, Madre sustituta) y especifica qué aporta exactamente cada uno biológicamente.</p>
+                <button class="btn-done" id="btn-pausa7" onclick="completarPausa(7, 'leche')">Ya lo hice</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>8. Dibujo Técnico Esquemático <span>📐</span></h4>
+                <p>Dibuja el proceso secuencial de la animación Canvas que acabas de ver. Usa flechas y rotula: "Célula Enucleada", "Fusión" y "Mitosis Embrionaria".</p>
+                <button class="btn-done" id="btn-pausa8" onclick="completarPausa(8, 'microscopio')">Ya lo hice</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>9. Síntesis Escrita <span>✍️</span></h4>
+                <p>Escribe una carta breve (media página) imaginando que eres el biólogo explicando a un ganadero tradicional de Pueblo Rico por qué su vaca clonada podría envejecer más rápido de lo normal (menciona los telómeros).</p>
+                <button class="btn-done" id="btn-pausa9" onclick="completarPausa(9, 'carta')">Ya lo hice</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>10. Resolución de Problema Matemático <span>🧮</span></h4>
+                <p>Si la técnica SCNT tiene un 5% de éxito en nacimientos viables, y el ganadero de Quimbaya necesita obtener 3 terneros clonados para su finca, ¿cuántos embriones in vitro debe producir e implantar en madres sustitutas para asegurar estadísticamente su meta?</p>
+                <button class="btn-done" id="btn-pausa10" onclick="completarPausa(10, 'matematica')">Ya lo hice</button>
+            </div>
+        </section>
+
+        <!-- EVALUACIÓN FINAL TIPO TALLER -->
+        <section class="section-card" id="evaluacion">
+            <h2>Evaluación Final: Validando el Conocimiento</h2>
+            <p>Resuelve el siguiente cuestionario. Las preguntas abiertas cuentan con validación de seguridad (anti-copia). Debes redactar con tus propias palabras una respuesta concreta entre <strong>10 y 15 palabras</strong> por cada pregunta abierta.</p>
+            
+            <hr style="margin: 20px 0;">
+            <h3>Selección Múltiple</h3>
+
+            <div class="question-block">
+                <p>1. La técnica por la cual los campesinos de Quimbaya renuevan sus cafetales usando ramas de plantas productivas se clasifica biológicamente como:</p>
+                <select id="eval-m1" style="padding: 5px; font-size: 1rem; width: 100%;">
+                    <option value="">-- Selecciona --</option>
+                    <option value="a">Reproducción sexual mediante gametos.</option>
+                    <option value="b">Clonación natural / propagación vegetativa.</option>
+                    <option value="c">Transferencia nuclear somática.</option>
+                </select>
+            </div>
+
+            <div class="question-block">
+                <p>2. ¿Cuál es el riesgo principal de tener un cultivo 100% clonado (como el plátano) en el Paisaje Cultural Cafetero?</p>
+                <select id="eval-m2" style="padding: 5px; font-size: 1rem; width: 100%;">
+                    <option value="">-- Selecciona --</option>
+                    <option value="a">Extrema vulnerabilidad a enfermedades debido a la nula variabilidad genética.</option>
+                    <option value="b">Los frutos pierden sabor progresivamente en cada generación.</option>
+                    <option value="c">Las plantas crecen demasiado y bloquean la luz al café.</option>
+                </select>
+            </div>
+
+            <div class="question-block">
+                <p>3. En la SCNT, ¿qué función cumple la descarga eléctrica?</p>
+                <select id="eval-m3" style="padding: 5px; font-size: 1rem; width: 100%;">
+                    <option value="">-- Selecciona --</option>
+                    <option value="a">Destruir el núcleo del óvulo original.</option>
+                    <option value="b">Fusionar la célula e inducir la división celular (mitosis).</option>
+                    <option value="c">Evitar que la madre sustituta rechace el embrión.</option>
+                </select>
+            </div>
+
+            <div class="question-block">
+                <p>4. Al clonar a la vaca "La Quimbayuna", el ADN nuclear del clon provino de:</p>
+                <select id="eval-m4" style="padding: 5px; font-size: 1rem; width: 100%;">
+                    <option value="">-- Selecciona --</option>
+                    <option value="a">El óvulo vacío.</option>
+                    <option value="b">La célula somática donante de La Quimbayuna.</option>
+                    <option value="c">La madre sustituta que la gestó.</option>
+                </select>
+            </div>
+
+            <div class="question-block">
+                <p>5. ¿Por qué los clones mamíferos a menudo presentan envejecimiento prematuro?</p>
+                <select id="eval-m5" style="padding: 5px; font-size: 1rem; width: 100%;">
+                    <option value="">-- Selecciona --</option>
+                    <option value="a">Por la mala nutrición durante la etapa in vitro.</option>
+                    <option value="b">Por el acortamiento previo de los telómeros en la célula adulta donante.</option>
+                    <option value="c">Porque la descarga eléctrica daña el ADN de la célula.</option>
+                </select>
+            </div>
+
+            <hr style="margin: 20px 0;">
+            <h3>Preguntas Abiertas (Anti-Fraude Activo)</h3>
+            <p style="color: var(--cafe-rojo); font-size: 0.9rem;"><em>Instrucción: Escribe tu respuesta utilizando entre 10 y 15 palabras. El sistema detectará intentos de copiar/pegar o escritura de IA.</em></p>
+
+            <div class="question-block">
+                <p>6. Define con tus palabras qué es la totipotencia celular en vegetales.</p>
+                <textarea id="eval-o1" class="secure-input" data-min="10" data-max="15"></textarea>
+                <div class="word-count" id="count-o1">Palabras: 0</div>
+                <div class="fraud-alert" id="alert-o1">⚠️ ¡Alerta de fraude! Comportamiento de escritura irregular detectado.</div>
+            </div>
+
+            <div class="question-block">
+                <p>7. Explica por qué los citricultores de Quimbaya prefieren el injerto en lugar de las semillas.</p>
+                <textarea id="eval-o2" class="secure-input" data-min="10" data-max="15"></textarea>
+                <div class="word-count" id="count-o2">Palabras: 0</div>
+                <div class="fraud-alert" id="alert-o2">⚠️ ¡Alerta de fraude! Comportamiento de escritura irregular detectado.</div>
+            </div>
+
+            <div class="question-block">
+                <p>8. Describe brevemente el proceso de enucleación en la técnica SCNT.</p>
+                <textarea id="eval-o3" class="secure-input" data-min="10" data-max="15"></textarea>
+                <div class="word-count" id="count-o3">Palabras: 0</div>
+                <div class="fraud-alert" id="alert-o3">⚠️ ¡Alerta de fraude! Comportamiento de escritura irregular detectado.</div>
+            </div>
+
+            <div class="question-block">
+                <p>9. ¿Cuál es el papel biológico de la madre sustituta en la clonación ganadera?</p>
+                <textarea id="eval-o4" class="secure-input" data-min="10" data-max="15"></textarea>
+                <div class="word-count" id="count-o4">Palabras: 0</div>
+                <div class="fraud-alert" id="alert-o4">⚠️ ¡Alerta de fraude! Comportamiento de escritura irregular detectado.</div>
+            </div>
+
+            <div class="question-block">
+                <p>10. ¿Qué problema representa la baja tasa de éxito de la clonación artificial en la rentabilidad?</p>
+                <textarea id="eval-o5" class="secure-input" data-min="10" data-max="15"></textarea>
+                <div class="word-count" id="count-o5">Palabras: 0</div>
+                <div class="fraud-alert" id="alert-o5">⚠️ ¡Alerta de fraude! Comportamiento de escritura irregular detectado.</div>
+            </div>
+
+            <button class="btn-primary" id="btn-finalizar" style="margin-top: 20px;">Terminar y Evaluar</button>
+
+        </section>
+
+        <!-- ÁREA DE RESULTADOS -->
+        <div id="results-area">
+            <h2>Resultados Finales</h2>
+            <h1 id="final-score" style="color: var(--amarillo-citrico); font-size: 3rem;">0/10</h1>
+            
+            <div class="feedback-box">
+                <h3>Ruta de Fortalecimiento Personalizada:</h3>
+                <p id="smart-feedback"></p>
+            </div>
+
+            <button class="btn-secondary" id="btn-descargar" style="margin-top: 20px;">📥 Descargar Resultados (.txt)</button>
+        </div>
+
+    </div> <!-- Fin main-content -->
+
+    <script>
+        /* =========================================
+           VARIABLES GLOBALES Y ESTADO
+           ========================================= */
+        const state = {
+            studentName: "",
+            studentLastName: "",
+            puntos: 0,
+            pausasCompletadas: 0,
+            respuestasAbiertas: {},
+            fraudesDetectados: 0,
+            startTime: Date.now()
+        };
+
+        const answers = {
+            m1: 'b', m2: 'a', m3: 'b', m4: 'b', m5: 'b'
+        };
+
+        /* =========================================
+           SISTEMA DE GESTIÓN DE USUARIO
+           ========================================= */
+        document.getElementById('btn-iniciar').addEventListener('click', () => {
+            const apellidos = document.getElementById('input-apellidos').value.trim();
+            const nombres = document.getElementById('input-nombres').value.trim();
+            
+            if (apellidos === "" || nombres === "") {
+                document.getElementById('login-error').style.display = "block";
+                return;
+            }
+
+            state.studentLastName = apellidos;
+            state.studentName = nombres;
+            
+            document.getElementById('display-name').textContent = `${nombres} ${apellidos}`;
+            document.getElementById('welcome-screen').style.opacity = "0";
+            
+            setTimeout(() => {
+                document.getElementById('welcome-screen').style.display = "none";
+                document.getElementById('navbar').style.display = "flex";
+                document.getElementById('main-content').style.display = "block";
+                generarIconosVacios();
+                initCanvas(); // Iniciar animación al entrar
+            }, 500);
+        });
+
+        /* =========================================
+           GAMIFICACIÓN Y PROGRESO
+           ========================================= */
+        const iconPaths = {
+            'grano': '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86l7.45 7.45c-.49.27-1.02.41-1.5.41zm6.75-3.32l-7.43-7.43c.49-.28 1.02-.42 1.5-.42 4.41 0 8 3.59 8 8 0 .28-.02.57-.07.85z"/>', // Representación abstracta
+            'hoja': '<path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66l.95-2.3c3.47.5 5.99-1.39 7.34-4.7c1.35-3.31 1.25-5.5-.32-7z"/>',
+            'naranja': '<path d="M12 22A10 10 0 1 1 12 2a10 10 0 0 1 0 20z M12 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>',
+            'sombrero': '<path d="M22 17H2c-1.1 0-2 .9-2 2v2h24v-2c0-1.1-.9-2-2-2zm-6-2H8l-1.5-6h11L16 15z M12 3C8 3 5 6 5 9h14c0-3-3-6-7-6z"/>',
+            'vaca': '<path d="M14 2H6c-1.1 0-2 .9-2 2v16h16V8l-6-6zm2 14h-4v-2h4v2zm0-4h-4v-2h4v2z"/>' // Abstracto animal/granja
+        };
+
+        function generarIconosVacios() {
+            const container = document.getElementById('icon-container');
+            const keys = Object.keys(iconPaths);
+            keys.forEach(key => {
+                container.innerHTML += `<svg id="icon-${key}" class="icon-slot" viewBox="0 0 24 24">${iconPaths[key]}</svg>`;
+            });
+        }
+
+        window.completarPausa = function(num, iconKey) {
+            document.getElementById(`btn-pausa${num}`).disabled = true;
+            document.getElementById(`btn-pausa${num}`).textContent = "¡Completado!";
+            
+            state.pausasCompletadas++;
+            // Cada 2 pausas ganan 1 punto
+            if (state.pausasCompletadas % 2 === 0) {
+                state.puntos++;
+                actualizarProgreso();
+                desbloquearIcono(iconKey);
+            }
+        };
+
+        function actualizarProgreso() {
+            const porcentaje = (state.puntos / 5) * 100;
+            document.getElementById('progress-bar').style.width = `${porcentaje}%`;
+            document.getElementById('score-display').textContent = `Puntos: ${state.puntos} / 5`;
+        }
+
+        function desbloquearIcono(iconKey) {
+            const icon = document.getElementById(`icon-${iconKey}`);
+            if (icon) {
+                icon.classList.add('unlocked');
+            }
+        }
+
+        /* =========================================
+           LÓGICA PRE-SABERES E ICFES
+           ========================================= */
+        document.getElementById('btn-presaberes').addEventListener('click', () => {
+            const p1 = document.querySelector('input[name="pre1"]:checked');
+            const p2 = document.querySelector('input[name="pre2"]:checked');
+            const p3 = document.querySelector('input[name="pre3"]:checked');
+            
+            const feedback = document.getElementById('presaberes-feedback');
+            if(!p1 || !p2 || !p3) {
+                feedback.textContent = "Por favor responde las 3 preguntas.";
+                feedback.style.color = "var(--rojo-alerta)";
+                return;
+            }
+
+            let correct = 0;
+            if(p1.value === 'b') correct++;
+            if(p2.value === 'b') correct++;
+            if(p3.value === 'c') correct++;
+
+            feedback.textContent = `Obtuviste ${correct} de 3 correctas. ¡Excelente base para continuar!`;
+            feedback.style.color = "var(--verde-bosque)";
+            document.getElementById('btn-presaberes').disabled = true;
+        });
+
+        document.getElementById('btn-evaluar-icfes').addEventListener('click', () => {
+            const ans = document.querySelector('input[name="icfes1"]:checked');
+            const feedback = document.getElementById('icfes-feedback');
+            if(!ans) {
+                feedback.textContent = "Selecciona una opción.";
+                feedback.style.color = "var(--rojo-alerta)";
+                return;
+            }
+            if(ans.value === 'b') {
+                feedback.textContent = "¡Correcto! El clon es uniforme y el injerto élite le dio resistencia a la ola invernal, mientras que las semillas mostraron su variabilidad y debilidad.";
+                feedback.style.color = "var(--verde-hoja)";
+            } else {
+                feedback.textContent = "Incorrecto. Analiza nuevamente la línea azul en 2020: se mantiene estable frente a la fuerte caída de la línea verde.";
+                feedback.style.color = "var(--rojo-alerta)";
+            }
+            document.getElementById('btn-evaluar-icfes').disabled = true;
+        });
+
+        /* =========================================
+           SISTEMA ANTI-FRAUDE (TEXTAREAS)
+           ========================================= */
+        const textareas = document.querySelectorAll('.secure-input');
+        
+        textareas.forEach(ta => {
+            let lastKeyTime = Date.now();
+            let keystrokes = [];
+
+            // Bloquear Pegar y Soltar
+            ta.addEventListener('paste', e => e.preventDefault());
+            ta.addEventListener('drop', e => e.preventDefault());
+            ta.addEventListener('contextmenu', e => e.preventDefault());
+
+            ta.addEventListener('keydown', e => {
+                // Bloquear Ctrl+V / Cmd+V
+                if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+                    e.preventDefault();
+                    return;
+                }
+
+                // Analizador de cadencia de tecleo (Evita macros de inyección rápida)
+                const now = Date.now();
+                // Ignorar teclas de control
+                if (e.key.length === 1) { 
+                    const delay = now - lastKeyTime;
+                    keystrokes.push(delay);
+                    if (keystrokes.length > 20) keystrokes.shift(); // Mantener muestra reciente
+                }
+                lastKeyTime = now;
+            });
+
+            ta.addEventListener('input', () => {
+                const text = ta.value.trim();
+                const words = text === "" ? 0 : text.split(/\s+/).length;
+                const idNum = ta.id.split('-')[1];
+                document.getElementById(`count-${idNum}`).textContent = `Palabras: ${words}`;
+                
+                // Validación en tiempo real del límite de palabras
+                if (words > 15) {
+                    ta.value = text.split(/\s+/).slice(0, 15).join(" ");
+                    document.getElementById(`count-${idNum}`).textContent = `Palabras: 15 (Límite)`;
+                }
+
+                // Chequeo de Cadencia IA / Script (Promedio < 35ms por letra es sobrehumano)
+                if (keystrokes.length >= 10) {
+                    const avgDelay = keystrokes.reduce((a,b)=>a+b,0) / keystrokes.length;
+                    if (avgDelay < 35) {
+                        document.getElementById(`alert-${idNum}`).style.display = 'block';
+                        state.fraudesDetectados++;
+                        ta.value = ""; // Borrar contenido fraudulento
+                        keystrokes = []; // Resetear
+                    } else {
+                        document.getElementById(`alert-${idNum}`).style.display = 'none';
+                    }
+                }
+            });
+        });
+
+        /* =========================================
+           ANIMACIÓN CANVAS (FÍSICA DE TRANSFERENCIA)
+           ========================================= */
+        let canvas, ctx, animationId;
+        let cState = 0; // 0: Reposo, 1: Enucleando, 2: Transfiriendo, 3: Mitosis
+        let particles = [];
+        
+        // Objetos
+        const ovulo = { x: 250, y: 200, r: 80, color: '#4CAF50', nucleusR: 25, nucleusOp: 1 };
+        const somatica = { x: 600, y: 200, r: 50, color: '#2196F3', nX: 600, nY: 200, nR: 15 };
+        const embrion = { cells: [] };
+
+        function initCanvas() {
+            canvas = document.getElementById('cloneCanvas');
+            ctx = canvas.getContext('2d');
+            drawCanvas();
+        }
+
+        // Sistema de Partículas para enucleación
+        class Particle {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.vx = (Math.random() - 0.5) * 5;
+                this.vy = (Math.random() - 0.5) * 5;
+                this.r = Math.random() * 3 + 1;
+                this.life = 1.0;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                this.life -= 0.02;
+            }
+            draw(ctx) {
+                ctx.fillStyle = `rgba(139, 195, 74, ${this.life})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Fondo celular
+            ctx.fillStyle = "#1a1a1a";
+            ctx.fillRect(0,0, canvas.width, canvas.height);
+
+            // Etiquetas
+            ctx.fillStyle = "#fff"; ctx.font = "14px Arial";
+            ctx.fillText("Óvulo (Receptor)", 200, 80);
+            ctx.fillText("Célula Somática (Donante)", 520, 100);
+
+            // Dibujar Óvulo
+            if (cState < 3) {
+                ctx.beginPath();
+                ctx.arc(ovulo.x, ovulo.y, ovulo.r, 0, Math.PI*2);
+                ctx.strokeStyle = ovulo.color; ctx.lineWidth = 4;
+                ctx.stroke();
+                ctx.fillStyle = "rgba(76, 175, 80, 0.2)";
+                ctx.fill();
+
+                // Núcleo del óvulo (Si existe)
+                if (ovulo.nucleusOp > 0) {
+                    ctx.beginPath();
+                    ctx.arc(ovulo.x, ovulo.y, ovulo.nucleusR, 0, Math.PI*2);
+                    ctx.fillStyle = `rgba(139, 195, 74, ${ovulo.nucleusOp})`;
+                    ctx.fill();
+                }
+            }
+
+            // Dibujar Somática
+            if (cState < 3) {
+                ctx.beginPath();
+                ctx.arc(somatica.x, somatica.y, somatica.r, 0, Math.PI*2);
+                ctx.strokeStyle = somatica.color; ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.fillStyle = "rgba(33, 150, 243, 0.2)";
+                ctx.fill();
+
+                // Núcleo Somático
+                ctx.beginPath();
+                ctx.arc(somatica.nX, somatica.nY, somatica.nR, 0, Math.PI*2);
+                ctx.fillStyle = "#64B5F6";
+                ctx.fill();
+            }
+
+            // Partículas
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw(ctx);
+                if (particles[i].life <= 0) particles.splice(i, 1);
+            }
+
+            // Dibujar Embrión (Mitosis)
+            if (cState === 3) {
+                embrion.cells.forEach(cell => {
+                    ctx.beginPath();
+                    ctx.arc(cell.x, cell.y, cell.r, 0, Math.PI*2);
+                    ctx.strokeStyle = "#4CAF50"; ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.fillStyle = "rgba(33, 150, 243, 0.4)"; // Híbrido
+                    ctx.fill();
+                    // Núcleo
+                    ctx.beginPath();
+                    ctx.arc(cell.x, cell.y, cell.r*0.3, 0, Math.PI*2);
+                    ctx.fillStyle = "#64B5F6";
+                    ctx.fill();
+                });
+            }
+
+            if(cState === 1 || cState === 2 || cState === 3) {
+                animationId = requestAnimationFrame(drawCanvas);
+            }
+        }
+
+        document.getElementById('btn-enuclear').addEventListener('click', () => {
+            cState = 1;
+            document.getElementById('btn-enuclear').disabled = true;
+            document.getElementById('canvas-status').textContent = "Extrayendo material genético del óvulo...";
+            
+            // Animación de disolución
+            let interval = setInterval(() => {
+                ovulo.nucleusOp -= 0.05;
+                for(let i=0; i<5; i++) particles.push(new Particle(ovulo.x, ovulo.y));
+                if (ovulo.nucleusOp <= 0) {
+                    clearInterval(interval);
+                    document.getElementById('btn-transferir').disabled = false;
+                    document.getElementById('canvas-status').textContent = "Óvulo enucleado (vacío). Listo para transferencia.";
+                    cancelAnimationFrame(animationId); drawCanvas();
+                }
+            }, 50);
+            drawCanvas();
+        });
+
+        document.getElementById('btn-transferir').addEventListener('click', () => {
+            cState = 2;
+            document.getElementById('btn-transferir').disabled = true;
+            document.getElementById('canvas-status').textContent = "Inyectando núcleo somático mediante micropipeta...";
+            
+            drawCanvas();
+            // Animación de movimiento del núcleo
+            function moveNucleus() {
+                const dx = ovulo.x - somatica.nX;
+                const dy = ovulo.y - somatica.nY;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist > 2) {
+                    somatica.nX += dx * 0.05;
+                    somatica.nY += dy * 0.05;
+                    requestAnimationFrame(moveNucleus);
+                } else {
+                    document.getElementById('btn-estimular').disabled = false;
+                    document.getElementById('canvas-status').textContent = "Núcleo transferido. Esperando estimulación.";
+                    cancelAnimationFrame(animationId); drawCanvas();
+                }
+            }
+            moveNucleus();
+        });
+
+        document.getElementById('btn-estimular').addEventListener('click', () => {
+            cState = 3;
+            document.getElementById('btn-estimular').disabled = true;
+            document.getElementById('canvas-status').textContent = "Descarga aplicada. Iniciando mitosis del embrión clonado...";
+            
+            // Efecto flash eléctrico
+            ctx.fillStyle = "rgba(255,255,255,0.8)";
+            ctx.fillRect(0,0, canvas.width, canvas.height);
+            
+            setTimeout(() => {
+                // Iniciar mitosis
+                embrion.cells.push({ x: ovulo.x, y: ovulo.y, r: ovulo.r });
+                drawCanvas();
+                mitosisLoop();
+            }, 200);
+        });
+
+        function mitosisLoop() {
+            let divisionCount = 0;
+            let divInterval = setInterval(() => {
+                if(divisionCount >= 4) { // Parar a las 16 células
+                    clearInterval(divInterval);
+                    document.getElementById('canvas-status').textContent = "Embrión listo para implantar en madre sustituta.";
+                    cancelAnimationFrame(animationId); drawCanvas();
+                    return;
+                }
+                
+                const newCells = [];
+                embrion.cells.forEach(cell => {
+                    const offset = cell.r * 0.5;
+                    newCells.push({ x: cell.x - offset, y: cell.y - offset, r: cell.r * 0.7 });
+                    newCells.push({ x: cell.x + offset, y: cell.y + offset, r: cell.r * 0.7 });
+                });
+                embrion.cells = newCells;
+                divisionCount++;
+            }, 1000);
+        }
+
+        /* =========================================
+           EVALUACIÓN Y EXPORTACIÓN
+           ========================================= */
+        document.getElementById('btn-finalizar').addEventListener('click', () => {
+            // Validar Selección Múltiple
+            let scoreSM = 0;
+            for(let i=1; i<=5; i++) {
+                if(document.getElementById(`eval-m${i}`).value === answers[`m${i}`]) {
+                    scoreSM++;
+                }
+            }
+
+            // Validar Preguntas Abiertas (Longitud y contenido no vacío)
+            let scoreAbiertas = 0;
+            let retroAbiertas = [];
+            for(let i=1; i<=5; i++) {
+                const text = document.getElementById(`eval-o${i}`).value.trim();
+                const words = text === "" ? 0 : text.split(/\s+/).length;
+                if(words >= 10 && words <= 15) {
+                    scoreAbiertas++;
+                } else {
+                    retroAbiertas.push(`Pregunta ${i+5} no cumple la extensión requerida (10-15 palabras).`);
+                }
+                state.respuestasAbiertas[`p${i+5}`] = text;
+            }
+
+            const totalScore = scoreSM + scoreAbiertas;
+            const finalGrade = (totalScore / 10) * 5.0; // Escala de 1 a 5
+
+            // Generar Retroalimentación Inteligente
+            let feedback = `Obtuviste ${scoreSM}/5 en selección múltiple y ${scoreAbiertas}/5 en preguntas abiertas válidas.<br><br>`;
+            
+            if (finalGrade >= 4.0) {
+                feedback += "<strong>¡Excelente trabajo biólogo!</strong> Comprendes perfectamente la diferencia entre el injerto del cafetal y la SCNT bovina. Tu nivel de retención es sobresaliente.";
+            } else if (finalGrade >= 3.0) {
+                feedback += "<strong>Buen intento.</strong> Conoces los conceptos, pero fallaste en detalles técnicos. Recuerda repasar el rol del óvulo vs célula somática.";
+            } else {
+                feedback += "<strong>Necesitas repasar.</strong> Te sugerimos releer cómo la propagación vegetativa mantiene idéntico el ADN y revisar nuevamente el simulador de enucleación.";
+            }
+
+            if (retroAbiertas.length > 0) {
+                feedback += "<br><br><strong>Observaciones de validación:</strong><br>" + retroAbiertas.join("<br>");
+            }
+
+            if (state.fraudesDetectados > 0) {
+                feedback += `<br><br><strong style="color:red;">El sistema previno ${state.fraudesDetectados} intentos de usar IA o copiar/pegar. La ética científica es fundamental.</strong>`;
+            }
+
+            document.getElementById('final-score').textContent = `Nota Final: ${finalGrade.toFixed(1)} / 5.0`;
+            document.getElementById('smart-feedback').innerHTML = feedback;
+            
+            document.getElementById('evaluacion').style.display = 'none';
+            document.getElementById('results-area').style.display = 'block';
+        });
+
+        // Generador de TXT (Blob)
+        document.getElementById('btn-descargar').addEventListener('click', () => {
+            const date = new Date().toLocaleString();
+            let txtContent = `======================================\n`;
+            txtContent += `LABORATORIO VIRTUAL PUEBLO RICO - QUIMBAYA\n`;
+            txtContent += `======================================\n\n`;
+            txtContent += `Estudiante: ${state.studentName} ${state.studentLastName}\n`;
+            txtContent += `Fecha: ${date}\n`;
+            txtContent += `Nota Final: ${document.getElementById('final-score').textContent}\n\n`;
+            txtContent += `--- RESPUESTAS ABIERTAS ---\n`;
+            txtContent += `P6: ${state.respuestasAbiertas['p6']}\n`;
+            txtContent += `P7: ${state.respuestasAbiertas['p7']}\n`;
+            txtContent += `P8: ${state.respuestasAbiertas['p8']}\n`;
+            txtContent += `P9: ${state.respuestasAbiertas['p9']}\n`;
+            txtContent += `P10: ${state.respuestasAbiertas['p10']}\n\n`;
+            txtContent += `Fraudes Evitados: ${state.fraudesDetectados}\n`;
+            txtContent += `Puntos de Gamificación: ${state.puntos}/5\n`;
+            
+            const blob = new Blob([txtContent], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `Resultados_Clonacion_${state.studentLastName}.txt`;
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Los Recicladores Silenciosos - Pueblo Rico</title>
+    <style>
+        :root {
+            --pcc-green-deep: #2d5a27;
+            --pcc-green-bright: #7db343;
+            --pcc-earth: #5d4037;
+            --pcc-gold: #c7a12e;
+            --pcc-clay: #d7ccc8;
+            --pcc-leaf: #a5d6a7;
+            --white: #ffffff;
+            --shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f1;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        /* Login Screen */
+        #login-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1550985543-f47f38aee65e?auto=format&fit=crop&q=80&w=1000') center/cover;
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border-bottom: 8px solid var(--pcc-green-deep);
+        }
+
+        .login-card h1 { color: var(--pcc-green-deep); margin-bottom: 15px; font-size: 1.8rem; }
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .btn-main {
+            background: var(--pcc-green-deep);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+
+        .btn-main:hover { background: var(--pcc-green-bright); transform: translateY(-2px); }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--white);
+            padding: 10px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-user { font-weight: bold; color: var(--pcc-green-deep); display: flex; align-items: center; gap: 10px; }
+        .nav-user span { background: var(--pcc-clay); padding: 4px 12px; border-radius: 20px; font-size: 0.9rem; }
+
+        .progress-container { display: flex; align-items: center; gap: 15px; width: 40%; }
+        .progress-bg { flex-grow: 1; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; }
+        #progress-bar { width: 0%; height: 100%; background: var(--pcc-green-bright); transition: 0.5s; }
+
+        /* Main Content */
+        main { max-width: 1100px; margin: 100px auto; padding: 20px; display: none; }
+
+        section {
+            background: var(--white);
+            padding: 50px;
+            border-radius: 25px;
+            margin-bottom: 60px;
+            box-shadow: var(--shadow);
+        }
+
+        h2 { color: var(--pcc-green-deep); border-left: 6px solid var(--pcc-gold); padding-left: 20px; margin-bottom: 30px; font-size: 2.2rem; }
+        h3 { color: var(--pcc-earth); margin: 30px 0 15px; font-size: 1.5rem; }
+
+        .content-text { font-size: 1.15rem; text-align: justify; margin-bottom: 25px; }
+        .highlight { color: var(--pcc-green-deep); font-weight: bold; background: #f0f4ef; padding: 2px 5px; border-radius: 4px; }
+
+        /* Visuals: SVG & Tables */
+        .visual-box { margin: 40px 0; text-align: center; }
+        .svg-container { background: #fdfdfd; border: 1px solid #eee; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        
+        table { width: 100%; border-collapse: collapse; margin: 25px 0; background: var(--white); overflow: hidden; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        th { background: var(--pcc-green-deep); color: white; padding: 18px; text-align: left; }
+        td { padding: 16px; border-bottom: 1px solid #eee; }
+        tr:nth-child(even) { background: #f9fbf8; }
+
+        /* Canvas */
+        #canvas-wrap {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: #1a1a1a;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 40px 0;
+        }
+        canvas { width: 100%; height: 100%; cursor: crosshair; }
+        .canvas-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 15px;
+            border-radius: 10px;
+            pointer-events: none;
+            max-width: 250px;
+        }
+
+        /* Activities */
+        .activity-card {
+            background: #f1f8e9;
+            border-left: 5px solid var(--pcc-green-bright);
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 0 15px 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .activity-info { flex-grow: 1; }
+        .activity-icon { font-size: 2rem; }
+        .btn-check {
+            background: var(--pcc-gold);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-check.done { background: #9e9e9e; pointer-events: none; }
+
+        /* Quiz */
+        .quiz-item { margin-bottom: 30px; padding: 25px; border: 1px solid #e0e0e0; border-radius: 15px; transition: 0.3s; }
+        .quiz-item:hover { border-color: var(--pcc-green-bright); background: #fafafa; }
+        .option {
+            display: block;
+            padding: 12px 20px;
+            margin: 10px 0;
+            background: #fff;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .option:hover { border-color: var(--pcc-green-bright); background: #f1f8e9; }
+        .option.correct { background: #c8e6c9 !important; border-color: #4caf50 !important; }
+        .option.wrong { background: #ffcdd2 !important; border-color: #f44336 !important; }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            margin-top: 10px;
+        }
+        .fraud-alert { color: #f44336; font-size: 0.85rem; font-weight: bold; display: none; margin-top: 5px; }
+
+        footer { text-align: center; padding: 40px; color: #777; border-top: 1px solid #eee; }
+
+        @media (max-width: 768px) {
+            section { padding: 25px; }
+            nav { padding: 10px 2%; }
+            .progress-container { width: 30%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Pantalla de Inicio -->
+<div id="login-screen">
+    <div class="login-card">
+        <div style="font-size: 3rem; margin-bottom: 10px;">🦠</div>
+        <h1>Los Recicladores Silenciosos</h1>
+        <p>Vereda Pueblo Rico, Quimbaya</p>
+        <input type="text" id="user-lastnames" placeholder="Tus Apellidos">
+        <input type="text" id="user-names" placeholder="Tus Nombres">
+        <button class="btn-main" id="start-btn">Entrar a la Finca</button>
+    </div>
+</div>
+
+<!-- Barra de Navegación -->
+<nav>
+    <div class="nav-user">
+        👤 <div id="display-name">Estudiante</div>
+        <span id="score-badge">Puntos: 0.0</span>
+    </div>
+    <div class="progress-container">
+        <div class="progress-bg"><div id="progress-bar"></div></div>
+        <span id="progress-text">0%</span>
+    </div>
+</nav>
+
+<main id="app-main">
+    
+    <!-- SECCIÓN 1: INICIO -->
+    <section id="intro">
+        <h2>Objetivo de Aprendizaje</h2>
+        <p class="content-text">
+            Al terminar este recorrido por las fincas de <span class="highlight">Pueblo Rico</span>, comprenderás cómo los hongos y bacterias (los descomponedores) transforman la materia orgánica "muerta" en nutrientes vitales, manteniendo el flujo de materia en los cultivos de café y cítricos de nuestra región. Aprenderemos a valorar a estos trabajadores invisibles que sostienen la vida en Quimbaya.
+        </p>
+
+        <h3>Pre-saberes: ¿Qué sabemos de la tierra?</h3>
+        <div id="pre-quiz">
+            <div class="quiz-item" data-id="pre1">
+                <p><strong>1. Si dejas una cáscara de naranja de la vereda en el suelo, después de un mes desaparece. ¿Quiénes son los principales responsables?</strong></p>
+                <div class="option" onclick="checkAnswer(this, true, 0.2, 'pre1')">Microorganismos como hongos y bacterias.</div>
+                <div class="option" onclick="checkAnswer(this, false, 0, 'pre1')">El sol que la evapora completamente.</div>
+                <div class="option" onclick="checkAnswer(this, false, 0, 'pre1')">El agua de lluvia que la disuelve.</div>
+            </div>
+            <div class="quiz-item" data-id="pre2">
+                <p><strong>2. ¿Qué nombre recibe la materia orgánica descompuesta que usamos para abonar los cafetales?</strong></p>
+                <div class="option" onclick="checkAnswer(this, false, 0, 'pre2')">Basura inorgánica.</div>
+                <div class="option" onclick="checkAnswer(this, true, 0.2, 'pre2')">Humus o abono orgánico.</div>
+                <div class="option" onclick="checkAnswer(this, false, 0, 'pre2')">Residuos químicos.</div>
+            </div>
+            <div class="quiz-item" data-id="pre3">
+                <p><strong>3. En la cadena alimenticia de nuestra vereda, ¿en qué nivel ubicarías a un hongo que crece sobre un tronco caído?</strong></p>
+                <div class="option" onclick="checkAnswer(this, false, 0, 'pre3')">Productor (como el café).</div>
+                <div class="option" onclick="checkAnswer(this, false, 0, 'pre3')">Consumidor primario (como la vaca).</div>
+                <div class="option" onclick="checkAnswer(this, true, 0.2, 'pre3')">Descomponedor.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 2: CUERPO INDUCTIVO -->
+    <section id="inductive">
+        <h2>Inducción: El Tesoro bajo la Hojarasca</h2>
+        <div class="content-text">
+            <p>Caminar por los senderos de la <span class="highlight">Vereda Pueblo Rico</span> es ser testigo de un ciclo infinito. Cuando los recolectores de café terminan su jornada en las fincas como "La Esperanza" o "El Placer", quedan restos de pulpa, hojas secas y ramas. Para un ojo desprevenido, esto es basura; pero para la naturaleza quindiana, es el inicio de un banquete. Bajo nuestros pies, en cada centímetro de suelo húmedo, habitan millones de seres que no vemos: bacterias y micelios de hongos que trabajan 24 horas al día. Estos son los verdaderos "Recicladores Silenciosos" de Quimbaya.</p>
+            
+            <p>El proceso comienza cuando una hoja de guamo, usada para dar sombra al café, cae al suelo. Inmediatamente, las bacterias colonizan la superficie, rompiendo las estructuras complejas de la celulosa. Luego, los hongos extienden sus redes hifales, absorbiendo energía y liberando enzimas que transforman lo que era madera o fibra en elementos químicos simples como Nitrógeno, Fósforo y Potasio. Sin este trabajo, la vereda estaría sepultada bajo metros de materia muerta y los nuevos cafetales no tendrían nutrientes para crecer.</p>
+            
+            <p>En el sector productivo de los cítricos, muy común en nuestra zona, la descomposición es clave para combatir plagas. Una pila de compostaje bien manejada alcanza temperaturas altas gracias a la actividad metabólica de estos microbios, eliminando semillas de malezas y patógenos. Así, el agricultor de Pueblo Rico ahorra dinero en fertilizantes químicos, aprovechando la tecnología natural que estos microorganismos ofrecen de forma gratuita. Es una economía circular perfecta donde nada se pierde.</p>
+            
+            <p>La ganadería de la vereda también depende de ellos. El estiércol de las vacas, si se deja al aire sin la intervención de estos descomponedores, contaminaría nuestras fuentes hídricas como la quebrada "La Soledad". Sin embargo, los microorganismos del suelo lo integran rápidamente a la tierra, convirtiéndolo en pasto fresco y nutritivo. Este flujo de materia es lo que permite que la vereda sea productiva generación tras generación, manteniendo el suelo vivo y fértil para el turismo de naturaleza.</p>
+            
+            <p>Valorar a estos trabajadores invisibles es también un acto de respeto hacia nuestra comunidad. Al igual que el operario de la central de beneficio o el transportador del café, los descomponedores cumplen una función esencial que a menudo ignoramos. En Pueblo Rico, la salud de nuestra economía depende directamente de la salud de estos microbios. Si usamos demasiados venenos químicos, matamos a nuestros recicladores y, con ellos, la capacidad de la tierra para regenerarse por sí misma.</p>
+        </div>
+
+        <div class="visual-box">
+            <h3>Comparativa: Actores del Reciclaje Orgánico</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Reciclador</th>
+                        <th>Rol Principal en la Finca</th>
+                        <th>Producto Resultante</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Bacterias</strong></td>
+                        <td>Descomposición rápida de tejidos blandos (pulpa de café).</td>
+                        <td>Nutrientes minerales directos.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hongos</strong></td>
+                        <td>Ruptura de lignina y celulosa (ramas y madera).</td>
+                        <td>Estructura de suelo (Humus).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Actinomicetos</strong></td>
+                        <td>Dan el olor a "tierra húmeda" tras la lluvia.</td>
+                        <td>Antibióticos naturales para el suelo.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAUSAS ACTIVAS 1-5 -->
+        <h3>Pausas Activas: Retos en el Cuaderno</h3>
+        <div class="activity-card">
+            <div class="activity-icon">✍️</div>
+            <div class="activity-info">
+                <strong>Actividad 1:</strong> Escribe en tu cuaderno: ¿Por qué crees que el olor a "tierra mojada" es una señal de que el suelo está vivo?
+            </div>
+            <button class="btn-check" onclick="markActivity(1, this)">Ya lo hice</button>
+        </div>
+        <div class="activity-card">
+            <div class="activity-icon">🎨</div>
+            <div class="activity-info">
+                <strong>Actividad 2:</strong> Dibuja una pila de abono de tu finca y señala tres tipos de residuos orgánicos que veas en ella.
+            </div>
+            <button class="btn-check" onclick="markActivity(2, this)">Ya lo hice</button>
+        </div>
+        <div class="activity-card">
+            <div class="activity-icon">🧠</div>
+            <div class="activity-info">
+                <strong>Actividad 3:</strong> Crea un mapa mental que conecte: Sol -> Café -> Residuos -> Microbios -> Nutrientes.
+            </div>
+            <button class="btn-check" onclick="markActivity(3, this)">Ya lo hice</button>
+        </div>
+        <div class="activity-card">
+            <div class="activity-icon">📊</div>
+            <div class="activity-info">
+                <strong>Actividad 4:</strong> Haz un cuadro comparativo entre un suelo fértil de Pueblo Rico y un suelo arenoso de construcción.
+            </div>
+            <button class="btn-check" onclick="markActivity(4, this)">Ya lo hice</button>
+        </div>
+        <div class="activity-card">
+            <div class="activity-icon">🔄</div>
+            <div class="activity-info">
+                <strong>Actividad 5:</strong> Diseña un diagrama de flujo de cómo una cáscara de naranja se convierte en parte de una raíz.
+            </div>
+            <button class="btn-check" onclick="markActivity(5, this)">Ya lo hice</button>
+        </div>
+
+        <!-- PREGUNTA ANALÍTICA -->
+        <div class="quiz-item" style="border: 2px solid var(--pcc-gold); margin-top: 50px;">
+            <h3>Análisis de Gráfica: Temperatura en el Compost</h3>
+            <div class="svg-container">
+                <svg viewBox="0 0 500 250" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Axes -->
+                    <line x1="50" y1="200" x2="450" y2="200" stroke="#333" stroke-width="2"/>
+                    <line x1="50" y1="200" x2="50" y2="20" stroke="#333" stroke-width="2"/>
+                    <!-- Curve -->
+                    <path d="M 50 180 C 100 180, 150 50, 250 50 C 350 50, 400 150, 450 160" fill="none" stroke="var(--pcc-green-deep)" stroke-width="3" />
+                    <!-- Labels -->
+                    <text x="250" y="240" text-anchor="middle" font-size="14">Días de Descomposición (0 a 60)</text>
+                    <text x="20" y="125" text-anchor="middle" transform="rotate(-90 20 125)" font-size="14">Temperatura (°C)</text>
+                    <text x="250" y="40" text-anchor="middle" font-weight="bold" fill="var(--pcc-gold)">Fase Termófila (Máxima Actividad)</text>
+                    <!-- Points -->
+                    <circle cx="250" cy="50" r="5" fill="red"/>
+                </svg>
+            </div>
+            <p><strong>Competencia Indagar:</strong> Observa la gráfica de una pila de compostaje en la Institución Educativa. ¿Por qué la temperatura sube drásticamente en los primeros días?</p>
+            <div class="option" onclick="checkAnswer(this, true, 0.4, 'graph1')">Debido al calor generado por el metabolismo acelerado de millones de bacterias.</div>
+            <div class="option" onclick="checkAnswer(this, false, 0, 'graph1')">Porque el sol calienta más la pila durante la primera semana.</div>
+            <div class="option" onclick="checkAnswer(this, false, 0, 'graph1')">Porque se le agrega agua caliente para acelerar el proceso.</div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 3: CUERPO DEDUCTIVO -->
+    <section id="deductive">
+        <h2>Deducción: Las Leyes de la Transformación</h2>
+        <div class="content-text">
+            <p>Desde el punto de vista biológico, la descomposición es una forma de <span class="highlight">respiración celular aeróbica y anaeróbica</span>. Las bacterias descomponedoras utilizan el carbono de los residuos orgánicos para obtener energía, liberando CO<sub>2</sub> y calor en el proceso. En las fincas de Pueblo Rico, esto se rige por la Ley de Conservación de la Materia: "Nada se crea, nada se destruye, todo se transforma". Lo que antes era un fruto de café rojo y turgente, ahora es una mezcla de iones cargados eléctricamente listos para ser absorbidos por las raíces.</p>
+            
+            <p>Un principio técnico fundamental es la <span class="highlight">Relación Carbono/Nitrógeno (C/N)</span>. Si un caficultor agrega solo aserrín (mucho Carbono) a su suelo, los microorganismos consumirán todo el Nitrógeno disponible para procesarlo, dejando a la planta de café "amarilla" por falta de nutrientes. Por eso, en Quimbaya combinamos la pulpa de café (rica en Nitrógeno) con hojarasca seca (rica en Carbono), creando el equilibrio perfecto para que la población de bacterias florezca sin perjudicar al cultivo.</p>
+            
+            <p>La humedad es otro factor crítico. Al estar ubicados en una zona con precipitaciones constantes, nuestros suelos suelen estar bien hidratados. Sin embargo, un exceso de agua expulsa el oxígeno, provocando que actúen bacterias <span class="highlight">anaeróbicas</span>. Estas generan olores fuertes (ácido sulfhídrico) y una descomposición más lenta. Por ello, las pilas de abono en nuestra vereda deben voltearse periódicamente para que el oxígeno entre y los recicladores silenciosos más eficientes puedan trabajar.</p>
+            
+            <p>A nivel celular, este proceso es una danza de enzimas. Las proteasas rompen proteínas, las celulasas atacan la fibra vegetal y las lipasas degradan las grasas. Es una ingeniería bioquímica avanzada que ocurre espontáneamente bajo la sombra de los yarumos. Cada vez que aplicamos abono orgánico, estamos inoculando el suelo con una fuerza vital que mejora la estructura física del terreno, permitiendo que retenga más agua durante las temporadas secas que a veces afectan al Quindío.</p>
+            
+            <p>Finalmente, debemos entender que la biodiversidad microbiana es el seguro de vida de Pueblo Rico. Un suelo con pocos tipos de bacterias es frágil. En cambio, un suelo rico en materia orgánica alberga una comunidad diversa que protege a las plantas de café de hongos malos como la "llaga radical". Fomentar el reciclaje silencioso no es solo una práctica agrícola; es asegurar la soberanía alimentaria y la belleza paisajística que hace de Quimbaya un destino turístico único en el mundo.</p>
+        </div>
+
+        <h3>Laboratorio Virtual: Dinámica Microbiológica</h3>
+        <p>Interactúa con el simulador: Haz clic para agregar "Residuos" y observa cómo las bacterias (puntos verdes) y los hongos (líneas blancas) se multiplican para limpiar la zona.</p>
+        <div id="canvas-wrap">
+            <canvas id="bioCanvas"></canvas>
+            <div class="canvas-overlay">
+                <strong>Simulador de Suelo Vivo</strong><br>
+                Bacterias: <span id="count-b">0</span><br>
+                Materia Orgánica: <span id="count-m">0</span>%
+            </div>
+        </div>
+
+        <!-- PAUSAS ACTIVAS 6-10 -->
+        <h3>Retos de Profundización</h3>
+        <div class="activity-card">
+            <div class="activity-icon">🧬</div>
+            <div class="activity-info">
+                <strong>Actividad 6:</strong> Construye un mapa conceptual sobre los factores que afectan la descomposición (Humedad, Temperatura, Oxígeno).
+            </div>
+            <button class="btn-check" onclick="markActivity(6, this)">Ya lo hice</button>
+        </div>
+        <div class="activity-card">
+            <div class="activity-icon">🔭</div>
+            <div class="activity-info">
+                <strong>Actividad 7:</strong> Observa una zona de hojarasca por 5 minutos. Anota cuántos bichos visibles (escarabajos, lombrices) ayudan a los microbios.
+            </div>
+            <button class="btn-check" onclick="markActivity(7, this)">Ya lo hice</button>
+        </div>
+        <div class="activity-card">
+            <div class="activity-icon">✍️</div>
+            <div class="activity-info">
+                <strong>Actividad 8:</strong> Dibuja un esquema técnico de una bacteria y señala dónde ocurre su metabolismo.
+            </div>
+            <button class="btn-check" onclick="markActivity(8, this)">Ya lo hice</button>
+        </div>
+        <div class="activity-card">
+            <div class="activity-icon">📝</div>
+            <div class="activity-info">
+                <strong>Actividad 9:</strong> Escribe un cuento corto (10 líneas) desde la perspectiva de una bacteria viviendo en una cáscara de banano.
+            </div>
+            <button class="btn-check" onclick="markActivity(9, this)">Ya lo hice</button>
+        </div>
+        <div class="activity-card">
+            <div class="activity-icon">🔢</div>
+            <div class="activity-info">
+                <strong>Actividad 10:</strong> Problema: Si una pila de abono de 100kg pierde el 40% de su peso en el proceso, ¿cuántos kg de humus quedan?
+            </div>
+            <button class="btn-check" onclick="markActivity(10, this)">Ya lo hice</button>
+        </div>
+    </section>
+
+    <!-- EVALUACIÓN FINAL -->
+    <section id="eval">
+        <h2>Evaluación Maestro Descomponedor</h2>
+        
+        <div id="final-quiz">
+            <div class="quiz-item" data-id="f1">
+                <p><strong>1. ¿Qué pasaría en la Vereda Pueblo Rico si todos los descomponedores desaparecieran súbitamente?</strong></p>
+                <div class="option" onclick="checkAnswer(this, true, 0.4, 'f1')">La materia muerta se acumularía y el suelo perdería su fertilidad.</div>
+                <div class="option" onclick="checkAnswer(this, false, 0, 'f1')">Las plantas de café crecerían más rápido sin competencia.</div>
+                <div class="option" onclick="checkAnswer(this, false, 0, 'f1')">No pasaría nada, los fertilizantes químicos harían todo el trabajo.</div>
+            </div>
+
+            <div class="quiz-item" data-id="f2">
+                <p><strong>2. ¿Cuál de estos factores es indispensable para una descomposición aeróbica eficiente?</strong></p>
+                <div class="option" onclick="checkAnswer(this, false, 0, 'f2')">Oscuridad total.</div>
+                <div class="option" onclick="checkAnswer(this, true, 0.4, 'f2')">Oxígeno (aireación).</div>
+                <div class="option" onclick="checkAnswer(this, false, 0, 'f2')">Frío extremo.</div>
+            </div>
+
+            <!-- Preguntas Abiertas con Anti-Fraude -->
+            <h3>Preguntas de Reflexión (Escribe con tus palabras)</h3>
+            <div class="quiz-item">
+                <p><strong>3. ¿Cómo beneficia el "Reciclaje Silencioso" a un caficultor de Quimbaya que quiere ahorrar dinero?</strong></p>
+                <textarea id="open1" placeholder="Mínimo 10 palabras..."></textarea>
+                <div id="fraud-open1" class="fraud-alert">⚠️ Detectada entrada de texto sospechosa (IA o pegado). Escribe manualmente.</div>
+            </div>
+
+            <div class="quiz-item">
+                <p><strong>4. Explica por qué se dice que los hongos son los "ingenieros" de la estructura del suelo.</strong></p>
+                <textarea id="open2" placeholder="Mínimo 10 palabras..."></textarea>
+                <div id="fraud-open2" class="fraud-alert">⚠️ Detectada entrada de texto sospechosa (IA o pegado). Escribe manualmente.</div>
+            </div>
+
+            <div class="quiz-item">
+                <p><strong>5. ¿Qué compromiso harías hoy para cuidar a los descomponedores de tu finca o escuela?</strong></p>
+                <textarea id="open3" placeholder="Mínimo 10 palabras..."></textarea>
+                <div id="fraud-open3" class="fraud-alert">⚠️ Detectada entrada de texto sospechosa (IA o pegado). Escribe manualmente.</div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <button class="btn-main" onclick="finishAndDownload()" style="max-width: 300px;">Descargar Mis Resultados</button>
+        </div>
+    </section>
+
+    <footer>
+        <p>Desarrollado para la Institución Educativa Pueblo Rico, Quimbaya (Quindío)</p>
+        <p>Ciencias Naturales - Grado 7° | 2024</p>
+    </footer>
+</main>
+
+<script>
+    // --- ESTADO GLOBAL ---
+    const state = {
+        names: '',
+        lastnames: '',
+        score: 0,
+        progress: 0,
+        activities: new Set(),
+        questionsAnswered: new Set(),
+        startTime: Date.now(),
+        typingSpeeds: {},
+        fraudDetected: false
+    };
+
+    // --- MANEJO DE USUARIO ---
+    document.getElementById('start-btn').addEventListener('click', () => {
+        const n = document.getElementById('user-names').value.trim();
+        const l = document.getElementById('user-lastnames').value.trim();
+        
+        if(!n || !l) {
+            alert("Por favor, ingresa tus nombres y apellidos.");
+            return;
+        }
+
+        state.names = n;
+        state.lastnames = l;
+        document.getElementById('display-name').innerText = n + ' ' + l;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-main').style.display = 'block';
+        
+        initCanvas();
+    });
+
+    // --- SISTEMA PEDAGÓGICO ---
+    function updateProgress(inc) {
+        state.progress = Math.min(state.progress + inc, 100);
+        document.getElementById('progress-bar').style.width = state.progress + '%';
+        document.getElementById('progress-text').innerText = Math.round(state.progress) + '%';
+    }
+
+    function checkAnswer(el, isCorrect, points, qId) {
+        if(state.questionsAnswered.has(qId)) return;
+        state.questionsAnswered.add(qId);
+
+        const options = el.parentElement.querySelectorAll('.option');
+        options.forEach(opt => opt.style.pointerEvents = 'none');
+
+        if(isCorrect) {
+            el.classList.add('correct');
+            state.score += points;
+            updateProgress(2);
+        } else {
+            el.classList.add('wrong');
+            options.forEach(opt => {
+                if(opt.getAttribute('onclick').includes('true')) opt.classList.add('correct');
+            });
+        }
+        
+        document.getElementById('score-badge').innerText = `Puntos: ${state.score.toFixed(1)}`;
+    }
+
+    function markActivity(num, btn) {
+        if(state.activities.has(num)) return;
+        state.activities.add(num);
+        btn.innerText = "✓ Completado";
+        btn.classList.add('done');
+        state.score += 0.2;
+        updateProgress(6);
+        document.getElementById('score-badge').innerText = `Puntos: ${state.score.toFixed(1)}`;
+    }
+
+    // --- ANTI-FRAUDE ---
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(ta => {
+        ta.addEventListener('paste', e => { e.preventDefault(); alert("El pegado está bloqueado. ¡Queremos leer tus propias palabras!"); });
+        ta.addEventListener('drop', e => e.preventDefault());
+        ta.addEventListener('contextmenu', e => e.preventDefault());
+
+        ta.addEventListener('keyup', (e) => {
+            const id = e.target.id;
+            const now = Date.now();
+            if(!state.typingSpeeds[id]) state.typingSpeeds[id] = [];
+            
+            // Si la velocidad es absurda (menos de 30ms entre teclas para más de 5 caracteres)
+            if(state.typingSpeeds[id].length > 0) {
+                const diff = now - state.typingSpeeds[id][state.typingSpeeds[id].length-1];
+                if(diff < 20) {
+                    document.getElementById('fraud-' + id).style.display = 'block';
+                    state.fraudDetected = true;
+                }
+            }
+            state.typingSpeeds[id].push(now);
+        });
+    });
+
+    // --- CANVAS ANIMATION ---
+    let canvas, ctx, microbes = [], organicMatter = 100;
+
+    function initCanvas() {
+        canvas = document.getElementById('bioCanvas');
+        ctx = canvas.getContext('2d');
+        resizeCanvas();
+        
+        for(let i=0; i<30; i++) spawnMicrobe();
+        
+        canvas.addEventListener('mousedown', (e) => {
+            organicMatter = Math.min(organicMatter + 10, 100);
+            for(let i=0; i<5; i++) spawnMicrobe();
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = 500;
+    }
+
+    function spawnMicrobe() {
+        microbes.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 2,
+            vy: (Math.random() - 0.5) * 2,
+            type: Math.random() > 0.7 ? 'fungi' : 'bacteria',
+            size: Math.random() * 3 + 2,
+            hue: Math.random() * 40 + 80
+        });
+    }
+
+    function animate() {
+        ctx.fillStyle = 'rgba(26, 26, 26, 0.2)'; // Trail effect
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+
+        // Draw organic background
+        ctx.fillStyle = `rgba(93, 64, 55, ${organicMatter/200})`;
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+
+        microbes.forEach((m, idx) => {
+            m.x += m.vx;
+            m.y += m.vy;
+
+            // Bounce
+            if(m.x < 0 || m.x > canvas.width) m.vx *= -1;
+            if(m.y < 0 || m.y > canvas.height) m.vy *= -1;
+
+            if(m.type === 'bacteria') {
+                ctx.beginPath();
+                ctx.arc(m.x, m.y, m.size, 0, Math.PI*2);
+                ctx.fillStyle = `hsl(${m.hue}, 80%, 60%)`;
+                ctx.fill();
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(m.x, m.y);
+                ctx.lineTo(m.x + m.vx * 10, m.y + m.vy * 10);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Consumption logic
+            if(organicMatter > 0) organicMatter -= 0.0001;
+        });
+
+        document.getElementById('count-b').innerText = microbes.length;
+        document.getElementById('count-m').innerText = Math.max(0, Math.round(organicMatter));
+
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // --- EXPORTACIÓN ---
+    function finishAndDownload() {
+        const timeSpent = Math.floor((Date.now() - state.startTime) / 60000);
+        const score = Math.min(state.score, 5).toFixed(1);
+        
+        let report = `
+        RESULTADOS OVA: LOS RECICLADORES SILENCIOSOS
+        -------------------------------------------
+        Estudiante: ${state.names} ${state.lastnames}
+        Vereda: Pueblo Rico, Quimbaya
+        Puntaje Final: ${score} / 5.0
+        Tiempo empleado: ${timeSpent} minutos
+        
+        RESPUESTAS ABIERTAS:
+        Q3: ${document.getElementById('open1').value}
+        Q4: ${document.getElementById('open2').value}
+        Q5: ${document.getElementById('open3').value}
+        
+        INTEGRIDAD PEDAGÓGICA:
+        Fraude detectado: ${state.fraudDetected ? "SÍ" : "NO"}
+        Actividades manuales completadas: ${state.activities.size} / 10
+        
+        RUTA DE FORTALECIMIENTO:
+        ${score >= 4 ? "Excelente. Eres un experto en la salud del suelo quindiano. ¡Sigue cuidando la tierra!" : "Buen intento. Te recomendamos repasar el rol de los hongos en la ruptura de la madera y la relación Carbono/Nitrógeno."}
+        -------------------------------------------
+        Generado automáticamente por el Sistema OVA Quimbaya.
+        `;
+
+        const blob = new Blob([report], {type: 'text/plain'});
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Resultados_${state.lastnames}.txt`;
+        a.click();
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Cuando la tierra se agota - Hábitos no saludables en Pueblo Rico</title>
+    <style>
+        /* ==========================================================================
+           VARIABLES Y PALETA DE COLORES (Paisaje Cultural Cafetero)
+           ========================================================================== */
+        :root {
+            --cafe-tierra: #4E342E;
+            --cafe-claro: #795548;
+            --verde-quindio: #2E7D32;
+            --verde-hoja: #66BB6A;
+            --naranja-citrico: #EF6C00;
+            --amarillo-sol: #FBC02D;
+            --crema-fondo: #F5F5F0;
+            --blanco: #FFFFFF;
+            --rojo-alerta: #D32F2F;
+            --gris-ceniza: #757575;
+            --texto-principal: #212121;
+            --borde-suave: rgba(78, 52, 46, 0.15);
+        }
+
+        /* ==========================================================================
+           RESET Y TIPOGRAFÍA BASE
+           ========================================================================== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--crema-fondo); color: var(--texto-principal); line-height: 1.7; overflow-x: hidden; scroll-behavior: smooth; }
+
+        /* ==========================================================================
+           PANTALLA DE BIENVENIDA (LOGIN)
+           ========================================================================== */
+        #welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, var(--cafe-tierra), var(--verde-quindio));
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+            transition: opacity 0.6s ease;
+        }
+        .welcome-card {
+            background: var(--blanco); padding: 3rem; border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; max-width: 500px; width: 90%;
+            border-top: 8px solid var(--naranja-citrico);
+        }
+        .welcome-card h1 { color: var(--cafe-tierra); margin-bottom: 1rem; font-size: 2.2rem; }
+        .welcome-card p { color: var(--gris-ceniza); margin-bottom: 2rem; font-size: 1.1rem; }
+        .input-group { margin-bottom: 1.5rem; text-align: left; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: var(--verde-quindio); }
+        .input-group input {
+            width: 100%; padding: 12px; border: 2px solid var(--borde-suave);
+            border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.3s;
+        }
+        .input-group input:focus { border-color: var(--naranja-citrico); }
+        .btn {
+            background-color: var(--naranja-citrico); color: var(--blanco); border: none;
+            padding: 12px 25px; font-size: 1.1rem; border-radius: 8px; cursor: pointer;
+            font-weight: bold; transition: all 0.3s; display: inline-block; text-align: center;
+        }
+        .btn:hover { background-color: #E65100; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(230, 81, 0, 0.4); }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ==========================================================================
+           BARRA DE NAVEGACIÓN Y GAMIFICACIÓN
+           ========================================================================== */
+        #navbar {
+            position: fixed; top: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px); box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            display: none; justify-content: space-between; align-items: center; padding: 10px 30px; z-index: 900;
+        }
+        .nav-user { display: flex; align-items: center; gap: 20px; }
+        .user-name { font-weight: 800; color: var(--cafe-tierra); font-size: 1.2rem; }
+        .score-display {
+            background: var(--verde-quindio); color: var(--blanco); padding: 5px 15px;
+            border-radius: 20px; font-weight: bold; display: flex; align-items: center; gap: 8px;
+        }
+        .unlockables { display: flex; gap: 12px; }
+        .icon-item { width: 35px; height: 35px; transition: all 0.5s; }
+        .icon-locked { filter: grayscale(100%) opacity(0.2); }
+        .icon-unlocked { filter: none; animation: pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { 0% { transform: scale(0.5) rotate(-20deg); } 50% { transform: scale(1.4) rotate(10deg); } 100% { transform: scale(1) rotate(0); } }
+        
+        .progress-container { width: 250px; background: #e0e0e0; border-radius: 10px; height: 12px; overflow: hidden; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--amarillo-sol), var(--naranja-citrico)); width: 0%; transition: width 0.5s ease; }
+
+        /* ==========================================================================
+           CONTENIDO PRINCIPAL
+           ========================================================================== */
+        #main-content { display: none; padding: 120px 20px 60px; max-width: 1050px; margin: 0 auto; }
+        section {
+            background: var(--blanco); padding: 3rem; border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 3rem; position: relative;
+        }
+        section::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 6px; height: 100%;
+            background: var(--verde-quindio); border-radius: 15px 0 0 15px;
+        }
+        h2 { color: var(--cafe-tierra); margin-bottom: 1.5rem; font-size: 2rem; border-bottom: 2px solid var(--borde-suave); padding-bottom: 10px; }
+        h3 { color: var(--naranja-citrico); margin: 2rem 0 1rem; font-size: 1.4rem; }
+        p { margin-bottom: 1.5rem; text-align: justify; font-size: 1.1rem; }
+        .highlight { background-color: rgba(239, 108, 0, 0.1); padding: 2px 6px; border-radius: 4px; font-weight: bold; color: var(--naranja-citrico); }
+
+        /* Tablas Comparativas */
+        .styled-table {
+            width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 1rem;
+            border-radius: 8px; overflow: hidden; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        .styled-table thead tr { background-color: var(--cafe-tierra); color: #ffffff; text-align: left; }
+        .styled-table th, .styled-table td { padding: 15px 20px; }
+        .styled-table tbody tr { border-bottom: 1px solid #dddddd; }
+        .styled-table tbody tr:nth-of-type(even) { background-color: #f9f9f9; }
+        .styled-table tbody tr:hover { background-color: #f1f1f1; }
+
+        /* Actividades / Pausas Activas */
+        .actividad-card {
+            background: #F9FBE7; border: 2px dashed var(--verde-hoja); padding: 1.5rem;
+            border-radius: 10px; margin-bottom: 1.5rem; transition: transform 0.3s;
+        }
+        .actividad-card:hover { transform: translateX(5px); }
+        .btn-check { background-color: var(--verde-hoja); color: white; margin-top: 15px; width: 100%; }
+        .btn-check.done { background-color: var(--gris-ceniza); cursor: default; box-shadow: none; }
+
+        /* Cuestionarios */
+        .question-block {
+            margin-bottom: 2rem; padding: 1.5rem; background: #FAFAFA;
+            border-radius: 10px; border-left: 5px solid var(--amarillo-sol);
+        }
+        .options label {
+            display: block; margin-bottom: 10px; cursor: pointer; padding: 12px;
+            border-radius: 8px; transition: background 0.2s; border: 1px solid transparent;
+        }
+        .options label:hover { background: #EEEEEE; border-color: #E0E0E0; }
+        
+        /* Anti-Fraude Textareas */
+        .fraud-alert { color: var(--rojo-alerta); font-weight: bold; font-size: 0.95rem; display: none; margin-top: 8px; padding: 10px; background: #FFEBEE; border-radius: 5px; border-left: 4px solid var(--rojo-alerta); }
+        .word-count { font-size: 0.9rem; color: var(--gris-ceniza); margin-top: 5px; display: block; text-align: right; }
+        textarea {
+            width: 100%; height: 120px; padding: 15px; border: 2px solid var(--borde-suave);
+            border-radius: 8px; resize: vertical; font-family: inherit; font-size: 1rem; line-height: 1.5;
+        }
+        textarea:focus { border-color: var(--verde-quindio); outline: none; box-shadow: 0 0 8px rgba(46, 125, 50, 0.2); }
+        textarea.error { border-color: var(--rojo-alerta); background-color: #FFEBEE; }
+
+        /* Canvas & SVG */
+        .visual-container {
+            width: 100%; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            background: #111; position: relative; margin: 2rem 0;
+        }
+        canvas { display: block; width: 100%; height: 450px; cursor: pointer; }
+        .svg-container { text-align: center; margin: 2rem 0; padding: 2rem; background: white; border: 1px solid var(--borde-suave); border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+
+        /* Ocultar secciones bloqueadas */
+        .locked-section { opacity: 0.3; pointer-events: none; position: relative; filter: blur(2px); transition: all 1s ease; }
+        .lock-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(78, 52, 46, 0.95); color: white; padding: 20px 40px;
+            border-radius: 12px; font-weight: bold; text-align: center; font-size: 1.2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; width: 80%;
+        }
+        .unlocked { opacity: 1; pointer-events: auto; filter: blur(0); }
+        .unlocked .lock-overlay { display: none; }
+
+        .control-panel { background: rgba(255,255,255,0.1); position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border-radius: 30px; display: flex; gap: 15px; backdrop-filter: blur(5px); }
+        .btn-sim { background: var(--blanco); color: var(--cafe-tierra); border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-sim:hover { background: var(--verde-hoja); color: white; }
+        .btn-sim.bad { background: #FFCDD2; color: #C62828; }
+        .btn-sim.bad:hover { background: #C62828; color: white; }
+
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE BIENVENIDA -->
+    <div id="welcome-screen">
+        <div class="welcome-card">
+            <svg width="100" height="100" viewBox="0 0 100 100" style="margin-bottom: 1rem;">
+                <!-- Montañas -->
+                <path d="M10 80 L35 40 L60 80 Z" fill="#2E7D32"/>
+                <path d="M40 80 L65 30 L90 80 Z" fill="#66BB6A"/>
+                <!-- Sol -->
+                <circle cx="50" cy="25" r="15" fill="#FBC02D"/>
+                <!-- Tierra degradada -->
+                <path d="M0 80 L100 80 L100 100 L0 100 Z" fill="#795548"/>
+                <path d="M20 80 L25 95 M50 80 L48 98 M80 80 L85 92" stroke="#4E342E" stroke-width="2"/>
+            </svg>
+            <h1>Cuando la tierra se agota</h1>
+            <p><strong>Laboratorio Vivo: Pueblo Rico, Quimbaya</strong><br>Descubre cómo los malos hábitos afectan tu cuerpo, de la misma forma en que las malas prácticas agrícolas destruyen nuestra tierra.</p>
+            
+            <div class="input-group">
+                <label for="nombres">Nombres del Estudiante:</label>
+                <input type="text" id="nombres" placeholder="Ej. Juan Carlos" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="apellidos">Apellidos del Estudiante:</label>
+                <input type="text" id="apellidos" placeholder="Ej. Ramírez Osorio" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar">Empezar Exploración</button>
+            <p id="login-error" style="color: var(--rojo-alerta); display: none; margin-top: 15px; font-weight: bold;">Debes ingresar tus nombres y apellidos para continuar.</p>
+        </div>
+    </div>
+
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav id="navbar">
+        <div class="nav-user">
+            <span class="user-name" id="display-name">Estudiante</span>
+            <div>
+                <span style="font-size: 0.8rem; color: var(--cafe-tierra); font-weight: bold;">Progreso del Cuaderno:</span>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-user">
+            <div class="score-display">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFF"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <span id="score-text">0 / 5 Pts</span>
+            </div>
+            <div class="unlockables">
+                <!-- 1. Grano de Café -->
+                <svg id="icon-1" class="icon-item icon-locked" viewBox="0 0 100 100" title="Semilla del Conocimiento">
+                    <path d="M50 10 C20 10, 10 40, 10 60 C10 80, 30 90, 50 90 C70 90, 90 80, 90 60 C90 40, 80 10, 50 10 Z" fill="#4E342E"/>
+                    <path d="M45 20 Q60 50 45 80" stroke="#3E2723" stroke-width="6" fill="none" stroke-linecap="round"/>
+                </svg>
+                <!-- 2. Flor de Cítrico -->
+                <svg id="icon-2" class="icon-item icon-locked" viewBox="0 0 100 100" title="Flor de la Salud">
+                    <circle cx="50" cy="50" r="15" fill="#FBC02D"/>
+                    <path d="M50 35 C40 10, 60 10, 50 35 M65 50 C90 40, 90 60, 65 50 M50 65 C60 90, 40 90, 50 65 M35 50 C10 60, 10 40, 35 50" fill="#FFF" stroke="#E0E0E0" stroke-width="2"/>
+                </svg>
+                <!-- 3. Vaca (Ganadería) -->
+                <svg id="icon-3" class="icon-item icon-locked" viewBox="0 0 100 100" title="Fuerza y Equilibrio">
+                    <rect x="25" y="30" width="50" height="40" rx="10" fill="#FFF" stroke="#4E342E" stroke-width="4"/>
+                    <circle cx="35" cy="45" r="8" fill="#4E342E"/>
+                    <circle cx="60" cy="55" r="12" fill="#4E342E"/>
+                    <path d="M25 35 L15 25 M75 35 L85 25" stroke="#4E342E" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+                <!-- 4. Jeep Willys (Turismo) -->
+                <svg id="icon-4" class="icon-item icon-locked" viewBox="0 0 100 100" title="Motor Limpio">
+                    <rect x="15" y="45" width="70" height="25" rx="5" fill="#D32F2F"/>
+                    <rect x="25" y="25" width="30" height="20" fill="#FFCDD2"/>
+                    <circle cx="30" cy="70" r="12" fill="#212121"/><circle cx="30" cy="70" r="4" fill="#FFF"/>
+                    <circle cx="70" cy="70" r="12" fill="#212121"/><circle cx="70" cy="70" r="4" fill="#FFF"/>
+                </svg>
+                <!-- 5. Sombrero Aguadeño/Quindiano -->
+                <svg id="icon-5" class="icon-item icon-locked" viewBox="0 0 100 100" title="Protector del Sistema">
+                    <path d="M10 70 Q50 80 90 70 L80 60 Q50 65 20 60 Z" fill="#D7CCC8"/>
+                    <path d="M30 60 L35 30 Q50 20 65 30 L70 60 Z" fill="#EFEBE9"/>
+                    <path d="M32 50 Q50 55 68 50" stroke="#212121" stroke-width="4" fill="none"/>
+                </svg>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main id="main-content">
+        
+        <!-- SECCIÓN 1: INICIO Y PRE-SABERES -->
+        <section id="inicio">
+            <h2>Objetivo de Aprendizaje</h2>
+            <p>Comprender los efectos negativos de los hábitos no saludables (como el sedentarismo, la mala alimentación y el consumo de sustancias) sobre los sistemas circulatorio, respiratorio y digestivo humano, comparándolos con el desgaste ecológico de las fincas y cultivos de la <strong>Vereda Pueblo Rico (Quimbaya)</strong>.</p>
+            
+            <h3>Diagnóstico de Pre-saberes</h3>
+            <p>Analiza las siguientes situaciones locales y relaciónalas con tu cuerpo. Responde correctamente para ganar tus primeros puntos y desbloquear los emblemas de la vereda.</p>
+            
+            <div class="question-block">
+                <p><strong>1. Si en una finca cafetera de Quimbaya sembramos café año tras año sin aplicar abono orgánico ni dejar descansar la tierra, el suelo se vuelve estéril. ¿Qué hábito en el ser humano produce un efecto de "agotamiento" similar en sus células?</strong></p>
+                <div class="options">
+                    <label><input type="radio" name="pre1" value="0"> Dormir 8 horas diarias.</label>
+                    <label><input type="radio" name="pre1" value="1"> La mala alimentación sostenida y la falta de sueño.</label>
+                    <label><input type="radio" name="pre1" value="0"> Hacer ejercicio cardiovascular frecuentemente.</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <p><strong>2. Los Jeep Willys que transportan turistas a Pueblo Rico necesitan filtros de aire limpios. Si el filtro se llena de polvo y humo, el motor se ahoga y pierde fuerza. En tu cuerpo, ¿qué órgano cumple el rol del filtro y qué hábito lo "tapa"?</strong></p>
+                <div class="options">
+                    <label><input type="radio" name="pre2" value="0"> El estómago, afectado por tomar mucha agua.</label>
+                    <label><input type="radio" name="pre2" value="0"> El corazón, afectado por caminar en la montaña.</label>
+                    <label><input type="radio" name="pre2" value="1"> Los pulmones, afectados por el tabaquismo o el vapeo.</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <p><strong>3. Cuando las vacas pisan el mismo terreno todos los días, la tierra se "compacta", se vuelve dura como piedra y el agua no puede penetrar. Si comes grasas ultraprocesadas en exceso (comida chatarra), ¿qué estructura de tu cuerpo se "compacta" taponando el flujo de sangre?</strong></p>
+                <div class="options">
+                    <label><input type="radio" name="pre3" value="1"> Las arterias y vasos sanguíneos (aterosclerosis).</label>
+                    <label><input type="radio" name="pre3" value="0"> Los huesos del cráneo.</label>
+                    <label><input type="radio" name="pre3" value="0"> El intestino grueso.</label>
+                </div>
+            </div>
+            <button class="btn" id="btn-eval-pre">Verificar Respuestas</button>
+            <p id="feedback-pre" style="margin-top: 15px; font-weight: bold; font-size: 1.1rem;"></p>
+        </section>
+
+        <!-- SECCIÓN 2: CUERPO INDUCTIVO -->
+        <section id="inductivo">
+            <h2>El Cuerpo como un Ecosistema: La Analogía de la Finca</h2>
+            <p>La tierra de la vereda Pueblo Rico en Quimbaya es un sistema vivo y dinámico. Durante décadas, los campesinos han sabido que para cosechar el mejor café o los cítricos más jugosos, deben mantener un delicado equilibrio. La tierra necesita nutrientes, agua pura, oxigenación y periodos de descanso. El cuerpo humano, especialmente en la etapa de desarrollo de un joven de octavo grado, funciona exactamente bajo los mismos principios ecológicos. Cuando ignoramos sus necesidades y adoptamos <span class="highlight">hábitos no saludables</span>, comenzamos a "agotar la tierra" de nuestra propia biología.</p>
+            
+            <p>Hablemos del sector cafetalero. En el pasado, algunas fincas practicaban el monocultivo extremo y el uso excesivo de agroquímicos. Esta práctica forzaba a la planta a producir rápido, pero a largo plazo, el suelo perdía su capa vegetal, se erosionaba y moría biológicamente. En nuestro sistema digestivo y metabólico ocurre un fenómeno gemelo. Cuando nuestra dieta se basa en alimentos ultraprocesados, altos en azúcares refinados y conservantes artificiales (y dejamos de lado los alimentos reales que da la tierra), estamos aplicando "agroquímicos tóxicos" a nuestro cuerpo. Forzamos al páncreas a producir enormes cantidades de insulina para bajar el azúcar, agotando el órgano, lo que a largo plazo erosiona nuestra salud generando resistencia a la insulina, obesidad y diabetes tipo 2.</p>
+
+            <p>Observemos ahora los cultivos de cítricos (naranjas y mandarinas) tan comunes en Quimbaya. Estos árboles dependen de un sistema de raíces sano y un flujo constante de agua limpia para hidratar sus frutos. Si hay sequía o si el agua de riego está contaminada con metales pesados, las hojas se marchitan y el árbol enferma. Nuestro sistema excretor y circulatorio dependen vitalmente de la hidratación con agua pura. El consumo constante de bebidas azucaradas, energizantes o la simple falta de consumo de agua, genera un ambiente tóxico para los riñones. La sangre se vuelve densa, dificultando el transporte de oxígeno (O<sub>2</sub>) y la eliminación de dióxido de carbono (CO<sub>2</sub>). Un cuerpo deshidratado es como un cultivo de cítricos en sequía: sus células se marchitan y mueren.</p>
+
+            <p>En el ámbito de la ganadería local, existe un problema conocido como la "compactación del suelo". Si hay demasiadas vacas pesadas caminando constantemente por el mismo potrero húmedo, la tierra pierde su porosidad, se endurece y las nuevas semillas no pueden germinar porque las raíces no logran penetrar la costra de barro endurecido. De manera asombrosa, el sedentarismo (falta de ejercicio) combinado con una dieta alta en grasas trans y colesterol malo (LDL) hace exactamente lo mismo en nuestro sistema cardiovascular. La grasa se adhiere a las paredes de las arterias formando placas (ateromas), endureciéndolas y estrechando el paso de la sangre. Esta "compactación arterial" obliga al corazón a trabajar el doble, elevando la presión arterial a niveles peligrosos.</p>
+
+            <p>Finalmente, pensemos en el turismo y nuestros emblemáticos Jeep Willys. Estos vehículos clásicos son fuertes, pero requieren que sus filtros de aire estén limpios para que el motor combine el oxígeno con la gasolina y genere energía. Si un conductor decidiera taponar deliberadamente el carburador y el filtro de aire con humo tóxico y alquitrán, el motor tosería, perdería potencia y se apagaría. Fumar cigarrillos tradicionales o usar cigarrillos electrónicos (vapeadores) es hacerle exactamente esto al sistema respiratorio. Los químicos queman y destruyen los alvéolos pulmonares, paralizando los cilios (pequeños vellos que limpian los pulmones). Sin oxígeno limpio, sin importar cuánta comida consumas, tu cuerpo no puede producir energía celular (ATP), llevándote a un estado de agotamiento crónico. Tu motor se apaga.</p>
+
+            <!-- Cuadro Comparativo -->
+            <h3>Cuadro Comparativo: El Ecosistema vs. El Cuerpo Humano</h3>
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Acción en la Finca (Pueblo Rico)</th>
+                        <th>Hábito Humano Equivalente</th>
+                        <th>Sistema Corporal Afectado</th>
+                        <th>Consecuencia Fisiológica / Enfermedad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Uso excesivo de químicos / Monocultivo</td>
+                        <td>Dieta basada en ultraprocesados y azúcares</td>
+                        <td>Digestivo / Endocrino</td>
+                        <td>Resistencia a la insulina, Diabetes, Hígado graso.</td>
+                    </tr>
+                    <tr>
+                        <td>Taponar filtros del Jeep Willys con humo</td>
+                        <td>Tabaquismo / Uso de Vapeadores</td>
+                        <td>Respiratorio</td>
+                        <td>Destrucción alveolar, EPOC, falta de oxigenación celular.</td>
+                    </tr>
+                    <tr>
+                        <td>Compactación del suelo por sobrepastoreo</td>
+                        <td>Sedentarismo y consumo de grasas trans</td>
+                        <td>Cardiovascular</td>
+                        <td>Aterosclerosis (taponamiento de arterias), Hipertensión.</td>
+                    </tr>
+                    <tr>
+                        <td>Regar cultivos con aguas contaminadas</td>
+                        <td>Consumo de alcohol o bebidas energizantes</td>
+                        <td>Excretor / Nervioso</td>
+                        <td>Sobrecarga renal, daño hepático, alteración neuronal.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- SECCIÓN 3: PAUSAS ACTIVAS 1-5 (CUADERNO) -->
+        <section id="pausas-1-5">
+            <h2>Pausas Activas: Retos en tu Cuaderno</h2>
+            <p>Toma tu cuaderno de Ciencias Naturales, desarrolla estas 5 actividades cortas y marca el botón "Ya lo hice" para actualizar tu barra de progreso superior.</p>
+
+            <div class="actividad-card">
+                <strong>Actividad 1: Reflexión Escrita</strong><br>
+                Escribe en tu cuaderno: ¿Qué significa para ti la frase "el cuerpo humano es como la tierra de una finca"? Explica con tus propias palabras en 3 renglones.
+                <button class="btn btn-check" onclick="marcarPausa(this)">✓ Ya lo hice en mi cuaderno</button>
+            </div>
+            
+            <div class="actividad-card">
+                <strong>Actividad 2: Dibujo Comparativo</strong><br>
+                Divide la hoja en dos. A la izquierda, dibuja una raíz de cafeto sana absorbiendo nutrientes. A la derecha, dibuja el estómago e intestino absorbiendo comida natural.
+                <button class="btn btn-check" onclick="marcarPausa(this)">✓ Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="actividad-card">
+                <strong>Actividad 3: Mapa Mental "Tóxicos"</strong><br>
+                Crea un mapa mental donde el centro sea "Toxinas Comunes". Ramifica hacia: Humo de vapeador, Exceso de azúcar, y Alcohol. Indica qué órgano daña cada uno.
+                <button class="btn btn-check" onclick="marcarPausa(this)">✓ Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="actividad-card">
+                <strong>Actividad 4: Cuadro de Equivalencias</strong><br>
+                Copia en tu cuaderno una versión reducida del Cuadro Comparativo de arriba, pero agrega una fila más inventada por ti sobre el descanso (dormir vs. dejar descansar la tierra).
+                <button class="btn btn-check" onclick="marcarPausa(this)">✓ Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="actividad-card">
+                <strong>Actividad 5: Diagrama de Causa y Efecto (Espina de Pescado)</strong><br>
+                Dibuja un diagrama donde el problema principal sea "Fatiga Crónica en un estudiante". En las espinas coloca causas como: no desayunar, dormir mal, sedentarismo, etc.
+                <button class="btn btn-check" onclick="marcarPausa(this)">✓ Ya lo hice en mi cuaderno</button>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: COMPETENCIA ICFES (GRÁFICA SVG) -->
+        <section id="icfes-graph">
+            <h2>Análisis Analítico: Competencia Interpretar</h2>
+            <p>La siguiente gráfica muestra el <strong>Rendimiento Físico (Capacidad de oxigenación y resistencia)</strong> de dos personas de la misma edad (15 a 60 años) que viven en Quimbaya. <br><span style="color:var(--verde-quindio); font-weight:bold;">Persona A (Línea Verde):</span> Guía turístico y agricultor, camina a diario, no fuma, come alimentos de la finca. <br><span style="color:var(--rojo-alerta); font-weight:bold;">Persona B (Línea Roja):</span> Trabajo de oficina sedentario, usa vapeador desde los 15 años, dieta alta en ultraprocesados.</p>
+            
+            <div class="svg-container">
+                <!-- SVG GRÁFICA DE DATOS -->
+                <svg width="100%" height="320" viewBox="0 0 600 320" style="max-width: 600px;">
+                    <!-- Grilla y Ejes -->
+                    <rect width="600" height="320" fill="#f8f9fa" rx="10"/>
+                    <line x1="60" y1="260" x2="560" y2="260" stroke="#4E342E" stroke-width="2"/> <!-- Eje X (Edad) -->
+                    <line x1="60" y1="40" x2="60" y2="260" stroke="#4E342E" stroke-width="2"/> <!-- Eje Y (Rendimiento) -->
+                    
+                    <!-- Etiquetas Eje Y (%) -->
+                    <text x="20" y="50" font-size="12" fill="#333">100%</text> <line x1="55" y1="45" x2="560" y2="45" stroke="#ddd" stroke-dasharray="4"/>
+                    <text x="28" y="100" font-size="12" fill="#333">80%</text> <line x1="55" y1="95" x2="560" y2="95" stroke="#ddd" stroke-dasharray="4"/>
+                    <text x="28" y="150" font-size="12" fill="#333">60%</text> <line x1="55" y1="145" x2="560" y2="145" stroke="#ddd" stroke-dasharray="4"/>
+                    <text x="28" y="200" font-size="12" fill="#333">40%</text> <line x1="55" y1="195" x2="560" y2="195" stroke="#ddd" stroke-dasharray="4"/>
+                    <text x="28" y="250" font-size="12" fill="#333">20%</text> <line x1="55" y1="245" x2="560" y2="245" stroke="#ddd" stroke-dasharray="4"/>
+                    <text x="-180" y="15" transform="rotate(-90)" font-size="14" fill="#4E342E" font-weight="bold">Rendimiento Físico / Capacidad Pulmonar</text>
+
+                    <!-- Etiquetas Eje X (Años) -->
+                    <text x="60" y="280" font-size="12" fill="#333" text-anchor="middle">15</text>
+                    <text x="160" y="280" font-size="12" fill="#333" text-anchor="middle">25</text>
+                    <text x="260" y="280" font-size="12" fill="#333" text-anchor="middle">35</text>
+                    <text x="360" y="280" font-size="12" fill="#333" text-anchor="middle">45</text>
+                    <text x="460" y="280" font-size="12" fill="#333" text-anchor="middle">55</text>
+                    <text x="560" y="280" font-size="12" fill="#333" text-anchor="middle">60+</text>
+                    <text x="310" y="310" font-size="14" fill="#4E342E" font-weight="bold" text-anchor="middle">Edad (Años)</text>
+
+                    <!-- Línea A (Verde) -->
+                    <path d="M 60 45 Q 160 55 260 70 T 460 120 T 560 150" stroke="#2E7D32" stroke-width="4" fill="none"/>
+                    <circle cx="260" cy="70" r="5" fill="#2E7D32"/> <circle cx="460" cy="120" r="5" fill="#2E7D32"/>
+                    
+                    <!-- Línea B (Roja) -->
+                    <path d="M 60 45 Q 120 100 160 145 T 360 210 T 560 250" stroke="#D32F2F" stroke-width="4" fill="none"/>
+                    <circle cx="160" cy="145" r="5" fill="#D32F2F"/> <circle cx="360" cy="210" r="5" fill="#D32F2F"/>
+
+                    <!-- Leyenda -->
+                    <rect x="400" y="55" width="15" height="15" fill="#2E7D32"/> <text x="425" y="67" font-size="12">Persona A (Activa)</text>
+                    <rect x="400" y="80" width="15" height="15" fill="#D32F2F"/> <text x="425" y="92" font-size="12">Persona B (Malos hábitos)</text>
+                </svg>
+            </div>
+
+            <div class="question-block">
+                <p><strong>De acuerdo a la gráfica, ¿qué conclusión científica y biológica es correcta respecto al deterioro del cuerpo?</strong></p>
+                <div class="options">
+                    <label><input type="radio" name="icfes" value="0"> Ambas personas pierden su rendimiento físico exactamente al mismo ritmo porque el envejecimiento afecta a todos por igual.</label>
+                    <label><input type="radio" name="icfes" value="1"> Los hábitos no saludables provocan que la Persona B tenga a los 25 años el mismo rendimiento físico (60%) que la Persona A tendrá casi a los 60 años.</label>
+                    <label><input type="radio" name="icfes" value="0"> El uso del vapeador mejora la capacidad pulmonar de la Persona B entre los 15 y los 25 años, pero luego cae rápidamente.</label>
+                </div>
+                <button class="btn" id="btn-icfes" style="margin-top:10px;">Validar e Ingresar al Laboratorio</button>
+                <p id="feedback-icfes" style="margin-top: 10px; font-weight: bold;"></p>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             CONTENIDO BLOQUEADO (Se desbloquea al responder la gráfica)
+             ========================================================================== -->
+        <div id="locked-content" class="locked-section">
+            <div class="lock-overlay">🔒 Responde correctamente la gráfica analítica para desbloquear el laboratorio avanzado.</div>
+            
+            <!-- SECCIÓN 5: CUERPO DEDUCTIVO -->
+            <section id="deductivo">
+                <h2>El Colapso Sistémico: Fisiología del Desgaste</h2>
+                <p>Para entender profundamente por qué el cuerpo se deteriora ante los malos hábitos, debemos analizar el concepto de <strong>Homeostasis</strong>. La homeostasis es la capacidad que tiene el organismo para mantener un equilibrio interno estable, a pesar de los cambios externos. Funciona como el administrador de una finca cafetera que debe balancear los gastos, los insumos y la cosecha para no quebrar. Cuando sometemos al cuerpo a estrés constante por mala nutrición, toxinas o sedentarismo, obligamos a nuestros sistemas a trabajar al límite para mantener ese equilibrio, hasta que finalmente colapsan.</p>
+                
+                <p>Analicemos el sistema cardiovascular mediante los principios de la física de fluidos. La sangre fluye por los vasos sanguíneos obedeciendo la <em>Ley de Poiseuille</em>, la cual establece que el flujo depende del radio del tubo (el ancho de la arteria). Cuando una persona mantiene una dieta rica en grasas saturadas y lleva una vida sedentaria, el colesterol LDL se oxida e infiltra las paredes arteriales. Los glóbulos blancos intentan limpiar esto, pero mueren formando una placa de ateroma que reduce drásticamente el radio de la arteria. Según la física, si reduces el radio de un tubo a la mitad, la resistencia al flujo aumenta 16 veces. Para superar esta resistencia, el corazón debe bombear con mucha más fuerza, generando <strong>Hipertensión Arterial</strong>, lo que a su vez rasga los vasos más pequeños en los riñones y los ojos.</p>
+
+                <p>En el sistema respiratorio, la situación es explicada por la <em>Ley de Fick de la Difusión</em>. Esta ley dicta que la velocidad con la que el oxígeno pasa de los pulmones a la sangre depende del área de superficie disponible en los alvéolos (pequeños sacos de aire). El humo del cigarrillo y los vapores químicos de los cigarrillos electrónicos (vapeadores) causan una inflamación severa que destruye las finas paredes de estos alvéolos, fusionándolos en sacos grandes y cicatrizados (Enfisema). Esto reduce masivamente el área de superficie. Como resultado, sin importar qué tan profundo respire la persona, la sangre no logra captar suficiente oxígeno ni liberar el CO<sub>2</sub>. La asfixia celular se vuelve crónica.</p>
+
+                <p>Desde la perspectiva metabólica, apliquemos la <em>Primera Ley de la Termodinámica</em>: la energía no se crea ni se destruye. Si un estudiante consume 3,000 calorías diarias de comida chatarra pero es sedentario (solo gasta 1,800 calorías), ese exceso de energía no desaparece. El sistema endocrino, comandado por la insulina, empaqueta ese exceso y lo almacena en forma de grasa visceral alrededor de los órganos (hígado, corazón). Esta grasa no es inerte; es tejido activo que secreta hormonas inflamatorias (citocinas), poniendo al cuerpo en un estado de "alerta e inflamación crónica" que daña los tejidos a nivel de su ADN, acelerando el envejecimiento biológico de la misma forma que el sol directo calcina una tierra sin capa vegetal.</p>
+
+                <p>El cuerpo humano no es un conjunto de piezas aisladas, es una red de interconexión total. El fallo de un sistema desencadena el efecto dominó. Si los pulmones fallan por el vapeo (menos O<sub>2</sub>), el corazón debe latir más rápido para compensar. Si el corazón está sobrecargado por arterias tapadas por mala dieta, falla el bombeo. Si el bombeo falla, los riñones no pueden filtrar los desechos tóxicos. La lección de Pueblo Rico es clara: así como cuidamos la tierra, rotamos cultivos y limpiamos las aguas para garantizar la vida de la finca a largo plazo, debemos elegir hábitos protectores para garantizar que nuestro ecosistema interior prospere durante décadas.</p>
+            </section>
+
+            <!-- SECCIÓN 6: ANIMACIÓN CANVAS (SIMULACIÓN FÍSICA) -->
+            <section id="animacion">
+                <h2>Laboratorio Virtual: Dinámica Arterial Intersectada</h2>
+                <p>Interactúa con la simulación. Observa un vaso sanguíneo (capilar). Usa los botones inferiores para inyectar "Hábitos Saludables" (Nutrientes/Oxígeno) o "Hábitos No Saludables" (Grasas Trans/Toxinas de Vapeo). Observa cómo cambian la presión (velocidad de los glóbulos rojos) y el taponamiento (placas amarillas).</p>
+                <div class="visual-container">
+                    <canvas id="bio-canvas"></canvas>
+                    <div class="control-panel">
+                        <button class="btn-sim" id="btn-healthy" title="Caminar, Tomar agua, Comer frutas">🍎 Hábito Saludable (Limpiar)</button>
+                        <button class="btn-sim bad" id="btn-unhealthy" title="Comida chatarra, Sedentarismo, Vapeo">🍔 Hábito No Saludable (Taponar)</button>
+                    </div>
+                </div>
+                <p style="text-align: center; font-size: 0.9em; margin-top: 10px; color: var(--gris-ceniza);"><em>El flujo representa el trabajo de tu corazón. A mayor taponamiento, más difícil es que pasen los glóbulos rojos (O<sub>2</sub>).</em></p>
+            </section>
+
+            <!-- SECCIÓN 7: PAUSAS ACTIVAS 6-10 -->
+            <section id="pausas-6-10">
+                <h2>Pausas Activas: Profundización Analítica</h2>
+                <p>Regresa a tu cuaderno para afianzar cómo colapsan los sistemas.</p>
+
+                <div class="actividad-card">
+                    <strong>Actividad 6: Mapa Conceptual del Colapso</strong><br>
+                    Crea un mapa conceptual que conecte: Malos Hábitos → Inflamación → Reducción de Radio Arterial → Hipertensión → Fatiga.
+                    <button class="btn btn-check" onclick="marcarPausa(this)">✓ Ya lo hice en mi cuaderno</button>
+                </div>
+                
+                <div class="actividad-card">
+                    <strong>Actividad 7: Tabla de Análisis de Etiquetas</strong><br>
+                    Ve a tu cocina y busca un paquete de comida ultraprocesada (ej. papas fritas o galletas). Dibuja una tabla con 3 columnas: Ingrediente, ¿Qué es? y ¿Qué le hace al cuerpo? Analiza al menos 3 ingredientes (ej. Azúcar añadido, Sodio, Aceite vegetal).
+                    <button class="btn btn-check" onclick="marcarPausa(this)">✓ Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <div class="actividad-card">
+                    <strong>Actividad 8: Dibujo Físico (Ley de Poiseuille)</strong><br>
+                    Dibuja dos tubos o mangueras de agua. Uno grueso (arteria limpia) y uno con una costra de lodo por dentro (arteria tapada). Dibuja flechas que representen la "presión" necesaria para que pase el agua en cada uno.
+                    <button class="btn btn-check" onclick="marcarPausa(this)">✓ Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <div class="actividad-card">
+                    <strong>Actividad 9: Síntesis de la Analogía</strong><br>
+                    Escribe un párrafo (mínimo 5 líneas) explicando por qué usar un vapeador es como ahogar el motor del Jeep Willys de la vereda con polvo.
+                    <button class="btn btn-check" onclick="marcarPausa(this)">✓ Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <div class="actividad-card">
+                    <strong>Actividad 10: Reto Matemático Energético</strong><br>
+                    Si consumes una gaseosa de 250 calorías y tu cuerpo solo gasta 50 calorías sentado frente a la pantalla, ¿Cuántas calorías sobran? Si ese exceso se vuelve grasa visceral, ¿cómo afectará eso tu peso al cabo de un mes si lo haces todos los días? Realiza el cálculo.
+                    <button class="btn btn-check" onclick="marcarPausa(this)">✓ Ya lo hice en mi cuaderno</button>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 8: EVALUACIÓN FINAL ANTIFRAUDE -->
+            <section id="evaluacion">
+                <h2>Taller Evaluativo Final</h2>
+                <p>Has recorrido la ciencia detrás de los hábitos de Pueblo Rico. Ahora, pon a prueba tus conocimientos.<br><span style="color:var(--rojo-alerta); font-weight:bold;">⚠️ ATENCIÓN: Sistema de Integridad Académica Activado.</span><br>Las preguntas abiertas exigen redacción propia. El copiado/pegado y la escritura anormalmente rápida (bots/IA) están bloqueados. Tus respuestas deben contener entre <strong>10 y 15 palabras</strong> estrictamente.</p>
+
+                <h3>Parte I: Selección Múltiple</h3>
+                
+                <div class="question-block">
+                    <p><strong>1. ¿Qué es la homeostasis en biología?</strong></p>
+                    <label><input type="radio" name="eq1" value="0"> La capacidad de la sangre para coagularse.</label>
+                    <label><input type="radio" name="eq1" value="1"> El equilibrio interno estable de los sistemas del cuerpo.</label>
+                    <label><input type="radio" name="eq1" value="0"> La enfermedad causada por el azúcar.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>2. Según la Ley de Poiseuille, si se reduce el radio de una arteria debido a la acumulación de grasa (aterosclerosis), ¿qué sucede con la resistencia de la sangre?</strong></p>
+                    <label><input type="radio" name="eq2" value="0"> Disminuye y la sangre fluye mejor.</label>
+                    <label><input type="radio" name="eq2" value="1"> Aumenta drásticamente, obligando al corazón a trabajar más.</label>
+                    <label><input type="radio" name="eq2" value="0"> La sangre se convierte en agua.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>3. ¿Qué efecto directo tienen los vapores químicos de los vapeadores en la Ley de Fick sobre los pulmones?</strong></p>
+                    <label><input type="radio" name="eq3" value="1"> Destruyen los alvéolos, reduciendo el área disponible para absorber O<sub>2</sub>.</label>
+                    <label><input type="radio" name="eq3" value="0"> Aumentan la superficie alveolar mejorando la resistencia física.</label>
+                    <label><input type="radio" name="eq3" value="0"> Filtran las impurezas de la sangre antes de llegar al corazón.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>4. ¿A qué situación de la finca equivale la acumulación de colesterol LDL en las arterias?</strong></p>
+                    <label><input type="radio" name="eq4" value="0"> Al proceso de recolección de café manual.</label>
+                    <label><input type="radio" name="eq4" value="1"> A la compactación del suelo por las pisadas del ganado.</label>
+                    <label><input type="radio" name="eq4" value="0"> A la polinización de los cítricos por las abejas.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>5. Cuando consumes exceso de calorías y no haces ejercicio, ¿qué hace el sistema endocrino con la energía sobrante según las leyes de la termodinámica?</strong></p>
+                    <label><input type="radio" name="eq5" value="0"> La evapora a través del sudor de forma inmediata.</label>
+                    <label><input type="radio" name="eq5" value="1"> La empaqueta y almacena como grasa visceral alrededor de los órganos.</label>
+                    <label><input type="radio" name="eq5" value="0"> La transforma en músculo automáticamente mientras duermes.</label>
+                </div>
+
+                <h3>Parte II: Desarrollo Analítico (Exige 10 a 15 palabras)</h3>
+                
+                <div class="question-block">
+                    <label for="open-1"><strong>6. Explica con tus palabras: ¿Por qué la mala alimentación constante agota el páncreas?</strong></label>
+                    <textarea id="open-1" class="anti-fraud" placeholder="Redacta entre 10 y 15 palabras..."></textarea>
+                    <span class="word-count" id="wc-1">Palabras: 0 / 15</span>
+                    <div class="fraud-alert" id="fa-1"></div>
+                </div>
+                
+                <div class="question-block">
+                    <label for="open-2"><strong>7. Según la lectura, ¿qué le ocurre a las células si no tomas agua?</strong></label>
+                    <textarea id="open-2" class="anti-fraud" placeholder="Redacta entre 10 y 15 palabras..."></textarea>
+                    <span class="word-count" id="wc-2">Palabras: 0 / 15</span>
+                    <div class="fraud-alert" id="fa-2"></div>
+                </div>
+
+                <div class="question-block">
+                    <label for="open-3"><strong>8. ¿De qué manera el sedentarismo (no moverse) afecta la presión arterial de tu cuerpo?</strong></label>
+                    <textarea id="open-3" class="anti-fraud" placeholder="Redacta entre 10 y 15 palabras..."></textarea>
+                    <span class="word-count" id="wc-3">Palabras: 0 / 15</span>
+                    <div class="fraud-alert" id="fa-3"></div>
+                </div>
+
+                <div class="question-block">
+                    <label for="open-4"><strong>9. Relaciona brevemente: ¿En qué se parece un alvéolo quemado a un suelo sin abono?</strong></label>
+                    <textarea id="open-4" class="anti-fraud" placeholder="Redacta entre 10 y 15 palabras..."></textarea>
+                    <span class="word-count" id="wc-4">Palabras: 0 / 15</span>
+                    <div class="fraud-alert" id="fa-4"></div>
+                </div>
+
+                <div class="question-block">
+                    <label for="open-5"><strong>10. Concluye: ¿Por qué un fallo en los pulmones termina afectando al músculo del corazón?</strong></label>
+                    <textarea id="open-5" class="anti-fraud" placeholder="Redacta entre 10 y 15 palabras..."></textarea>
+                    <span class="word-count" id="wc-5">Palabras: 0 / 15</span>
+                    <div class="fraud-alert" id="fa-5"></div>
+                </div>
+
+                <button class="btn" id="btn-finalizar" style="width: 100%; font-size: 1.3rem; margin-top: 20px;">Generar Calificación y Reporte Final</button>
+            </section>
+
+            <!-- SECCIÓN 9: RESULTADOS Y EXPORTACIÓN -->
+            <section id="resultados" style="display: none; background: #F1F8E9; border-left: 8px solid var(--verde-quindio);">
+                <h2>Reporte de Evaluación - Laboratorio Vivo</h2>
+                <div style="font-size: 1.2rem; margin-bottom: 20px;">
+                    <p><strong>Estudiante:</strong> <span id="res-nombre" style="color: var(--cafe-tierra);"></span></p>
+                    <p><strong>Puntuación OVA:</strong> <span id="res-puntos" style="color: var(--naranja-citrico); font-weight: bold;"></span></p>
+                    <p><strong>Nota Académica Final:</strong> <span id="res-nota" style="font-size: 2rem; font-weight: 900; color: var(--verde-quindio);"></span> <span style="font-size: 1rem;">/ 5.0</span></p>
+                </div>
+                
+                <h3>Análisis Inteligente y Ruta de Fortalecimiento</h3>
+                <div id="res-feedback" style="background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--borde-suave); font-style: italic;"></div>
+
+                <div style="text-align: center; margin-top: 3rem;">
+                    <button class="btn" id="btn-descargar" style="background-color: var(--cafe-tierra); font-size: 1.2rem;"><svg width="20" height="20" viewBox="0 0 24 24" fill="white" style="vertical-align: middle; margin-right: 10px;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>Descargar Resultados Oficiales (.txt)</button>
+                </div>
+            </section>
+
+        </div> <!-- Fin locked-content -->
+    </main>
+
+    <!-- ==========================================================================
+         CÓDIGO JAVASCRIPT: Lógica, Simulador, Anti-Fraude y Exportación
+         ========================================================================== -->
+    <script>
+        // --- 1. ESTADO GLOBAL ---
+        const state = {
+            nombres: "", apellidos: "", puntos: 0, pausas: 0,
+            preSaberesOk: false, icfesOk: false, respuestas: {}
+        };
+
+        // --- 2. GESTIÓN DE USUARIO (LOGIN) ---
+        document.getElementById('btn-iniciar').addEventListener('click', () => {
+            const nom = document.getElementById('nombres').value.trim();
+            const ape = document.getElementById('apellidos').value.trim();
+            if(!nom || !ape) {
+                document.getElementById('login-error').style.display = "block";
+                return;
+            }
+            state.nombres = nom; state.apellidos = ape;
+            document.getElementById('display-name').textContent = `${nom} ${ape}`;
+            
+            const welcome = document.getElementById('welcome-screen');
+            welcome.style.opacity = "0";
+            setTimeout(() => {
+                welcome.style.display = "none";
+                document.getElementById('navbar').style.display = "flex";
+                document.getElementById('main-content').style.display = "block";
+            }, 600);
+        });
+
+        // --- 3. GAMIFICACIÓN (PUNTOS Y PROGRESO) ---
+        function sumarPunto() {
+            if(state.puntos < 5) {
+                state.puntos++;
+                document.getElementById('score-text').textContent = `${state.puntos} / 5 Pts`;
+                const icon = document.getElementById(`icon-${state.puntos}`);
+                if(icon) { icon.classList.remove('icon-locked'); icon.classList.add('icon-unlocked'); }
+            }
+        }
+
+        window.marcarPausa = function(btn) {
+            if(btn.classList.contains('done')) return;
+            btn.classList.add('done');
+            btn.innerHTML = "✓ Completado";
+            state.pausas++;
+            document.getElementById('progress-bar').style.width = `${(state.pausas / 10) * 100}%`;
+        };
+
+        // --- 4. PRE-SABERES ---
+        document.getElementById('btn-eval-pre').addEventListener('click', () => {
+            if(state.preSaberesOk) return;
+            const q1 = document.querySelector('input[name="pre1"]:checked');
+            const q2 = document.querySelector('input[name="pre2"]:checked');
+            const q3 = document.querySelector('input[name="pre3"]:checked');
+            const feedback = document.getElementById('feedback-pre');
+            
+            if(!q1 || !q2 || !q3) {
+                feedback.textContent = "Debes responder las 3 preguntas."; feedback.style.color = "var(--rojo-alerta)"; return;
+            }
+            
+            let correctas = parseInt(q1.value) + parseInt(q2.value) + parseInt(q3.value);
+            for(let i=0; i<correctas; i++) sumarPunto();
+            
+            state.preSaberesOk = true;
+            document.getElementById('btn-eval-pre').disabled = true;
+            feedback.style.color = "var(--verde-quindio)";
+            feedback.innerHTML = `¡Excelente! Obtuviste ${correctas} de 3. Hemos comprobado que entiendes cómo la tierra y el cuerpo se desgastan de forma similar. Sigue bajando.`;
+        });
+
+        // --- 5. ICFES Y DESBLOQUEO ---
+        document.getElementById('btn-icfes').addEventListener('click', () => {
+            if(state.icfesOk) return;
+            const q = document.querySelector('input[name="icfes"]:checked');
+            const feedback = document.getElementById('feedback-icfes');
+            
+            if(!q) { feedback.textContent = "Selecciona una opción."; return; }
+            if(q.value === "1") {
+                feedback.style.color = "var(--verde-quindio)";
+                feedback.innerHTML = "¡Interpretación Correcta! Los malos hábitos aceleran el desgaste celular biológico simulando un envejecimiento prematuro. <br><strong>Laboratorio Desbloqueado.</strong>";
+                sumarPunto(); state.icfesOk = true;
+                document.getElementById('locked-content').classList.remove('locked-section');
+                document.getElementById('locked-content').classList.add('unlocked');
+                document.getElementById('btn-icfes').disabled = true;
+                initCanvas(); // Iniciar animación al desbloquear
+            } else {
+                feedback.style.color = "var(--rojo-alerta)";
+                feedback.textContent = "Incorrecto. Observa la línea roja en el punto de los 25 años y compárala con la altura de la verde a los 60 años. Intenta de nuevo.";
+            }
+        });
+
+        // --- 6. SISTEMA ANTI-FRAUDE (Restricciones Estrictas) ---
+        const textareas = document.querySelectorAll('.anti-fraud');
+        textareas.forEach((ta, index) => {
+            ta.addEventListener('paste', e => e.preventDefault());
+            ta.addEventListener('drop', e => e.preventDefault());
+            ta.addEventListener('contextmenu', e => e.preventDefault());
+            ta.addEventListener('keydown', e => {
+                if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) e.preventDefault();
+            });
+
+            let startTime = 0;
+            ta.addEventListener('focus', () => { if(startTime === 0 || ta.value.length === 0) startTime = Date.now(); });
+            
+            ta.addEventListener('input', () => {
+                const text = ta.value.trim();
+                const wordCount = text === "" ? 0 : text.split(/\s+/).length;
+                document.getElementById(`wc-${index+1}`).textContent = `Palabras: ${wordCount} / 15`;
+                
+                const len = ta.value.length;
+                if(len > 20) {
+                    const timeTaken = (Date.now() - startTime) / 1000;
+                    const charsPerSec = len / timeTaken;
+                    if(charsPerSec > 25) { // Detección de bot/pegado rápido
+                        const alertBox = document.getElementById(`fa-${index+1}`);
+                        alertBox.textContent = "⚠️ ¡FRAUDE DETECTADO! Velocidad de escritura inhumana. Redacta con el teclado.";
+                        alertBox.style.display = "block"; ta.classList.add('error');
+                        ta.value = ""; startTime = Date.now(); document.getElementById(`wc-${index+1}`).textContent = "Palabras: 0 / 15";
+                        setTimeout(() => { alertBox.style.display = "none"; ta.classList.remove('error'); }, 4000);
+                    }
+                }
+            });
+        });
+
+        // --- 7. ANIMACIÓN CANVAS: Dinámica Arterial Intersectada ---
+        function initCanvas() {
+            const canvas = document.getElementById('bio-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            function resize() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 450; }
+            window.addEventListener('resize', resize); resize();
+
+            let plaqueLevel = 20; // Nivel inicial de ateroma (grasa)
+            let bloodSpeedMultiplier = 1.0;
+            
+            // Botones interactivos
+            document.getElementById('btn-healthy').addEventListener('click', () => {
+                if(plaqueLevel > 0) plaqueLevel -= 20;
+                if(bloodSpeedMultiplier < 1.5) bloodSpeedMultiplier += 0.2;
+            });
+            document.getElementById('btn-unhealthy').addEventListener('click', () => {
+                if(plaqueLevel < 180) plaqueLevel += 30; // Crece la placa
+                if(bloodSpeedMultiplier > 0.2) bloodSpeedMultiplier -= 0.15; // Ralentiza flujo
+            });
+
+            class RedCell {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = (canvas.height/2 - 60) + Math.random() * 120;
+                    this.radius = 12;
+                    this.baseVx = 2 + Math.random() * 2;
+                    this.color = `rgb(${200 + Math.random()*55}, ${20 + Math.random()*20}, 30)`;
+                }
+                update() {
+                    this.x += this.baseVx * bloodSpeedMultiplier;
+                    
+                    // Colisión con la placa (Si choca, baja su velocidad)
+                    const upperWall = (canvas.height/2) - 80 + plaqueLevel/2;
+                    const lowerWall = (canvas.height/2) + 80 - plaqueLevel/2;
+                    
+                    if(this.y < upperWall + this.radius) this.y = upperWall + this.radius + Math.random()*2;
+                    if(this.y > lowerWall - this.radius) this.y = lowerWall - this.radius - Math.random()*2;
+
+                    if(this.x > canvas.width + 20) {
+                        this.x = -20;
+                        this.y = (canvas.height/2 - 60 + plaqueLevel/2) + Math.random() * (120 - plaqueLevel);
+                    }
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color; ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius - 5, 0, Math.PI * 2);
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.3)"; ctx.fill();
+                }
+            }
+
+            const cells = Array.from({length: 80}, () => new RedCell());
+
+            function animate() {
+                // Fondo Capilar
+                ctx.fillStyle = "#FFEBEE";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Dibujar paredes arteriales
+                ctx.fillStyle = "#E57373";
+                ctx.fillRect(0, 0, canvas.width, canvas.height/2 - 80); // Pared Superior
+                ctx.fillRect(0, canvas.height/2 + 80, canvas.width, canvas.height/2 - 80); // Pared Inferior
+
+                // Dibujar placas de grasa (Ateromas)
+                ctx.fillStyle = "#FFF176";
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height/2 - 80);
+                for(let i=0; i<canvas.width; i+=50) {
+                    ctx.lineTo(i, canvas.height/2 - 80 + Math.sin(i*0.02) * 10 + plaqueLevel/2);
+                }
+                ctx.lineTo(canvas.width, canvas.height/2 - 80);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height/2 + 80);
+                for(let i=0; i<canvas.width; i+=50) {
+                    ctx.lineTo(i, canvas.height/2 + 80 - Math.sin(i*0.02) * 10 - plaqueLevel/2);
+                }
+                ctx.lineTo(canvas.width, canvas.height/2 + 80);
+                ctx.fill();
+
+                // Actualizar y dibujar células
+                cells.forEach(c => { c.update(); c.draw(); });
+
+                // Alerta Visual de Presión
+                if(plaqueLevel > 120) {
+                    ctx.fillStyle = "rgba(211, 47, 47, 0.2)";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "red"; ctx.font = "bold 24px Arial";
+                    ctx.fillText("¡ALERTA! HIPERTENSIÓN Y OBSTRUCCIÓN SEVERA", 20, 40);
+                }
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // --- 8. EVALUACIÓN Y EXPORTACIÓN ---
+        document.getElementById('btn-finalizar').addEventListener('click', () => {
+            // Validar Múltiple
+            let smScore = 0; const resSM = [];
+            for(let i=1; i<=5; i++) {
+                const q = document.querySelector(`input[name="eq${i}"]:checked`);
+                if(!q) { alert(`Falta responder la pregunta múltiple ${i}.`); return; }
+                smScore += parseInt(q.value);
+                resSM.push(`P${i}: ${q.value === "1" ? "Correcto" : "Incorrecto"}`);
+            }
+
+            // Validar Abiertas
+            let openValid = true; const resAbiertas = [];
+            for(let i=1; i<=5; i++) {
+                const ta = document.getElementById(`open-${i}`);
+                const text = ta.value.trim();
+                const wordCount = text === "" ? 0 : text.split(/\s+/).length;
+                const alertBox = document.getElementById(`fa-${i}`);
+                
+                if(wordCount < 10 || wordCount > 15) {
+                    alertBox.textContent = `❌ Error: Tienes ${wordCount} palabras. Ajusta tu respuesta para que tenga entre 10 y 15 palabras exactas.`;
+                    alertBox.style.display = "block"; ta.classList.add('error'); openValid = false;
+                } else {
+                    alertBox.style.display = "none"; ta.classList.remove('error');
+                    resAbiertas.push(`P${i+5}: ${text}`);
+                }
+            }
+
+            if(!openValid) return;
+
+            // Calcular nota final
+            const notaFinal = ((smScore * 0.5) + (5 * 0.5)).toFixed(1); // 50% test múltiple, 50% completar redacción
+            
+            // Feedback Inteligente
+            let feedback = "";
+            if(smScore === 5) feedback = "¡Sobresaliente! Comprendes a la perfección cómo las leyes biológicas (Poiseuille, Fick, Termodinámica) aplican tanto a la tierra de Pueblo Rico como a tu propio cuerpo. Mantén tus hábitos limpios como un buen cultivo.";
+            else if (smScore >= 3) feedback = "Buen esfuerzo, pero fallaste en algunas leyes físicas corporales. Ruta sugerida: Regresa a la sección de 'Fisiología del Desgaste' y repasa qué le pasa al radio de las arterias (Ley de Poiseuille).";
+            else feedback = "Detectamos debilidades en los conceptos fundamentales sistémicos. Ruta sugerida: Vuelve a estudiar el Cuadro Comparativo del Ecosistema vs El Cuerpo para afianzar las analogías básicas antes de avanzar a la física matemática.";
+
+            state.respuestas = { nota: notaFinal, sm: resSM, abiertas: resAbiertas, feedback: feedback };
+            
+            // UI Update
+            document.getElementById('res-nombre').textContent = `${state.nombres} ${state.apellidos}`;
+            document.getElementById('res-puntos').textContent = `${state.puntos} Puntos Ganados / ${state.pausas} Pausas Activas`;
+            document.getElementById('res-nota').textContent = notaFinal;
+            document.getElementById('res-feedback').textContent = feedback;
+            
+            document.getElementById('evaluacion').style.display = "none";
+            document.getElementById('resultados').style.display = "block";
+        });
+
+        document.getElementById('btn-descargar').addEventListener('click', () => {
+            const date = new Date().toLocaleDateString();
+            let content = `=================================================\n`;
+            content += `OVA: CUANDO LA TIERRA SE AGOTA (HÁBITOS EN PUEBLO RICO)\n`;
+            content += `=================================================\n\n`;
+            content += `Estudiante: ${state.nombres} ${state.apellidos}\n`;
+            content += `Fecha: ${date}\n`;
+            content += `Pausas Activas Completadas: ${state.pausas}/10\n`;
+            content += `Nota Final: ${state.respuestas.nota} / 5.0\n\n`;
+            
+            content += `--- RESULTADOS SELECCIÓN MÚLTIPLE ---\n`;
+            state.respuestas.sm.forEach(r => content += `${r}\n`);
+            content += `\n--- RESPUESTAS DESARROLLO (ANTI-FRAUDE VALIDADAS) ---\n`;
+            state.respuestas.abiertas.forEach(r => content += `${r}\n\n`);
+            content += `--- FEEDBACK DEL SISTEMA ---\n${state.respuestas.feedback}\n`;
+
+            const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Reporte_${state.apellidos}_Biologia.txt`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>

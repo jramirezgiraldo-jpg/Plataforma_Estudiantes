@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Sol - El patrón de la finca</title>
+    <style>
+        /* =========================================
+           VARIABLES Y DISEÑO BASE (Sol y Ecosistema)
+           ========================================= */
+        :root {
+            --amarillo-sol: #FFB300;
+            --naranja-energia: #F57C00;
+            --verde-quindio: #2E7D32;
+            --verde-claro: #81C784;
+            --cafe-tierra: #5D4037;
+            --cafe-oscuro: #3E2723;
+            --crema-fondo: #FFFDE7;
+            --blanco: #FFFFFF;
+            --gris-texto: #37474F;
+            
+            /* Metales de Gamificación */
+            --oro-au: #FFD700;
+            --plata-ag: #C0C0C0;
+            --hierro-fe: #A19D94;
+            --rojo-error: #D32F2F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--crema-fondo);
+            color: var(--gris-texto);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* =========================================
+           SISTEMA DE AUTENTICACIÓN
+           ========================================= */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, var(--amarillo-sol), var(--naranja-energia), var(--cafe-oscuro));
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 0.6s ease;
+        }
+
+        .login-box {
+            background: var(--blanco); padding: 40px; border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; max-width: 450px; width: 90%;
+            border-top: 6px solid var(--naranja-energia);
+        }
+
+        .login-box h1 { color: var(--cafe-oscuro); margin-bottom: 10px; font-size: 1.8em; }
+        .login-box p { font-size: 0.95em; margin-bottom: 25px; color: #555; }
+
+        .input-group { margin-bottom: 18px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 6px; font-weight: 700; color: var(--cafe-tierra); }
+        .input-group input {
+            width: 100%; padding: 12px; border: 2px solid #FFE082; border-radius: 8px; font-size: 1em;
+            background-color: #FFFDF1;
+        }
+        .input-group input:focus { border-color: var(--naranja-energia); outline: none; background-color: var(--blanco);}
+
+        .btn {
+            background-color: var(--naranja-energia); color: var(--blanco); border: none;
+            padding: 14px 25px; border-radius: 8px; font-size: 1.1em; cursor: pointer;
+            font-weight: bold; transition: transform 0.2s, background-color 0.3s; width: 100%;
+        }
+        .btn:hover { background-color: #E65100; transform: scale(1.02); }
+        .btn:disabled { background-color: #B0BEC5; cursor: not-allowed; transform: none; }
+
+        /* =========================================
+           INTERFAZ PRINCIPAL Y GAMIFICACIÓN
+           ========================================= */
+        #main-app { display: none; }
+
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; background: var(--blanco);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1); z-index: 500; padding: 12px 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 4px solid var(--amarillo-sol);
+        }
+
+        .user-badge { font-weight: bold; color: var(--cafe-oscuro); display: flex; align-items: center; gap: 10px; font-size: 1.1em;}
+        
+        .score-board {
+            display: flex; align-items: center; gap: 15px; background: var(--cafe-tierra);
+            color: white; padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 1.2em;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            border: 2px solid var(--amarillo-sol);
+        }
+
+        main { max-width: 850px; margin: 90px auto 50px auto; padding: 20px; }
+
+        /* =========================================
+           TEXTOS PEDAGÓGICOS
+           ========================================= */
+        .content-section {
+            background: var(--blanco); padding: 30px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 40px;
+            border-left: 6px solid var(--amarillo-sol);
+        }
+
+        h2 { color: var(--naranja-energia); border-bottom: 2px solid var(--amarillo-sol); padding-bottom: 8px; margin-bottom: 20px; }
+        p { margin-bottom: 15px; text-align: justify; font-size: 1.1em; }
+        .highlight { background-color: #FFF3E0; padding: 2px 5px; font-weight: bold; color: var(--naranja-energia); border-radius: 3px;}
+
+        /* =========================================
+           DISEÑO DE ACTIVIDADES (JUEGOS)
+           ========================================= */
+        .activity-card {
+            background: #FAFAFA; border: 2px solid #E0E0E0; border-radius: 10px;
+            padding: 25px; margin: 25px 0; position: relative;
+            transition: border-color 0.3s;
+        }
+        .activity-card.solved { border-color: var(--verde-quindio); background: #F1F8E9; }
+        .activity-card.failed { border-color: var(--rojo-error); background: #FFEBEE; }
+
+        .act-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .act-type { font-size: 0.85em; font-weight: bold; color: var(--blanco); background: var(--cafe-tierra); padding: 6px 12px; border-radius: 15px; text-transform: uppercase;}
+        .act-attempts { font-size: 0.9em; font-weight: bold; color: var(--naranja-energia); background: #FFF3E0; padding: 4px 10px; border-radius: 10px; border: 1px solid var(--amarillo-sol);}
+        
+        /* Contenedor Anagrama */
+        .anagram-display {
+            font-size: 2em; font-weight: bold; color: var(--verde-quindio);
+            text-align: center; letter-spacing: 8px; margin: 20px 0;
+            background: #ECEFF1; padding: 20px; border-radius: 8px; font-family: monospace;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
+        }
+        
+        .answer-input {
+            width: 100%; padding: 15px; font-size: 1.2em; border: 2px solid #B0BEC5; border-radius: 8px;
+            text-align: center; text-transform: uppercase; margin-bottom: 15px;
+            background-color: var(--blanco); font-weight: bold; letter-spacing: 2px;
+        }
+
+        /* Contenedor Ordenar Palabras */
+        .word-bank {
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 20px 0; min-height: 50px;
+        }
+        .word-btn {
+            background: var(--verde-claro); color: var(--cafe-oscuro); border: 2px solid #66BB6A; padding: 10px 18px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.05em;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s, background-color 0.2s;
+        }
+        .word-btn:hover { background-color: #66BB6A; color: white;}
+        .word-btn:active { transform: scale(0.95); }
+        
+        .sentence-builder {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start;
+            background: #ECEFF1; padding: 20px; border-radius: 8px; min-height: 80px; margin-bottom: 15px;
+            border: 2px dashed #90A4AE; align-items: center; font-size: 1.1em;
+        }
+        .word-btn.selected { background: var(--naranja-energia); color: var(--blanco); border-color: var(--naranja-energia); opacity: 0.5; pointer-events: none;}
+
+        .btn-clear { background: #90A4AE; margin-top: 5px; width: auto; padding: 10px 20px;}
+        .btn-clear:hover { background: #78909C; }
+
+        /* Recompensas (Tabla Periódica) */
+        .medal-badge {
+            position: absolute; top: -20px; right: -20px; width: 60px; height: 60px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.5em; color: var(--cafe-oscuro);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 4px solid white; display: none;
+            flex-direction: column; line-height: 1; z-index: 10;
+        }
+        .medal-badge span { font-size: 0.35em; text-transform: uppercase; margin-top: 2px; }
+        .medal-au { background: linear-gradient(135deg, #FFD700, #FBC02D); display: flex; }
+        .medal-ag { background: linear-gradient(135deg, #E0E0E0, #9E9E9E); display: flex; }
+        .medal-fe { background: linear-gradient(135deg, #8D6E63, #5D4037); color: white; display: flex; }
+
+        .feedback-msg { margin-top: 15px; font-weight: bold; text-align: center; font-size: 1.2em; min-height: 25px;}
+
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         PANTALLA DE INGRESO
+         ========================================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>El Sol: El patrón de la finca</h1>
+            <p>Laboratorio de Ecología y Redes Tróficas - Grado 7°<br>Vereda Pueblo Rico, Quimbaya</p>
+            <div class="input-group">
+                <label for="inp-nombre">Nombre del Estudiante:</label>
+                <input type="text" id="inp-nombre" placeholder="Ej: Juan" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="inp-apellido">Apellido del Estudiante:</label>
+                <input type="text" id="inp-apellido" placeholder="Ej: Pérez" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar">Empezar Recorrido</button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         INTERFAZ PRINCIPAL
+         ========================================= -->
+    <div id="main-app">
+        <header>
+            <div class="user-badge">
+                <!-- Icono de Sol -->
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--amarillo-sol)"><path d="M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,2L14.39,5.42C13.65,5.15 12.84,5 12,5C11.16,5 10.35,5.15 9.61,5.42L12,2M3.34,7L7.5,6.65C6.9,7.16 6.36,7.78 5.94,8.5L3.34,7M3.34,17L5.94,15.5C6.36,16.22 6.9,16.84 7.5,17.35L3.34,17M20.65,7L18.06,8.5C17.64,7.78 17.1,7.16 16.5,6.65L20.65,7M20.65,17L16.5,17.35C17.1,16.84 17.64,16.22 18.06,15.5L20.65,17M12,22L9.61,18.58C10.35,18.85 11.16,19 12,19C12.84,19 13.65,18.85 14.39,18.58L12,22Z"/></svg>
+                <span id="display-name">Estudiante</span>
+            </div>
+            <div class="score-board">
+                <span>Puntaje:</span>
+                <span id="display-score">0</span>
+            </div>
+        </header>
+
+        <main id="content-container">
+            <!-- Contenido Dinámico -->
+        </main>
+    </div>
+
+    <!-- =========================================
+         LÓGICA JAVASCRIPT (VANILLA)
+         ========================================= -->
+    <script>
+        // --- 1. DATOS PEDAGÓGICOS (20 ACTIVIDADES) ---
+        const courseContent = [
+            // SECCIÓN 1: EL SOL Y LA ENERGÍA
+            {
+                type: 'text',
+                title: '1. El Jefe Invisible de Pueblo Rico',
+                content: `Si visitas una finca en la Vereda Pueblo Rico, podrías pensar que el dueño es el patrón. Pero biológicamente, el verdadero jefe es <span class="highlight">El Sol</span>. Sin su presencia diaria, la finca entera moriría en cuestión de semanas.<br><br>
+                Toda la energía que mueve la finca (la vaca que camina, el recolector que trabaja, el pájaro que canta) proviene originalmente de la luz solar. Las plantas son las únicas capaces de atrapar esta energía lumínica y transformarla en energía química a través de un proceso mágico llamado <strong>Fotosíntesis</strong>.`
+            },
+            { type: 'anagram', id: 'a1', answer: 'FOTOSINTESIS', hint: 'Proceso por el cual las plantas atrapan la luz del sol.' },
+            { type: 'anagram', id: 'a2', answer: 'ENERGIA', hint: 'Lo que el sol le entrega a la finca todos los días.' },
+            { type: 'sentence', id: 's1', answer: 'El sol es la fuente principal de energía en la finca', hint: 'Principio fundamental de la vida.' },
+            { type: 'sentence', id: 's2', answer: 'Las plantas de café producen su propio alimento mediante fotosíntesis', hint: 'Cómo sobreviven los cafetales.' },
+            
+            // SECCIÓN 2: PRODUCTORES
+            {
+                type: 'text',
+                title: '2. Los Fabricantes: Los Productores',
+                content: `En ecología de grado 7, a los seres vivos que fabrican su propio alimento los llamamos <span class="highlight">Productores</span> o Autótrofos. En nuestra vereda, estos son los árboles de café, los pastos estrella, los mandarinos y los guaduales.<br><br>
+                Ellos utilizan un pigmento verde llamado <strong>Clorofila</strong> para capturar el sol. Los productores son el primer eslabón o piso de la pirámide de la vida. Sin ellos, el resto de los animales se morirían de hambre, ya que ningún animal puede comer tierra o luz solar para sobrevivir.`
+            },
+            { type: 'anagram', id: 'a3', answer: 'PRODUCTOR', hint: 'Organismo capaz de fabricar su propio alimento.' },
+            { type: 'anagram', id: 'a4', answer: 'CLOROFILA', hint: 'Pigmento verde que atrapa la luz del sol.' },
+            { type: 'sentence', id: 's3', answer: 'Los animales herbívoros se alimentan directamente de las plantas', hint: 'La dieta del primer consumidor.' },
+            { type: 'anagram', id: 'a5', answer: 'CONSUMIDOR', hint: 'El ser vivo que necesita comer a otros para vivir.' },
+            { type: 'sentence', id: 's4', answer: 'Un ave insectívora es un consumidor secundario en el ecosistema', hint: 'Posición del barranquero en la cadena.' },
+
+            // SECCIÓN 3: CONSUMIDORES Y LA TELARAÑA
+            {
+                type: 'text',
+                title: '3. La Telaraña de la Vida',
+                content: `Una vez que la planta guarda la energía, entran los <span class="highlight">Consumidores</span> (Heterótrofos). Primero están los <strong>Herbívoros</strong> (Consumidores Primarios) como la vaca que come pasto o la broca que se come el grano de café. Luego están los <strong>Carnívoros</strong> (Consumidores Secundarios y Terciarios), como las ranas que comen insectos, o las águilas que cazan ratones.<br><br>
+                En Quimbaya, ningún animal come una sola cosa. Las cadenas de alimentación se cruzan formando una compleja <strong>Red Trófica</strong> (como una telaraña). Si cortas un hilo de la telaraña (por ejemplo, si usas veneno y matas a todas las abejas), toda la red tiembla y puede colapsar el ecosistema entero.`
+            },
+            { type: 'anagram', id: 'a6', answer: 'HERBIVORO', hint: 'Consumidor primario que solo come plantas.' },
+            { type: 'anagram', id: 'a7', answer: 'CARNIVORO', hint: 'Consumidor que caza y se alimenta de otros animales.' },
+            { type: 'sentence', id: 's5', answer: 'La energía fluye desde el sol hasta los depredadores superiores', hint: 'El camino de la energía en la finca.' },
+            { type: 'sentence', id: 's6', answer: 'Una red trófica muestra cómo se conectan las cadenas alimenticias', hint: 'Definición de la telaraña biológica.' },
+            { type: 'anagram', id: 'a8', answer: 'ECOSISTEMA', hint: 'Conjunto de seres vivos y el ambiente en Pueblo Rico.' },
+            { type: 'anagram', id: 'a9', answer: 'TELARAÑA', hint: 'Forma en la que se conectan todas las especies.' },
+            { type: 'sentence', id: 's7', answer: 'Si desaparecen las abejas la telaraña de la vida colapsa', hint: 'El peligro de eliminar una especie.' },
+
+            // SECCIÓN 4: DESCOMPONEDORES Y EL CICLO
+            {
+                type: 'text',
+                title: '4. Los Limpiadores de la Finca',
+                content: `Si la energía fluye del sol a las plantas y luego a los animales, ¿qué pasa cuando el águila muere o las hojas del café caen al suelo? La finca no se llena de basura orgánica gracias a los <span class="highlight">Descomponedores</span>.<br><br>
+                Los hongos y las bacterias del suelo son los grandes recicladores. Ellos pudren la materia muerta y liberan los minerales de vuelta a la tierra. Gracias a esto, el suelo se fertiliza, los árboles de cítricos absorben los nutrientes, y el ciclo vuelve a empezar bajo el mando del patrón: El Sol. En Pueblo Rico, todo está perfectamente conectado.`
+            },
+            { type: 'sentence', id: 's8', answer: 'Los hongos y bacterias descomponen la materia orgánica muerta', hint: 'El trabajo de los recicladores.' },
+            { type: 'anagram', id: 'a10', answer: 'DESCOMPONEDOR', hint: 'Organismo que recicla la materia muerta.' },
+            { type: 'sentence', id: 's9', answer: 'Los nutrientes regresan al suelo fertilizando los cultivos de cítricos', hint: 'El beneficio del abono natural.' },
+            { type: 'sentence', id: 's10', answer: 'En Pueblo Rico todos los seres vivos están profundamente conectados', hint: 'La gran conclusión de ecología.' }
+        ];
+
+        // --- 2. ESTADO GLOBAL Y LOCALSTORAGE ---
+        const LOCAL_KEY = 'ova_quimbaya_redtrofica_g7_state';
+        let gameState = {
+            nombre: '',
+            apellido: '',
+            score: 0,
+            activities: {} 
+        };
+
+        // --- 3. ALGORITMOS DE MEZCLA (FISHER-YATES) ---
+        function shuffleLetters(word) {
+            let arr = word.split('');
+            let shuffled;
+            // Evitar que devuelva la misma palabra original
+            do {
+                shuffled = [...arr];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+            } while (shuffled.join('') === word && word.length > 2); 
+            
+            return shuffled.join('-');
+        }
+
+        function shuffleWords(sentence) {
+            let arr = sentence.split(' ');
+            let shuffled;
+            do {
+                shuffled = [...arr];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+            } while (shuffled.join(' ') === sentence && arr.length > 2);
+            
+            return shuffled;
+        }
+
+        // --- 4. INICIALIZACIÓN E INTERFAZ ---
+        document.addEventListener("DOMContentLoaded", () => {
+            configurarLogin();
+            loadState();
+        });
+
+        function configurarLogin() {
+            document.getElementById('btn-iniciar').addEventListener('click', () => {
+                const nombre = document.getElementById('inp-nombre').value.trim();
+                const apellido = document.getElementById('inp-apellido').value.trim();
+                
+                if (nombre === '' || apellido === '') {
+                    alert("Para iniciar tu registro en el sistema, ingresa Nombre y Apellido.");
+                    return;
+                }
+                gameState.nombre = nombre;
+                gameState.apellido = apellido;
+                saveState();
+                mostrarApp();
+            });
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(LOCAL_KEY);
+            if (saved) {
+                gameState = JSON.parse(saved);
+                if (gameState.nombre !== '') {
+                    mostrarApp();
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(gameState));
+            updateHeader();
+        }
+
+        function mostrarApp() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                updateHeader();
+                renderContent();
+            }, 600);
+        }
+
+        function updateHeader() {
+            document.getElementById('display-name').textContent = `${gameState.nombre} ${gameState.apellido}`;
+            document.getElementById('display-score').textContent = gameState.score;
+        }
+
+        // --- 5. RENDERIZADO DINÁMICO (20 ACTIVIDADES) ---
+        function renderContent() {
+            const container = document.getElementById('content-container');
+            container.innerHTML = ''; 
+
+            let anagramCount = 1;
+            let sentenceCount = 1;
+
+            courseContent.forEach(item => {
+                if (item.type === 'text') {
+                    const div = document.createElement('div');
+                    div.className = 'content-section';
+                    div.innerHTML = `<h2>${item.title}</h2><p>${item.content}</p>`;
+                    container.appendChild(div);
+                } 
+                else if (item.type === 'anagram') {
+                    const div = createAnagramUI(item, anagramCount);
+                    container.appendChild(div);
+                    anagramCount++;
+                }
+                else if (item.type === 'sentence') {
+                    const div = createSentenceUI(item, sentenceCount);
+                    container.appendChild(div);
+                    sentenceCount++;
+                }
+            });
+
+            configurarAntiFraudeInputs();
+        }
+
+        function getActState(id) {
+            if (!gameState.activities[id]) {
+                gameState.activities[id] = { attempts: 0, solved: false, medal: null };
+            }
+            return gameState.activities[id];
+        }
+
+        function getMedalHTML(medal) {
+            if (!medal || medal === 'Failed') return '';
+            let symbol = medal === 'Au' ? 'Au' : (medal === 'Ag' ? 'Ag' : 'Fe');
+            let text = medal === 'Au' ? 'Oro' : (medal === 'Ag' ? 'Plata' : 'Hierro');
+            return `<div class="medal-badge medal-${medal.toLowerCase()}">${symbol}<br><span>${text}</span></div>`;
+        }
+
+        // --- 5.1 CONSTRUCTOR ANAGRAMAS ---
+        function createAnagramUI(item, index) {
+            const state = getActState(item.id);
+            const div = document.createElement('div');
+            
+            let statusClass = state.solved ? (state.medal === 'Failed' ? 'failed' : 'solved') : '';
+            div.className = `activity-card ${statusClass}`;
+            div.id = `card-${item.id}`;
+
+            let displayWord = state.solved && state.medal !== 'Failed' ? item.answer.split('').join('-') : shuffleLetters(item.answer);
+            let attemptsLeft = 3 - state.attempts;
+            
+            let html = `
+                ${getMedalHTML(state.medal)}
+                <div class="act-header">
+                    <span class="act-type">Anagrama #${index}</span>
+                    <span class="act-attempts" id="att-${item.id}">Intentos restantes: ${attemptsLeft}</span>
+                </div>
+                <p>Ordena las letras para encontrar el concepto ecológico. Pista: <em>${item.hint}</em></p>
+                <div class="anagram-display" id="disp-${item.id}">${displayWord}</div>
+            `;
+
+            if (state.solved) {
+                if (state.medal === 'Failed') {
+                    html += `<div class="feedback-msg" style="color: var(--rojo-error);">Agotaste los intentos. La respuesta correcta era: <br><strong>${item.answer}</strong></div>`;
+                } else {
+                    html += `<div class="feedback-msg" style="color: var(--verde-quindio);">¡Análisis Correcto! Has ganado ${state.medal === 'Au'? 5 : (state.medal === 'Ag'? 3 : 1.5)} puntos.</div>`;
+                }
+            } else {
+                html += `
+                    <input type="text" class="answer-input anti-fraud" id="inp-${item.id}" placeholder="Escribe el concepto aquí..." autocomplete="off">
+                    <button class="btn" id="btn-${item.id}" onclick="validateAnagram('${item.id}', '${item.answer}')">Validar Concepto</button>
+                    <div class="feedback-msg" id="feed-${item.id}"></div>
+                `;
+            }
+            div.innerHTML = html;
+            return div;
+        }
+
+        // --- 5.2 CONSTRUCTOR ORDENAR FRASES ---
+        function createSentenceUI(item, index) {
+            const state = getActState(item.id);
+            const div = document.createElement('div');
+            
+            let statusClass = state.solved ? (state.medal === 'Failed' ? 'failed' : 'solved') : '';
+            div.className = `activity-card ${statusClass}`;
+            div.id = `card-${item.id}`;
+
+            let attemptsLeft = 3 - state.attempts;
+            
+            let html = `
+                ${getMedalHTML(state.medal)}
+                <div class="act-header">
+                    <span class="act-type">Construir Frase #${index}</span>
+                    <span class="act-attempts" id="att-${item.id}">Intentos restantes: ${attemptsLeft}</span>
+                </div>
+                <p>Selecciona las palabras en el orden correcto para reconstruir la afirmación técnica.</p>
+            `;
+
+            if (state.solved) {
+                if (state.medal === 'Failed') {
+                    html += `<div class="feedback-msg" style="color: var(--rojo-error);">Agotaste los intentos. La oración correcta era:<br><strong>${item.answer}</strong></div>`;
+                } else {
+                    html += `<div class="sentence-builder" style="border-color: var(--verde-quindio); justify-content:center; text-align:center;"><strong>${item.answer}</strong></div>`;
+                    html += `<div class="feedback-msg" style="color: var(--verde-quindio);">¡Coherencia Gramatical Validada! Ganaste ${state.medal === 'Au'? 5 : (state.medal === 'Ag'? 3 : 1.5)} puntos.</div>`;
+                }
+            } else {
+                let words = shuffleWords(item.answer);
+                
+                // Zona de armado
+                html += `<div class="sentence-builder" id="builder-${item.id}"></div>`;
+                
+                // Banco de palabras desordenadas
+                html += `<div class="word-bank" id="bank-${item.id}">`;
+                words.forEach((w, i) => {
+                    html += `<button class="word-btn" id="wb-${item.id}-${i}" onclick="selectWord('${item.id}', '${w}', this.id)">${w}</button>`;
+                });
+                html += `</div>`;
+                
+                html += `
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-clear" onclick="clearSentence('${item.id}')">🔄 Reiniciar Frase</button>
+                        <button class="btn" id="btn-${item.id}" onclick="validateSentence('${item.id}', '${item.answer}')">Validar Frase Completa</button>
+                    </div>
+                    <div class="feedback-msg" id="feed-${item.id}"></div>
+                `;
+            }
+            div.innerHTML = html;
+            return div;
+        }
+
+        // Lógica interactiva para armado de frases en memoria
+        let sentenceMemory = {};
+
+        function selectWord(actId, word, btnId) {
+            let btn = document.getElementById(btnId);
+            if(btn.classList.contains('selected')) return; 
+            
+            btn.classList.add('selected');
+            if(!sentenceMemory[actId]) sentenceMemory[actId] = [];
+            sentenceMemory[actId].push(word);
+            
+            renderSentenceBuilder(actId);
+        }
+
+        function clearSentence(actId) {
+            sentenceMemory[actId] = [];
+            renderSentenceBuilder(actId);
+            let bank = document.getElementById(`bank-${actId}`);
+            let btns = bank.querySelectorAll('.word-btn');
+            btns.forEach(b => b.classList.remove('selected'));
+        }
+
+        function renderSentenceBuilder(actId) {
+            let builder = document.getElementById(`builder-${actId}`);
+            let arr = sentenceMemory[actId] || [];
+            builder.innerHTML = arr.map(w => `<span class="word-btn" style="background:var(--naranja-energia); color:white; border-color:var(--naranja-energia); cursor:default;">${w}</span>`).join('');
+        }
+
+        // --- 6. VALIDACIONES Y GAMIFICACIÓN ---
+        function processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl) {
+            let state = gameState.activities[id];
+            
+            if (isCorrect) {
+                state.solved = true;
+                let points = 0; let medal = '';
+                if(state.attempts === 0) { points = 5; medal = 'Au'; }
+                else if(state.attempts === 1) { points = 3; medal = 'Ag'; }
+                else if(state.attempts === 2) { points = 1.5; medal = 'Fe'; }
+
+                state.medal = medal;
+                gameState.score += points;
+                
+                cardEl.classList.add('solved');
+                feedEl.style.color = 'var(--verde-quindio)';
+                feedEl.textContent = `¡Excelente! Has recolectado una insignia de ${medal} (+${points} pts).`;
+                btnEl.disabled = true;
+                cardEl.insertAdjacentHTML('afterbegin', getMedalHTML(medal));
+                
+                setTimeout(renderContent, 1800); 
+
+            } else {
+                state.attempts++;
+                let remaining = 3 - state.attempts;
+                attEl.textContent = `Intentos restantes: ${remaining}`;
+                
+                if (state.attempts >= 3) {
+                    state.solved = true;
+                    state.medal = 'Failed';
+                    cardEl.classList.add('failed');
+                    btnEl.disabled = true;
+                    feedEl.style.color = 'var(--rojo-error)';
+                    feedEl.textContent = `Intentos máximos alcanzados. El sistema ha registrado la pérdida.`;
+                    setTimeout(renderContent, 2500);
+                } else {
+                    feedEl.style.color = 'var(--rojo-error)';
+                    feedEl.textContent = `Validación fallida. Revisa e intenta de nuevo.`;
+                    
+                    // Efecto visual de error
+                    cardEl.style.transform = 'translateX(6px)';
+                    setTimeout(()=> cardEl.style.transform = 'translateX(-6px)', 100);
+                    setTimeout(()=> cardEl.style.transform = 'translateX(6px)', 200);
+                    setTimeout(()=> cardEl.style.transform = 'translateX(0)', 300);
+                }
+            }
+            saveState();
+        }
+
+        function validateAnagram(id, correctAnswer) {
+            let state = getActState(id);
+            if(state.solved || state.attempts >= 3) return;
+
+            let inputEl = document.getElementById(`inp-${id}`);
+            let feedEl = document.getElementById(`feed-${id}`);
+            let attEl = document.getElementById(`att-${id}`);
+            let cardEl = document.getElementById(`card-${id}`);
+            let btnEl = document.getElementById(`btn-${id}`);
+
+            let userVal = inputEl.value.trim().toUpperCase();
+            if(userVal === '') return;
+
+            // Removemos acentos posibles para evitar falsos negativos en validación
+            const normalize = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            let isCorrect = (normalize(userVal) === normalize(correctAnswer.toUpperCase()));
+            processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl);
+        }
+
+        function validateSentence(id, correctAnswer) {
+            let state = getActState(id);
+            if(state.solved || state.attempts >= 3) return;
+
+            let feedEl = document.getElementById(`feed-${id}`);
+            let attEl = document.getElementById(`att-${id}`);
+            let cardEl = document.getElementById(`card-${id}`);
+            let btnEl = document.getElementById(`btn-${id}`);
+
+            let currentArr = sentenceMemory[id] || [];
+            if(currentArr.length === 0) return;
+
+            let userVal = currentArr.join(' ');
+            let isCorrect = (userVal === correctAnswer);
+            
+            processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl);
+            if(!isCorrect && state.attempts < 3) {
+                clearSentence(id); // Limpia los botones seleccionados para un nuevo intento
+            }
+        }
+
+        // --- 7. SISTEMA ANTI-FRAUDE ---
+        function configurarAntiFraudeInputs() {
+            const inputs = document.querySelectorAll('.anti-fraud');
+            inputs.forEach(inp => {
+                // Bloqueo de Pegado y Arrastre para fomentar el pensamiento activo
+                inp.addEventListener('paste', e => { e.preventDefault(); alert("Acción de pegado bloqueada por el sistema. Digita tu respuesta."); });
+                inp.addEventListener('drop', e => { e.preventDefault(); });
+                inp.addEventListener('contextmenu', e => { e.preventDefault(); });
+
+                // Verificador de Cadencia (Previene inyección por bots)
+                let keyTimes = [];
+                inp.addEventListener('keydown', e => {
+                    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'v')) {
+                        e.preventDefault(); return;
+                    }
+                    if(e.key.length > 1) return; 
+                    
+                    const now = Date.now();
+                    keyTimes.push(now);
+                    if(keyTimes.length > 4) keyTimes.shift();
+
+                    if(keyTimes.length === 4) {
+                        let totalDiff = 0;
+                        for(let i=1; i<keyTimes.length; i++){ totalDiff += (keyTimes[i] - keyTimes[i-1]); }
+                        let avg = totalDiff / 3;
+                        
+                        if(avg < 25) { // Tiempo irreal para humanos tipeando
+                            inp.value = ""; keyTimes = [];
+                            alert("Patrón de tipeo artificial detectado. El campo ha sido borrado.");
+                            e.preventDefault();
+                        }
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

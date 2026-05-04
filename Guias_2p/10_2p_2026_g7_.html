@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Biorremediación en Pueblo Rico - Sanando el Ecosistema</title>
+    <style>
+        /* ================= VARIABLES Y TIPOGRAFÍA ================= */
+        :root {
+            --cafe-oscuro: #3E2723;
+            --cafe-claro: #8D6E63;
+            --verde-citrico: #43A047;
+            --naranja-citrico: #FF9800;
+            --azul-agua: #0288D1;
+            --fondo-papel: #FDFBF7;
+            --blanco: #FFFFFF;
+            --texto: #212121;
+            --alerta: #D32F2F;
+            --sombra: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;1,300&family=Open+Sans:wght@400;600;800&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--fondo-papel);
+            color: var(--texto);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Merriweather', serif;
+            color: var(--cafe-oscuro);
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            text-align: justify;
+        }
+
+        /* ================= ESTRUCTURA Y NAVEGACIÓN ================= */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .oculto { display: none !important; }
+
+        /* Barra superior fija (Gamificación y Estado) */
+        #top-bar {
+            position: sticky;
+            top: 0;
+            background: var(--blanco);
+            box-shadow: var(--sombra);
+            z-index: 1000;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--verde-citrico);
+            flex-wrap: wrap;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        .score-info { display: flex; align-items: center; gap: 15px; }
+        
+        .progress-container {
+            width: 200px;
+            height: 12px;
+            background: #E0E0E0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--verde-citrico);
+            width: 0%;
+            transition: width 0.5s ease-out;
+        }
+
+        .nota-box {
+            background: var(--cafe-oscuro);
+            color: var(--blanco);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        /* ================= PANTALLA DE INICIO ================= */
+        #pantalla-bienvenida {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--cafe-oscuro), var(--verde-citrico));
+            color: var(--blanco);
+            text-align: center;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-width: 500px;
+            color: var(--texto);
+        }
+
+        .login-box h1 { color: var(--verde-citrico); }
+        
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #CCC;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        .input-group input:focus { outline: none; border-color: var(--naranja-citrico); }
+
+        .btn {
+            background-color: var(--naranja-citrico);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn:hover { background-color: #E65100; transform: translateY(-2px); }
+        .btn:disabled { background-color: #CCC; cursor: not-allowed; transform: none; }
+
+        /* ================= COMPONENTES VISUALES ================= */
+        .seccion {
+            background: var(--blanco);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: var(--sombra);
+            margin-bottom: 40px;
+        }
+
+        /* SVG y Canvas */
+        .svg-container, .canvas-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            background: #F5F5F5;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #E0E0E0;
+        }
+        canvas { max-width: 100%; display: block; }
+
+        /* Cuadro Comparativo */
+        .tabla-responsiva { width: 100%; overflow-x: auto; margin-bottom: 20px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: var(--cafe-oscuro); color: white; font-family: 'Merriweather', serif;}
+        tr:hover { background-color: #f1f1f1; }
+
+        /* Pausas Activas */
+        .pausa-activa {
+            background: #E8F5E9;
+            border-left: 5px solid var(--verde-citrico);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        .pausa-activa h4 { color: var(--verde-citrico); display: flex; align-items: center; gap: 10px; }
+        
+        /* Cuestionarios */
+        .pregunta-box { margin-bottom: 25px; }
+        .opciones { display: flex; flex-direction: column; gap: 10px; margin-top: 10px;}
+        .opcion-btn {
+            background: #FAFAFA; border: 2px solid #E0E0E0; padding: 12px;
+            border-radius: 8px; cursor: pointer; text-align: left; transition: 0.2s;
+        }
+        .opcion-btn:hover { background: #EEEEEE; border-color: var(--cafe-claro); }
+        .opcion-btn.seleccionada { background: #E3F2FD; border-color: var(--azul-agua); }
+        .opcion-btn.correcta { background: #C8E6C9; border-color: var(--verde-citrico); }
+        .opcion-btn.incorrecta { background: #FFCDD2; border-color: var(--alerta); }
+
+        /* ================= DRAG AND DROP (JUEGOS) ================= */
+        .juego-dd {
+            background: #FFF3E0;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px dashed var(--naranja-citrico);
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .draggable-area {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; min-height: 50px;
+            margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.5); border-radius: 8px;
+        }
+        .drop-zone {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+            min-height: 60px; padding: 15px; background: rgba(255,255,255,0.8); border-radius: 8px;
+            border: 2px solid #BCAAA4;
+        }
+        
+        .drag-item {
+            background: var(--cafe-oscuro); color: white; padding: 10px 15px;
+            border-radius: 5px; cursor: grab; font-weight: bold; user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.1s;
+        }
+        .drag-item:active { cursor: grabbing; transform: scale(1.05); }
+        
+        .drop-slot {
+            width: 40px; height: 45px; border: 2px dashed #8D6E63; border-radius: 5px;
+            display: inline-block; vertical-align: middle; background: white;
+        }
+        .drop-slot.filled { border: none; background: transparent; }
+        .drop-slot.hovered { background: #D7CCC8; }
+
+        .btn-check-dd { margin-top: 20px; }
+
+        /* ================= EVALUACIÓN Y ANTI-FRAUDE ================= */
+        .evaluacion-abierta textarea {
+            width: 100%; height: 100px; padding: 15px; border: 2px solid #ccc;
+            border-radius: 8px; resize: vertical; font-size: 1rem; margin-top: 10px;
+        }
+        .alerta-fraude {
+            background: var(--alerta); color: white; padding: 10px; border-radius: 5px;
+            font-weight: bold; text-align: center; margin-top: 10px; animation: parpadeo 1s infinite;
+        }
+        @keyframes parpadeo { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* Iconos SVG Inline */
+        .icon-local { width: 24px; height: 24px; fill: currentColor; }
+
+    </style>
+</head>
+<body>
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-bienvenida">
+        <div class="login-box">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="var(--verde-citrico)">
+                <path d="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M11,19.93C7.06,19.43 4,16.05 4,12C4,7.95 7.06,4.57 11,4.07V19.93M13,4.07C16.94,4.57 20,7.95 20,12C20,16.05 16.94,19.43 13,19.93V4.07Z" />
+            </svg>
+            <h1>Biorremediación</h1>
+            <h2>Sanando la Vereda Pueblo Rico</h2>
+            <p>Ingresa tus datos para comenzar o continuar tu aprendizaje.</p>
+            
+            <div class="input-group">
+                <label for="input-nombres">Nombres:</label>
+                <input type="text" id="input-nombres" placeholder="Ej. Juan Pablo" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="input-apellidos">Apellidos:</label>
+                <input type="text" id="input-apellidos" placeholder="Ej. Pérez Gómez" autocomplete="off">
+            </div>
+            <button id="btn-ingresar" class="btn">Comenzar Aventura</button>
+        </div>
+    </div>
+
+    <!-- ================= BARRA SUPERIOR (GAMIFICACIÓN) ================= -->
+    <div id="top-bar" class="oculto">
+        <div class="user-info">
+            <svg class="icon-local" viewBox="0 0 24 24"><path d="M12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/></svg>
+            <span id="display-nombre">Estudiante</span>
+        </div>
+        <div class="score-info">
+            <span style="font-size: 0.9rem; font-weight:bold;">Progreso:</span>
+            <div class="progress-container">
+                <div class="progress-bar" id="barra-progreso"></div>
+            </div>
+            <span id="texto-progreso">0%</span>
+            <div class="nota-box">
+                Nota: <span id="display-nota">0.0</span> / 5.0
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CONTENIDO PRINCIPAL ================= -->
+    <div id="contenido-principal" class="container oculto">
+
+        <!-- INTRODUCCIÓN -->
+        <section class="seccion" id="sec-intro">
+            <h1>Objetivo de Aprendizaje</h1>
+            <p>Comprender los principios bioquímicos de la biorremediación y analizar cómo la acción metabólica de bacterias específicas puede aplicarse para mitigar el impacto ambiental en los sectores productivos de la Vereda Pueblo Rico (Quimbaya, Quindío), promoviendo la sostenibilidad del Paisaje Cultural Cafetero.</p>
+            
+            <h3>Pre-saberes (Diagnóstico)</h3>
+            <p>Antes de sumergirnos en la ciencia, veamos qué tanto conoces sobre nuestro entorno y la contaminación. <i>(No afecta tu nota final, pero suma progreso)</i>.</p>
+            
+            <div id="quiz-pre-saberes"></div>
+            <button class="btn" id="btn-evaluar-pre" style="margin-top: 15px;">Evaluar Pre-saberes</button>
+        </section>
+
+        <!-- CUERPO INDUCTIVO -->
+        <section class="seccion" id="sec-inductivo">
+            <h2>El Contexto: Nuestro Quimbaya y la Contaminación</h2>
+            <p>La Vereda Pueblo Rico, ubicada en el corazón de Quimbaya, Quindío, es un vivo ejemplo de la riqueza del Paisaje Cultural Cafetero. Nuestros abuelos y padres han forjado la economía local basándose en cuatro pilares fundamentales: el cultivo del café, la producción de cítricos, la ganadería de doble propósito y, más recientemente, el turismo ecológico. Sin embargo, esta inmensa productividad trae consigo desafíos ambientales que ponen en riesgo la salud de nuestras cuencas hídricas, como las quebradas que recorren nuestras fincas.</p>
+            
+            <p>El beneficio del café, un proceso tradicional y esencial, genera subproductos altamente contaminantes conocidos como <b>aguas mieles</b>. Estas aguas, ricas en azúcares, mucílago y compuestos ácidos, al ser vertidas directamente a los ríos, consumen el oxígeno disuelto, asfixiando la vida acuática. Simultáneamente, en los cultivos de cítricos, el uso de pesticidas agroquímicos deja residuos persistentes en el suelo. En la ganadería, la acumulación excesiva de estiércol genera lixiviados que filtran nitratos a las aguas subterráneas, mientras que el turismo desregulado aumenta la carga de residuos sólidos y aguas residuales domésticas.</p>
+
+            <p>Frente a esta crisis, la ciencia nos ofrece una solución inspirada en la propia naturaleza: la <b>Biorremediación</b>. Esta disciplina científica consiste en el uso intencional de organismos vivos, principalmente microorganismos (como bacterias y hongos), para degradar, transformar o aislar los contaminantes ambientales, convirtiéndolos en sustancias menos tóxicas o inofensivas. En lugar de usar químicos agresivos para limpiar la naturaleza, la biorremediación confía en los "estómagos" microscópicos de bacterias nativas que habitan en los suelos de Pueblo Rico.</p>
+
+            <p>Para entender su ventaja, observemos el siguiente cuadro analítico que contrasta los métodos tradicionales con esta innovación biológica aplicable a nuestras fincas:</p>
+
+            <div class="tabla-responsiva">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Característica Técnica</th>
+                            <th>Tratamiento Químico Tradicional</th>
+                            <th>Biorremediación (Bacterias)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><b>Mecanismo de acción</b></td>
+                            <td>Adición de reactivos químicos (cloro, floculantes).</td>
+                            <td>Metabolismo enzimático celular natural.</td>
+                        </tr>
+                        <tr>
+                            <td><b>Residuos generados</b></td>
+                            <td>Lodos tóxicos secundarios que requieren disposición especial.</td>
+                            <td>Agua (H<sub>2</sub>O), Dióxido de carbono (CO<sub>2</sub>) y biomasa inofensiva.</td>
+                        </tr>
+                        <tr>
+                            <td><b>Costo de implementación</b></td>
+                            <td>Alto (compra constante de insumos y maquinaria).</td>
+                            <td>Bajo/Medio (uso de cepas nativas y estimulación del medio).</td>
+                        </tr>
+                        <tr>
+                            <td><b>Impacto en el suelo de Quimbaya</b></td>
+                            <td>Altera el pH drásticamente y esteriliza los microorganismos benéficos.</td>
+                            <td>Restaura el equilibrio ecológico y mejora la fertilidad (compostaje).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p>Al observar la tabla, es evidente que el uso de procesos biológicos es la ruta más coherente para proteger el Paisaje Cultural Cafetero. Las bacterias actúan como minúsculas plantas de tratamiento. Identifican las moléculas complejas de los pesticidas o las aguas mieles, las absorben y las utilizan como alimento (fuente de carbono y energía). A este proceso de ruptura molecular lo llamamos degradación biológica.</p>
+
+            <!-- JUEGO 1: ORDENAR LETRAS -->
+            <div class="juego-dd" id="juego1">
+                <h3>Reto Práctico 1: El concepto central</h3>
+                <p>Ordena las letras para formar la palabra que define a los organismos vivos encargados de la biorremediación, mencionados en el texto:</p>
+                <div class="draggable-area" id="letras-origen-1">
+                    <!-- Letras generadas por JS -->
+                </div>
+                <div class="drop-zone" id="letras-destino-1">
+                    <!-- Slots generados por JS -->
+                </div>
+                <button class="btn btn-check-dd" onclick="verificarJuegoLetras(1, 'MICROBIOS')">Verificar Palabra</button>
+                <p id="msg-juego1" style="font-weight: bold; margin-top: 10px;"></p>
+            </div>
+
+            <!-- JUEGO 2: ORDENAR PALABRAS -->
+            <div class="juego-dd" id="juego2">
+                <h3>Reto Práctico 2: Acción en la finca</h3>
+                <p>Arrastra las palabras para formar la frase que explica qué hacen estos microorganismos con los residuos del lavado del café:</p>
+                <div class="draggable-area" id="palabras-origen-1"></div>
+                <div class="drop-zone" id="palabras-destino-1" style="flex-direction: row;"></div>
+                <button class="btn btn-check-dd" onclick="verificarJuegoPalabras(2, 'LAS BACTERIAS LIMPIAN LAS AGUAS MIELES')">Verificar Frase</button>
+                <p id="msg-juego2" style="font-weight: bold; margin-top: 10px;"></p>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 1 - 3 -->
+            <div class="pausa-activa" id="pausa1">
+                <h4><svg class="icon-local" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,19.93C7.05,19.43 4,16.05 4,12C4,7.95 7.05,4.57 11,4.07V19.93M13,4.07C16.95,4.57 20,7.95 20,12C20,16.05 16.95,19.43 13,19.93V4.07Z"/></svg> Pausa Activa 1: Reflexión en el Cuaderno</h4>
+                <p><b>Reto:</b> Escribe en tu cuaderno un párrafo de 5 líneas explicando cómo crees que la contaminación de los cítricos afecta a los animales de la vereda Pueblo Rico.</p>
+                <button class="btn" onclick="completarPausa(1)">¡Ya lo hice en mi cuaderno!</button>
+            </div>
+
+            <div class="pausa-activa" id="pausa2">
+                <h4><svg class="icon-local" viewBox="0 0 24 24"><path d="M12,3L1,9L4,10.63V17L12,21L20,17V10.63L23,9M12,5.16L19.5,9.25L12,13.34L4.5,9.25M19,16.28L12,19.44L5,16.28V11.16L12,15L19,11.16V16.28Z"/></svg> Pausa Activa 2: Dibuja el Proceso</h4>
+                <p><b>Reto:</b> Dibuja un mapa mental simple que conecte los 4 sectores (Café, Cítricos, Ganadería, Turismo) con su tipo de residuo generado.</p>
+                <button class="btn" onclick="completarPausa(2)">¡Ya lo hice en mi cuaderno!</button>
+            </div>
+
+            <div class="pausa-activa" id="pausa3">
+                <h4><svg class="icon-local" viewBox="0 0 24 24"><path d="M3,5H9V11H3V5M5,7V9H7V7H5M15,5H21V11H15V5M17,7V9H19V7H17M3,13H9V19H3V13M5,15V17H7V15H5M11,13H21V15H11V13M11,17H21V19H11V17Z"/></svg> Pausa Activa 3: Cuadro Resumen</h4>
+                <p><b>Reto:</b> Transcribe en tu cuaderno 2 ventajas de la biorremediación basándote en el cuadro comparativo de esta sección.</p>
+                <button class="btn" onclick="completarPausa(3)">¡Ya lo hice en mi cuaderno!</button>
+            </div>
+
+        </section>
+
+        <!-- PREGUNTA ICFES (Indagar) con Gráfica SVG -->
+        <section class="seccion" id="sec-icfes">
+            <h2>Análisis de Datos: Competencia Indagar (ICFES)</h2>
+            <p>La siguiente gráfica ilustra un experimento realizado en una quebrada de Pueblo Rico afectada por aguas mieles de café. Se midió la concentración de contaminación orgánica (en mg/L) a lo largo de 30 días en dos escenarios: uno natural (línea naranja) y uno aplicando técnicas de biorremediación aerobia (línea verde).</p>
+            
+            <div class="svg-container">
+                <svg width="600" height="350" viewBox="0 0 600 350" style="background: white;">
+                    <!-- Ejes -->
+                    <line x1="50" y1="300" x2="550" y2="300" stroke="black" stroke-width="2"/>
+                    <line x1="50" y1="50" x2="50" y2="300" stroke="black" stroke-width="2"/>
+                    <!-- Etiquetas X -->
+                    <text x="50" y="320" font-size="12">Día 0</text>
+                    <text x="216" y="320" font-size="12">Día 10</text>
+                    <text x="382" y="320" font-size="12">Día 20</text>
+                    <text x="550" y="320" font-size="12">Día 30</text>
+                    <text x="300" y="340" font-size="14" font-weight="bold" text-anchor="middle">Tiempo (Días)</text>
+                    <!-- Etiquetas Y -->
+                    <text x="10" y="55" font-size="12">500</text>
+                    <text x="10" y="175" font-size="12">250</text>
+                    <text x="10" y="300" font-size="12">0</text>
+                    <text x="15" y="180" font-size="14" font-weight="bold" transform="rotate(-90 15,180)" text-anchor="middle">Concentración (mg/L)</text>
+                    
+                    <!-- Cuadricula -->
+                    <line x1="50" y1="175" x2="550" y2="175" stroke="#E0E0E0" stroke-width="1" stroke-dasharray="5,5"/>
+                    <line x1="50" y1="50" x2="550" y2="50" stroke="#E0E0E0" stroke-width="1" stroke-dasharray="5,5"/>
+
+                    <!-- Linea Natural (Naranja) -->
+                    <polyline points="50,50 216,100 382,150 550,220" fill="none" stroke="#FF9800" stroke-width="3"/>
+                    <circle cx="50" cy="50" r="4" fill="#FF9800"/>
+                    <circle cx="216" cy="100" r="4" fill="#FF9800"/>
+                    <circle cx="382" cy="150" r="4" fill="#FF9800"/>
+                    <circle cx="550" cy="220" r="4" fill="#FF9800"/>
+
+                    <!-- Linea Biorremediacion (Verde) -->
+                    <polyline points="50,50 133,120 216,220 382,280 550,290" fill="none" stroke="#43A047" stroke-width="3"/>
+                    <circle cx="50" cy="50" r="4" fill="#43A047"/>
+                    <circle cx="133" cy="120" r="4" fill="#43A047"/>
+                    <circle cx="216" cy="220" r="4" fill="#43A047"/>
+                    <circle cx="382" cy="280" r="4" fill="#43A047"/>
+                    <circle cx="550" cy="290" r="4" fill="#43A047"/>
+
+                    <!-- Leyenda -->
+                    <rect x="400" y="20" width="10" height="10" fill="#FF9800"/>
+                    <text x="415" y="30" font-size="12">Decadencia Natural</text>
+                    <rect x="400" y="40" width="10" height="10" fill="#43A047"/>
+                    <text x="415" y="50" font-size="12">Con Biorremediación</text>
+                </svg>
+            </div>
+
+            <div class="pregunta-box">
+                <p><b>Pregunta Tipo ICFES:</b> Con base en la gráfica anterior, ¿qué conclusión se puede establecer sobre el efecto de la biorremediación en el ecosistema hídrico de la quebrada a los 20 días?</p>
+                <div class="opciones" id="opciones-icfes">
+                    <button class="opcion-btn" onclick="responderICFES(0)">A) La biorremediación aumenta la concentración de contaminantes antes de reducirlos.</button>
+                    <button class="opcion-btn" onclick="responderICFES(1)">B) A los 20 días, la biorremediación ha logrado reducir la concentración casi a cero (aprox. 280mg/L menos que el inicio), siendo mucho más eficiente que la decadencia natural.</button>
+                    <button class="opcion-btn" onclick="responderICFES(2)">C) La decadencia natural es más rápida en los primeros 10 días comparada con la biorremediación.</button>
+                    <button class="opcion-btn" onclick="responderICFES(3)">D) La concentración inicial de contaminantes era de 250 mg/L en ambos tratamientos.</button>
+                </div>
+            </div>
+            
+            <div class="pausa-activa" id="pausa4">
+                <h4><svg class="icon-local" viewBox="0 0 24 24"><path d="M16,11H21V13H16V11M16,15H21V17H16V15M16,7H21V9H16V7M3,5H14V19H3V5Z"/></svg> Pausa Activa 4: Gráficos en papel</h4>
+                <p><b>Reto:</b> Copia en tu cuaderno el eje X y el eje Y de la gráfica anterior y anota qué variable representa cada eje.</p>
+                <button class="btn" onclick="completarPausa(4)">¡Ya lo hice en mi cuaderno!</button>
+            </div>
+
+        </section>
+
+        <!-- CUERPO DEDUCTIVO Y ANIMACIÓN -->
+        <section class="seccion" id="sec-deductivo">
+            <h2>Principios Científicos: ¿Cómo funcionan las Bacterias?</h2>
+            <p>Para que la biorremediación sea efectiva en nuestras fincas quindianas, debemos comprender la biología molecular subyacente. Las bacterias no "muerden" la contaminación, sino que secretan proteínas especializadas llamadas <b>enzimas</b>. Estas enzimas actúan como tijeras químicas que rompen los enlaces de moléculas complejas (como los hidrocarburos de pesticidas o la celulosa del café) transformándolas en moléculas más pequeñas que la célula bacteriana puede ingresar a su interior y metabolizar.</p>
+
+            <p>Existen bacterias específicas para cada tipo de residuo. Por ejemplo, en el caso de las aguas mieles del café en Quimbaya, una de las heroínas microscópicas más estudiadas es la bacteria <b>Pseudomonas putida</b>. Esta especie posee rutas metabólicas excepcionales capaces de tolerar y degradar los fenoles y la acidez extrema producida en el beneficio del grano. Cuando aplicamos un cultivo de <i>Pseudomonas putida</i> a un tanque de aguas residuales de café, la concentración de toxicidad disminuye radicalmente en pocos días.</p>
+
+            <p>El proceso bioquímico puede ser de dos tipos: anaerobio (sin oxígeno) o aerobio (con oxígeno). En la biorremediación de aguas superficiales, el proceso aerobio es el preferido porque es significativamente más rápido y eficiente. En este proceso, el <b>oxígeno</b> actúa como el aceptor final de electrones en la respiración celular bacteriana, lo que permite romper el contaminante por completo. Por lo tanto, el oxígeno es el factor clave que acelera la biorremediación. Si aireamos (inyectamos aire) al pozo séptico de la finca, las bacterias trabajarán mucho más rápido.</p>
+
+            <p>La ecuación química general que describe este proceso aeróbico es la siguiente:</p>
+            
+            <div style="background: #EFEBE9; padding: 15px; text-align:center; font-family:'Merriweather', serif; font-size:1.2rem; border-radius:10px; margin:20px 0;">
+                Contaminante Orgánico + O<sub>2</sub> + Bacterias &rarr; CO<sub>2</sub> + H<sub>2</sub>O + Nueva Biomasa Bacteriana
+            </div>
+
+            <p>Como demuestra la ecuación, el resultado final es inocuo: el contaminante se transforma en gas carbónico (CO<sub>2</sub>), agua pura (H<sub>2</sub>O) y más bacterias (biomasa) que luego servirán como abono natural. Sin embargo, para que las enzimas funcionen y la <i>Pseudomonas</i> sobreviva, deben controlarse factores ambientales críticos. El pH debe ser cercano a la neutralidad (entre 6.5 y 7.5), y la temperatura ideal en nuestro contexto tropical ronda entre los 20°C y 30°C. Si el pH es muy ácido, las enzimas se desnaturalizan (pierden su forma y función), deteniendo la limpieza.</p>
+
+            <p>Observa en la siguiente animación interactiva cómo ocurre este proceso a nivel microscópico. Los cuadrados cafés representan los residuos (aguas mieles), los círculos verdes son nuestras bacterias segregando enzimas, y las partículas azules resultantes son el agua limpia.</p>
+
+            <div class="canvas-container">
+                <canvas id="animacionCanvas" width="800" height="400"></canvas>
+            </div>
+            <p style="text-align:center; font-size: 0.9rem; color: #666;"><i>Simulación HTML5 Canvas: Biocinesis y degradación enzimática (60fps)</i></p>
+
+            <!-- JUEGO 3: ORDENAR LETRAS -->
+            <div class="juego-dd" id="juego3">
+                <h3>Reto Práctico 3: Las "Tijeras" químicas</h3>
+                <p>Ordena las letras para descubrir cómo se llaman las proteínas que secretan las bacterias para romper la contaminación:</p>
+                <div class="draggable-area" id="letras-origen-3"></div>
+                <div class="drop-zone" id="letras-destino-3"></div>
+                <button class="btn btn-check-dd" onclick="verificarJuegoLetras(3, 'ENZIMAS')">Verificar Palabra</button>
+                <p id="msg-juego3" style="font-weight: bold; margin-top: 10px;"></p>
+            </div>
+
+            <!-- JUEGO 4: ORDENAR PALABRAS -->
+            <div class="juego-dd" id="juego4">
+                <h3>Reto Práctico 4: El acelerador</h3>
+                <p>Arrastra las palabras basándote en el texto para revelar qué elemento acelera el proceso de limpieza:</p>
+                <div class="draggable-area" id="palabras-origen-4"></div>
+                <div class="drop-zone" id="palabras-destino-4" style="flex-direction: row;"></div>
+                <button class="btn btn-check-dd" onclick="verificarJuegoPalabras(4, 'EL OXIGENO ACELERA LA DEGRADACION')">Verificar Frase</button>
+                <p id="msg-juego4" style="font-weight: bold; margin-top: 10px;"></p>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 5 Y 6 -->
+            <div class="pausa-activa" id="pausa5">
+                <h4><svg class="icon-local" viewBox="0 0 24 24"><path d="M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9Z"/></svg> Pausa Activa 5: Análisis Escrito</h4>
+                <p><b>Reto:</b> ¿Qué le pasaría al proceso si vertemos ácido fuerte en la quebrada cambiando el pH? Responde en 2 líneas en tu cuaderno.</p>
+                <button class="btn" onclick="completarPausa(5)">¡Ya lo hice en mi cuaderno!</button>
+            </div>
+
+            <div class="pausa-activa" id="pausa6">
+                <h4><svg class="icon-local" viewBox="0 0 24 24"><path d="M19,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,19H5V5H19V19M17,17H7V15H17V17M17,13H7V11H17V13M17,9H7V7H17V9Z"/></svg> Pausa Activa 6: Flujo Matemático (Ganadería)</h4>
+                <p><b>Reto Matemático:</b> Si una bacteria degrada 2 mg de contaminante bovino por hora, ¿Cuántos mg degradarán 1 millón de bacterias en 5 horas? Escribe el cálculo en el cuaderno.</p>
+                <button class="btn" onclick="completarPausa(6)">¡Ya lo hice en mi cuaderno!</button>
+            </div>
+
+        </section>
+
+        <!-- EVALUACIÓN FINAL TALLER -->
+        <section class="seccion" id="sec-evaluacion">
+            <h2>Taller de Evaluación Final</h2>
+            <p>Demuestra tu aprendizaje respondiendo las siguientes preguntas basadas en la información leída.</p>
+            
+            <h3>Selección Múltiple</h3>
+            <div id="eval-multiple-container"></div>
+
+            <h3 style="margin-top: 40px;">Preguntas Abiertas (Análisis)</h3>
+            <p style="color: var(--alerta); font-size:0.9rem;"><b>Nota de Integridad:</b> El sistema anti-fraude está activo. No puedes copiar y pegar texto. Escribe con tus propias palabras basándote en la lectura.</p>
+            <div id="eval-abierta-container"></div>
+
+            <button class="btn" id="btn-finalizar-eval" style="margin-top:30px; width:100%;">Entregar Evaluación Final</button>
+        </section>
+
+        <!-- RESULTADOS Y EXPORTACIÓN -->
+        <section class="seccion oculto" id="sec-resultados">
+            <h2 style="color: var(--verde-citrico);">¡Aventura Completada!</h2>
+            <div id="feedback-final"></div>
+            
+            <h3 style="margin-top: 20px;">Ruta de Fortalecimiento Personalizada:</h3>
+            <p id="ruta-fortalecimiento"></p>
+
+            <button class="btn" id="btn-descargar-txt" style="margin-top: 30px; background-color: var(--azul-agua);">Descargar Resultados (.txt)</button>
+            <button class="btn" id="btn-reiniciar" style="margin-top: 30px; background-color: var(--alerta); margin-left: 10px;">Borrar Datos y Reiniciar</button>
+        </section>
+
+    </div>
+
+    <!-- ================= SCRIPT PRINCIPAL ================= -->
+    <script>
+        // ================= ESTADO GLOBAL (LOCALSTORAGE) =================
+        let estadoGlobal = {
+            nombres: '',
+            apellidos: '',
+            progreso: 0,
+            nota: 0.0,
+            preSaberes: [null, null, null],
+            pausas: [false, false, false, false, false, false],
+            juegos: { j1: false, j2: false, j3: false, j4: false },
+            icfes: null,
+            evalMultiple: [null, null, null, null, null],
+            evalAbierta: ['', '', '', '', ''],
+            evalFinalizada: false
+        };
+
+        const STORAGE_KEY = 'ova_biorremediacion_pueblo_rico_v1';
+
+        function guardarEstado() {
+            // Calcular Nota y Progreso dinámico
+            let calculoNota = 0;
+            let completados = 0;
+            let totalItems = 3 + 6 + 4 + 1 + 10; // Pre(3) + Pausas(6) + Juegos(4) + Icfes(1) + Eval(10)
+
+            estadoGlobal.preSaberes.forEach(r => { if(r !== null) completados++; });
+            estadoGlobal.pausas.forEach(r => { if(r) completados++; });
+            
+            if(estadoGlobal.juegos.j1) { completados++; calculoNota += 0.2; }
+            if(estadoGlobal.juegos.j2) { completados++; calculoNota += 0.2; }
+            if(estadoGlobal.juegos.j3) { completados++; calculoNota += 0.2; }
+            if(estadoGlobal.juegos.j4) { completados++; calculoNota += 0.2; }
+            
+            if(estadoGlobal.icfes !== null) {
+                completados++;
+                if(estadoGlobal.icfes === 1) calculoNota += 0.5; // Respuesta B
+            }
+
+            if(estadoGlobal.evalFinalizada) {
+                estadoGlobal.evalMultiple.forEach((r, i) => {
+                    completados++;
+                    // Respuestas correctas eval múltiple definidas en initEvalMultiple()
+                    const correctas = [1, 2, 0, 1, 0];
+                    if(r === correctas[i]) calculoNota += 0.5;
+                });
+                estadoGlobal.evalAbierta.forEach(r => {
+                    if(r.trim().length > 10) { completados++; calculoNota += 0.24; } // Aprox 1.2 total por abiertas
+                });
+            }
+
+            estadoGlobal.progreso = Math.round((completados / totalItems) * 100);
+            estadoGlobal.nota = Math.min(5.0, Math.max(0.0, calculoNota)).toFixed(1);
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(estadoGlobal));
+            actualizarUI();
+        }
+
+        function cargarEstado() {
+            const guardado = localStorage.getItem(STORAGE_KEY);
+            if (guardado) {
+                estadoGlobal = JSON.parse(guardado);
+                return true;
+            }
+            return false;
+        }
+
+        function actualizarUI() {
+            if(estadoGlobal.nombres) {
+                document.getElementById('display-nombre').innerText = `${estadoGlobal.nombres} ${estadoGlobal.apellidos}`;
+                document.getElementById('barra-progreso').style.width = `${estadoGlobal.progreso}%`;
+                document.getElementById('texto-progreso').innerText = `${estadoGlobal.progreso}%`;
+                document.getElementById('display-nota').innerText = estadoGlobal.nota;
+            }
+        }
+
+        // ================= INICIALIZACIÓN =================
+        document.addEventListener('DOMContentLoaded', () => {
+            if (cargarEstado() && estadoGlobal.nombres !== '') {
+                iniciarOVA();
+                restaurarRespuestasUI();
+            }
+
+            document.getElementById('btn-ingresar').addEventListener('click', () => {
+                const nombres = document.getElementById('input-nombres').value.trim();
+                const apellidos = document.getElementById('input-apellidos').value.trim();
+                
+                if (nombres === '' || apellidos === '') {
+                    alert("Por favor ingresa tus Nombres y Apellidos completos.");
+                    return;
+                }
+
+                estadoGlobal.nombres = nombres;
+                estadoGlobal.apellidos = apellidos;
+                guardarEstado();
+                iniciarOVA();
+            });
+
+            document.getElementById('btn-reiniciar').addEventListener('click', () => {
+                if(confirm("¿Estás seguro de borrar todo tu progreso y reiniciar el OVA?")) {
+                    localStorage.removeItem(STORAGE_KEY);
+                    location.reload();
+                }
+            });
+
+            generarPreSaberes();
+            generarEvalMultiple();
+            generarEvalAbierta();
+            inicializarDragAndDrop();
+        });
+
+        function iniciarOVA() {
+            document.getElementById('pantalla-bienvenida').classList.add('oculto');
+            document.getElementById('top-bar').classList.remove('oculto');
+            document.getElementById('contenido-principal').classList.remove('oculto');
+            iniciarCanvas();
+            actualizarUI();
+            if(estadoGlobal.evalFinalizada) mostrarResultados();
+        }
+
+        function restaurarRespuestasUI() {
+            // Restaurar botones de pre-saberes
+            estadoGlobal.preSaberes.forEach((resp, i) => {
+                if(resp !== null) {
+                    let btns = document.querySelectorAll(`#quiz-pre-saberes .pregunta-box:nth-child(${i+1}) .opcion-btn`);
+                    btns.forEach(b => b.classList.add('seleccionada')); // simplificado visualmente
+                    btns[resp].style.border = "2px solid var(--verde-citrico)";
+                }
+            });
+            // Restaurar pausas
+            estadoGlobal.pausas.forEach((estado, i) => {
+                if(estado) {
+                    let btn = document.querySelector(`#pausa${i+1} button`);
+                    btn.innerText = "✓ Completado";
+                    btn.disabled = true;
+                    btn.style.background = "#A5D6A7";
+                    btn.style.color = "black";
+                }
+            });
+            // Restaurar juegos
+            if(estadoGlobal.juegos.j1) { document.getElementById('msg-juego1').innerText = "¡Completado!"; document.getElementById('juego1').style.opacity = "0.7"; }
+            if(estadoGlobal.juegos.j2) { document.getElementById('msg-juego2').innerText = "¡Completado!"; document.getElementById('juego2').style.opacity = "0.7"; }
+            if(estadoGlobal.juegos.j3) { document.getElementById('msg-juego3').innerText = "¡Completado!"; document.getElementById('juego3').style.opacity = "0.7"; }
+            if(estadoGlobal.juegos.j4) { document.getElementById('msg-juego4').innerText = "¡Completado!"; document.getElementById('juego4').style.opacity = "0.7"; }
+            
+            // Icfes
+            if(estadoGlobal.icfes !== null) {
+                let btns = document.querySelectorAll(`#opciones-icfes .opcion-btn`);
+                btns[estadoGlobal.icfes].classList.add('seleccionada');
+            }
+
+            // Textareas
+            estadoGlobal.evalAbierta.forEach((txt, i) => {
+                let ta = document.getElementById(`text-abierta-${i}`);
+                if(ta) ta.value = txt;
+            });
+        }
+
+        // ================= CUESTIONARIOS =================
+        const pregPre = [
+            { q: "¿Qué sector crees que impacta más las aguas de Quimbaya?", op: ["Cultivo de plátano", "El beneficio del Café (aguas mieles)", "La minería de oro", "La siembra de Guadua"] },
+            { q: "¿Qué es un microorganismo?", op: ["Un animal grande", "Una planta de café", "Un ser vivo microscópico como una bacteria", "Un químico sintético"] },
+            { q: "¿Crees que la naturaleza tiene formas de limpiar la contaminación?", op: ["No, solo los químicos humanos pueden.", "Sí, a través de procesos biológicos de ciertos seres vivos.", "Solo si llueve mucho.", "Depende del clima."] }
+        ];
+
+        function generarPreSaberes() {
+            const container = document.getElementById('quiz-pre-saberes');
+            pregPre.forEach((p, index) => {
+                let html = `<div class="pregunta-box"><p><b>${index+1}. ${p.q}</b></p><div class="opciones">`;
+                p.op.forEach((opcion, i) => {
+                    html += `<button class="opcion-btn" onclick="seleccionarPre(${index}, ${i}, this)">${opcion}</button>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function seleccionarPre(preguntaIdx, opcionIdx, btn) {
+            let hermanos = btn.parentElement.children;
+            for(let h of hermanos) h.classList.remove('seleccionada');
+            btn.classList.add('seleccionada');
+            estadoGlobal.preSaberes[preguntaIdx] = opcionIdx;
+        }
+
+        document.getElementById('btn-evaluar-pre').addEventListener('click', () => {
+            if(estadoGlobal.preSaberes.includes(null)) { alert("Responde todas las preguntas de pre-saberes"); return; }
+            guardarEstado();
+            alert("Respuestas guardadas. ¡Continuemos con la lectura!");
+            document.getElementById('btn-evaluar-pre').innerText = "Guardado ✓";
+            document.getElementById('btn-evaluar-pre').disabled = true;
+        });
+
+        // ================= PAUSAS ACTIVAS =================
+        function completarPausa(id) {
+            estadoGlobal.pausas[id-1] = true;
+            let btn = document.querySelector(`#pausa${id} button`);
+            btn.innerText = "✓ Completado";
+            btn.disabled = true;
+            btn.style.background = "#A5D6A7";
+            btn.style.color = "black";
+            guardarEstado();
+        }
+
+        // ================= ICFES =================
+        function responderICFES(opcionIdx) {
+            let btns = document.querySelectorAll(`#opciones-icfes .opcion-btn`);
+            btns.forEach(b => b.classList.remove('seleccionada'));
+            btns[opcionIdx].classList.add('seleccionada');
+            estadoGlobal.icfes = opcionIdx;
+            guardarEstado();
+            alert("Respuesta guardada para el consolidado final.");
+        }
+
+        // ================= DRAG AND DROP LÓGICA =================
+        let draggedItem = null;
+
+        function inicializarDragAndDrop() {
+            setupJuegoLetras(1, "MICROBIOS", "letras-origen-1", "letras-destino-1");
+            setupJuegoPalabras(2, "LAS BACTERIAS LIMPIAN LAS AGUAS MIELES", "palabras-origen-1", "palabras-destino-1");
+            setupJuegoLetras(3, "ENZIMAS", "letras-origen-3", "letras-destino-3");
+            setupJuegoPalabras(4, "EL OXIGENO ACELERA LA DEGRADACION", "palabras-origen-4", "palabras-destino-4");
+        }
+
+        function desordenar(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function crearDragEvents(el) {
+            el.addEventListener('dragstart', function(e) {
+                draggedItem = this;
+                setTimeout(() => this.style.opacity = '0.5', 0);
+            });
+            el.addEventListener('dragend', function() {
+                setTimeout(() => {
+                    draggedItem.style.opacity = '1';
+                    draggedItem = null;
+                }, 0);
+            });
+        }
+
+        function crearDropEvents(slot) {
+            slot.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                if(!this.hasChildNodes()) this.classList.add('hovered');
+            });
+            slot.addEventListener('dragleave', function() { this.classList.remove('hovered'); });
+            slot.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('hovered');
+                if(!this.hasChildNodes() && draggedItem) {
+                    this.appendChild(draggedItem);
+                    this.classList.add('filled');
+                }
+            });
+        }
+
+        function setupJuegoLetras(id, palabraReal, origenId, destinoId) {
+            const origen = document.getElementById(origenId);
+            const destino = document.getElementById(destinoId);
+            origen.innerHTML = ''; destino.innerHTML = '';
+            
+            let letras = palabraReal.split('');
+            let letrasDesordenadas = desordenar([...letras]);
+
+            letrasDesordenadas.forEach((letra, i) => {
+                let div = document.createElement('div');
+                div.className = 'drag-item'; div.draggable = true; div.textContent = letra;
+                div.dataset.val = letra;
+                crearDragEvents(div);
+                origen.appendChild(div);
+            });
+
+            letras.forEach(() => {
+                let slot = document.createElement('div');
+                slot.className = 'drop-slot';
+                crearDropEvents(slot);
+                destino.appendChild(slot);
+            });
+
+            // Permitir devolver a origen
+            origen.addEventListener('dragover', e => e.preventDefault());
+            origen.addEventListener('drop', function(e) {
+                e.preventDefault();
+                if(draggedItem) { this.appendChild(draggedItem); draggedItem.parentElement.classList.remove('filled'); }
+            });
+        }
+
+        function setupJuegoPalabras(id, fraseReal, origenId, destinoId) {
+            const origen = document.getElementById(origenId);
+            const destino = document.getElementById(destinoId);
+            origen.innerHTML = ''; destino.innerHTML = '';
+
+            let palabras = fraseReal.split(' ');
+            let palabrasDesordenadas = desordenar([...palabras]);
+
+            palabrasDesordenadas.forEach((palabra) => {
+                let div = document.createElement('div');
+                div.className = 'drag-item'; div.draggable = true; div.textContent = palabra;
+                div.dataset.val = palabra;
+                crearDragEvents(div);
+                origen.appendChild(div);
+            });
+
+            palabras.forEach(() => {
+                let slot = document.createElement('div');
+                slot.className = 'drop-slot';
+                slot.style.width = '100px'; slot.style.height = 'auto'; slot.style.padding = '5px';
+                crearDropEvents(slot);
+                destino.appendChild(slot);
+            });
+
+            origen.addEventListener('dragover', e => e.preventDefault());
+            origen.addEventListener('drop', function(e) {
+                e.preventDefault();
+                if(draggedItem) { this.appendChild(draggedItem); }
+            });
+        }
+
+        function verificarJuegoLetras(id, palabraReal) {
+            const destino = document.getElementById(`letras-destino-${id}`);
+            let armada = '';
+            Array.from(destino.children).forEach(slot => {
+                if(slot.hasChildNodes()) armada += slot.firstChild.dataset.val;
+            });
+
+            if(armada === palabraReal) {
+                document.getElementById(`msg-juego${id}`).innerText = "¡Excelente! Respuesta Correcta.";
+                document.getElementById(`msg-juego${id}`).style.color = "green";
+                estadoGlobal.juegos[`j${id}`] = true; guardarEstado();
+            } else {
+                document.getElementById(`msg-juego${id}`).innerText = "Incorrecto o incompleto. Revisa el orden.";
+                document.getElementById(`msg-juego${id}`).style.color = "red";
+            }
+        }
+
+        function verificarJuegoPalabras(id, fraseReal) {
+            const destino = document.getElementById(`palabras-destino-${id}`);
+            let armada = [];
+            Array.from(destino.children).forEach(slot => {
+                if(slot.hasChildNodes()) armada.push(slot.firstChild.dataset.val);
+            });
+
+            if(armada.join(' ') === fraseReal) {
+                document.getElementById(`msg-juego${id}`).innerText = "¡Excelente! Frase correcta.";
+                document.getElementById(`msg-juego${id}`).style.color = "green";
+                estadoGlobal.juegos[`j${id}`] = true; guardarEstado();
+            } else {
+                document.getElementById(`msg-juego${id}`).innerText = "Incorrecto. Lee el texto e inténtalo de nuevo.";
+                document.getElementById(`msg-juego${id}`).style.color = "red";
+            }
+        }
+
+        // ================= EVALUACIÓN FINAL =================
+        const evalMulti = [
+            { q: "1. Según el texto, ¿Qué residuo específico genera el lavado del café en Quimbaya?", op: ["Lixiviados de ganadería", "Aguas mieles ricas en azúcares y acidez", "Pesticidas persistentes", "Lodos clorados"] },
+            { q: "2. La Biorremediación utiliza:", op: ["Químicos importados caros.", "Flotación con aire únicamente.", "Microorganismos vivos como bacterias y hongos.", "Plantas sintéticas de filtración."] },
+            { q: "3. ¿Cuál es el nombre de la bacteria destacada en el texto por degradar residuos del café?", op: ["Pseudomonas putida", "Escherichia coli", "Bacillus thuringiensis", "Lactobacillus acidophilus"] },
+            { q: "4. ¿Cómo se llaman las proteínas que secretan las bacterias para romper la contaminación?", op: ["Lípidos", "Enzimas", "Hidratos", "Hormonas"] },
+            { q: "5. ¿Qué elemento vital acelera drásticamente el proceso de degradación bacteriana en las quebradas?", op: ["El Oxígeno", "El Dióxido de Carbono", "El Nitrógeno puro", "El Cloro"] }
+        ];
+
+        const evalAbierta = [
+            "1. Con base en la lectura, explica con tus propias palabras qué es la biorremediación.",
+            "2. ¿Por qué el tratamiento biológico (bacterias) es más beneficioso para los suelos de Quimbaya comparado con el tratamiento químico tradicional?",
+            "3. ¿Qué sucedería con las bacterias de biorremediación si el pH del agua se vuelve extremadamente ácido? (Deducido de la lectura).",
+            "4. Menciona los productos finales inocuos resultantes del proceso aeróbico de biorremediación descrito en la ecuación del texto.",
+            "5. ¿De qué manera cree usted, según lo leído, que el Paisaje Cultural Cafetero se protege usando esta técnica?"
+        ];
+
+        function generarEvalMultiple() {
+            const container = document.getElementById('eval-multiple-container');
+            evalMulti.forEach((p, index) => {
+                let html = `<div class="pregunta-box"><p><b>${p.q}</b></p><div class="opciones">`;
+                p.op.forEach((opcion, i) => {
+                    html += `<button class="opcion-btn" onclick="seleccionarEval(${index}, ${i}, this)">${opcion}</button>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function seleccionarEval(preguntaIdx, opcionIdx, btn) {
+            if(estadoGlobal.evalFinalizada) return;
+            let hermanos = btn.parentElement.children;
+            for(let h of hermanos) h.classList.remove('seleccionada');
+            btn.classList.add('seleccionada');
+            estadoGlobal.evalMultiple[preguntaIdx] = opcionIdx;
+        }
+
+        function generarEvalAbierta() {
+            const container = document.getElementById('eval-abierta-container');
+            evalAbierta.forEach((p, index) => {
+                let html = `<div class="pregunta-box eval-abierta">
+                    <p><b>${p}</b></p>
+                    <textarea id="text-abierta-${index}" placeholder="Escribe tu respuesta aquí (Mínimo 10 palabras)..."></textarea>
+                    <div id="alerta-fraude-${index}" class="alerta-fraude oculto">¡Alerta de Fraude! Texto pegado o velocidad inhumana detectada.</div>
+                </div>`;
+                container.innerHTML += html;
+            });
+
+            // Aplicar Anti-Fraude
+            setTimeout(() => {
+                evalAbierta.forEach((_, i) => {
+                    let textarea = document.getElementById(`text-abierta-${i}`);
+                    
+                    // Prevenir pegar y soltar
+                    textarea.addEventListener('paste', e => { e.preventDefault(); dispararAlertaFraude(i, textarea); });
+                    textarea.addEventListener('drop', e => { e.preventDefault(); dispararAlertaFraude(i, textarea); });
+                    textarea.addEventListener('contextmenu', e => e.preventDefault());
+                    
+                    // Control de cadencia
+                    textarea.addEventListener('keydown', e => {
+                        if(!textarea.dataset.startTime) textarea.dataset.startTime = Date.now();
+                        if(!textarea.dataset.charCount) textarea.dataset.charCount = 0;
+                        
+                        // Ignorar teclas de control
+                        if(e.key.length === 1) textarea.dataset.charCount++;
+                    });
+
+                    textarea.addEventListener('input', e => {
+                        if(estadoGlobal.evalFinalizada) { textarea.value = estadoGlobal.evalAbierta[i]; return; }
+                        
+                        let length = textarea.value.length;
+                        if(length > 10) {
+                            let start = parseInt(textarea.dataset.startTime);
+                            let chars = parseInt(textarea.dataset.charCount);
+                            let timeElapsed = Date.now() - start;
+                            
+                            // Si el tiempo por caracter es anormalmente bajo (ej. inyección por script/IA)
+                            // Un humano promedia 200-400ms por tecla. Si es < 50ms, es sospechoso en bloque.
+                            if((timeElapsed / length) < 30) {
+                                dispararAlertaFraude(i, textarea);
+                            }
+                        }
+                        estadoGlobal.evalAbierta[i] = textarea.value;
+                    });
+                });
+            }, 500);
+        }
+
+        function dispararAlertaFraude(i, textarea) {
+            textarea.value = '';
+            textarea.dataset.startTime = Date.now();
+            textarea.dataset.charCount = 0;
+            estadoGlobal.evalAbierta[i] = '';
+            let alerta = document.getElementById(`alerta-fraude-${i}`);
+            alerta.classList.remove('oculto');
+            setTimeout(() => alerta.classList.add('oculto'), 4000);
+        }
+
+        document.getElementById('btn-finalizar-eval').addEventListener('click', () => {
+            if(estadoGlobal.evalMultiple.includes(null)) { alert("Responde todas las preguntas de selección múltiple."); return; }
+            
+            let incompletas = false;
+            estadoGlobal.evalAbierta.forEach(txt => { if(txt.trim().split(' ').length < 5) incompletas = true; });
+            if(incompletas) { alert("Tus respuestas abiertas son muy cortas. Desarrolla más tus ideas."); return; }
+
+            if(confirm("¿Estás seguro de entregar? No podrás modificar las respuestas.")) {
+                estadoGlobal.evalFinalizada = true;
+                guardarEstado();
+                mostrarResultados();
+            }
+        });
+
+        function mostrarResultados() {
+            document.getElementById('btn-finalizar-eval').classList.add('oculto');
+            document.getElementById('sec-resultados').classList.remove('oculto');
+            document.getElementById('sec-resultados').scrollIntoView();
+
+            // Deshabilitar inputs
+            document.querySelectorAll('textarea').forEach(ta => ta.disabled = true);
+            
+            let feedback = `<p><b>Nota Final: ${estadoGlobal.nota} / 5.0</b></p>`;
+            feedback += `<p>Progreso General del OVA: ${estadoGlobal.progreso}%</p>`;
+            document.getElementById('feedback-final').innerHTML = feedback;
+
+            let ruta = "Has completado la herramienta. ";
+            if(estadoGlobal.nota < 3.0) ruta += "Te sugerimos repasar la sección del Cuadro Comparativo y las Ecuaciones Químicas para fortalecer los conceptos de enzimas y oxígeno.";
+            else if(estadoGlobal.nota < 4.0) ruta += "Buen trabajo. Para alcanzar la excelencia, enfócate en desarrollar respuestas abiertas más analíticas relacionando siempre la química con el entorno agrícola.";
+            else ruta += "¡Excelente nivel de comprensión! Tienes las bases para proponer soluciones ambientales reales en las fincas de Pueblo Rico.";
+            
+            document.getElementById('ruta-fortalecimiento').innerText = ruta;
+        }
+
+        // ================= EXPORTAR A TXT =================
+        document.getElementById('btn-descargar-txt').addEventListener('click', () => {
+            let contenido = `=== REPORTE OVA: BIORREMEDIACIÓN PUEBLO RICO ===\n`;
+            contenido += `Estudiante: ${estadoGlobal.nombres} ${estadoGlobal.apellidos}\n`;
+            contenido += `Progreso: ${estadoGlobal.progreso}%\n`;
+            contenido += `Nota Final: ${estadoGlobal.nota} / 5.0\n\n`;
+            
+            contenido += `--- RESPUESTAS MÚLTIPLES ---\n`;
+            estadoGlobal.evalMultiple.forEach((r, i) => { contenido += `Pregunta ${i+1}: Opción Seleccionada (Índice ${r})\n`; });
+            
+            contenido += `\n--- RESPUESTAS ABIERTAS ---\n`;
+            estadoGlobal.evalAbierta.forEach((r, i) => { contenido += `Pregunta ${i+1}:\n${r}\n\n`; });
+
+            const blob = new Blob([contenido], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Reporte_${estadoGlobal.apellidos}_OVA_Biologia.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
+
+        // ================= ANIMACIÓN CANVAS (60FPS) =================
+        function iniciarCanvas() {
+            const canvas = document.getElementById('animacionCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            let bacterias = [];
+            let contaminantes = [];
+            let aguaLimpia = [];
+
+            // Inicializar entidades
+            for(let i=0; i<10; i++) {
+                bacterias.push({ x: Math.random() * 800, y: Math.random() * 400, vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2, r: 12 });
+            }
+            for(let i=0; i<50; i++) {
+                contaminantes.push({ x: Math.random() * 800, y: Math.random() * 400, size: 8 + Math.random()*6 });
+            }
+
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Fondo
+                ctx.fillStyle = '#E8EAF6';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Dibujar Agua Limpia
+                ctx.fillStyle = 'var(--azul-agua)';
+                aguaLimpia.forEach((p, index) => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+                    ctx.fill();
+                    p.y += 0.5; // cae al fondo
+                    p.x += (Math.random()-0.5);
+                    if(p.y > canvas.height) aguaLimpia.splice(index, 1);
+                });
+
+                // Dibujar Contaminantes (Aguas Mieles - Cuadrados cafés)
+                ctx.fillStyle = 'var(--cafe-oscuro)';
+                contaminantes.forEach(c => {
+                    ctx.fillRect(c.x, c.y, c.size, c.size);
+                });
+
+                // Dibujar y mover Bacterias (Pseudomonas)
+                bacterias.forEach(b => {
+                    // Mover
+                    b.x += b.vx; b.y += b.vy;
+                    // Rebote bordes
+                    if(b.x < 0 || b.x > canvas.width) b.vx *= -1;
+                    if(b.y < 0 || b.y > canvas.height) b.vy *= -1;
+
+                    // Interacción (Degradación Enzimática)
+                    contaminantes.forEach((c, cIdx) => {
+                        let dx = b.x - (c.x + c.size/2);
+                        let dy = b.y - (c.y + c.size/2);
+                        let dist = Math.sqrt(dx*dx + dy*dy);
+                        
+                        if(dist < b.r + 20) { // Radio de accion enzimática
+                            // Acercarse
+                            b.vx -= dx * 0.001; b.vy -= dy * 0.001;
+                            
+                            if(dist < b.r + 5) { // "Comer"
+                                c.size -= 0.1;
+                                if(Math.random() > 0.8) aguaLimpia.push({x: c.x, y: c.y}); // Generar H2O
+                                if(c.size <= 2) contaminantes.splice(cIdx, 1);
+                            }
+                        }
+                    });
+
+                    // Limite de velocidad
+                    let speed = Math.sqrt(b.vx*b.vx + b.vy*b.vy);
+                    if(speed > 2) { b.vx = (b.vx/speed)*2; b.vy = (b.vy/speed)*2; }
+
+                    // Dibujar Bacteria
+                    ctx.beginPath();
+                    ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+                    ctx.fillStyle = 'var(--verde-citrico)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#1B5E20';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Cilios/Flagelos animacion simple
+                    ctx.beginPath();
+                    ctx.moveTo(b.x, b.y);
+                    ctx.lineTo(b.x - b.vx*10 + (Math.random()*4-2), b.y - b.vy*10 + (Math.random()*4-2));
+                    ctx.strokeStyle = 'var(--verde-citrico)';
+                    ctx.stroke();
+                });
+
+                // Reabastecer contaminantes para que la animacion no se detenga
+                if(contaminantes.length < 20) {
+                    contaminantes.push({ x: Math.random() * 800, y: Math.random() * 400, size: 8 + Math.random()*6 });
+                }
+
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: El Patrón de la Finca</title>
+    <style>
+        :root {
+            --bg-color: #f4ecd8; /* Color pergamino */
+            --text-color: #2c3e2b; /* Verde oscuro */
+            --accent-color: #8c3b19; /* Tono café tostado */
+            --highlight: #d97736; /* Naranja sol */
+            --border-style: 2px solid;
+            --font-main: 'Georgia', serif; /* Tipo diario/libro */
+            --font-code: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-image: radial-gradient(circle, #f4ecd8 60%, #e0d0b0 100%);
+        }
+
+        #game-container {
+            width: 95%;
+            max-width: 850px;
+            height: 90vh;
+            border: 4px double var(--accent-color);
+            background-color: rgba(255, 255, 255, 0.6);
+            padding: 30px;
+            box-sizing: border-box;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        h1 { font-size: 2rem; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { font-size: 1.5rem; }
+
+        p, li { line-height: 1.6; font-size: 1.1rem; margin-bottom: 1rem;}
+
+        .highlight-cafe { color: var(--accent-color); font-weight: bold; }
+        .highlight-sol { color: var(--highlight); font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .highlight-verde { color: #2e7d32; font-weight: bold; }
+
+        .story-text {
+            background-color: rgba(140, 59, 25, 0.05);
+            padding: 15px;
+            border-left: 4px solid var(--accent-color);
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .code-block {
+            font-family: var(--font-code);
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 2px;
+            border: 1px dashed var(--accent-color);
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .puzzle-input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        input[type="text"] {
+            font-family: var(--font-code);
+            background-color: #fff;
+            border: 2px solid var(--accent-color);
+            color: var(--text-color);
+            padding: 12px;
+            font-size: 1.2rem;
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--highlight);
+            box-shadow: 0 0 5px var(--highlight);
+        }
+
+        button {
+            font-family: var(--font-main);
+            font-weight: bold;
+            background-color: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        button:hover { background-color: var(--highlight); }
+
+        button:disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+        }
+
+        .pista-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 20px auto;
+            border: 3px solid var(--accent-color);
+            border-radius: 5px;
+        }
+
+        .lockout-timer {
+            color: #d32f2f;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 1.1rem;
+            display: none;
+            font-family: var(--font-code);
+        }
+
+        /* Sistema de Inventario */
+        #inventory-panel {
+            background-color: #fff;
+            border: 2px dashed var(--highlight);
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        #inventory-title {
+            color: var(--highlight);
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        #inventory-list {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-wrap: wrap;
+        }
+
+        .inventory-item {
+            font-family: var(--font-code);
+            font-size: 0.9rem;
+            color: white;
+            background-color: var(--highlight);
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+
+        .game-screen { display: none; }
+        .active-screen { display: flex; flex-direction: column; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <h1>El Sol: El Patrón de la Finca</h1>
+    
+    <div id="inventory-panel" style="display: none;">
+        <div id="inventory-title">Morral de Ecólogo</div>
+        <ul id="inventory-list"></ul>
+    </div>
+
+    <div id="screen-room1" class="game-screen active-screen">
+        <h2>Sector 1: El Portón de Entrada</h2>
+        <div class="story-text">
+            <p>El amanecer en Montenegro pinta los cafetales de dorado. Estás en la puerta de la Finca "La Lumbrera", famosa por ser un ecosistema perfecto.</p>
+            <p>Para abrir el candado de la puerta y encontrar la <span class="highlight-verde">Lupa Ecológica</span>, debes responder a tres preguntas básicas sobre el origen de todo. El candado usa un <span class="highlight-cafe">Código César (Desplazamiento +2)</span>.</p>
+            <ol>
+                <li>¿Cuál es la estrella que proporciona la energía principal a este ecosistema?</li>
+                <li>Desplaza la palabra resultante 2 letras hacia adelante en el abecedario (Ej: A->C, B->D).</li>
+            </ol>
+            <p class="code-block">"Si la respuesta es LUNA, el código sería NWPC"</p>
+        </div>
+        <div class="puzzle-input-group">
+            <input type="text" id="input-room1" placeholder="Palabra codificada..." autocomplete="off">
+            <button onclick="checkPuzzle(1, 'UQN')">Abrir Candado</button>
+            <div id="lockout-room1" class="lockout-timer">Sistema bloqueado por: 7s</div>
+        </div>
+    </div>
+
+    <div id="screen-room2" class="game-screen">
+        <h2>Sector 2: El Cafetal Viejo</h2>
+        <div class="story-text">
+            <p>¡Entraste! En el suelo, encuentras una nota. Tu <span class="highlight-verde">Lupa Ecológica</span> (ahora en tu inventario) te ayuda a leer la letra pequeña del viejo administrador.</p>
+            <p><strong>Diario de Campo - Agosto 14:</strong><br>
+            "Hoy caminé por los lotes cerca a Quimbaya. Es fascinante ver quién hace el trabajo duro. Mis amados arbustos de <strong>café</strong> son los verdaderos obreros; ellos toman la luz directa y fabrican su propio alimento, su propia energía. Son la base de todo. A estos organismos independientes los llamamos <strong>Autótrofos</strong>.</p>
+            <p>Por otro lado, me preocupa la plaga. La <strong>broca</strong>, ese pequeño insecto, no puede fabricar su comida. Tiene que perforar el grano de café para robarle la energía que la planta creó. A estos ladronzuelos, que dependen de comerse a otros o a sus frutos, los llamamos <strong>Heterótrofos</strong>. Si no mantenemos el equilibrio, los consumidores acabarán con los productores."</p>
+        </div>
+        <div class="code-block">
+            TABLA DE REGISTRO ECOLÓGICO:<br>
+            [12] - Organismo que roba energía (Heterótrofo)<br>
+            [85] - Organismo que crea energía (Autótrofo)<br>
+            [44] - Organismo que descompone
+        </div>
+        <p>Cruza la información de la lectura con la tabla. Ingresa el código numérico de 4 dígitos uniendo primero el código del productor (Autótrofo) y luego el del consumidor (Heterótrofo) mencionados en el texto.</p>
+        
+        <div class="puzzle-input-group">
+            <input type="text" id="input-room2" placeholder="4 dígitos..." autocomplete="off">
+            <button onclick="checkPuzzle(2, '8512')">Analizar Ecosistema</button>
+            <div id="lockout-room2" class="lockout-timer">Sistema bloqueado por: 7s</div>
+        </div>
+    </div>
+
+    <div id="screen-room3" class="game-screen">
+        <h2>Sector 3: El Tanque de Riego</h2>
+        <div class="story-text">
+            <p>Para que los cafetales sigan siendo Productores (autótrofos), necesitan realizar la <span class="highlight-verde">Fotosíntesis</span>. Has encontrado un sistema de válvulas antiguo.</p>
+            <p>El manual dice: "La receta mágica requiere 3 ingredientes exactos en orden: 1. El líquido vital de los ríos del Quindío, 2. El gas que exhalamos animales y humanos, 3. La energía radiante del patrón de la finca."</p>
+        </div>
+        
+        <img src="pista_3.png" alt="Pista 3 no cargada: Diagrama de Válvulas. Reemplázala con tu imagen o usa los códigos H2O, CO2, LUZ" class="pista-image" onerror="this.style.display='none';">
+
+        <p class="code-block">
+            Válvulas disponibles (Códigos): <br>
+            TIERRA - H2O - O2 - CO2 - LUZ - CALOR
+        </p>
+        <p>Escribe los 3 códigos de los ingredientes correctos juntos, sin espacios, en el orden mencionado en el manual.</p>
+
+        <div class="puzzle-input-group">
+            <input type="text" id="input-room3" placeholder="Ej: O2TIERRACALOR" autocomplete="off">
+            <button onclick="checkPuzzle(3, 'H2OCO2LUZ')">Activar Fotosíntesis</button>
+            <div id="lockout-room3" class="lockout-timer">Sistema bloqueado por: 7s</div>
+        </div>
+    </div>
+
+    <div id="screen-room4" class="game-screen">
+        <h2>Sector 4: El Bosque Nativo (Red Trófica)</h2>
+        <div class="story-text">
+            <p>Al llegar al borde del bosque cerca de Pueblo Rico, necesitas comprender cómo fluye la energía para evitar que la plaga destruya la cosecha. Necesitas tu <span class="highlight-verde">Llave de Paso de Agua</span> (obtenida en el sector 3) para limpiar un antiguo cartel.</p>
+            <p>Revisa la <strong>Pista 4</strong>. Muestra la cadena de transferencia de energía (quién se come a quién, o quién le da energía a quién). Debajo hay 4 símbolos geométricos.</p>
+            <p>Debes ingresar el nombre de las figuras geométricas en el orden en que fluye la energía desde el origen (El Sol) hasta el consumidor final (El Pájaro Barranquero).</p>
+        </div>
+
+        <img src="pista_4.png" alt="Diagrama Red Trófica" class="pista-image">
+
+        <div class="puzzle-input-group">
+            <input type="text" id="input-room4" placeholder="Ej: CIRCULOCUADRADOTRIANGULO..." autocomplete="off">
+            <button onclick="checkPuzzle(4, 'TRIANGULOCIRCULOCUADRADOESTRELLA')">Equilibrar Red</button>
+            <div id="lockout-room4" class="lockout-timer">Sistema bloqueado por: 7s</div>
+        </div>
+    </div>
+
+    <div id="screen-room5" class="game-screen">
+        <h2>Sector 5: El Mirador Final</h2>
+        <div class="story-text">
+            <p>¡Has restaurado el equilibrio de la finca! Ahora entiendes que cada elemento es crucial.</p>
+            <p>Para terminar tu jornada y graduarte como Ecólogo Junior, debes cruzar la información de todo tu viaje. Ingresa el código maestro de la finca que responde a la siguiente ecuación conceptual:</p>
+            <p class="code-block">
+                (Nombre de la estrella desencriptada del Sector 1) + <br>
+                (El tipo de nutrición del cafeto en minúsculas) + <br>
+                (El número de la broca del Sector 2)
+            </p>
+        </div>
+
+        <div class="puzzle-input-group">
+            <input type="text" id="input-room5" placeholder="Ej: LUNAheterotrofo99" autocomplete="off">
+            <button onclick="checkPuzzle(5, 'SOLautotrofo12')">Obtener Certificado</button>
+            <div id="lockout-room5" class="lockout-timer">Sistema bloqueado por: 7s</div>
+        </div>
+    </div>
+
+    <div id="screen-success" class="game-screen">
+        <h2>¡RETO SUPERADO!</h2>
+        <div class="story-text" style="border-left-color: var(--highlight);">
+            <p>¡Felicidades, ecólogo del Quindío!</p>
+            <p>Has demostrado que comprendes perfectamente que el <span class="highlight-sol">Sol</span> es el verdadero patrón de la finca. Sin él, los <span class="highlight-verde">productores</span> (autótrofos) no harían fotosíntesis, y los <span class="highlight-cafe">consumidores</span> (heterótrofos) no tendrían alimento.</p>
+            <p>Gracias a ti, las redes tróficas de nuestros ecosistemas cafeteros están a salvo.</p>
+        </div>
+        <div class="puzzle-input-group">
+            <button onclick="restartGame()">Reiniciar Expedición</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Variables de Estado
+    let currentRoom = 1;
+    let isLockout = false;
+    let inventory = [];
+
+    // Respuestas correctas (Validación Estricta)
+    const codes = {
+        1: 'UQN', // César +2 de SOL (S->U, O->Q, L->N)
+        2: '8512', // 85 (Autótrofo/Productor) y 12 (Heterótrofo/Consumidor)
+        3: 'H2OCO2LUZ', // Ingredientes fotosíntesis
+        4: 'TRIANGULOCIRCULOCUADRADOESTRELLA', // Secuencia de la Imagen 4
+        5: 'SOLAUTOTROFO12' // Respuesta final combinada
+    };
+
+    // Objetos de Inventario entregados al superar una habitación
+    const inventorySources = {
+        1: 'Lupa Ecológica',
+        2: 'Diario del Abuelo',
+        3: 'Llave de Paso de Agua'
+    };
+
+    function init() {
+        loadProgress();
+        updateInventoryDisplay();
+    }
+
+    function changeScreen(roomNumber) {
+        document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active-screen'));
+        const nextScreenId = (roomNumber === 'success') ? 'screen-success' : `screen-room${roomNumber}`;
+        document.getElementById(nextScreenId).classList.add('active-screen');
+        
+        // Mostrar panel de inventario solo después de la intro
+        const invPanel = document.getElementById('inventory-panel');
+        if(roomNumber === 1 || roomNumber === 'success') {
+            invPanel.style.display = 'none';
+        } else {
+            invPanel.style.display = 'block';
+        }
+
+        currentRoom = roomNumber;
+        saveProgress();
+    }
+
+    function checkPuzzle(roomNum, correctCode) {
+        if (isLockout) return;
+
+        const inputId = `input-room${roomNum}`;
+        const inputEl = document.getElementById(inputId);
+        const lockoutEl = document.getElementById(`lockout-room${roomNum}`);
+
+        // Validación estricta: quitar espacios, normalizar a mayúsculas
+        const playerAnswer = inputEl.value.replace(/\s+/g, '').toUpperCase();
+
+        if (playerAnswer === correctCode.toUpperCase()) {
+            if(inventorySources[roomNum]) {
+                addInventoryItem(inventorySources[roomNum]);
+            }
+            if (roomNum === 5) {
+                changeScreen('success');
+            } else {
+                changeScreen(roomNum + 1);
+            }
+        } else {
+            startLockout(inputId, lockoutEl);
+        }
+    }
+
+    // Mecánica de Penalización de 7 Segundos
+    function startLockout(inputId, lockoutEl) {
+        isLockout = true;
+        const inputEl = document.getElementById(inputId);
+        const buttonEl = lockoutEl.previousElementSibling; 
+
+        inputEl.disabled = true;
+        buttonEl.disabled = true;
+        lockoutEl.style.display = 'block';
+
+        let secondsLeft = 7;
+        lockoutEl.textContent = `Error lógico. Bloqueo de seguridad: ${secondsLeft}s`;
+
+        const countdown = setInterval(() => {
+            secondsLeft--;
+            lockoutEl.textContent = `Error lógico. Bloqueo de seguridad: ${secondsLeft}s`;
+
+            if (secondsLeft <= 0) {
+                clearInterval(countdown);
+                isLockout = false;
+                inputEl.disabled = false;
+                buttonEl.disabled = false;
+                lockoutEl.style.display = 'none';
+                inputEl.focus();
+                inputEl.value = ''; 
+            }
+        }, 1000);
+    }
+
+    function addInventoryItem(item) {
+        if (item && !inventory.includes(item)) {
+            inventory.push(item);
+            saveProgress();
+            updateInventoryDisplay();
+        }
+    }
+
+    function updateInventoryDisplay() {
+        const listEl = document.getElementById('inventory-list');
+        listEl.innerHTML = ''; 
+        inventory.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'inventory-item';
+            li.textContent = item;
+            listEl.appendChild(li);
+        });
+    }
+
+    // Persistencia con LocalStorage
+    function saveProgress() {
+        const gameState = { currentRoom: currentRoom, inventory: inventory };
+        localStorage.setItem('quindioEscapeSol_V1', JSON.stringify(gameState));
+    }
+
+    function loadProgress() {
+        const savedState = localStorage.getItem('quindioEscapeSol_V1');
+        if (savedState) {
+            const state = JSON.parse(savedState);
+            currentRoom = state.currentRoom;
+            inventory = state.inventory || [];
+            changeScreen(currentRoom);
+        }
+    }
+
+    function restartGame() {
+        localStorage.removeItem('quindioEscapeSol_V1');
+        location.reload(); 
+    }
+
+    window.onload = init;
+</script>
+
+</body>
+</html>

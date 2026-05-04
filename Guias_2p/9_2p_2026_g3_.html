@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Huerto de Mendel</title>
+    <style>
+        :root {
+            --mendel-green: #4caf50;
+            --mendel-dark: #2e7d32;
+            --mendel-yellow: #ffeb3b;
+            --mendel-brown: #795548;
+            --text-main: #333;
+            --bg-light: #f9fbf9;
+            --white: #ffffff;
+            --accent: #ff5722;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; background-color: var(--bg-light); color: var(--text-main); line-height: 1.8; overflow-x: hidden; }
+
+        /* Pantalla de Acceso */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--mendel-dark), #1b5e20);
+            display: flex; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .card-login {
+            background: var(--white); padding: 3rem; border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 90%; max-width: 450px; text-align: center;
+        }
+        .card-login h1 { color: var(--mendel-dark); margin-bottom: 1rem; }
+        .input-box { margin-bottom: 1.5rem; text-align: left; }
+        .input-box label { display: block; font-weight: bold; margin-bottom: 0.5rem; color: #555; }
+        .input-box input { width: 100%; padding: 0.8rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .btn-access {
+            background: var(--mendel-green); color: white; border: none; padding: 1rem 2rem;
+            border-radius: 50px; font-size: 1.2rem; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s;
+        }
+        .btn-access:hover { background: var(--mendel-dark); transform: scale(1.02); }
+
+        /* Estructura Principal */
+        #app-content { display: none; }
+        
+        nav {
+            position: fixed; top: 0; width: 100%; background: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 0.8rem 2rem;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+        }
+        .user-info { font-weight: bold; color: var(--mendel-dark); }
+        .progress-container { flex-grow: 1; margin: 0 2rem; height: 12px; background: #eee; border-radius: 6px; overflow: hidden; }
+        #progress-bar { width: 0%; height: 100%; background: var(--mendel-green); transition: 0.5s; }
+        .seeds-collection { display: flex; gap: 8px; }
+        .seed-icon { width: 30px; height: 30px; opacity: 0.2; transition: 0.5s; }
+        .seed-icon.unlocked { opacity: 1; filter: drop-shadow(0 0 5px var(--mendel-yellow)); }
+
+        header { padding: 6rem 10% 3rem; text-align: center; background: linear-gradient(to bottom, #e8f5e9, var(--bg-light)); }
+        header h1 { font-size: 3.5rem; color: var(--mendel-dark); margin: 0; }
+
+        section { max-width: 1000px; margin: 2rem auto; padding: 2rem; }
+        .content-card { background: var(--white); padding: 3rem; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 3rem; }
+
+        h2 { color: var(--mendel-dark); border-left: 5px solid var(--mendel-green); padding-left: 1rem; }
+
+        /* Tablas Comparativas */
+        .comparison-table { width: 100%; border-collapse: collapse; margin: 2rem 0; border-radius: 10px; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        .comparison-table th { background: var(--mendel-dark); color: white; padding: 1.2rem; }
+        .comparison-table td { padding: 1.2rem; border-bottom: 1px solid #eee; transition: 0.2s; }
+        .comparison-table tr:hover td { background-color: #f1f8e9; }
+        .tag { display: inline-block; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; margin-right: 5px; }
+        .tag-gen { background: #d1c4e9; color: #512da8; }
+        .tag-fen { background: #c8e6c9; color: #2e7d32; }
+
+        /* Pausas Activas */
+        .pause-task { background: #fffde7; border: 2px dashed #fbc02d; padding: 1.5rem; border-radius: 12px; margin: 2rem 0; }
+        .pause-task h4 { margin: 0 0 1rem 0; color: #f57f17; }
+        .btn-done { background: #fbc02d; border: none; padding: 0.6rem 1.2rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-done.completed { background: var(--mendel-green); color: white; }
+
+        /* Gráficas SVG */
+        .svg-chart-container { text-align: center; margin: 2rem 0; padding: 1rem; border: 1px solid #eee; border-radius: 10px; }
+        .chart-bar { transition: 0.5s; cursor: pointer; }
+        .chart-bar:hover { opacity: 0.8; }
+
+        /* Canvas */
+        #simulation-area { 
+            width: 100%; height: 500px; background: #222; border-radius: 15px; 
+            margin: 2rem 0; position: relative; overflow: hidden;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
+        }
+        .canvas-overlay { position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; pointer-events: none; }
+
+        /* Evaluaciones */
+        .quiz-option { 
+            display: block; width: 100%; padding: 1rem; margin: 0.5rem 0; 
+            border: 2px solid #eee; border-radius: 10px; text-align: left; 
+            background: white; cursor: pointer; transition: 0.3s;
+        }
+        .quiz-option:hover { border-color: var(--mendel-green); background: #f1f8e9; }
+        .feedback { display: none; padding: 1rem; border-radius: 10px; margin-top: 1rem; font-weight: bold; }
+        .fb-correct { background: #e8f5e9; color: #2e7d32; }
+        .fb-wrong { background: #ffebee; color: #c62828; }
+
+        textarea { width: 100%; padding: 1rem; border-radius: 10px; border: 2px solid #eee; resize: none; min-height: 80px; }
+        .word-counter { text-align: right; font-size: 0.8rem; color: #888; margin-top: 5px; }
+
+        .btn-export {
+            display: block; width: 100%; max-width: 300px; margin: 3rem auto;
+            padding: 1.2rem; background: var(--mendel-dark); color: white;
+            border: none; border-radius: 50px; font-size: 1.2rem; font-weight: bold;
+            cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        /* SVG Art Styles */
+        .dna-illustration { width: 100%; height: 200px; margin: 2rem 0; }
+        .node { stroke: #fff; stroke-width: 2; }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Bienvenida -->
+    <div id="login-overlay">
+        <div class="card-login">
+            <svg viewBox="0 0 100 100" width="80" height="80">
+                <circle cx="50" cy="50" r="45" fill="#e8f5e9"/>
+                <path d="M50 20 Q70 20 70 50 T50 80 Q30 80 30 50 T50 20" fill="var(--mendel-green)"/>
+                <circle cx="50" cy="40" r="5" fill="var(--mendel-yellow)"/>
+                <circle cx="50" cy="60" r="5" fill="var(--mendel-yellow)"/>
+            </svg>
+            <h1>Herencia Mendeliana</h1>
+            <p>Bienvenido al laboratorio de genética experimental.</p>
+            
+            <div class="input-box">
+                <label>Apellidos:</label>
+                <input type="text" id="user-lastname" placeholder="Ej: Austria Mendel">
+            </div>
+            <div class="input-box">
+                <label>Nombres:</label>
+                <input type="text" id="user-firstname" placeholder="Ej: Gregor Johann">
+            </div>
+            
+            <button type="button" class="btn-access" onclick="initApp()">Entrar al Huerto</button>
+        </div>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div id="app-content">
+        <nav>
+            <div class="user-info" id="display-name">USUARIO: ---</div>
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div class="seeds-collection" id="seeds-display">
+                <!-- Iconos de semillas gamificados -->
+                <svg class="seed-icon" viewBox="0 0 100 100" id="s1"><circle cx="50" cy="50" r="40" fill="#8bc34a"/></svg>
+                <svg class="seed-icon" viewBox="0 0 100 100" id="s2"><circle cx="50" cy="50" r="40" fill="#ffeb3b"/></svg>
+                <svg class="seed-icon" viewBox="0 0 100 100" id="s3"><circle cx="50" cy="50" r="40" fill="#fb8c00"/></svg>
+                <svg class="seed-icon" viewBox="0 0 100 100" id="s4"><circle cx="50" cy="50" r="40" fill="#795548"/></svg>
+                <svg class="seed-icon" viewBox="0 0 100 100" id="s5"><circle cx="50" cy="50" r="40" fill="#388e3c"/></svg>
+            </div>
+            <div id="score-display" style="font-weight:bold; margin-left: 15px;">Nota: 0.0</div>
+        </nav>
+
+        <header>
+            <h1>El Huerto de Mendel</h1>
+            <p>Descifrando las leyes de la vida a través de los guisantes</p>
+        </header>
+
+        <!-- Introducción y Pre-saberes -->
+        <section>
+            <div class="content-card">
+                <h2>Objetivo de Aprendizaje</h2>
+                <p>Comprender los principios de segregación y transmisión de caracteres hereditarios a través del estudio de los experimentos de Gregor Mendel, diferenciando con precisión entre genotipos y fenotipos, así como entre alelos dominantes y recesivos.</p>
+                
+                <div style="background: #e1f5fe; padding: 1.5rem; border-radius: 10px; margin-top: 2rem;">
+                    <h3>Pre-saberes: ¿Qué traes en tu ADN?</h3>
+                    <p>1. Si una planta tiene flores rojas y otra blancas, y todos sus hijos son rojos, ¿cuál color crees que es el "fuerte"?</p>
+                    <button class="quiz-option" onclick="checkPre(this, true, '¡Correcto! El color que se manifiesta sobre el otro suele ser el dominante.')">El Rojo</button>
+                    <button class="quiz-option" onclick="checkPre(this, false, 'No exactamente. El color que desaparece en la primera generación es el recesivo.')">El Blanco</button>
+                    <div class="feedback"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cuerpo Inductivo -->
+        <section id="inductivo">
+            <h2>I. El Nacimiento de una Ciencia</h2>
+            <div class="content-card">
+                <p>Gregor Johann Mendel, un monje agustino que vivía en el siglo XIX, transformó para siempre nuestra comprensión de la biología desde un pequeño jardín en un monasterio. Mientras sus contemporáneos creían en la "teoría de la mezcla" (donde los rasgos de los padres se mezclaban como pinturas para crear un término medio), Mendel sospechaba que la herencia funcionaba mediante unidades discretas y específicas. Para probar esto, eligió el <i>Pisum sativum</i>, el guisante común, debido a su ciclo de vida rápido y sus características físicas claramente diferenciables, como el color de la semilla o la textura de la vaina.</p>
+
+                <div class="pause-task">
+                    <h4>Pausa Activa 1: El Observador</h4>
+                    <p>En tu cuaderno, dibuja dos guisantes: uno liso y uno rugoso. Escribe al lado cuál crees que tendría más éxito al rodar por el suelo.</p>
+                    <button class="btn-done" onclick="completeTask(this, 1)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <p>Durante ocho años, Mendel cultivó y analizó cerca de 28,000 plantas de guisantes. Su metodología fue revolucionaria por su rigor matemático. Mendel no solo observaba si las plantas eran altas o bajas, sino que contaba cuántas de cada tipo aparecían en cada generación. Esta aplicación de la estadística a la biología fue lo que le permitió descubrir patrones donde otros solo veían azar. Él comprendió que cada rasgo estaba determinado por un par de "factores" (lo que hoy llamamos alelos), uno heredado de cada progenitor, y que estos factores no se mezclaban, sino que mantenían su identidad individual a través de las generaciones.</p>
+
+                <div class="pause-task">
+                    <h4>Pausa Activa 2: Conteo Mental</h4>
+                    <p>Si tienes 10 canicas rojas y 10 azules en una bolsa, ¿qué probabilidad hay de sacar una roja? Anota el porcentaje en tu cuaderno.</p>
+                    <button class="btn-done" onclick="completeTask(this, 2)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <p>Uno de sus hallazgos más impactantes fue la Ley de la Uniformidad. Al cruzar dos líneas puras (una planta que siempre daba semillas amarillas con una que siempre daba verdes), Mendel observó que toda la descendencia (F1) era idéntica: todas amarillas. El rasgo verde parecía haber desaparecido. Sin embargo, al permitir que estas plantas amarillas se auto-polinizaran, el rasgo verde reaparecía en la siguiente generación (F2) en una proporción constante de 3:1. Esto demostró que el factor "verde" no se había perdido, sino que estaba oculto o "reprimido" por el factor amarillo.</p>
+
+                <div class="pause-task">
+                    <h4>Pausa Activa 3: La Desaparición</h4>
+                    <p>Escribe en tu cuaderno: "¿Has notado algún rasgo en ti que tus padres no tengan pero tus abuelos sí?"</p>
+                    <button class="btn-done" onclick="completeTask(this, 3)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <p>Este descubrimiento llevó a la creación de términos fundamentales. El rasgo que se manifiesta en la F1 se llamó <strong>Dominante</strong>, y el que queda oculto, <strong>Recesivo</strong>. Mendel entendió que para que un rasgo recesivo aparezca, el organismo debe heredar el factor recesivo de ambos padres. En cambio, para que el rasgo dominante aparezca, basta con tener una sola copia del factor. Esta lógica binaria y probabilística sentó las bases de lo que hoy conocemos como genética clásica, permitiéndonos predecir enfermedades hereditarias y mejorar cultivos en todo el mundo.</p>
+
+                <!-- Cuadro Comparativo Integrado -->
+                <h3>Síntesis: Los Pilares de Mendel</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th>Definición</th>
+                            <th>Ejemplo en Guisantes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="tag tag-gen">Genotipo</span></td>
+                            <td>La composición genética interna (letras).</td>
+                            <td>AA, Aa, aa</td>
+                        </tr>
+                        <tr>
+                            <td><span class="tag tag-fen">Fenotipo</span></td>
+                            <td>La apariencia física observable.</td>
+                            <td>Semilla Amarilla / Verde</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dominante</strong></td>
+                            <td>Alelo que siempre se expresa (Mayúscula).</td>
+                            <td>"A" (Amarillo)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Recesivo</strong></td>
+                            <td>Alelo que solo se expresa si es doble (Minúscula).</td>
+                            <td>"a" (Verde)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pause-task">
+                    <h4>Pausa Activa 4: Alfabeto Genético</h4>
+                    <p>Representa en tu cuaderno un cruce entre una planta AA y una aa usando un cuadro de 2x2. ¿Qué letras quedan adentro?</p>
+                    <button class="btn-done" onclick="completeTask(this, 4)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <p>Finalmente, Mendel postuló que estos factores se separan de manera independiente durante la formación de las células sexuales (gametos). Esto significa que el hecho de que una semilla sea amarilla no obliga a que la planta sea alta; los rasgos se "barajan" como cartas en un mazo. Aunque su trabajo fue ignorado durante décadas mientras él vivía, su redescubrimiento a principios del siglo XX marcó el inicio de la era genómica. Hoy, gracias a Mendel, sabemos que la vida no es un puré de rasgos, sino una danza precisa de códigos que se heredan con una exactitud matemática asombrosa.</p>
+
+                <div class="pause-task">
+                    <h4>Pausa Activa 5: El Legado</h4>
+                    <p>Dibuja una pequeña estatua de Mendel en tu cuaderno y rodéala de guisantes de colores. ¡Es el padre de la genética!</p>
+                    <button class="btn-done" onclick="completeTask(this, 5)">Ya lo hice (+0.5)</button>
+                </div>
+            </div>
+
+            <!-- Gráfica Analítica SVG e ICFES -->
+            <div class="content-card">
+                <h3>Análisis de Datos: Frecuencias de Mendel</h3>
+                <p>Analiza la siguiente gráfica que muestra los resultados de Mendel en su segunda generación (F2) para el color de la semilla:</p>
+                
+                <div class="svg-chart-container">
+                    <svg width="400" height="300" viewBox="0 0 400 300">
+                        <!-- Ejes -->
+                        <line x1="50" y1="250" x2="350" y2="250" stroke="#333" stroke-width="2"/>
+                        <line x1="50" y1="50" x2="50" y2="250" stroke="#333" stroke-width="2"/>
+                        <!-- Barras -->
+                        <rect x="100" y="70" width="60" height="180" fill="var(--mendel-yellow)" class="chart-bar"/>
+                        <rect x="240" y="190" width="60" height="60" fill="var(--mendel-green)" class="chart-bar"/>
+                        <!-- Etiquetas -->
+                        <text x="100" y="270" font-size="12">Amarillas (6022)</text>
+                        <text x="240" y="270" font-size="12">Verdes (2001)</text>
+                        <text x="20" y="150" transform="rotate(-90 20,150)" font-size="12">Cantidad de Plantas</text>
+                    </svg>
+                </div>
+
+                <div style="border: 2px solid var(--mendel-dark); padding: 1.5rem; border-radius: 10px;">
+                    <h4>Pregunta de Competencia (Indagar)</h4>
+                    <p>Según la gráfica y la proporción 3:1 descubierta por Mendel, si en un nuevo experimento se obtienen 1200 plantas en total en la generación F2, ¿cuántas se esperaría aproximadamente que fueran verdes (recesivas)?</p>
+                    <button class="quiz-option" onclick="checkIcfes(this, false, 'No, esa sería la cantidad de plantas dominantes (3/4).')">900 plantas</button>
+                    <button class="quiz-option" onclick="checkIcfes(this, true, '¡Exacto! 300 es la cuarta parte de 1200, cumpliendo la relación 3:1.')">300 plantas</button>
+                    <button class="quiz-option" onclick="checkIcfes(this, false, 'Esa proporción 1:1 no corresponde a la F2 de un cruce monohíbrido.')">600 plantas</button>
+                    <div class="feedback"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cuerpo Deductivo -->
+        <section id="deductivo">
+            <h2>II. El Código Detrás de la Planta</h2>
+            <div class="content-card">
+                <p>Para profundizar en la genética mendeliana, debemos deducir las reglas moleculares que gobiernan estos rasgos. Cada gen ocupa un lugar específico en un cromosoma llamado <strong>Locus</strong>. Los alelos, que son las diferentes versiones de un gen, pueden ser <strong>Homocigotos</strong> (cuando ambos alelos son iguales, ya sea AA o aa) o <strong>Heterocigotos</strong> (cuando son diferentes, Aa). La belleza del sistema de Mendel reside en su simplicidad: el alelo dominante en un heterocigoto enmascara completamente al recesivo, produciendo un fenotipo dominante a pesar de tener una "receta" interna mixta.</p>
+
+                <div class="pause-task">
+                    <h4>Pausa Activa 6: Terminología</h4>
+                    <p>Busca en tu mente o cuaderno: ¿Qué significa el prefijo 'Homo' y 'Hetero'? Anótalo rápidamente.</p>
+                    <button class="btn-done" onclick="completeTask(this, 6)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <!-- Animación Canvas -->
+                <h3>Laboratorio Dinámico: Simulación de Alelos</h3>
+                <p>Interactúa con la simulación. Haz clic en el área para generar nuevos cruces y observa cómo se distribuyen las partículas genéticas.</p>
+                <div id="simulation-area">
+                    <div class="canvas-overlay">Simulación de Cruce Genético (Partículas Aleatorias)</div>
+                    <canvas id="geneticsCanvas"></canvas>
+                </div>
+
+                <p>Una deducción crucial de las leyes de Mendel es la Ley de la Segregación. Durante la meiosis, los dos alelos de un individuo se separan de tal manera que cada gameto recibe solo uno de ellos. Esto garantiza que cuando un espermatozoide fecunda a un óvulo, el cigoto resultante recupere la condición diploide (dos alelos). Si un padre es Aa, el 50% de sus espermatozoides llevará el alelo A y el otro 50% el alelo a. Esta separación es la que permite que el azar determine la combinación genética de la siguiente generación, manteniendo la diversidad dentro de la especie.</p>
+
+                <div class="pause-task">
+                    <h4>Pausa Activa 7: Mitad y Mitad</h4>
+                    <p>Dibuja un círculo grande (Cigoto) y dos flechas que lleguen a él desde círculos pequeños (Gametos). Pon una letra en cada gameto.</p>
+                    <button class="btn-done" onclick="completeTask(this, 7)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <p>La Segunda Ley de Mendel, o Ley de la Distribución Independiente, nos dice que la herencia de un rasgo no afecta la herencia de otro. Mendel cruzó plantas considerando el color de la semilla (Amarillo/Verde) Y la forma (Liso/Rugoso). Dedució que las semillas podían ser Amarillas-Rugosas o Verdes-Lisas en combinaciones nuevas. Esto ocurre porque los genes para estos rasgos se encuentran en cromosomas diferentes o muy alejados entre sí. Es el origen de la inmensa variedad que vemos en la naturaleza: somos una combinación única e irrepetible de miles de rasgos barajados independientemente.</p>
+
+                <div class="pause-task">
+                    <h4>Pausa Activa 8: Combinaciones</h4>
+                    <p>Si tienes 2 tipos de ojos y 2 tipos de cabello, ¿cuántas combinaciones diferentes puedes hacer? Escríbelas en tu cuaderno.</p>
+                    <button class="btn-done" onclick="completeTask(this, 8)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <p>Es importante notar que existen excepciones que Mendel no observó, como la <strong>Dominancia Incompleta</strong> (donde los rasgos se mezclan, como flores rosas de padres rojos y blancos) o la <strong>Codominancia</strong>. Sin embargo, las leyes mendelianas siguen siendo la base de la genética moderna. Sin ellas, no podríamos entender cómo se heredan grupos sanguíneos o por qué ciertos rasgos parecen "saltarse" generaciones. La deducción de Mendel fue tan perfecta que, incluso con el descubrimiento del ADN décadas después, sus leyes no tuvieron que ser cambiadas, sino simplemente explicadas a nivel químico.</p>
+
+                <div class="pause-task">
+                    <h4>Pausa Activa 9: La Excepción</h4>
+                    <p>Dibuja una flor de color rosado y escribe debajo: "Dominancia Incompleta".</p>
+                    <button class="btn-done" onclick="completeTask(this, 9)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <p>Para concluir nuestro análisis deductivo, el Cuadro de Punnett es la herramienta visual que traduce estas leyes a probabilidades. Al colocar los alelos maternos en un eje y los paternos en el otro, podemos visualizar todas las combinaciones posibles de un solo vistazo. Esta herramienta es utilizada hoy por asesores genéticos para informar a las familias sobre riesgos de enfermedades. La genética mendeliana no es solo historia; es una herramienta viva y poderosa que nos permite leer el libro de instrucciones de la vida que todos llevamos dentro de nuestras células.</p>
+
+                <div class="pause-task">
+                    <h4>Pausa Activa 10: El Gran Cuadro</h4>
+                    <p>Dibuja un Cuadro de Punnett para un cruce Aa x Aa. Cuenta cuántos cuadros tienen al menos una 'A'.</p>
+                    <button class="btn-done" onclick="completeTask(this, 10)">Ya lo hice (+0.5)</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Evaluación Final -->
+        <section id="evaluacion">
+            <div class="content-card">
+                <h2>Evaluación Final: El Examen del Huerto</h2>
+                
+                <h3>I. Selección Múltiple</h3>
+                <div class="quiz-item">
+                    <p>1. ¿Cómo se denomina al organismo que tiene dos alelos iguales para un mismo rasgo (ej. AA o aa)?</p>
+                    <button class="quiz-option" onclick="checkFinal(this, true)">Homocigoto</button>
+                    <button class="quiz-option" onclick="checkFinal(this, false)">Heterocigoto</button>
+                    <button class="quiz-option" onclick="checkFinal(this, false)">Híbrido</button>
+                    <div class="feedback"></div>
+                </div>
+
+                <div class="quiz-item" style="margin-top: 2rem;">
+                    <p>2. En un cruce de dos plantas heterocigotas (Aa x Aa), ¿cuál es el porcentaje esperado de fenotipo recesivo?</p>
+                    <button class="quiz-option" onclick="checkFinal(this, false)">50%</button>
+                    <button class="quiz-option" onclick="checkFinal(this, true)">25%</button>
+                    <button class="quiz-option" onclick="checkFinal(this, false)">75%</button>
+                    <div class="feedback"></div>
+                </div>
+
+                <h3 style="margin-top: 3rem;">II. Preguntas Abiertas (Análisis Crítico)</h3>
+                <p>Responde en 10 a 15 palabras exactas.</p>
+                
+                <div class="open-q">
+                    <p>1. Explica la diferencia principal entre el genotipo y el fenotipo de un organismo.</p>
+                    <textarea oninput="validateOpen(this)" placeholder="Escribe tu respuesta aquí..."></textarea>
+                    <div class="word-counter">Palabras: 0 / 15</div>
+                </div>
+
+                <div class="open-q">
+                    <p>2. ¿Por qué Mendel eligió plantas de guisantes para sus famosos experimentos de herencia?</p>
+                    <textarea oninput="validateOpen(this)" placeholder="Escribe tu respuesta aquí..."></textarea>
+                    <div class="word-counter">Palabras: 0 / 15</div>
+                </div>
+
+                <div id="fortalecimiento-box" style="display:none; margin-top:3rem; padding:2rem; background:#fff3e0; border-radius:15px; border:2px solid #ff9800;">
+                    <h3>Ruta de Fortalecimiento Personalizada</h3>
+                    <div id="route-text"></div>
+                </div>
+
+                <button type="button" class="btn-export" onclick="exportResults()">Descargar Resultados</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Estado de la Aplicación
+        let appState = {
+            lastname: "",
+            firstname: "",
+            progress: 0,
+            score: 0.0,
+            tasksCompleted: 0,
+            quizCorrect: 0,
+            openAnswers: []
+        };
+
+        // Inicialización
+        function initApp() {
+            const ln = document.getElementById('user-lastname').value.trim();
+            const fn = document.getElementById('user-firstname').value.trim();
+
+            if (ln === "" || fn === "") {
+                alert("Por favor, ingresa tus apellidos y nombres para continuar.");
+                return;
+            }
+
+            appState.lastname = ln;
+            appState.firstname = fn;
+            
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            document.getElementById('display-name').innerText = `USUARIO: ${ln.toUpperCase()}, ${fn.toUpperCase()}`;
+            
+            initCanvas();
+            loadProgress();
+            updateUI();
+        }
+
+        function updateUI() {
+            const bar = document.getElementById('progress-bar');
+            bar.style.width = appState.progress + "%";
+            
+            const scoreDisplay = document.getElementById('score-display');
+            scoreDisplay.innerText = `Nota: ${appState.score.toFixed(1)}`;
+
+            // Gamificación: Desbloqueo de semillas
+            const seeds = ['s1', 's2', 's3', 's4', 's5'];
+            seeds.forEach((id, index) => {
+                if (appState.score >= (index + 1)) {
+                    document.getElementById(id).classList.add('unlocked');
+                }
+            });
+        }
+
+        // Sistema de Pausas Activas
+        function completeTask(btn, taskId) {
+            if (!btn.classList.contains('completed')) {
+                btn.classList.add('completed');
+                btn.innerText = "¡Completado!";
+                appState.tasksCompleted++;
+                appState.score += 0.2; // Cada pausa suma un poco
+                appState.progress += 5;
+                saveProgress();
+                updateUI();
+            }
+        }
+
+        // Validaciones de Preguntas
+        function checkPre(btn, isCorrect, msg) {
+            const fb = btn.parentElement.querySelector('.feedback');
+            fb.style.display = 'block';
+            fb.className = 'feedback ' + (isCorrect ? 'fb-correct' : 'fb-wrong');
+            fb.innerText = msg;
+            
+            const options = btn.parentElement.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.disabled = true);
+            
+            if (isCorrect) {
+                appState.progress += 5;
+                appState.score += 0.2;
+                updateUI();
+            }
+            saveProgress();
+        }
+
+        function checkIcfes(btn, isCorrect, msg) {
+            const fb = btn.parentElement.querySelector('.feedback');
+            fb.style.display = 'block';
+            fb.className = 'feedback ' + (isCorrect ? 'fb-correct' : 'fb-wrong');
+            fb.innerText = msg;
+            
+            const options = btn.parentElement.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.disabled = true);
+
+            if (isCorrect) {
+                appState.score += 0.5;
+                appState.progress += 10;
+                updateUI();
+            }
+            saveProgress();
+        }
+
+        function checkFinal(btn, isCorrect) {
+            const fb = btn.parentElement.querySelector('.feedback');
+            fb.style.display = 'block';
+            fb.className = 'feedback ' + (isCorrect ? 'fb-correct' : 'fb-wrong');
+            fb.innerText = isCorrect ? "¡Correcto!" : "Incorrecto. Repasa los conceptos básicos.";
+            
+            const options = btn.parentElement.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.disabled = true);
+
+            if (isCorrect) {
+                appState.quizCorrect++;
+                appState.score += 0.5;
+                appState.progress += 5;
+                updateUI();
+            }
+            saveProgress();
+        }
+
+        function validateOpen(tx) {
+            const words = tx.value.trim().split(/\s+/).filter(w => w.length > 0);
+            const counter = tx.parentElement.querySelector('.word-counter');
+            counter.innerText = `Palabras: ${words.length} / 15`;
+            
+            if (words.length >= 10 && words.length <= 15) {
+                tx.style.borderColor = "var(--mendel-green)";
+            } else {
+                tx.style.borderColor = "var(--accent)";
+            }
+        }
+
+        // Persistencia
+        function saveProgress() {
+            localStorage.setItem('mendel_ova_data', JSON.stringify(appState));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('mendel_ova_data');
+            if (saved) {
+                // Para propósitos de este ejercicio, reiniciamos el score pero podríamos cargar el estado
+            }
+        }
+
+        // Exportación de Resultados
+        function exportResults() {
+            let finalNote = Math.min(appState.score, 5.0).toFixed(1);
+            let route = "";
+            
+            if (finalNote < 3.0) {
+                route = "RUTA: Debes repasar la diferencia entre Genotipo (interno) y Fenotipo (externo). Vuelve a leer el cuerpo inductivo.";
+            } else if (finalNote < 4.5) {
+                route = "RUTA: Vas muy bien. Refuerza el Cuadro de Punnett y la Segunda Ley de Mendel para dominar los cruces dobles.";
+            } else {
+                route = "RUTA: ¡Maestro del Huerto! Puedes investigar sobre Genética Molecular y Biotecnología moderna.";
+            }
+
+            document.getElementById('fortalecimiento-box').style.display = 'block';
+            document.getElementById('route-text').innerText = route;
+
+            const content = `RESULTADOS DEL OVA: EL HUERTO DE MENDEL
+-------------------------------------------
+ESTUDIANTE: ${appState.lastname}, ${appState.firstname}
+NOTA FINAL: ${finalNote} / 5.0
+PROGRESO: ${appState.progress}%
+PAUSAS COMPLETADAS: ${appState.tasksCompleted}/10
+RESPUESTAS CORRECTAS: ${appState.quizCorrect}
+-------------------------------------------
+${route}
+-------------------------------------------
+Fecha: ${new Date().toLocaleString()}
+`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Resultados_${appState.lastname}.txt`;
+            a.click();
+        }
+
+        // Canvas Simulation Engine
+        function initCanvas() {
+            const canvas = document.getElementById('geneticsCanvas');
+            const ctx = canvas.getContext('2d');
+            let w = canvas.width = canvas.parentElement.offsetWidth;
+            let h = canvas.height = canvas.parentElement.offsetHeight;
+
+            const particles = [];
+
+            class Particle {
+                constructor(type) {
+                    this.type = type; // 'A' dominante, 'a' recesivo
+                    this.x = Math.random() * w;
+                    this.y = Math.random() * h;
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = (Math.random() - 0.5) * 2;
+                    this.radius = type === 'A' ? 8 : 5;
+                    this.color = type === 'A' ? '#ffeb3b' : '#4caf50';
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    ctx.closePath();
+
+                    ctx.fillStyle = "white";
+                    ctx.font = "10px Arial";
+                    ctx.fillText(this.type, this.x - 3, this.y + 3);
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < 0 || this.x > w) this.vx *= -1;
+                    if (this.y < 0 || this.y > h) this.vy *= -1;
+                }
+            }
+
+            // Población inicial
+            for(let i=0; i<20; i++) particles.push(new Particle('A'));
+            for(let i=0; i<20; i++) particles.push(new Particle('a'));
+
+            function animate() {
+                ctx.clearRect(0, 0, w, h);
+                
+                // Fondo decorativo de red
+                ctx.strokeStyle = "rgba(255,255,255,0.05)";
+                ctx.beginPath();
+                for(let i=0; i<w; i+=50) { ctx.moveTo(i,0); ctx.lineTo(i,h); }
+                for(let i=0; i<h; i+=50) { ctx.moveTo(0,i); ctx.lineTo(w,i); }
+                ctx.stroke();
+
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+
+            canvas.addEventListener('mousedown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+                
+                // Al hacer clic, generamos una explosión de "hijos"
+                for(let i=0; i<5; i++) {
+                    const type = Math.random() > 0.5 ? 'A' : 'a';
+                    const p = new Particle(type);
+                    p.x = mx; p.y = my;
+                    particles.push(p);
+                    if(particles.length > 80) particles.shift();
+                }
+            });
+
+            animate();
+        }
+    </script>
+</body>
+</html>

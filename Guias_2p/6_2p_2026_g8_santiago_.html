@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión: Bio-Regeneración - Sanando el Motor Biológico</title>
+    <style>
+        :root {
+            --bg-dark: #020617;
+            --panel-bg: #1e293b;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-bright: #f8fafc;
+            --text-dim: #94a3b8;
+            --gold: #fbbf24;
+            --silver: #cbd5e1;
+            --iron: #b45309;
+            --copper: #d97706;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-bright);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(90deg, #0f172a, #1e293b);
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+
+        .container {
+            flex: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            width: 100%;
+        }
+
+        .progress-container {
+            width: 100%;
+            background: #334155;
+            height: 16px;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            display: none;
+            border: 2px solid #475569;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .mission-panel {
+            display: none;
+            background: var(--panel-bg);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 2px solid #334155;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .mission-panel.active { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 { color: var(--primary); text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 1.5px; font-size: 1.8rem; }
+        p { line-height: 1.7; font-size: 1.2rem; margin-bottom: 1.2rem; }
+        .badge { background: #0f172a; color: var(--primary); padding: 0.5rem 1.2rem; border-radius: 50px; font-weight: bold; border: 1px solid var(--primary); margin-bottom: 1.5rem; display: inline-block; }
+        .highlight { color: var(--success); font-weight: bold; }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1.3rem 2.5rem;
+            font-size: 1.2rem;
+            font-weight: 800;
+            border-radius: 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 6px 0px #1d4ed8;
+            margin-top: 1rem;
+        }
+
+        button:hover { transform: translateY(-3px); box-shadow: 0 9px 0px #1d4ed8; }
+        button:active { transform: translateY(2px); box-shadow: 0 2px 0px #1d4ed8; }
+        button:disabled { background: #475569; box-shadow: none; cursor: not-allowed; opacity: 0.5; transform: none; }
+        
+        .btn-success { background: var(--success); box-shadow: 0 6px 0px #065f46; }
+        .btn-success:hover { box-shadow: 0 9px 0px #065f46; }
+
+        .checklist-item {
+            background: #0f172a;
+            border: 2px solid #334155;
+            padding: 1.8rem;
+            border-radius: 15px;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .checklist-item.checked { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        .checklist-item.locked { opacity: 0.5; cursor: not-allowed; }
+        
+        .check-circle { 
+            min-width: 40px; height: 40px; 
+            border: 3px solid #64748b; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 24px; font-weight: bold;
+        }
+        .checked .check-circle { background: var(--success); border-color: var(--success); color: white; }
+        .checked .check-circle::after { content: "✓"; }
+
+        .timer-box {
+            background: #020617;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid var(--warning);
+            margin: 2rem 0;
+        }
+        .timer-val { font-family: 'Courier New', Courier, monospace; font-size: 4rem; color: var(--warning); font-weight: bold; text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+
+        .breathe-widget {
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--success), transparent);
+            margin: 3rem auto;
+            animation: breathe 6s infinite ease-in-out;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.3rem; border: 4px solid var(--success);
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(0.85); opacity: 0.5; box-shadow: 0 0 20px var(--success); }
+            50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 50px var(--success); }
+        }
+
+        .quiz-option {
+            background: #0f172a;
+            border: 2px solid #475569;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: 0.2s;
+        }
+        .quiz-option:hover { border-color: var(--primary); }
+        .quiz-option.correct { border-color: var(--success); background: rgba(16, 185, 129, 0.3); }
+        .quiz-option.incorrect { border-color: var(--danger); background: rgba(239, 68, 68, 0.3); }
+
+        .element-card {
+            width: 250px; height: 320px;
+            border: 8px solid;
+            margin: 2.5rem auto;
+            border-radius: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: #020617;
+            box-shadow: 0 0 30px rgba(255,255,255,0.1);
+        }
+        .card-au { border-color: var(--gold); color: var(--gold); }
+        .card-ag { border-color: var(--silver); color: var(--silver); }
+        .card-fe { border-color: var(--iron); color: var(--iron); }
+        .card-cu { border-color: var(--copper); color: var(--copper); }
+
+        #restoreModal {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.9); z-index: 9999;
+            display: none; align-items: center; justify-content: center;
+        }
+
+        .input-field {
+            width:100%; padding:1.5rem; border-radius:12px; 
+            margin-bottom:1.5rem; font-size:1.3rem; 
+            background:#0f172a; color:white; border:3px solid #334155;
+            outline: none;
+        }
+        .input-field:focus { border-color: var(--primary); }
+
+        .analogia-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 6px solid var(--primary);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 15px 15px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="mainTitle">BIO-REGENERACIÓN: Protocolo Sanación</h1>
+        <div class="progress-container" id="progCont">
+            <div class="progress-bar" id="progBar"></div>
+        </div>
+    </header>
+
+    <!-- Modal Persistencia -->
+    <div id="restoreModal">
+        <div style="background: var(--panel-bg); padding: 3.5rem; border-radius: 25px; text-align: center; border: 4px solid var(--primary); max-width: 500px;">
+            <h2 style="color:white;">SISTEMA RECUPERADO</h2>
+            <p>Hola <span id="resName" class="highlight"></span>. Los sensores indican que estabas en la <span id="resMission" class="highlight"></span>.</p>
+            <div style="display:flex; flex-direction:column; gap:1rem; margin-top:2rem;">
+                <button onclick="app.resume()" class="btn-success">Continuar Misión</button>
+                <button onclick="app.reset()" style="background:var(--danger); box-shadow: 0 6px 0px #991b1b;">Reiniciar Sistema</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <!-- Misión 0: Login -->
+        <section id="mission-0" class="mission-panel active">
+            <div class="badge">Identificación de Usuario</div>
+            <h2>Bienvenido, Ingeniero de Tejidos</h2>
+            <p>Para acceder a los planos de regeneración celular, ingresa tu nombre de usuario oficial.</p>
+            <input type="text" id="userName" class="input-field" placeholder="Escribe tu nombre aquí...">
+            <button onclick="app.start()" style="width:100%">Cargar Secuencia Bio-Regenerativa</button>
+        </section>
+
+        <!-- Misión 1: El Despegue -->
+        <section id="mission-1" class="mission-panel">
+            <div class="badge">Misión 1: El Milagro de la Curación</div>
+            <h2>¿Cómo sana una herida?</h2>
+            <p>Comandante <span class="uName highlight"></span>, imagina que una <span class="highlight">Moto de alta cilindrada</span> sufre un raspón en su carenado. Necesitarías una pieza nueva, ¿verdad?</p>
+            
+            <div class="analogia-box">
+                <p>En el cuerpo de un <span class="highlight">Dinosaurio</span> o en el tuyo, la <strong>Mitosis</strong> es la impresora 3D natural que fabrica "piezas de repuesto" (células) para cerrar la herida.</p>
+            </div>
+
+            <p>Hoy aprenderás cómo de una célula dañada, el cuerpo activa el "Modo Reparación" para multiplicar células sanas y reconstruir el tejido.</p>
+            
+            <button onclick="app.goTo(2)" class="btn-success" style="width:100%">Ir al Taller del Experto (Cuaderno) →</button>
+        </section>
+
+        <!-- Misión 2: Taller de Cuaderno (75 min) -->
+        <section id="mission-2" class="mission-panel">
+            <div class="badge">Misión 2: Ingeniería Táctil (75 min)</div>
+            <h2>Taller del Experto: Modelado Celular</h2>
+            <p><span class="uName"></span>, prepárate para un reto físico de alta intensidad. Necesitas tu cuaderno, plastilina casera (o semillas) y hojas de papel.</p>
+            
+            <div class="timer-box">
+                <div class="timer-val" id="timerM2">75:00</div>
+                <p style="color:var(--text-dim); margin-top:0.5rem;">Tiempo de Reparación Estructural</p>
+            </div>
+
+            <div class="checklist-container">
+                <div class="checklist-item" id="c0" onclick="app.toggleCheck(0)">
+                    <div class="check-circle"></div>
+                    <div>
+                        <p style="font-weight:bold; margin:0;">Sub-Reto A: El Manifiesto del Tejido (Escritura)</p>
+                        <p style="font-size:1rem; margin-top:0.5rem; color:var(--text-dim);">Escribe en tu cuaderno: "La regeneración es la capacidad de los seres vivos para reconstruir partes perdidas mediante la Mitosis". Explica por qué esto es vital para un animal en la selva.</p>
+                    </div>
+                </div>
+                
+                <div class="checklist-item" id="c1" onclick="app.toggleCheck(1)">
+                    <div class="check-circle"></div>
+                    <div>
+                        <p style="font-weight:bold; margin:0;">Sub-Reto B: Planos en Plastilina (Modelado)</p>
+                        <p style="font-size:1rem; margin-top:0.5rem; color:var(--text-dim);">Usa plastilina o semillas para representar las 4 fases: Profase, Metafase, Anafase y Telofase. Hazlo sobre una hoja de papel (puedes usar hojas de plátano como base si tienes).</p>
+                    </div>
+                </div>
+
+                <div class="checklist-item" id="c2" onclick="app.toggleCheck(2)">
+                    <div class="check-circle"></div>
+                    <div>
+                        <p style="font-weight:bold; margin:0;">Sub-Reto C: El Mapa de Curación (Análisis)</p>
+                        <p style="font-size:1rem; margin-top:0.5rem; color:var(--text-dim);">Dibuja un esquema de un raspón en la piel. Muestra cómo las células de abajo se dividen para empujar hacia arriba y cerrar la brecha. ¡Usa flechas de dirección!</p>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btnM2" onclick="app.goTo(3)" disabled style="width:100%; margin-top:1rem;">Validar Trabajo de Cuaderno ✓</button>
+        </section>
+
+        <!-- Misión 3: Pit Stop -->
+        <section id="mission-3" class="mission-panel">
+            <div class="badge">Misión 3: Zona de Recarga (15 min)</div>
+            <h2>Modo Hibernación: Enfriando el Motor</h2>
+            <p style="text-align:center;">Tus manos y mente han trabajado duro. Es hora de sincronizar tu respiración con el ritmo galáctico.</p>
+            
+            <div class="timer-box" style="border-color:var(--success)">
+                <div class="timer-val" id="timerM3" style="color:var(--success)">15:00</div>
+            </div>
+
+            <div class="breathe-widget" id="breatheText">INHALA</div>
+            
+            <p style="text-align:center; color:var(--text-dim); margin-top:2rem;">Siéntate derecho. No hables. Solo mira el círculo y sigue su ritmo.</p>
+            <button onclick="app.goTo(4)" style="background:none; border:3px solid var(--primary); width:100%;">Motor Enfriado. Volver a la Misión →</button>
+        </section>
+
+        <!-- Misión 4: La Prueba de Pista -->
+        <section id="mission-4" class="mission-panel">
+            <div class="badge">Misión 4: Simulador de Regeneración</div>
+            <h2>Prueba de Pista: Desafío Mitótico</h2>
+            <div id="quizArea"></div>
+            <div id="quizFeedback" style="height:15px; border-radius:10px; margin-top:1.5rem; transition: 0.3s;"></div>
+            <button id="btnM4" onclick="app.goTo(5)" disabled style="width:100%; margin-top:2rem; display:none;">Ver Mi Puntuación Final</button>
+        </section>
+
+        <!-- Misión 5: El Podio -->
+        <section id="mission-5" class="mission-panel">
+            <div class="badge">Misión 5: Ceremonia de Premiación</div>
+            <h2>El Podio: Ingeniero de Nivel Superior</h2>
+            <div style="text-align:center; margin:2rem 0;">
+                <p style="font-size:1.4rem;">Calificación de Desempeño:</p>
+                <h1 style="font-size:6rem; color:var(--success);" id="finalScore">0.0</h1>
+            </div>
+            
+            <div id="elementCard" class="element-card">
+                <div style="font-size:1.2rem; font-weight:bold; margin-bottom: 0.5rem;" id="elNum">??</div>
+                <div style="font-size:5.5rem; font-weight:900;" id="elSym">??</div>
+                <div style="font-size:1.4rem; font-weight:bold; text-transform:uppercase; margin-top:0.5rem;" id="elName">Elemento</div>
+            </div>
+
+            <p style="text-align:center; padding:1.5rem; font-style: italic; border-top: 1px solid #334155;" id="podiumMsg"></p>
+            
+            <button onclick="app.export()" class="btn-success" style="width:100%; margin-top:1.5rem;">📥 Descargar Informe de Misión (.txt)</button>
+        </section>
+    </div>
+
+    <script>
+        const app = {
+            state: {
+                name: "",
+                mission: 0,
+                checks: [false, false, false],
+                m2Time: 75 * 60,
+                m3Time: 15 * 60,
+                quizAnswers: [null, null, null, null],
+                score: 0,
+                element: ""
+            },
+
+            questions: [
+                { q: "Si un Velociraptor pierde piel en una pelea, ¿qué fase de la mitosis alinea los cromosomas al centro?", a: ["Profase", "Metafase", "Anafase"], c: 1 },
+                { q: "¿Qué material usaste para modelar las fibras que separan el ADN?", a: ["Agua", "Plastilina/Semillas", "Aire"], c: 1 },
+                { q: "En la regeneración, la célula madre se divide para formar:", a: ["Una célula gigante", "Dos células hijas idénticas", "Cuatro células diferentes"], c: 1 },
+                { q: "¿Por qué la mitosis es como un taller de motos?", a: ["Porque hace mucho ruido", "Porque reemplaza piezas viejas por nuevas", "Porque usa gasolina"], c: 1 }
+            ],
+
+            init() {
+                const saved = localStorage.getItem('santiago_mitosis_v2');
+                if (saved) {
+                    this.state = JSON.parse(saved);
+                    document.getElementById('resName').innerText = this.state.name;
+                    document.getElementById('resMission').innerText = "Misión " + this.state.mission;
+                    document.getElementById('restoreModal').style.display = 'flex';
+                }
+                
+                // Efecto de texto para la respiración
+                setInterval(() => {
+                    const el = document.getElementById('breatheText');
+                    if(el) el.innerText = el.innerText === "INHALA" ? "EXHALA" : "INHALA";
+                }, 3000);
+            },
+
+            start() {
+                const n = document.getElementById('userName').value.trim();
+                if (!n) return;
+                this.state.name = n;
+                this.state.mission = 1;
+                this.save();
+                this.render();
+            },
+
+            resume() {
+                document.getElementById('restoreModal').style.display = 'none';
+                this.render();
+            },
+
+            reset() {
+                localStorage.removeItem('santiago_mitosis_v2');
+                location.reload();
+            },
+
+            save() {
+                localStorage.setItem('santiago_mitosis_v2', JSON.stringify(this.state));
+            },
+
+            render() {
+                document.querySelectorAll('.mission-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById('mission-' + this.state.mission).classList.add('active');
+                document.querySelectorAll('.uName').forEach(el => el.innerText = this.state.name);
+
+                const pb = document.getElementById('progBar');
+                document.getElementById('progCont').style.display = this.state.mission > 0 ? 'block' : 'none';
+                pb.style.width = (this.state.mission / 5 * 100) + '%';
+
+                if (this.state.mission === 2) this.startTimer('m2', 'timerM2');
+                if (this.state.mission === 3) this.startTimer('m3', 'timerM3');
+                if (this.state.mission === 4) this.renderQuiz();
+                if (this.state.mission === 5) this.showFinal();
+                
+                this.updateCheckUI();
+            },
+
+            goTo(m) {
+                this.state.mission = m;
+                if(this.interval) clearInterval(this.interval);
+                this.save();
+                this.render();
+                window.scrollTo(0, 0);
+            },
+
+            startTimer(k, d) {
+                if (this.interval) clearInterval(this.interval);
+                this.interval = setInterval(() => {
+                    if (this.state[k + 'Time'] > 0) {
+                        this.state[k + 'Time']--;
+                        this.save();
+                        const m = Math.floor(this.state[k + 'Time'] / 60);
+                        const s = this.state[k + 'Time'] % 60;
+                        const el = document.getElementById(d);
+                        if(el) el.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+                    }
+                }, 1000);
+            },
+
+            toggleCheck(i) {
+                this.state.checks[i] = !this.state.checks[i];
+                this.updateCheckUI();
+                this.save();
+            },
+
+            updateCheckUI() {
+                this.state.checks.forEach((c, i) => {
+                    const el = document.getElementById('c' + i);
+                    if (el) c ? el.classList.add('checked') : el.classList.remove('checked');
+                });
+                const btn = document.getElementById('btnM2');
+                if (btn) btn.disabled = !this.state.checks.every(x => x);
+            },
+
+            renderQuiz() {
+                const area = document.getElementById('quizArea');
+                const next = this.state.quizAnswers.findIndex(x => x === null);
+                
+                if (next === -1) {
+                    area.innerHTML = "<h3 style='text-align:center;'>SIMULACIÓN COMPLETADA</h3><p style='text-align:center;'>Todos los datos han sido procesados con éxito.</p>";
+                    document.getElementById('btnM4').style.display = 'block';
+                    document.getElementById('btnM4').disabled = false;
+                    return;
+                }
+
+                const q = this.questions[next];
+                let h = `<p class='badge'>Pregunta ${next+1} de 4</p><h3>${q.q}</h3><div style="margin-top:2rem;">`;
+                q.a.forEach((o, i) => {
+                    h += `<div class="quiz-option" onclick="app.answer(${next}, ${i})">${o}</div>`;
+                });
+                area.innerHTML = h + "</div>";
+            },
+
+            answer(qI, aI) {
+                const isCorrect = this.questions[qI].c === aI;
+                this.state.quizAnswers[qI] = isCorrect;
+                const fb = document.getElementById('quizFeedback');
+                fb.style.background = isCorrect ? 'var(--success)' : 'var(--danger)';
+                fb.style.boxShadow = isCorrect ? '0 0 15px var(--success)' : '0 0 15px var(--danger)';
+                
+                this.save();
+                setTimeout(() => {
+                    fb.style.background = 'transparent';
+                    fb.style.boxShadow = 'none';
+                    this.renderQuiz();
+                }, 1000);
+            },
+
+            showFinal() {
+                // Cálculo de nota: Cuaderno (50%) + Quiz (50%)
+                const checkScore = (this.state.checks.filter(x => x).length / 3) * 2.5;
+                const quizScore = (this.state.quizAnswers.filter(x => x).length / 4) * 2.5;
+                const total = (checkScore + quizScore).toFixed(1);
+                this.state.score = total;
+
+                document.getElementById('finalScore').innerText = total;
+
+                const num = document.getElementById('elNum');
+                const sym = document.getElementById('elSym');
+                const name = document.getElementById('elName');
+                const card = document.getElementById('elementCard');
+                const msg = document.getElementById('podiumMsg');
+
+                card.className = "element-card";
+                
+                if (total >= 4.6) {
+                    card.classList.add('card-au'); num.innerText = "79"; sym.innerText = "Au"; name.innerText = "Oro";
+                    this.state.element = "Oro (Au)";
+                    msg.innerText = "¡EXCELENCIA GALÁCTICA! Tu capacidad de modelado y análisis es tan pura como el oro. Has reparado el motor biológico perfectamente.";
+                } else if (total >= 3.6) {
+                    card.classList.add('card-ag'); num.innerText = "47"; sym.innerText = "Ag"; name.innerText = "Plata";
+                    this.state.element = "Plata (Ag)";
+                    msg.innerText = "¡MUY BIEN, INGENIERO! Tus planos de regeneración son precisos y resistentes. La plata brilla en tu informe final.";
+                } else if (total >= 3.0) {
+                    card.classList.add('card-fe'); num.innerText = "26"; sym.innerText = "Fe"; name.innerText = "Hierro";
+                    this.state.element = "Hierro (Fe)";
+                    msg.innerText = "BUEN ESFUERZO. Eres resistente como el hierro. Sigue practicando las fases de la mitosis para fortalecer tu técnica.";
+                } else {
+                    card.classList.add('card-cu'); num.innerText = "29"; sym.innerText = "Cu"; name.innerText = "Cobre";
+                    this.state.element = "Cobre (Cu)";
+                    msg.innerText = "MISIÓN CUMPLIDA. El cobre es un gran conductor de energía. Úsala para repasar los conceptos y mejorar en la próxima misión.";
+                }
+                this.save();
+            },
+
+            export() {
+                const text = `
+=========================================
+INFORME DE MISIÓN: BIO-REGENERACIÓN
+=========================================
+INGENIERO: ${this.state.name}
+FECHA: ${new Date().toLocaleDateString()}
+TEMA: Mitosis II - Sanando Heridas
+
+REGISTRO DE ACTIVIDAD:
+-----------------------------------------
+1. TALLER TÁCTIL (CUADERNO):
+   - Definición escrita: ${this.state.checks[0] ? 'COMPLETADO' : 'PENDIENTE'}
+   - Modelado Plastilina: ${this.state.checks[1] ? 'COMPLETADO' : 'PENDIENTE'}
+   - Esquema de Herida: ${this.state.checks[2] ? 'COMPLETADO' : 'PENDIENTE'}
+
+2. SIMULADOR DIGITAL:
+   - Aciertos: ${this.state.quizAnswers.filter(x => x).length} de 4 preguntas.
+
+3. EVALUACIÓN FINAL:
+   - NOTA OBTENIDA: ${this.state.score} / 5.0
+   - ELEMENTO ASIGNADO: ${this.state.element}
+
+CONCLUSIÓN TÉCNICA:
+El estudiante ha modelado exitosamente las fases de 
+regeneración celular, comprendiendo que la mitosis 
+es el motor que repara tejidos dañados en seres vivos
+complejos como dinosaurios y humanos.
+
+-----------------------------------------
+ESTADO DE MISIÓN: VALIDADO POR EL SISTEMA
+=========================================
+                `;
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Informe_BioRegeneracion_${this.state.name}.txt`;
+                a.click();
+            }
+        };
+
+        window.onload = () => app.init();
+    </script>
+</body>
+</html>

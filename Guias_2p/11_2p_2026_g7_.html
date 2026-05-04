@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Todo está conectado - Visión Sistémica</title>
+    <style>
+        /* =========================================
+           PALETA DE COLORES Y VARIABLES (PCC)
+           ========================================= */
+        :root {
+            --cafe-tierra: #4E342E;
+            --cafe-claro: #8D6E63;
+            --verde-cafe: #2E7D32;
+            --verde-limon: #9CCC65;
+            --naranja-citrico: #F57C00;
+            --azul-agua: #0288D1;
+            --crema-fondo: #FDFBF7;
+            --blanco: #FFFFFF;
+            --gris-texto: #37474F;
+            --rojo-alerta: #C62828;
+            --oro-recompensa: #FBC02D;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--crema-fondo);
+            color: var(--gris-texto);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* =========================================
+           SISTEMA DE AUTENTICACIÓN
+           ========================================= */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, var(--cafe-tierra), var(--verde-cafe));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .login-box {
+            background: var(--blanco);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border-top: 5px solid var(--naranja-citrico);
+        }
+
+        .login-box h1 {
+            color: var(--cafe-tierra);
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        .login-box p {
+            font-size: 0.95em;
+            margin-bottom: 25px;
+            color: #666;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--cafe-tierra);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #BCAAA4;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus { border-color: var(--naranja-citrico); outline: none; }
+
+        .btn {
+            background-color: var(--naranja-citrico);
+            color: var(--blanco);
+            border: none;
+            padding: 14px 25px;
+            border-radius: 6px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.1s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn:hover { background-color: #E65100; transform: scale(1.02); }
+
+        /* =========================================
+           INTERFAZ PRINCIPAL Y GAMIFICACIÓN
+           ========================================= */
+        #main-app { display: none; }
+
+        header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background: var(--blanco);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 500;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--cafe-claro);
+        }
+
+        .user-info {
+            font-weight: bold;
+            color: var(--cafe-tierra);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-area { display: flex; align-items: center; gap: 20px; }
+
+        .points-badge {
+            background: var(--oro-recompensa);
+            color: var(--cafe-tierra);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: inset 0 -2px 5px rgba(0,0,0,0.1);
+        }
+
+        .progress-container-outer { text-align: right; }
+        .progress-label { font-size: 0.75em; font-weight: bold; color: var(--cafe-claro); text-transform: uppercase; margin-bottom: 2px;}
+        .progress-container {
+            width: 200px; background: #E0E0E0; border-radius: 8px; height: 10px; overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%; background: var(--verde-cafe); width: 0%; transition: width 0.5s ease;
+        }
+
+        .unlockables { display: flex; gap: 8px; }
+        .icon-unlock {
+            width: 26px; height: 26px; fill: #CFD8DC; transition: fill 0.5s, transform 0.3s;
+        }
+        .icon-unlock.unlocked { fill: var(--naranja-citrico); transform: scale(1.15); }
+
+        main { max-width: 950px; margin: 90px auto 50px auto; padding: 20px; }
+
+        /* =========================================
+           ESTRUCTURA DE CONTENIDO
+           ========================================= */
+        section {
+            background: var(--blanco);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+            margin-bottom: 40px;
+            border-left: 6px solid var(--verde-cafe);
+        }
+
+        h2 {
+            color: var(--cafe-tierra);
+            border-bottom: 2px solid var(--naranja-citrico);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        h3 { color: var(--verde-cafe); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em;}
+        p { margin-bottom: 18px; text-align: justify; font-size: 1.05em; }
+
+        .highlight {
+            background-color: #FFF3E0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--naranja-citrico);
+        }
+
+        /* =========================================
+           CUADROS COMPARATIVOS
+           ========================================= */
+        table {
+            width: 100%; border-collapse: collapse; margin: 25px 0;
+            background: var(--blanco); box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        th, td { padding: 14px; border: 1px solid #E0E0E0; text-align: left; }
+        th { background-color: var(--cafe-tierra); color: var(--blanco); }
+        tr:nth-child(even) { background-color: #F5F5F5; }
+
+        /* =========================================
+           PAUSAS ACTIVAS
+           ========================================= */
+        .pausa-activa {
+            background: #E8F5E9;
+            border: 2px dashed var(--verde-cafe);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 10px;
+        }
+        .pausa-activa h4 { color: var(--verde-cafe); margin-bottom: 15px; font-size: 1.2em;}
+        .pausa-activa ul { margin-left: 20px; margin-bottom: 20px; }
+        .pausa-activa li { margin-bottom: 10px; }
+        .btn-pausa {
+            background: transparent; border: 2px solid var(--verde-cafe);
+            color: var(--verde-cafe); padding: 10px 20px; border-radius: 6px;
+            cursor: pointer; font-weight: bold; transition: all 0.3s;
+        }
+        .btn-pausa.done { background: var(--verde-cafe); color: var(--blanco); }
+
+        /* =========================================
+           JUEGOS DRAG & DROP
+           ========================================= */
+        .game-container {
+            background: #FAFAFA; padding: 25px; border-radius: 10px;
+            margin: 30px 0; border: 1px solid #CFD8DC; text-align: center;
+        }
+        .game-title { color: var(--naranja-citrico); font-weight: bold; margin-bottom: 10px; font-size: 1.1em;}
+
+        .draggable-area {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+            margin-bottom: 25px; min-height: 55px;
+        }
+
+        .drop-area {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+            background: #ECEFF1; padding: 20px; border-radius: 8px;
+        }
+
+        .drag-item {
+            background: var(--cafe-claro); color: var(--blanco);
+            padding: 12px 20px; border-radius: 6px; cursor: grab;
+            user-select: none; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+        .drag-item.letter { padding: 12px 18px; font-size: 1.2em; background: var(--verde-cafe); }
+
+        .drop-slot {
+            width: auto; min-width: 70px; height: 50px;
+            border: 2px dashed #90A4AE; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--blanco); transition: background 0.2s;
+        }
+        .drop-slot.letter-slot { min-width: 45px; }
+        .drop-slot.hovered { background: #CFD8DC; border-color: var(--naranja-citrico); }
+
+        .game-status {
+            margin-top: 15px; font-weight: bold; color: var(--naranja-citrico); height: 20px;
+        }
+
+        /* =========================================
+           ANIMACIÓN CANVAS Y SVG GRÁFICAS
+           ========================================= */
+        .canvas-wrapper {
+            background: #E3F2FD; border-radius: 12px; padding: 15px; margin: 25px 0;
+            border: 2px solid #BBDEFB; box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+        .canvas-controls { display: flex; justify-content: space-around; margin-bottom: 15px; background: #FFF; padding: 10px; border-radius: 8px;}
+        .canvas-controls button {
+            background: var(--cafe-tierra); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+        canvas { display: block; width: 100%; height: 400px; background: #fff; border-radius: 8px;}
+
+        .svg-container {
+            width: 100%; background: var(--blanco); border: 1px solid #E0E0E0;
+            border-radius: 12px; padding: 20px; margin: 25px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* =========================================
+           EVALUACIÓN Y ANTI-FRAUDE
+           ========================================= */
+        .question-block {
+            margin-bottom: 25px; padding: 20px; background: #F5F5F5;
+            border-radius: 8px; border-left: 5px solid var(--naranja-citrico);
+        }
+        .question-block label { display: block; margin-bottom: 10px; cursor: pointer; }
+        .question-block input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+
+        textarea.anti-fraud {
+            width: 100%; height: 110px; padding: 12px; border: 2px solid #B0BEC5;
+            border-radius: 6px; resize: vertical; font-family: inherit; font-size: 1.05em;
+        }
+        textarea.anti-fraud:focus { border-color: var(--naranja-citrico); outline: none; }
+
+        .alert-fraud {
+            color: var(--blanco); background: var(--rojo-alerta); font-size: 0.9em; font-weight: bold;
+            display: none; margin-top: 8px; padding: 8px; border-radius: 4px; text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         PANTALLA DE INGRESO
+         ========================================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>Todo está conectado</h1>
+            <p>Laboratorio de Visión Sistémica<br><strong>Vereda Pueblo Rico, Quimbaya (Quindío)</strong></p>
+            <div class="input-group">
+                <label for="inp-apellidos">Apellidos del Analista:</label>
+                <input type="text" id="inp-apellidos" placeholder="Tus apellidos" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="inp-nombres">Nombres del Analista:</label>
+                <input type="text" id="inp-nombres" placeholder="Tus nombres" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar">Ingresar al Territorio</button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         INTERFAZ PRINCIPAL
+         ========================================= -->
+    <div id="main-app">
+        <header>
+            <div class="user-info">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--cafe-tierra)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span id="display-name">Estudiante</span>
+            </div>
+            
+            <div class="stats-area">
+                <div class="unlockables">
+                    <!-- Icono Red Sistémica -->
+                    <svg class="icon-unlock" id="icon-sys" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3 0 .14.02.28.04.42l-4.56 2.65c-.47-.38-1.09-.61-1.76-.61-1.66 0-3 1.34-3 3s1.34 3 3 3c.67 0 1.29-.23 1.76-.61l4.56 2.65c-.02.14-.04.28-.04.42 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3c-.67 0-1.29.23-1.76.61l-4.56-2.65c.02-.14.04-.28.04-.42s-.02-.28-.04-.42l4.56-2.65c.47.38 1.09.61 1.76.61z"/></svg>
+                    <!-- Icono Hoja/Naturaleza -->
+                    <svg class="icon-unlock" id="icon-leaf" viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22L6.66 19.7C7.14 19.87 7.64 20 8 20C19 20 22 3 22 3C21 5 14 5.25 9 6.25C4 7.25 7 11.5 7 11.5C7 11.5 12 8 17 8Z"/></svg>
+                </div>
+
+                <div class="points-badge">
+                    <span>★</span>
+                    <span id="display-points">0</span> / 5
+                </div>
+                
+                <div class="progress-container-outer">
+                    <div class="progress-label">Análisis Completado</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- 1. OBJETIVO Y PRE-SABERES -->
+            <section id="sec-inicio">
+                <h2>1. El Punto de Partida: Reconociendo el Territorio</h2>
+                <p><strong>Objetivo de Aprendizaje (Grado 11):</strong> Analizar problemáticas ambientales, agrícolas y sociales de la Vereda Pueblo Rico utilizando el Pensamiento Sistémico, evaluando de forma simultánea e interconectada las cuatro dimensiones fundamentales: Ecológica, Económica, Sociocultural y Político-Legal.</p>
+                <p>Antes de aplicar esta visión a las fincas cafeteras y ganaderas del Quindío, responde estas preguntas desde tu conocimiento actual:</p>
+                
+                <div class="question-block">
+                    <p><strong>Pre-saber 1:</strong> Si un agricultor aplica un pesticida químico muy fuerte y elimina completamente una plaga en su cultivo, ¿bajo un enfoque "lineal" esto se considera un éxito absoluto?</p>
+                    <label><input type="radio" name="pre1" value="a" onchange="saveAnswer('pre1', this.value)"> a) Sí, porque el único objetivo era eliminar la plaga (Causa -> Efecto directo).</label>
+                    <label><input type="radio" name="pre1" value="b" onchange="saveAnswer('pre1', this.value)"> b) No, el pensamiento lineal siempre busca el bienestar de la plaga.</label>
+                    <label><input type="radio" name="pre1" value="c" onchange="saveAnswer('pre1', this.value)"> c) Sí, porque los pesticidas nunca afectan el agua.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>Pre-saber 2:</strong> ¿Qué es una "Dimensión Sociocultural" en el contexto de una vereda?</p>
+                    <label><input type="radio" name="pre2" value="a" onchange="saveAnswer('pre2', this.value)"> a) Exclusivamente la cantidad de dinero que produce la tierra.</label>
+                    <label><input type="radio" name="pre2" value="b" onchange="saveAnswer('pre2', this.value)"> b) Las tradiciones de las familias campesinas, sus conocimientos ancestrales, sus dinámicas comunitarias y su arraigo al territorio.</label>
+                    <label><input type="radio" name="pre2" value="c" onchange="saveAnswer('pre2', this.value)"> c) Las leyes redactadas en la capital del país.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>Pre-saber 3:</strong> ¿Por qué se dice que el Paisaje Cultural Cafetero (PCC) es un sistema complejo?</p>
+                    <label><input type="radio" name="pre3" value="a" onchange="saveAnswer('pre3', this.value)"> a) Porque la geografía, el clima, la economía del café, el turismo y la cultura de la gente interactúan todo el tiempo afectándose mutuamente.</label>
+                    <label><input type="radio" name="pre3" value="b" onchange="saveAnswer('pre3', this.value)"> b) Porque es muy difícil llegar a las fincas.</label>
+                    <label><input type="radio" name="pre3" value="c" onchange="saveAnswer('pre3', this.value)"> c) Porque solo se cultiva un tipo de planta en todo el departamento.</label>
+                </div>
+            </section>
+
+            <!-- 2. CUERPO INDUCTIVO -->
+            <section id="sec-inductivo">
+                <h2>2. De la Línea a la Red: El Despertar del Pensamiento Sistémico</h2>
+                <p>Durante décadas, el modelo educativo y productivo ha entrenado al ser humano para pensar de forma lineal y reduccionista. El pensamiento lineal asume que frente a un problema (A), aplicamos una solución (B), y el problema desaparece. Este enfoque funcionó para la revolución industrial, pero es catastrófico para la agricultura y la ecología. Imagina una finca tradicional en la <strong>Vereda Pueblo Rico</strong>. Un caficultor, usando pensamiento lineal, ve que la broca (un insecto) ataca sus granos de café. Su solución inmediata es fumigar con un insecticida altamente tóxico. Fin del problema lineal: la broca muere.</p>
+
+                <p>Sin embargo, la realidad de Quimbaya no es una línea recta; es una intrincada red biológica y humana. Al fumigar, el químico extermina a la broca, pero también aniquila a las abejas y mariposas locales. Sin estos polinizadores, los cultivos de cítricos (naranjas y mandarinas) de la finca vecina reducen drásticamente su producción. Además, las lluvias arrastran los residuos químicos (como compuestos nitrogenados NO<sub>3</sub><sup>-</sup>) hacia las cañadas locales, contaminando el agua que bebe la comunidad y afectando la salud de los niños de la escuela rural. El turista que llega buscando un paraíso natural se encuentra con un ambiente esterilizado y tóxico, por lo que deja de visitar la región.</p>
+
+                <p>Frente a este fracaso del reduccionismo, surge la <strong>Visión Sistémica</strong>. El enfoque integral nos permite ver la finca como un <span class="highlight">sistema</span> vivo, donde cada elemento está interconectado. Un sistema no es solo un montón de elementos agrupados; es la red de relaciones dinámicas entre ellos. Por lo tanto, la premisa fundamental del pensamiento complejo es que <span class="highlight">un sistema es más que sus partes</span>. Si separas las partes (el suelo, el agua, el campesino, el banco), pierdes el entendimiento del conjunto.</p>
+
+                <p>Para analizar cualquier problemática en Pueblo Rico bajo la visión sistémica, es metodológicamente obligatorio evaluarla desde cuatro dimensiones interconectadas:</p>
+                <ol style="margin-left: 20px; margin-bottom: 15px;">
+                    <li><strong>Dimensión Ecológica:</strong> Evalúa los ciclos biogeoquímicos, la salud del suelo, los ciclos del agua (H<sub>2</sub>O) y la biodiversidad que sostiene la vida en la vereda.</li>
+                    <li><strong>Dimensión Económica:</strong> Analiza la viabilidad financiera, los costos de producción, los precios internacionales del café, los ingresos por turismo y la soberanía alimentaria de las familias.</li>
+                    <li><strong>Dimensión Sociocultural:</strong> Estudia el impacto en el tejido humano: la migración de los jóvenes a la ciudad, la pérdida de saberes ancestrales cafeteros, la salud pública y las relaciones de vecindad.</li>
+                    <li><strong>Dimensión Político-Legal:</strong> Contempla las normativas del Plan de Ordenamiento Territorial (POT), las certificaciones agrícolas internacionales y las leyes ambientales del Estado colombiano.</li>
+                </ol>
+
+                <p>Tomar una decisión gerencial o gubernamental ignorando alguna de estas cuatro dimensiones inevitablemente generará "externalidades negativas" a corto o largo plazo. La visión sistémica obliga al líder agrícola a preguntarse siempre: "¿Y después de esta acción, qué más ocurrirá?".</p>
+
+                <h3>Cuadro Comparativo: Paradigmas de Análisis</h3>
+                <table>
+                    <tr>
+                        <th>Característica</th>
+                        <th>Pensamiento Lineal (Reduccionista)</th>
+                        <th>Pensamiento Sistémico (Holístico)</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Enfoque</strong></td>
+                        <td>Aísla el problema. Estudia las partes por separado.</td>
+                        <td>Estudia las relaciones y el contexto. Ve el panorama completo.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Visión del Tiempo</strong></td>
+                        <td>Soluciones inmediatas a corto plazo.</td>
+                        <td>Proyecciones y consecuencias a largo plazo.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ejemplo en Pueblo Rico</strong></td>
+                        <td>"Talar bosque nativo para poner más vacas y ganar más dinero hoy."</td>
+                        <td>"Conservar bosque para regular agua, dar sombra al ganado y asegurar el clima del café mañana."</td>
+                    </tr>
+                </table>
+
+                <!-- ACTIVIDAD 1: ORDENAR LETRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 1: El Todo Vivo</div>
+                    <p>Arrastra las letras para formar la palabra clave (mencionada en el texto) que define a la finca como una red interconectada, no como partes aisladas:</p>
+                    <div class="draggable-area" id="drag-area-1"></div>
+                    <div class="drop-area" id="drop-area-1" data-word="SISTEMA" data-type="letters"></div>
+                    <div class="game-status" id="status-game-1"></div>
+                </div>
+
+                <!-- ACTIVIDAD 2: ORDENAR PALABRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 2: Premisa del Pensamiento Complejo</div>
+                    <p>Ordena la premisa fundamental extraída del párrafo 3 que explica por qué no podemos estudiar los elementos por separado:</p>
+                    <div class="draggable-area" id="drag-area-2"></div>
+                    <div class="drop-area" id="drop-area-2" data-word="Un sistema es más que sus partes" data-type="words"></div>
+                    <div class="game-status" id="status-game-2"></div>
+                </div>
+
+                <!-- PAUSAS ACTIVAS 1-5 -->
+                <div class="pausa-activa">
+                    <h4>Pausas Activas (Análisis en Cuaderno Físico)</h4>
+                    <p>Desarrolla estos retos. Al terminar, registra tu avance en el botón inferior.</p>
+                    <ul>
+                        <li><strong>1. Reflexión Crítica:</strong> Explica cómo el uso excesivo de pesticidas afecta la "Dimensión Sociocultural" (salud comunitaria) en tu vereda.</li>
+                        <li><strong>2. Dibujo de Proceso:</strong> Ilustra el flujo de una decisión lineal (Plaga -> Pesticida -> Muerte de abejas -> Pérdida de cosecha de naranjas).</li>
+                        <li><strong>3. Cuadro Comparativo:</strong> Copia en tu cuaderno el cuadro "Paradigmas de Análisis".</li>
+                        <li><strong>4. Lluvia de ideas (Dimensión Político-Legal):</strong> Escribe 2 leyes o normas de la alcaldía que crees que protegen el agua en Quimbaya.</li>
+                        <li><strong>5. Diagrama de Flujo:</strong> Crea un mini diagrama conectando: "Suelo Sano" -> "Café de Calidad" -> "Ingresos Económicos" -> "Jóvenes se quedan en la finca".</li>
+                    </ul>
+                    <button class="btn-pausa" id="btn-pausa-1" onclick="togglePausa(1)">Registrar Actividad Realizada</button>
+                </div>
+            </section>
+
+            <!-- 3. PREGUNTA ICFES CON GRÁFICA SVG -->
+            <section id="sec-icfes">
+                <h2>3. El Colapso de las Falsas Soluciones</h2>
+                <p>Analiza detenidamente el siguiente gráfico. Muestra qué ocurre durante 10 años en una finca de la zona cuando se impone un sistema de "Monocultivo Intensivo" (pensamiento lineal puro). La finca decidió arrasar con toda la diversidad para plantar solo café usando fertilizantes sintéticos potentes. Observa cómo reaccionan la dimensión Económica (Ganancias) y la Ecológica (Salud del Suelo).</p>
+                
+                <div class="svg-container">
+                    <svg viewBox="0 0 700 350" width="100%" height="100%">
+                        <!-- Grid Lines -->
+                        <line x1="60" y1="280" x2="650" y2="280" stroke="#E0E0E0" stroke-width="1"/>
+                        <line x1="60" y1="220" x2="650" y2="220" stroke="#E0E0E0" stroke-width="1"/>
+                        <line x1="60" y1="160" x2="650" y2="160" stroke="#E0E0E0" stroke-width="1"/>
+                        <line x1="60" y1="100" x2="650" y2="100" stroke="#E0E0E0" stroke-width="1"/>
+                        <line x1="60" y1="40" x2="650" y2="40" stroke="#E0E0E0" stroke-width="1"/>
+
+                        <!-- Axes -->
+                        <line x1="60" y1="320" x2="650" y2="320" stroke="#37474F" stroke-width="3"/>
+                        <line x1="60" y1="20" x2="60" y2="320" stroke="#37474F" stroke-width="3"/>
+                        
+                        <!-- Labels -->
+                        <text x="350" y="345" text-anchor="middle" fill="#37474F" font-weight="bold">Línea de Tiempo (Años)</text>
+                        <text x="20" y="170" transform="rotate(-90 20,170)" text-anchor="middle" fill="#37474F" font-weight="bold">Nivel (0% a 100%)</text>
+                        
+                        <text x="60" y="335" text-anchor="middle" font-size="12">Año 0</text>
+                        <text x="160" y="335" text-anchor="middle" font-size="12">Año 2</text>
+                        <text x="260" y="335" text-anchor="middle" font-size="12">Año 4</text>
+                        <text x="360" y="335" text-anchor="middle" font-size="12">Año 6</text>
+                        <text x="460" y="335" text-anchor="middle" font-size="12">Año 8</text>
+                        <text x="560" y="335" text-anchor="middle" font-size="12">Año 10</text>
+
+                        <!-- Línea Ecológica (Suelo Vivo) - Verde Oscuro -->
+                        <!-- Empieza bien, se degrada lentamente por el químico, al final colapsa -->
+                        <polyline points="60,100 160,140 260,200 360,260 460,300 560,310" fill="none" stroke="var(--verde-cafe)" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="260" cy="200" r="5" fill="var(--verde-cafe)" />
+                        
+                        <!-- Línea Económica (Ganancias) - Naranja -->
+                        <!-- Pico irreal en el año 2-3, luego cae por los costos altísimos de mantener suelo muerto -->
+                        <polyline points="60,280 160,80 260,120 360,180 460,270 560,300" fill="none" stroke="var(--naranja-citrico)" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="160" cy="80" r="5" fill="var(--naranja-citrico)" />
+
+                        <!-- Leyenda -->
+                        <rect x="450" y="40" width="15" height="15" fill="var(--naranja-citrico)" />
+                        <text x="475" y="52" font-size="13" font-weight="bold">Ganancia Económica</text>
+                        <rect x="450" y="65" width="15" height="15" fill="var(--verde-cafe)" />
+                        <text x="475" y="77" font-size="13" font-weight="bold">Salud Ecológica (Suelo)</text>
+                    </svg>
+                </div>
+
+                <div class="question-block">
+                    <p><strong>Competencia: Indagar y Explicar Fenómenos (Tipo ICFES)</strong></p>
+                    <p>Basado en el análisis de la gráfica y aplicando la visión sistémica, ¿cuál es la explicación correcta del comportamiento de la curva económica después del año 2?</p>
+                    <label><input type="radio" name="icfes1" value="a" onchange="saveAnswer('icfes1', this.value)"> a) La economía colapsó porque los trabajadores exigieron un aumento de sueldo irrazonable en el año 4.</label>
+                    <label><input type="radio" name="icfes1" value="b" onchange="saveAnswer('icfes1', this.value)"> b) El éxito inicial fue una ilusión. La degradación profunda del suelo (dimensión ecológica) obligó a comprar cantidades insostenibles de fertilizantes para producir, destruyendo finalmente la rentabilidad económica.</label>
+                    <label><input type="radio" name="icfes1" value="c" onchange="saveAnswer('icfes1', this.value)"> c) El clima global se calentó bruscamente exactamente en el año 3, afectando las ganancias, pero el suelo siguió intacto.</label>
+                    <label><input type="radio" name="icfes1" value="d" onchange="saveAnswer('icfes1', this.value)"> d) Es normal, la naturaleza requiere que las fincas quiebren cada 10 años.</label>
+                </div>
+            </section>
+
+            <!-- 4. CUERPO DEDUCTIVO Y ANIMACIÓN -->
+            <section id="sec-deductivo">
+                <h2>4. Estudio de Caso: La Crisis del Agua y la Resiliencia</h2>
+                <p>Llevemos la teoría sistémica a un problema real e histórico que amenaza muchas veredas, incluida Pueblo Rico: la expansión de potreros para ganadería sobre zonas de recarga hídrica. Bajo un pensamiento lineal, un propietario puede talar un relicto de bosque en la parte alta de la montaña para introducir más vacas. A corto plazo, vende más leche y carne. Pero analicemos esto cruzando las cuatro dimensiones a través del tiempo.</p>
+
+                <p>Ecológicamente, los árboles del bosque actuaban como una esponja; sus raíces profundas permitían que el agua lluvia se infiltrara al subsuelo, recargando los acuíferos. Al reemplazarlos por pasto compacto pisoteado por vacas pesadas, la tierra se impermeabiliza. Cuando llueve, el agua "resbala" por la superficie causando erosión, arrastrando sedimento rico en gas metano (CH<sub>4</sub>) de las heces del ganado directo a las cañadas. Además, se activa un letal "Bucle de Retroalimentación Positiva" (un círculo vicioso). Menos bosque significa un microclima más caliente; más calor evapora el agua más rápido; menos agua seca las pasturas; pasturas secas requieren talar más bosque en busca de humedad. El ecosistema entra en espiral de colapso.</p>
+
+                <p>Económicamente, en el mediano plazo, la finca cafetera ubicada ladera abajo pierde el acceso al agua vital para el beneficio (lavado) del café. Su producción cae. El dueño de las vacas también sufre, pues en la época de sequía profunda (Fenómeno del Niño), al no tener la sombra de los árboles ni reservas de agua, su ganado sufre estrés térmico y baja la producción de leche. En el ámbito sociocultural, la comunidad campesina, que antes compartía el agua pacíficamente, entra en conflicto. Se generan disputas legales (Dimensión Político-Legal) por los derechos de uso del agua ante las corporaciones autónomas regionales (CAR), derivando en multas y sanciones.</p>
+
+                <p>En la naturaleza, <span class="highlight">todo cambio genera una cascada de efectos</span> que impacta las cuatro dimensiones simultáneamente. Para evitar este colapso, el pensamiento sistémico propone los Sistemas Silvopastoriles: sembrar árboles maderables, forrajeros y frutales dentro de los potreros del ganado. Esta no es una solución mágica lineal, es un rediseño de la red.</p>
+
+                <p>Al implementar esta visión multidimensional, el sistema adquiere una propiedad vital: la capacidad de un ecosistema o comunidad para absorber perturbaciones y recuperar su equilibrio se denomina <span class="highlight">resiliencia</span>. Una finca resiliente en Quimbaya es aquella donde la diversidad biológica (Ecológica) soporta plagas, la diversificación de ingresos entre café, cítricos y ecoturismo (Económica) soporta crisis de precios, el arraigo y educación de los jóvenes (Sociocultural) garantiza el relevo generacional, y el cumplimiento normativo (Político) asegura acceso a mercados internacionales justos.</p>
+
+                <!-- ANIMACIÓN CANVAS (Simulador Sistémico) -->
+                <h3>Laboratorio de Simulación Dinámica</h3>
+                <p>Interactúa con este simulador sistémico de una finca en Quimbaya. Observa cómo al añadir elementos destructivos (vacas en exceso sin bosque) o regenerativos (árboles), se afecta el equilibrio de las cuatro dimensiones en tiempo real.</p>
+                
+                <div class="canvas-wrapper">
+                    <div class="canvas-controls">
+                        <button id="btn-add-tree">+ Plantar Árbol</button>
+                        <button id="btn-add-cow">+ Introducir Vaca</button>
+                        <button id="btn-reset" style="background:var(--rojo-alerta);">Reiniciar Ecosistema</button>
+                    </div>
+                    <canvas id="sysCanvas"></canvas>
+                </div>
+
+                <!-- ACTIVIDAD 3: ORDENAR LETRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 3: Capacidad de Recuperación</div>
+                    <p>Forma la palabra clave del texto que define la capacidad del sistema para absorber perturbaciones y recuperar su equilibrio (Dimensión clave de supervivencia):</p>
+                    <div class="draggable-area" id="drag-area-3"></div>
+                    <div class="drop-area" id="drop-area-3" data-word="RESILIENCIA" data-type="letters"></div>
+                    <div class="game-status" id="status-game-3"></div>
+                </div>
+
+                <!-- ACTIVIDAD 4: ORDENAR PALABRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 4: Efecto Dominó</div>
+                    <p>Ordena la frase exacta del texto deductivo que explica qué sucede cuando tocamos una sola pieza del sistema natural:</p>
+                    <div class="draggable-area" id="drag-area-4"></div>
+                    <div class="drop-area" id="drop-area-4" data-word="Todo cambio genera una cascada de efectos" data-type="words"></div>
+                    <div class="game-status" id="status-game-4"></div>
+                </div>
+
+                <!-- PAUSAS ACTIVAS 6-10 -->
+                <div class="pausa-activa">
+                    <h4>Pausas Activas (Cuaderno de Trabajo Práctico)</h4>
+                    <ul>
+                        <li><strong>6. Mapa Mental:</strong> Crea un mapa mental ubicando "El Agua de Pueblo Rico" en el centro, y saca 4 ramas (Ecológica, Económica, Social, Legal) explicando su importancia en cada una.</li>
+                        <li><strong>7. Problema Matemático:</strong> Si un bosque maduro retiene 500 litros de agua por metro cuadrado, y un pastizal degradado solo 50. Al talar 1000 metros cuadrados, ¿Cuántos litros de capacidad de retención de agua pierde la vereda?</li>
+                        <li><strong>8. Análisis Químico:</strong> Escribe la fórmula del gas metano (mencionada en el texto) y explica de dónde proviene en este estudio de caso.</li>
+                        <li><strong>9. Síntesis Escrita:</strong> Define en una frase qué es un "Bucle de Retroalimentación Positiva" usando el ejemplo del calor y la deforestación.</li>
+                        <li><strong>10. Dibujo Técnico:</strong> Esboza cómo se vería un "Sistema Silvopastoril" (Vacas + Árboles) integrando las dimensiones productiva y ecológica.</li>
+                    </ul>
+                    <button class="btn-pausa" id="btn-pausa-2" onclick="togglePausa(2)">Registrar Actividad Realizada</button>
+                </div>
+            </section>
+
+            <!-- 5. EVALUACIÓN FINAL -->
+            <section id="sec-evaluacion">
+                <h2>5. Evaluación de Competencias Sistémicas</h2>
+                <p>Aplica tu visión holística. Las preguntas abiertas están protegidas por el <strong style="color:var(--rojo-alerta);">sistema de auditoría anti-fraude</strong>. Escribe tus respuestas analizando, no copiando.</p>
+                
+                <form id="form-evaluacion" onsubmit="event.preventDefault(); finalizarOVA();">
+                    
+                    <h3>A. Selección Múltiple (Integración de Conceptos)</h3>
+                    
+                    <div class="question-block">
+                        <p>1. Cuando el texto menciona que "un sistema es más que sus partes", se refiere a que:</p>
+                        <label><input type="radio" name="eval_m1" value="a" required> a) Las partes de un tractor son muy costosas de reparar en Quimbaya.</label>
+                        <label><input type="radio" name="eval_m1" value="b" required> b) El valor real está en la red de interacciones entre los elementos (como el agua, el suelo y la comunidad), no en observarlos de forma aislada.</label>
+                        <label><input type="radio" name="eval_m1" value="c" required> c) Solo importan las leyes y dimensiones políticas del Estado.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>2. ¿Qué es la "Resiliencia" aplicada a una finca del Paisaje Cultural Cafetero?</p>
+                        <label><input type="radio" name="eval_m2" value="a" required> a) La capacidad de la finca para absorber perturbaciones (climáticas, económicas) y recuperar su equilibrio funcional gracias a su diversidad.</label>
+                        <label><input type="radio" name="eval_m2" value="b" required> b) La rapidez con la que se puede talar un bosque.</label>
+                        <label><input type="radio" name="eval_m2" value="c" required> c) La cantidad máxima de agroquímicos que puede absorber una planta de café.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>3. En el caso de la crisis del agua, ¿cómo se manifiesta la "Dimensión Sociocultural"?</p>
+                        <label><input type="radio" name="eval_m3" value="a" required> a) A través de los precios internacionales de la carne de res.</label>
+                        <label><input type="radio" name="eval_m3" value="b" required> b) Por medio de los conflictos vecinales, la pérdida de salud comunitaria y la afectación de los saberes tradicionales de convivencia pacífica.</label>
+                        <label><input type="radio" name="eval_m3" value="c" required> c) Por el aumento de la infiltración del H2O en el subsuelo montañoso.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>4. El "Pensamiento Lineal" en la agricultura moderna frecuentemente falla porque:</p>
+                        <label><input type="radio" name="eval_m4" value="a" required> a) Asume relaciones simples de causa-efecto (A -> B) ignorando completamente las externalidades y cascadas de efectos colaterales en la ecología y la sociedad.</label>
+                        <label><input type="radio" name="eval_m4" value="b" required> b) Obliga a los campesinos a estudiar demasiada ecología y dimensiones políticas.</label>
+                        <label><input type="radio" name="eval_m4" value="c" required> c) No usa suficientes químicos para matar plagas de la broca de raíz.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>5. ¿Qué propone la visión sistémica para evitar el colapso ecológico de la ganadería tradicional?</p>
+                        <label><input type="radio" name="eval_m5" value="a" required> a) Importar agua de otros departamentos de Colombia en camiones.</label>
+                        <label><input type="radio" name="eval_m5" value="b" required> b) Implementar Sistemas Silvopastoriles que integran árboles dentro de los potreros, rediseñando las interacciones entre flora, fauna, economía y suelo.</label>
+                        <label><input type="radio" name="eval_m5" value="c" required> c) Exterminar completamente todas las vacas y vaciar las fincas.</label>
+                    </div>
+
+                    <h3>B. Análisis Dimensional Abierto</h3>
+                    <p style="font-size:0.85em; color:#757575;">El sistema registrará tu cadencia de tecleo. Evita atajos o copiar/pegar de fuentes externas.</p>
+                    
+                    <div class="question-block">
+                        <label>6. Explica brevemente por qué la aplicación del "Pensamiento Lineal" para eliminar una plaga puede destruir la dimensión económica de una finca vecina.</label>
+                        <textarea id="eval_o1" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o1"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>7. Define con tus propias palabras qué es un "Bucle de Retroalimentación Positiva" tomando como ejemplo la deforestación y la pérdida de agua en Quimbaya.</label>
+                        <textarea id="eval_o2" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o2"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>8. Si una ley nacional prohíbe repentinamente extraer agua de las cañadas locales, ¿cómo afecta esta "Dimensión Político-Legal" a las dimensiones Económica y Social de la Vereda Pueblo Rico?</label>
+                        <textarea id="eval_o3" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o3"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>9. Teniendo en cuenta la lectura, argumenta por qué una "Finca Resiliente" es mucho mejor y más segura que una finca que solo busca la máxima ganancia económica en el primer año.</label>
+                        <textarea id="eval_o4" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o4"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>10. Conclusión Crítica: A partir de hoy, si fueras un líder comunitario del Quindío enfrentando un problema complejo (ej. turismo masivo y basuras), ¿por qué es obligatorio analizarlo usando las 4 dimensiones sistémicas simultáneamente?</label>
+                        <textarea id="eval_o5" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o5"></div>
+                    </div>
+
+                    <button type="submit" class="btn">Procesar Matriz de Evaluación</button>
+                </form>
+            </section>
+
+            <!-- 6. RESULTADOS Y DESCARGA -->
+            <section id="sec-resultados" style="display:none; text-align:center;">
+                <h2>Reporte de Pensamiento Sistémico</h2>
+                <div id="feedback-content" style="font-size: 1.25em; margin-bottom: 20px; color: var(--cafe-tierra);"></div>
+                <div id="ruta-content" style="text-align: left; background:#E8F5E9; padding: 25px; border-radius:12px; border: 1px solid #A5D6A7;"></div>
+                
+                <button class="btn" id="btn-descargar" onclick="descargarResultados()" style="margin-top: 35px; background-color: var(--verde-cafe);">
+                    Descargar Acta de Auditoría Sistémica (.txt)
+                </button>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- =========================================
+         LÓGICA JAVASCRIPT (VANILLA)
+         ========================================= -->
+    <script>
+        // --- 1. ESTADO GLOBAL Y LOCALSTORAGE ---
+        const LOCAL_KEY = 'ova_quimbaya_sistemica_11_state';
+        let state = {
+            apellidos: '', nombres: '',
+            points: 0, progress: 0, unlocked: [],
+            answers: {}, texts: {}, pausas: [false, false], gamesDone: []
+        };
+
+        // --- 2. INICIALIZACIÓN ---
+        document.addEventListener("DOMContentLoaded", () => {
+            loadState();
+            configurarAntiFraude();
+            initDragAndDrop();
+            initSysCanvas(); // Iniciar simulacion 60fps
+        });
+
+        document.getElementById('btn-iniciar').addEventListener('click', () => {
+            const apellidos = document.getElementById('inp-apellidos').value.trim();
+            const nombres = document.getElementById('inp-nombres').value.trim();
+            
+            if(apellidos === '' || nombres === '') {
+                alert("Identidad requerida. Por favor ingresa Nombres y Apellidos.");
+                return;
+            }
+            state.apellidos = apellidos; state.nombres = nombres;
+            saveState(); mostrarApp();
+        });
+
+        function loadState() {
+            const saved = localStorage.getItem(LOCAL_KEY);
+            if(saved) {
+                state = JSON.parse(saved);
+                if(state.nombres !== '') mostrarApp();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(state));
+            updateUI();
+        }
+
+        function mostrarApp() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                restaurarDOM(); updateUI();
+            }, 500);
+        }
+
+        function updateUI() {
+            document.getElementById('display-name').textContent = `${state.nombres} ${state.apellidos}`;
+            document.getElementById('display-points').textContent = state.points;
+            
+            // Calc Progress (4 juegos + 2 pausas + 4 forms (pre1,2,3,icfes)) = 10 ítems
+            let items = state.gamesDone.length + state.pausas.filter(p=>p).length + Object.keys(state.answers).length;
+            let percent = Math.min((items / 10) * 100, 100);
+            document.getElementById('progress-bar').style.width = percent + '%';
+
+            // Unlocks por puntos
+            if(state.points >= 2 && !state.unlocked.includes('sys')) state.unlocked.push('sys');
+            if(state.points >= 4 && !state.unlocked.includes('leaf')) state.unlocked.push('leaf');
+
+            if(state.unlocked.includes('sys')) document.getElementById('icon-sys').classList.add('unlocked');
+            if(state.unlocked.includes('leaf')) document.getElementById('icon-leaf').classList.add('unlocked');
+        }
+
+        function restaurarDOM() {
+            for(let key in state.answers) {
+                let radio = document.querySelector(`input[name="${key}"][value="${state.answers[key]}"]`);
+                if(radio) radio.checked = true;
+            }
+            for(let key in state.texts) {
+                let t = document.getElementById(key);
+                if(t) t.value = state.texts[key];
+            }
+            if(state.pausas[0]) {
+                let b = document.getElementById('btn-pausa-1');
+                b.classList.add('done'); b.textContent = "Actividad Verificada ✓";
+            }
+            if(state.pausas[1]) {
+                let b = document.getElementById('btn-pausa-2');
+                b.classList.add('done'); b.textContent = "Actividad Verificada ✓";
+            }
+            state.gamesDone.forEach(gId => {
+                let st = document.getElementById(`status-game-${gId}`);
+                if(st) st.textContent = "¡Análisis Correcto! (+1 Punto ★)";
+                let dropArea = document.getElementById(`drop-area-${gId}`);
+                if(dropArea) dropArea.style.pointerEvents = 'none';
+            });
+        }
+
+        function saveAnswer(key, val) {
+            state.answers[key] = val; saveState();
+        }
+
+        function togglePausa(index) {
+            let i = index - 1;
+            if(!state.pausas[i]) {
+                state.pausas[i] = true;
+                let b = document.getElementById(`btn-pausa-${index}`);
+                b.classList.add('done'); b.textContent = "Actividad Verificada ✓";
+                saveState();
+            }
+        }
+
+        // --- 3. SISTEMA ANTI-FRAUDE ---
+        function configurarAntiFraude() {
+            const textareas = document.querySelectorAll('.anti-fraud');
+            textareas.forEach(ta => {
+                ta.addEventListener('paste', e => { e.preventDefault(); alertFraud(ta, "Bloqueo: Pegar texto externo anula el análisis sistémico."); });
+                ta.addEventListener('drop', e => { e.preventDefault(); alertFraud(ta, "Bloqueo: Inserción por arrastre denegada."); });
+                ta.addEventListener('contextmenu', e => e.preventDefault());
+
+                let keyTimes = [];
+                ta.addEventListener('keydown', e => {
+                    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'v')) {
+                        e.preventDefault(); alertFraud(ta, "Bloqueo de atajo de teclado activado."); return;
+                    }
+                    if(e.key.length > 1) return; // Ignore Shift, Ctrl, etc.
+                    
+                    const now = Date.now();
+                    keyTimes.push(now);
+                    if(keyTimes.length > 8) keyTimes.shift();
+
+                    if(keyTimes.length === 8) {
+                        let totalDiff = 0;
+                        for(let i=1; i<keyTimes.length; i++){ totalDiff += (keyTimes[i] - keyTimes[i-1]); }
+                        let avg = totalDiff / 7;
+                        // IA o Scripts pegan con velocidad sobrehumana (cadencia casi 0)
+                        if(avg < 35) {
+                            ta.value = ""; keyTimes = [];
+                            alertFraud(ta, "¡ANOMALÍA DETECTADA! Velocidad de escritura inhumana. Posible inyección algorítmica. Campo borrado.");
+                            e.preventDefault();
+                        }
+                    }
+                });
+
+                ta.addEventListener('input', () => { state.texts[ta.id] = ta.value; saveState(); });
+            });
+        }
+
+        function alertFraud(element, msg) {
+            let alertBox = document.getElementById('alert-' + element.id);
+            alertBox.textContent = msg; alertBox.style.display = 'block';
+            setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
+        }
+
+        // --- 4. SISTEMA DRAG & DROP ---
+        function initDragAndDrop() {
+            const games = [
+                {id: 1, type: 'letters', word: 'SISTEMA'},
+                {id: 2, type: 'words', word: 'Un sistema es más que sus partes'},
+                {id: 3, type: 'letters', word: 'RESILIENCIA'},
+                {id: 4, type: 'words', word: 'Todo cambio genera una cascada de efectos'}
+            ];
+
+            games.forEach(game => {
+                if(state.gamesDone.includes(game.id)) return;
+
+                let items = [];
+                if(game.type === 'letters') items = game.word.split('');
+                if(game.type === 'words') items = game.word.split(' ');
+                
+                let shuffled = [...items].sort(() => Math.random() - 0.5);
+
+                const dragArea = document.getElementById(`drag-area-${game.id}`);
+                const dropArea = document.getElementById(`drop-area-${game.id}`);
+
+                shuffled.forEach((item, index) => {
+                    let div = document.createElement('div');
+                    div.className = `drag-item ${game.type === 'letters' ? 'letter' : ''}`;
+                    div.draggable = true; div.id = `drag-${game.id}-${index}`;
+                    div.textContent = item; div.dataset.val = item;
+                    div.addEventListener('dragstart', dragStart);
+                    dragArea.appendChild(div);
+                });
+
+                items.forEach((item) => {
+                    let slot = document.createElement('div');
+                    slot.className = `drop-slot ${game.type === 'letters' ? 'letter-slot' : ''}`;
+                    slot.dataset.targetId = game.id;
+                    slot.addEventListener('dragover', dragOver);
+                    slot.addEventListener('dragenter', dragEnter);
+                    slot.addEventListener('dragleave', dragLeave);
+                    slot.addEventListener('drop', dropEvent);
+                    dropArea.appendChild(slot);
+                });
+            });
+        }
+
+        let draggedElement = null;
+        function dragStart(e) { draggedElement = e.target; e.dataTransfer.effectAllowed = 'move'; }
+        function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+        function dragEnter(e) { e.preventDefault(); this.classList.add('hovered'); }
+        function dragLeave(e) { this.classList.remove('hovered'); }
+
+        function dropEvent(e) {
+            e.preventDefault(); this.classList.remove('hovered');
+            if(this.children.length > 0) {
+                let oldChild = this.children[0];
+                let gameId = this.dataset.targetId;
+                document.getElementById(`drag-area-${gameId}`).appendChild(oldChild);
+            }
+            this.appendChild(draggedElement);
+            checkGameCompletion(this.dataset.targetId);
+        }
+
+        function checkGameCompletion(gameId) {
+            const dropArea = document.getElementById(`drop-area-${gameId}`);
+            const slots = dropArea.querySelectorAll('.drop-slot');
+            const targetWord = dropArea.dataset.word;
+            const type = dropArea.dataset.type;
+            
+            let currentStr = ''; let allFilled = true;
+
+            slots.forEach(slot => {
+                if(slot.children.length === 0) allFilled = false;
+                else currentStr += slot.children[0].dataset.val + (type==='words' ? ' ' : '');
+            });
+
+            currentStr = currentStr.trim();
+
+            if(allFilled) {
+                if(currentStr === targetWord) {
+                    document.getElementById(`status-game-${gameId}`).textContent = "¡Análisis Correcto! (+1 Punto ★)";
+                    document.getElementById(`status-game-${gameId}`).style.color = "var(--verde-cafe)";
+                    dropArea.style.pointerEvents = 'none';
+                    state.points += 1; state.gamesDone.push(parseInt(gameId)); saveState();
+                } else {
+                    document.getElementById(`status-game-${gameId}`).textContent = "Estructura incorrecta. Reorganiza los nodos.";
+                }
+            }
+        }
+
+        // --- 5. ANIMACIÓN HTML5 CANVAS (Simulador de Dimensiones) ---
+        function initSysCanvas() {
+            const canvas = document.getElementById('sysCanvas');
+            const ctx = canvas.getContext('2d');
+            let bounds = canvas.parentElement.getBoundingClientRect();
+            
+            function resize() {
+                bounds = canvas.parentElement.getBoundingClientRect();
+                canvas.width = bounds.width - 30; // padding adjustment
+                canvas.height = 400;
+            }
+            window.addEventListener('resize', resize); resize();
+
+            // Variables de sistema
+            let numTrees = 5;
+            let numCows = 2;
+            
+            // Dimensiones (0 - 100)
+            let dimEcol = 80;  // Agua, Suelo
+            let dimEcon = 50;  // Dinero
+            let dimSoci = 80;  // Felicidad comunidad
+
+            const btnTree = document.getElementById('btn-add-tree');
+            const btnCow = document.getElementById('btn-add-cow');
+            const btnReset = document.getElementById('btn-reset');
+
+            btnTree.addEventListener('click', () => { if(numTrees < 15) numTrees++; });
+            btnCow.addEventListener('click', () => { if(numCows < 15) numCows++; });
+            btnReset.addEventListener('click', () => { numTrees = 5; numCows = 2; });
+
+            class VisualEntity {
+                constructor(type) {
+                    this.type = type; // 'tree' or 'cow'
+                    this.x = 200 + Math.random() * (canvas.width - 250);
+                    this.y = 250 + Math.random() * 100;
+                    if(this.type === 'tree') this.y -= 50; // trees slightly higher
+                    this.vx = (Math.random() - 0.5) * 0.5; // cows move slowly
+                }
+                draw(ctx) {
+                    if(this.type === 'tree') {
+                        ctx.fillStyle = '#5D4037'; ctx.fillRect(this.x, this.y, 10, 30);
+                        ctx.fillStyle = '#43A047'; ctx.beginPath(); ctx.arc(this.x+5, this.y-10, 25, 0, Math.PI*2); ctx.fill();
+                    } else {
+                        // Cow movement
+                        this.x += this.vx;
+                        if(this.x < 200 || this.x > canvas.width-50) this.vx *= -1;
+                        
+                        ctx.fillStyle = '#E0E0E0'; ctx.fillRect(this.x, this.y, 30, 20); // body
+                        ctx.fillStyle = '#212121'; ctx.fillRect(this.x+5, this.y+5, 10, 10); // spot
+                        ctx.fillRect(this.x+25, this.y-10, 10, 15); // head
+                        ctx.fillRect(this.x, this.y+20, 4, 10); // leg
+                        ctx.fillRect(this.x+26, this.y+20, 4, 10); // leg
+                    }
+                }
+            }
+
+            let treesArr = [];
+            let cowsArr = [];
+
+            function updateArrays() {
+                while(treesArr.length < numTrees) treesArr.push(new VisualEntity('tree'));
+                while(treesArr.length > numTrees) treesArr.pop();
+                while(cowsArr.length < numCows) cowsArr.push(new VisualEntity('cow'));
+                while(cowsArr.length > numCows) cowsArr.pop();
+            }
+
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                updateArrays();
+
+                // Lógica Sistémica de Retroalimentación
+                // Árboles suman Ecología. Vacas restan Ecología pero suman Economía temporalmente.
+                let targetEcol = 20 + (numTrees * 10) - (numCows * 8);
+                targetEcol = Math.max(0, Math.min(100, targetEcol));
+                
+                // Economía depende de vacas, PERO si ecología cae a 0, la economía también colapsa (Cascada)
+                let targetEcon = 20 + (numCows * 10) + (numTrees * 2);
+                if(targetEcol < 20) targetEcon -= (20 - targetEcol) * 3; // Castigo económico severo por sequía
+                targetEcon = Math.max(0, Math.min(100, targetEcon));
+
+                // Social depende de un equilibrio Ecológico y Económico
+                let targetSoci = (targetEcol + targetEcon) / 2;
+                if(Math.abs(numCows - numTrees) > 8) targetSoci -= 20; // Extremos bajan social por conflicto
+                targetSoci = Math.max(0, Math.min(100, targetSoci));
+
+                // Suavizado (Easing)
+                dimEcol += (targetEcol - dimEcol) * 0.05;
+                dimEcon += (targetEcon - dimEcon) * 0.05;
+                dimSoci += (targetSoci - dimSoci) * 0.05;
+
+                // Dibujar Fondo (Cielo y Tierra)
+                ctx.fillStyle = '#E1F5FE'; ctx.fillRect(0, 0, canvas.width, 250);
+                
+                // Color de la tierra cambia con Ecología
+                let rDirt = 130 + (100 - dimEcol); // Se vuelve rojo/gris
+                let gDirt = 180 - (100 - dimEcol); // Pierde verde
+                let bDirt = 100 - (100 - dimEcol)/2;
+                ctx.fillStyle = `rgb(${rDirt},${Math.max(0,gDirt)},${Math.max(0,bDirt)})`;
+                ctx.fillRect(0, 250, canvas.width, 150);
+
+                // Dibujar Entidades
+                treesArr.forEach(t => t.draw(ctx));
+                cowsArr.forEach(c => c.draw(ctx));
+
+                // Dibujar Paneles Laterales de Dimensiones Sistémicas
+                drawBar(ctx, 20, 30, "Ecología (Agua)", dimEcol, '#43A047');
+                drawBar(ctx, 20, 80, "Economía (Ganancia)", dimEcon, '#F57C00');
+                drawBar(ctx, 20, 130, "Social (Comunidad)", dimSoci, '#1E88E5');
+
+                // Alerta de Cascada
+                if(dimEcol < 15) {
+                    ctx.fillStyle = 'rgba(211, 47, 47, 0.8)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+                    ctx.fillStyle = 'white'; ctx.font = "bold 24px Arial"; ctx.textAlign="center";
+                    ctx.fillText("¡CASCADA DE COLAPSO ECOLÓGICO!", canvas.width/2, canvas.height/2);
+                    ctx.font = "16px Arial";
+                    ctx.fillText("Sin árboles, el agua desaparece y la economía quiebra.", canvas.width/2, canvas.height/2 + 30);
+                }
+                
+                requestAnimationFrame(loop);
+            }
+
+            function drawBar(ctx, x, y, label, val, color) {
+                ctx.fillStyle = '#37474F'; ctx.font = "bold 14px Arial"; ctx.textAlign="left";
+                ctx.fillText(label, x, y);
+                ctx.fillStyle = '#CFD8DC'; ctx.fillRect(x, y+10, 150, 15);
+                ctx.fillStyle = color; ctx.fillRect(x, y+10, (val/100)*150, 15);
+                ctx.strokeStyle = '#263238'; ctx.strokeRect(x, y+10, 150, 15);
+                ctx.fillStyle = '#37474F'; ctx.font = "12px Arial";
+                ctx.fillText(`${Math.round(val)}%`, x+155, y+22);
+            }
+            
+            loop();
+        }
+
+        // --- 6. EVALUACIÓN Y CIERRE ---
+        function finalizarOVA() {
+            let m1 = document.querySelector('input[name="eval_m1"]:checked');
+            let m2 = document.querySelector('input[name="eval_m2"]:checked');
+            let m3 = document.querySelector('input[name="eval_m3"]:checked');
+            let m4 = document.querySelector('input[name="eval_m4"]:checked');
+            let m5 = document.querySelector('input[name="eval_m5"]:checked');
+
+            if(!m1 || !m2 || !m3 || !m4 || !m5) {
+                alert("Análisis incompleto. Selecciona una respuesta para cada variable de la matriz (Selección múltiple)."); return;
+            }
+
+            // Calificación (Respuestas correctas: b, a, b, a, b)
+            let correctas = 0;
+            if(m1.value === 'b') correctas++;
+            if(m2.value === 'a') correctas++;
+            if(m3.value === 'b') correctas++;
+            if(m4.value === 'a') correctas++;
+            if(m5.value === 'b') correctas++;
+
+            let notaFinal = (correctas / 5) * 5.0;
+
+            document.getElementById('form-evaluacion').style.display = 'none';
+            document.getElementById('sec-resultados').style.display = 'block';
+
+            let feed = document.getElementById('feedback-content');
+            let ruta = document.getElementById('ruta-content');
+
+            feed.innerHTML = `<strong>Calificación Sistémica:</strong> ${notaFinal.toFixed(1)} / 5.0<br>
+                              <strong>Estrellas de Configuración:</strong> ${state.points} / 5<br>`;
+
+            let sugerencias = "<h3>Ruta de Fortalecimiento Estructural:</h3><ul>";
+            if(notaFinal === 5.0) {
+                sugerencias += "<li>¡Visión Holística Lograda! Has comprendido la complejidad del tejido natural y social del Quindío. Posees la capacidad crítica para no caer en las trampas de las soluciones reduccionistas.</li>";
+            } else {
+                if(m1.value !== 'b') sugerencias += "<li><strong>Nivelación:</strong> Repasa la Sección 2. La esencia del pensamiento sistémico es entender las 'interacciones' de la red, no las partes sueltas.</li>";
+                if(m2.value !== 'a') sugerencias += "<li><strong>Nivelación:</strong> El concepto de Resiliencia se explica en la Sección 4. Es la capacidad de absorción y recuperación tras una crisis.</li>";
+                if(m3.value !== 'b') sugerencias += "<li><strong>Nivelación:</strong> Revisa el texto sobre la crisis del agua. La dimensión sociocultural abarca los conflictos vecinales y saberes, no los precios.</li>";
+                if(m4.value !== 'a') sugerencias += "<li><strong>Nivelación:</strong> El error del pensamiento lineal es ignorar los efectos secundarios (externalidades). Repasa el cuadro de la Sección 2.</li>";
+                if(m5.value !== 'b') sugerencias += "<li><strong>Nivelación:</strong> Los sistemas silvopastoriles rediseñan las interacciones naturales. Analiza nuevamente el simulador y la Sección 4.</li>";
+            }
+            sugerencias += "</ul>";
+            ruta.innerHTML = sugerencias;
+
+            state.notaFinal = notaFinal; saveState();
+        }
+
+        function descargarResultados() {
+            let o1 = document.getElementById('eval_o1').value.replace(/\n/g, ' ');
+            let o2 = document.getElementById('eval_o2').value.replace(/\n/g, ' ');
+            let o3 = document.getElementById('eval_o3').value.replace(/\n/g, ' ');
+            let o4 = document.getElementById('eval_o4').value.replace(/\n/g, ' ');
+            let o5 = document.getElementById('eval_o5').value.replace(/\n/g, ' ');
+
+            let content = `================================================
+ACTA DE AUDITORÍA SISTÉMICA - ESTUDIANTE GRADO 11
+OVA: "Todo está conectado" - Visión Sistémica Ambiental
+Vereda Pueblo Rico, Municipio de Quimbaya
+================================================
+Analista: ${state.nombres} ${state.apellidos}
+Fecha de Emisión: ${new Date().toLocaleDateString()}
+------------------------------------------------
+CONFIGURACIÓN DE GAMIFICACIÓN:
+Puntos Estrella (Redes Interactivas): ${state.points} / 5
+------------------------------------------------
+EVALUACIÓN MATRIZ CERRADA (Opción Múltiple): ${state.notaFinal} / 5.0
+------------------------------------------------
+MATRIZ DIMENSIONAL ABIERTA (Auditoría Anti-Fraude Aprobada):
+P6 (Pesticidas y Efecto Cascada): ${o1}
+P7 (Retroalimentación Positiva de Crisis): ${o2}
+P8 (Choque Político-Legal vs Económico): ${o3}
+P9 (Finca Resiliente vs Lineal): ${o4}
+P10 (Conclusión Gerencial Multidimensional): ${o5}
+================================================
+* Documento electrónico generado localmente. Integridad algorítmica verificada. *`;
+
+            let blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement("a");
+            a.href = url;
+            a.download = `Reporte_VisionSistemica_${state.apellidos}_${state.nombres}.txt`;
+            document.body.appendChild(a);
+            a.click(); document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+</html>

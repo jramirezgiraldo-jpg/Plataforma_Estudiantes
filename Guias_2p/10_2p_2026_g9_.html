@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: ¿De quién es la naturaleza? - Quimbaya</title>
+    <style>
+        /* =========================================
+           PALETA DE COLORES Y VARIABLES (PCC)
+           ========================================= */
+        :root {
+            --cafe-oscuro: #4A3B32;
+            --verde-hoja: #2E5D3A;
+            --verde-claro: #82B366;
+            --naranja-citrico: #E67E22;
+            --rojo-cereza: #C0392B;
+            --crema-fondo: #FDFBF7;
+            --blanco: #FFFFFF;
+            --gris-texto: #333333;
+            --oro-recompensa: #F1C40F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--crema-fondo);
+            color: var(--gris-texto);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* =========================================
+           SISTEMA DE AUTENTICACIÓN
+           ========================================= */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, var(--verde-hoja), var(--cafe-oscuro));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .login-box {
+            background: var(--blanco);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-box h1 {
+            color: var(--verde-hoja);
+            margin-bottom: 20px;
+        }
+
+        .login-box p {
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--cafe-oscuro);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .btn {
+            background-color: var(--naranja-citrico);
+            color: var(--blanco);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.1s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #d35400;
+            transform: scale(1.02);
+        }
+
+        /* =========================================
+           INTERFAZ PRINCIPAL Y GAMIFICACIÓN
+           ========================================= */
+        #main-app {
+            display: none; /* Oculto hasta iniciar */
+        }
+
+        header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background: var(--blanco);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 500;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            font-weight: bold;
+            color: var(--cafe-oscuro);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .points-badge {
+            background: var(--oro-recompensa);
+            color: var(--cafe-oscuro);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .progress-container {
+            width: 300px;
+            background: #eee;
+            border-radius: 10px;
+            height: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--verde-claro);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .unlockables {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-unlock {
+            width: 30px; height: 30px;
+            fill: #ccc; /* Gris por defecto */
+            transition: fill 0.5s;
+        }
+        .icon-unlock.unlocked { fill: var(--naranja-citrico); }
+
+        main {
+            max-width: 900px;
+            margin: 80px auto 40px auto;
+            padding: 20px;
+        }
+
+        /* =========================================
+           ESTRUCTURA DE CONTENIDO
+           ========================================= */
+        section {
+            background: var(--blanco);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+            border-top: 5px solid var(--verde-hoja);
+        }
+
+        h2 {
+            color: var(--verde-hoja);
+            border-bottom: 2px solid var(--naranja-citrico);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        h3 { color: var(--cafe-oscuro); margin-top: 25px; margin-bottom: 10px; }
+
+        p { margin-bottom: 15px; text-align: justify; }
+
+        .highlight {
+            background-color: #e8f5e9;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: var(--verde-hoja);
+        }
+
+        /* =========================================
+           CUADROS COMPARATIVOS
+           ========================================= */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: var(--blanco);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: var(--cafe-oscuro);
+            color: var(--blanco);
+        }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        /* =========================================
+           PAUSAS ACTIVAS
+           ========================================= */
+        .pausa-activa {
+            background: #fff3e0;
+            border-left: 5px solid var(--naranja-citrico);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        .pausa-activa h4 { color: var(--naranja-citrico); margin-bottom: 10px;}
+        .btn-pausa {
+            background: transparent;
+            border: 2px solid var(--naranja-citrico);
+            color: var(--naranja-citrico);
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-pausa.done {
+            background: var(--naranja-citrico);
+            color: var(--blanco);
+        }
+
+        /* =========================================
+           JUEGOS DRAG & DROP
+           ========================================= */
+        .game-container {
+            background: #f1f8e9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px dashed var(--verde-claro);
+            text-align: center;
+        }
+
+        .draggable-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            min-height: 50px;
+        }
+
+        .drop-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            background: rgba(255,255,255,0.5);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .drag-item {
+            background: var(--verde-hoja);
+            color: var(--blanco);
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: grab;
+            user-select: none;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .drag-item.letter { padding: 10px 15px; font-size: 1.2em; }
+
+        .drop-slot {
+            width: auto;
+            min-width: 60px;
+            height: 45px;
+            border: 2px dashed var(--cafe-oscuro);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--blanco);
+        }
+
+        .drop-slot.letter-slot { width: 45px; }
+
+        .drop-slot.hovered { background: #e0e0e0; }
+
+        .game-status {
+            margin-top: 15px;
+            font-weight: bold;
+            color: var(--rojo-cereza);
+            height: 20px;
+        }
+
+        /* =========================================
+           ANIMACIÓN CANVAS Y SVG GRÁFICAS
+           ========================================= */
+        .canvas-container {
+            width: 100%;
+            background: #87CEEB; /* Cielo */
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin: 20px 0;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 400px;
+        }
+
+        .svg-container {
+            width: 100%;
+            background: var(--blanco);
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        /* =========================================
+           EVALUACIÓN Y ANTI-FRAUDE
+           ========================================= */
+        .question-block {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+        
+        .question-block label {
+            display: block;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        textarea.anti-fraud {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            font-family: inherit;
+        }
+        textarea.anti-fraud:focus { border-color: var(--naranja-citrico); outline: none; }
+
+        .alert-fraud {
+            color: var(--rojo-cereza);
+            font-size: 0.9em;
+            font-weight: bold;
+            display: none;
+            margin-top: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         PANTALLA DE INGRESO
+         ========================================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>¿De quién es la Naturaleza?</h1>
+            <p>Laboratorio Virtual - Vereda Pueblo Rico, Quimbaya (Quindío)</p>
+            <div class="input-group">
+                <label for="inp-apellidos">Apellidos:</label>
+                <input type="text" id="inp-apellidos" placeholder="Ej. Pérez">
+            </div>
+            <div class="input-group">
+                <label for="inp-nombres">Nombres:</label>
+                <input type="text" id="inp-nombres" placeholder="Ej. Juan">
+            </div>
+            <button class="btn" id="btn-iniciar">Ingresar a la Finca</button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         INTERFAZ PRINCIPAL
+         ========================================= -->
+    <div id="main-app">
+        <header>
+            <div class="user-info">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--cafe-oscuro)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span id="display-name">Estudiante</span>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <!-- Iconos Desbloqueables del PCC -->
+                <div class="unlockables">
+                    <!-- Grano de café -->
+                    <svg class="icon-unlock" id="icon-cafe" viewBox="0 0 24 24"><path d="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M11,19.93C7.05,19.43 4,16.05 4,12C4,7.95 7.05,4.57 11,4.07V19.93M13,4.07C16.95,4.57 20,7.95 20,12C20,16.05 16.95,19.43 13,19.93V4.07Z"/></svg>
+                    <!-- Naranja/Cítrico -->
+                    <svg class="icon-unlock" id="icon-naranja" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4M11,6.5V11H6.5V13H11V17.5H13V13H17.5V11H13V6.5H11Z"/></svg>
+                </div>
+
+                <div class="points-badge">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--cafe-oscuro)"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    <span id="display-points">0</span> / 5 Pts
+                </div>
+                
+                <div>
+                    <div style="font-size: 0.8em; text-align: right; color: var(--verde-hoja); font-weight: bold;">Progreso</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- 1. OBJETIVO Y PRE-SABERES -->
+            <section id="sec-inicio">
+                <h2>1. Bienvenida a la Vereda Pueblo Rico</h2>
+                <p><strong>Objetivo de Aprendizaje:</strong> Comprender el impacto legal, social y económico de la propiedad intelectual y las patentes de semillas en los sistemas productivos tradicionales de la Vereda Pueblo Rico, Quimbaya.</p>
+                <p>Antes de caminar por los cafetales, evaluemos qué tanto conoces sobre el tema.</p>
+                
+                <div class="question-block">
+                    <p><strong>Pre-saber 1:</strong> ¿Qué es fundamentalmente una semilla para un agricultor tradicional?</p>
+                    <label><input type="radio" name="pre1" value="a" onchange="saveAnswer('pre1', this.value)"> a) Un producto desechable de un solo uso.</label>
+                    <label><input type="radio" name="pre1" value="b" onchange="saveAnswer('pre1', this.value)"> b) Un organismo vivo que contiene la memoria genética y garantiza la próxima cosecha.</label>
+                    <label><input type="radio" name="pre1" value="c" onchange="saveAnswer('pre1', this.value)"> c) Una invención de laboratorio.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>Pre-saber 2:</strong> ¿Qué entiendes por "Patente"?</p>
+                    <label><input type="radio" name="pre2" value="a" onchange="saveAnswer('pre2', this.value)"> a) Un derecho exclusivo que otorga el Estado sobre una invención, impidiendo que otros la usen sin permiso.</label>
+                    <label><input type="radio" name="pre2" value="b" onchange="saveAnswer('pre2', this.value)"> b) Un abono orgánico para cítricos.</label>
+                    <label><input type="radio" name="pre2" value="c" onchange="saveAnswer('pre2', this.value)"> c) Un tipo de plaga que afecta la ganadería.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>Pre-saber 3:</strong> El Paisaje Cultural Cafetero (PCC) se caracteriza por:</p>
+                    <label><input type="radio" name="pre3" value="a" onchange="saveAnswer('pre3', this.value)"> a) Grandes extensiones de monocultivos genéticamente idénticos.</label>
+                    <label><input type="radio" name="pre3" value="b" onchange="saveAnswer('pre3', this.value)"> b) La diversidad de cultivos, saberes tradicionales y la adaptación humana a la geografía andina.</label>
+                    <label><input type="radio" name="pre3" value="c" onchange="saveAnswer('pre3', this.value)"> c) La ausencia total de agricultura.</label>
+                </div>
+            </section>
+
+            <!-- 2. CUERPO INDUCTIVO -->
+            <section id="sec-inductivo">
+                <h2>2. La Semilla: ¿Herencia o Mercancía?</h2>
+                <p>En la <strong>Vereda Pueblo Rico</strong>, ubicada en el municipio de Quimbaya (Quindío), la tierra respira historia. Las laderas están adornadas por una mezcla vibrante de matas de café, árboles de naranja, mandarinas y pastizales donde la ganadería convive con la agricultura. Desde hace generaciones, los campesinos de Pueblo Rico han practicado la selección natural: después de cada cosecha, escogen los granos de café más robustos y los cítricos más jugosos para guardar sus semillas. Esta práctica, junto con el intercambio o "trueque" entre fincas vecinas, ha generado una inmensa riqueza genética adaptada específicamente al clima y suelo quindiano. A esto se le conoce como <strong>soberanía alimentaria</strong>, la capacidad de un pueblo para definir sus propias políticas agrícolas y garantizar su sustento sin dependencias externas.</p>
+
+                <p>Sin embargo, en las últimas décadas, el panorama agrícola mundial ha cambiado drásticamente debido a la biotecnología y a las leyes de <span class="highlight">propiedad intelectual</span>. Las corporaciones agroindustriales desarrollan semillas modificadas genéticamente en laboratorios para resistir plagas (como la broca del café) o soportar herbicidas. Para proteger esa "invención" y recuperar su inversión, estas empresas solicitan una <span class="highlight">patente</span>. Una patente es un derecho legal y exclusivo que prohíbe a cualquier otra persona multiplicar, usar, vender o reproducir la semilla sin pagar regalías.</p>
+
+                <p>El impacto para una finca tradicional en Quimbaya es profundo. Cuando un campesino compra una semilla patentada, no está comprando la vida de la planta, está firmando un contrato de arrendamiento tecnológico. A diferencia de las semillas criollas o nativas, las leyes de patentes establecen que <strong>es un delito guardar semillas de la cosecha de una planta patentada para volverlas a sembrar al año siguiente</strong>. El agricultor queda obligado legalmente a comprar semillas nuevas en cada ciclo agrícola. Esta dinámica rompe la tradición milenaria del agricultor como guardián de las semillas y lo convierte en un cliente cautivo.</p>
+
+                <p>Económicamente, esto genera una fuga de capital de la Vereda Pueblo Rico hacia corporaciones transnacionales. Aunque la semilla patentada prometa mayor rendimiento inicial, los costos de producción se disparan. Además, estas semillas suelen requerir paquetes tecnológicos específicos (agroquímicos y fertilizantes de la misma marca comercial), lo que contamina las aguas de las cañadas locales y degrada el suelo volcánico de la región. El turismo en el Quindío, atraído por el Paisaje Cultural Cafetero, busca biodiversidad y autenticidad, no monocultivos industrializados y esterilizados.</p>
+
+                <p>El debate ético central radica en la pregunta: ¿De quién es la naturaleza? Las comunidades indígenas y campesinas argumentan que la semilla es un patrimonio colectivo de los pueblos al servicio de la humanidad, resultado de miles de años de domesticación. Por el contrario, las leyes de patentes actúan bajo la premisa de que un pequeño cambio genético en un laboratorio otorga propiedad privada sobre toda la planta. En este choque de visiones, la agricultura de Pueblo Rico se encuentra en una encrucijada entre preservar su herencia viva o someterse a la privatización biológica.</p>
+
+                <h3>Cuadro Comparativo: Modelos Agrícolas en Pueblo Rico</h3>
+                <table>
+                    <tr>
+                        <th>Característica</th>
+                        <th>Semilla Tradicional (Criolla/Nativa)</th>
+                        <th>Semilla Patentada (Comercial/Transgénica)</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Propiedad</strong></td>
+                        <td>Patrimonio colectivo, de libre circulación.</td>
+                        <td>Propiedad privada exclusiva de una corporación.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Uso post-cosecha</strong></td>
+                        <td>Se puede guardar, intercambiar y resembrar.</td>
+                        <td><strong>Ilegal</strong> guardar o resembrar. Obligación de compra anual.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Impacto en Quimbaya</strong></td>
+                        <td>Preserva el Paisaje Cultural Cafetero y biodiversidad.</td>
+                        <td>Promueve el monocultivo, aumenta costos y dependencia.</td>
+                    </tr>
+                </table>
+
+                <!-- ACTIVIDAD 1: ORDENAR LETRAS -->
+                <div class="game-container">
+                    <h3>Actividad 1: Concepto Clave</h3>
+                    <p>Arrastra las letras para formar la palabra que define el "Derecho legal y exclusivo sobre una invención":</p>
+                    <div class="draggable-area" id="drag-area-1">
+                        <!-- Las letras se generan por JS -->
+                    </div>
+                    <div class="drop-area" id="drop-area-1" data-word="PATENTE" data-type="letters">
+                        <!-- Slots generados por JS -->
+                    </div>
+                    <div class="game-status" id="status-game-1"></div>
+                </div>
+
+                <!-- ACTIVIDAD 2: ORDENAR PALABRAS -->
+                <div class="game-container">
+                    <h3>Actividad 2: Principio Fundamental</h3>
+                    <p>Arrastra las palabras para armar la frase sobre la capacidad del pueblo para definir su agricultura (basado en el texto):</p>
+                    <div class="draggable-area" id="drag-area-2"></div>
+                    <div class="drop-area" id="drop-area-2" data-word="La soberanía alimentaria protege nuestras semillas" data-type="words"></div>
+                    <div class="game-status" id="status-game-2"></div>
+                </div>
+
+                <!-- PAUSAS ACTIVAS 1-5 -->
+                <div class="pausa-activa">
+                    <h4>Pausas Activas (Cuaderno de Trabajo)</h4>
+                    <p>Resuelve esto en tu cuaderno físico. Cuando termines, haz clic en el botón para guardar tu progreso.</p>
+                    <ul>
+                        <li><strong>1. Reflexión:</strong> Dibuja el ciclo de vida de una semilla de café tradicional vs. una semilla patentada.</li>
+                        <li><strong>2. Mapa:</strong> Dibuja un croquis imaginario de una finca en la Vereda Pueblo Rico mostrando policultivos.</li>
+                        <li><strong>3. Cuadro:</strong> Copia el cuadro comparativo del texto anterior en tu cuaderno.</li>
+                        <li><strong>4. Entrevista mental:</strong> Escribe 3 preguntas que le harías a un abuelo cafetero sobre cómo guardaba sus semillas.</li>
+                        <li><strong>5. Glosario:</strong> Define con tus palabras "Regalías" y "Biotecnología".</li>
+                    </ul>
+                    <button class="btn-pausa" id="btn-pausa-1" onclick="togglePausa(1)">Marcar como Completado</button>
+                </div>
+            </section>
+
+            <!-- 3. PREGUNTA ICFES CON GRÁFICA SVG -->
+            <section id="sec-icfes">
+                <h2>3. Análisis de Datos Científicos y Económicos</h2>
+                <p>Observa la siguiente gráfica que proyecta el costo de producción acumulado (en millones de pesos) para una hectárea de café en Quimbaya durante 10 años, comparando el uso de semilla tradicional (que el campesino guarda) versus la semilla patentada (que debe comprar anualmente más regalías).</p>
+                
+                <div class="svg-container">
+                    <svg viewBox="0 0 600 300" width="100%" height="100%">
+                        <!-- Ejes -->
+                        <line x1="50" y1="250" x2="550" y2="250" stroke="#333" stroke-width="2"/>
+                        <line x1="50" y1="50" x2="50" y2="250" stroke="#333" stroke-width="2"/>
+                        <!-- Etiquetas Ejes -->
+                        <text x="300" y="290" text-anchor="middle" fill="#333" font-weight="bold">Años (Ciclos Agrícolas)</text>
+                        <text x="15" y="150" transform="rotate(-90 15,150)" text-anchor="middle" fill="#333" font-weight="bold">Costo Acumulado (Millones $)</text>
+                        
+                        <!-- Marcas Eje X -->
+                        <text x="50" y="270" text-anchor="middle" font-size="12">0</text>
+                        <text x="150" y="270" text-anchor="middle" font-size="12">2</text>
+                        <text x="250" y="270" text-anchor="middle" font-size="12">4</text>
+                        <text x="350" y="270" text-anchor="middle" font-size="12">6</text>
+                        <text x="450" y="270" text-anchor="middle" font-size="12">8</text>
+                        <text x="550" y="270" text-anchor="middle" font-size="12">10</text>
+
+                        <!-- Línea Semilla Tradicional (Verde, bajo crecimiento) -->
+                        <polyline points="50,240 150,230 250,220 350,210 450,200 550,190" fill="none" stroke="var(--verde-hoja)" stroke-width="3" />
+                        <circle cx="550" cy="190" r="4" fill="var(--verde-hoja)" />
+                        
+                        <!-- Línea Semilla Patentada (Rojo, crecimiento exponencial por recompra) -->
+                        <polyline points="50,220 150,180 250,130 350,90 450,60 550,30" fill="none" stroke="var(--rojo-cereza)" stroke-width="3" />
+                        <circle cx="550" cy="30" r="4" fill="var(--rojo-cereza)" />
+
+                        <!-- Leyenda -->
+                        <rect x="70" y="60" width="15" height="15" fill="var(--verde-hoja)" />
+                        <text x="95" y="72" font-size="12">Semilla Tradicional</text>
+                        <rect x="70" y="85" width="15" height="15" fill="var(--rojo-cereza)" />
+                        <text x="95" y="97" font-size="12">Semilla Patentada</text>
+                    </svg>
+                </div>
+
+                <div class="question-block">
+                    <p><strong>Competencia: Indagar (Tipo ICFES)</strong></p>
+                    <p>Con base en la gráfica y el texto inductivo, ¿qué factor explica de manera directa la diferencia en el comportamiento de las dos líneas a partir del año 2?</p>
+                    <label><input type="radio" name="icfes1" value="a" onchange="saveAnswer('icfes1', this.value)"> a) Que las semillas tradicionales requieren abonos mucho más costosos cada año.</label>
+                    <label><input type="radio" name="icfes1" value="b" onchange="saveAnswer('icfes1', this.value)"> b) Que el agricultor con semilla patentada está obligado legalmente a comprar nuevas semillas y pagar derechos de propiedad en cada cosecha.</label>
+                    <label><input type="radio" name="icfes1" value="c" onchange="saveAnswer('icfes1', this.value)"> c) Que el clima en Quimbaya afecta únicamente a las plantas genéticamente modificadas.</label>
+                    <label><input type="radio" name="icfes1" value="d" onchange="saveAnswer('icfes1', this.value)"> d) Que las corporaciones regalan semillas después del segundo año.</label>
+                </div>
+            </section>
+
+            <!-- 4. CUERPO DEDUCTIVO Y ANIMACIÓN -->
+            <section id="sec-deductivo">
+                <h2>4. Leyes, Biopiratería y Candados Biológicos</h2>
+                <p>Para comprender la gravedad de la situación en veredas como Pueblo Rico, es vital analizar el marco jurídico internacional. Existe una organización llamada UPOV (Unión Internacional para la Protección de las Obtenciones Vegetales), cuyos tratados internacionales presionan a países como Colombia para que modifiquen sus leyes internas. El objetivo principal de UPOV 91 (su versión más estricta) es garantizar y extender los derechos de los "obtentores" (las empresas que modifican semillas) por encima de los derechos de los campesinos. Al suscribirse a estos tratados, el Estado se ve obligado a decomisar o penalizar a los agricultores que intercambien semillas no certificadas.</p>
+
+                <p>Este marco legal facilita un fenómeno conocido como <span class="highlight">Biopiratería</span>. Imagina que en una finca de Quimbaya existe una variedad de naranja que, tras siglos de adaptación natural, desarrolló resistencia a un hongo. Investigadores extranjeros llegan, toman muestras botánicas, aíslan el gen responsable en un laboratorio, lo patentan en su país de origen y luego venden comercialmente semillas con ese gen. La comunidad de Quimbaya, que conservó esa genética por generaciones, no recibe ningún reconocimiento ni beneficio; por el contrario, ahora la naturaleza que les pertenecía ha sido "pirateada" y convertida en propiedad privada de un tercero.</p>
+
+                <p>Para asegurar que las leyes de patentes se cumplan a la fuerza, la agroindustria desarrolló los GURTs (Tecnologías de Restricción de Uso Genético), popularmente conocidas como "Semillas Terminator". A través de ingeniería genética avanzada, estas corporaciones insertan secuencias de ADN que alteran la biología reproductiva de la planta. Cuando la semilla crece, produce frutos normales, pero las semillas dentro de esos frutos son estériles (no germinan). Es un candado biológico perfecto: aunque el campesino intente guardar la semilla violando el contrato de patente, la biología misma se lo impide, forzándolo inevitablemente a la tienda agrícola en la próxima siembra.</p>
+
+                <p>Pero el peligro no es solo económico, es ecológico y legal debido a la <span class="highlight">contaminación genética</span> cruzada. En la Vereda Pueblo Rico, el viento, los insectos y las abejas no entienden de linderos legales ni de patentes. El polen viaja. Si un gran hacendado siembra plantas patentadas y el viento lleva ese polen modificado a la finca tradicional vecina de Don Alirio, las flores criollas de Don Alirio serán polinizadas genéticamente. Cuando Don Alirio guarde sus semillas, estas contendrán, sin que él lo sepa, el gen patentado. Legalmente, la corporación dueña de la patente puede demandar a Don Alirio por "uso no autorizado" de su invención, a pesar de que fue la naturaleza quien cruzó las genéticas.</p>
+
+                <p>Frente a esto, la resistencia campesina es fuerte. En el Quindío, la defensa del territorio se organiza a través de los Bancos Comunitarios de Semillas. Estos son espacios donde las familias guardan, catalogan y comparten libremente sus semillas tradicionales. Son bóvedas de vida que garantizan la autonomía alimentaria. Entender que las leyes humanas no deben patentar ni monopolizar la base biológica de la existencia (cuyo principal componente químico es el agua H<sub>2</sub>O y las complejas cadenas de carbono) es el primer paso para proteger el Paisaje Cultural Cafetero de la dependencia total.</p>
+
+                <!-- ANIMACIÓN CANVAS (Simulación de polinización cruzada y contaminación legal) -->
+                <h3>Simulación: Contaminación Genética y Riesgo Legal</h3>
+                <p>Observa cómo el polen patentado (rojo) viaja impulsado por el viento hacia la planta tradicional (verde). Cuando se cruzan, la semilla resultante queda "atrapada" bajo propiedad legal privada (candado).</p>
+                <div class="canvas-container">
+                    <canvas id="simCanvas"></canvas>
+                </div>
+
+                <!-- ACTIVIDAD 3: ORDENAR LETRAS -->
+                <div class="game-container">
+                    <h3>Actividad 3: Concepto de Apropiación</h3>
+                    <p>Forma la palabra que describe la apropiación ilegal de conocimientos y recursos biológicos de las comunidades (mencionada en el texto):</p>
+                    <div class="draggable-area" id="drag-area-3"></div>
+                    <div class="drop-area" id="drop-area-3" data-word="BIOPIRATERIA" data-type="letters"></div>
+                    <div class="game-status" id="status-game-3"></div>
+                </div>
+
+                <!-- ACTIVIDAD 4: ORDENAR PALABRAS -->
+                <div class="game-container">
+                    <h3>Actividad 4: Síntesis Crítica</h3>
+                    <p>Ordena la frase que resume el impacto de las leyes descritas en el texto deductivo:</p>
+                    <div class="draggable-area" id="drag-area-4"></div>
+                    <div class="drop-area" id="drop-area-4" data-word="Las leyes de patentes privatizan la vida" data-type="words"></div>
+                    <div class="game-status" id="status-game-4"></div>
+                </div>
+
+                <!-- PAUSAS ACTIVAS 6-10 -->
+                <div class="pausa-activa">
+                    <h4>Pausas Activas (Cuaderno de Trabajo)</h4>
+                    <ul>
+                        <li><strong>6. Diagrama de flujo:</strong> Dibuja el proceso de polinización cruzada explicado en la animación.</li>
+                        <li><strong>7. Análisis matemático:</strong> Si un bulto de semilla tradicional cuesta $0 (se guarda) y un bulto de semilla patentada cuesta $150.000 COP, ¿cuánto dinero ahorraría un campesino de Pueblo Rico en 5 años de siembras anuales?</li>
+                        <li><strong>8. Opinión Crítica:</strong> Escribe 1 párrafo sobre por qué la tecnología "Terminator" es perjudicial para un pequeño productor.</li>
+                        <li><strong>9. Creatividad:</strong> Diseña un logo para el "Banco Comunitario de Semillas de Pueblo Rico".</li>
+                        <li><strong>10. Síntesis:</strong> Define en una frase qué es la UPOV.</li>
+                    </ul>
+                    <button class="btn-pausa" id="btn-pausa-2" onclick="togglePausa(2)">Marcar como Completado</button>
+                </div>
+            </section>
+
+            <!-- 5. EVALUACIÓN Y CIERRE -->
+            <section id="sec-evaluacion">
+                <h2>5. Taller Evaluativo Final</h2>
+                <p>Responde a conciencia. Las preguntas abiertas tienen un sistema de verificación de escritura. <strong>No puedes copiar y pegar</strong>, debes redactar con tus propias palabras basándote en la lectura.</p>
+                
+                <form id="form-evaluacion" onsubmit="event.preventDefault(); finalizarOVA();">
+                    
+                    <h3>Selección Múltiple</h3>
+                    <div class="question-block">
+                        <p>1. Según el texto, la "Biopiratería" ocurre cuando:</p>
+                        <label><input type="radio" name="eval_m1" value="a" required> a) Los campesinos intercambian semillas en la vereda.</label>
+                        <label><input type="radio" name="eval_m1" value="b" required> b) Entidades externas patentan y privatizan recursos biológicos adaptados por las comunidades locales.</label>
+                        <label><input type="radio" name="eval_m1" value="c" required> c) Se compran semillas en la tienda agrícola.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>2. ¿Qué son los GURTs o Semillas Terminator?</p>
+                        <label><input type="radio" name="eval_m2" value="a" required> a) Modificaciones genéticas que hacen que las semillas de la próxima generación sean estériles.</label>
+                        <label><input type="radio" name="eval_m2" value="b" required> b) Fertilizantes orgánicos de Quimbaya.</label>
+                        <label><input type="radio" name="eval_m2" value="c" required> c) Un tipo de café resistente a la sequía pero de libre uso.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>3. ¿Qué consecuencia legal directa enfrenta un agricultor si guarda semillas patentadas para la próxima cosecha?</p>
+                        <label><input type="radio" name="eval_m3" value="a" required> a) Recibe un subsidio del gobierno.</label>
+                        <label><input type="radio" name="eval_m3" value="b" required> b) Comete un delito al violar los derechos de propiedad intelectual de la corporación.</label>
+                        <label><input type="radio" name="eval_m3" value="c" required> c) Ninguna, porque la naturaleza es libre.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>4. ¿Cómo afecta la polinización cruzada (viento/abejas) a los agricultores tradicionales en el marco de las leyes de patentes?</p>
+                        <label><input type="radio" name="eval_m4" value="a" required> a) Los expone a demandas legales si sus cultivos se cruzan accidentalmente con polen modificado patentado.</label>
+                        <label><input type="radio" name="eval_m4" value="b" required> b) Mejora la calidad del café tradicional sin ningún riesgo legal.</label>
+                        <label><input type="radio" name="eval_m4" value="c" required> c) Elimina la broca del café permanentently.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>5. ¿Cuál es la estrategia de defensa mencionada para la Vereda Pueblo Rico?</p>
+                        <label><input type="radio" name="eval_m5" value="a" required> a) Comprar todas las patentes posibles.</label>
+                        <label><input type="radio" name="eval_m5" value="b" required> b) Dejar de cultivar café y cítricos.</label>
+                        <label><input type="radio" name="eval_m5" value="c" required> c) Organizar Bancos Comunitarios de Semillas.</label>
+                    </div>
+
+                    <h3>Preguntas Abiertas (Redacción Propia)</h3>
+                    <p style="font-size:0.8em; color:var(--rojo-cereza);">Atención: El sistema analiza la cadencia de tecleo para prevenir fraude por Copy-Paste o IA.</p>
+                    
+                    <div class="question-block">
+                        <label>6. Explica brevemente por qué patentar semillas amenaza el modelo del Paisaje Cultural Cafetero (PCC) en Quimbaya.</label>
+                        <textarea id="eval_o1" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o1"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>7. ¿Qué significa la "Soberanía Alimentaria" según lo leído en el texto inductivo?</label>
+                        <textarea id="eval_o2" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o2"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>8. ¿Por qué es injusta la Biopiratería con los campesinos que han conservado las semillas por generaciones?</label>
+                        <textarea id="eval_o3" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o3"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>9. ¿Cuál es el riesgo de la tecnología "Terminator" para la seguridad alimentaria de una vereda?</label>
+                        <textarea id="eval_o4" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o4"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>10. Conclusión personal: Según tú, ¿De quién es la naturaleza?</label>
+                        <textarea id="eval_o5" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o5"></div>
+                    </div>
+
+                    <button type="submit" class="btn">Finalizar y Evaluar</button>
+                </form>
+            </section>
+
+            <!-- 6. RESULTADOS Y DESCARGA -->
+            <section id="sec-resultados" style="display:none; text-align:center;">
+                <h2>Resultados y Ruta de Fortalecimiento</h2>
+                <div id="feedback-content" style="font-size: 1.2em; margin-bottom: 20px;"></div>
+                <div id="ruta-content" style="text-align: left; background:#e8f5e9; padding: 20px; border-radius:10px;"></div>
+                
+                <button class="btn" id="btn-descargar" onclick="descargarResultados()" style="margin-top: 30px; background-color: var(--cafe-oscuro);">
+                    Descargar Mi Reporte (.txt)
+                </button>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- =========================================
+         LÓGICA JAVASCRIPT (VANILLA)
+         ========================================= -->
+    <script>
+        // --- 1. ESTADO GLOBAL Y LOCALSTORAGE ---
+        const LOCAL_KEY = 'ova_quimbaya_patentes_state';
+        let state = {
+            apellidos: '',
+            nombres: '',
+            points: 0,
+            progress: 0,
+            unlocked: [],
+            answers: {}, // Para presaberes e ICFES
+            texts: {},   // Para inputs de texto
+            pausas: [false, false],
+            gamesDone: []
+        };
+
+        // --- 2. INICIALIZACIÓN Y LOGIN ---
+        document.addEventListener("DOMContentLoaded", () => {
+            loadState();
+            configurarAntiFraude();
+            initDragAndDrop();
+            
+            // Iniciar simulacion Canvas (Loop constante)
+            initCanvasSimulation();
+        });
+
+        document.getElementById('btn-iniciar').addEventListener('click', () => {
+            const apellidos = document.getElementById('inp-apellidos').value.trim();
+            const nombres = document.getElementById('inp-nombres').value.trim();
+            
+            if(apellidos === '' || nombres === '') {
+                alert("Por favor ingresa tus Nombres y Apellidos para entrar a la finca.");
+                return;
+            }
+
+            state.apellidos = apellidos;
+            state.nombres = nombres;
+            saveState();
+            mostrarApp();
+        });
+
+        function loadState() {
+            const saved = localStorage.getItem(LOCAL_KEY);
+            if(saved) {
+                state = JSON.parse(saved);
+                if(state.nombres !== '') {
+                    mostrarApp();
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(state));
+            updateUI();
+        }
+
+        function mostrarApp() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                restaurarDOM();
+                updateUI();
+            }, 500);
+        }
+
+        function updateUI() {
+            document.getElementById('display-name').textContent = `${state.nombres} ${state.apellidos}`;
+            document.getElementById('display-points').textContent = state.points;
+            
+            // Calc Progress (Aprox: 4 juegos + 2 pausas + 4 forms (pre1,2,3,icfes)) = 10 items
+            let items = state.gamesDone.length + state.pausas.filter(p=>p).length + Object.keys(state.answers).length;
+            let percent = Math.min((items / 10) * 100, 100);
+            document.getElementById('progress-bar').style.width = percent + '%';
+
+            // Unlocks
+            if(state.points >= 2 && !state.unlocked.includes('cafe')) state.unlocked.push('cafe');
+            if(state.points >= 4 && !state.unlocked.includes('naranja')) state.unlocked.push('naranja');
+
+            if(state.unlocked.includes('cafe')) document.getElementById('icon-cafe').classList.add('unlocked');
+            if(state.unlocked.includes('naranja')) document.getElementById('icon-naranja').classList.add('unlocked');
+        }
+
+        function restaurarDOM() {
+            // Restaurar radios
+            for(let key in state.answers) {
+                let radio = document.querySelector(`input[name="${key}"][value="${state.answers[key]}"]`);
+                if(radio) radio.checked = true;
+            }
+            // Restaurar textos (solo para retener en recarga antes del final)
+            for(let key in state.texts) {
+                let t = document.getElementById(key);
+                if(t) t.value = state.texts[key];
+            }
+            // Restaurar botones pausa
+            if(state.pausas[0]) {
+                let b = document.getElementById('btn-pausa-1');
+                b.classList.add('done'); b.textContent = "Completado ✓";
+            }
+            if(state.pausas[1]) {
+                let b = document.getElementById('btn-pausa-2');
+                b.classList.add('done'); b.textContent = "Completado ✓";
+            }
+            // Ocultar juegos ya hechos (opcional, o dejarlos armados. Aquí los marcamos)
+            state.gamesDone.forEach(gId => {
+                let st = document.getElementById(`status-game-${gId}`);
+                if(st) st.textContent = "¡Completado! +1 Punto";
+                let dropArea = document.getElementById(`drop-area-${gId}`);
+                if(dropArea) dropArea.style.pointerEvents = 'none'; // Deshabilitar
+            });
+        }
+
+        function saveAnswer(key, val) {
+            state.answers[key] = val;
+            saveState();
+        }
+
+        function togglePausa(index) {
+            let i = index - 1;
+            if(!state.pausas[i]) {
+                state.pausas[i] = true;
+                let b = document.getElementById(`btn-pausa-${index}`);
+                b.classList.add('done');
+                b.textContent = "Completado ✓";
+                saveState();
+            }
+        }
+
+        // --- 3. SISTEMA ANTI-FRAUDE (TEXTAREAS) ---
+        function configurarAntiFraude() {
+            const textareas = document.querySelectorAll('.anti-fraud');
+            
+            textareas.forEach(ta => {
+                // Prevenir pegado, soltar y menú contextual
+                ta.addEventListener('paste', e => { e.preventDefault(); alertFraud(ta, "¡Pegado bloqueado! Escribe con tus palabras."); });
+                ta.addEventListener('drop', e => { e.preventDefault(); alertFraud(ta, "¡Arrastre de texto bloqueado!"); });
+                ta.addEventListener('contextmenu', e => e.preventDefault());
+
+                // Analizador de Cadencia
+                let keyTimes = [];
+                ta.addEventListener('keydown', e => {
+                    // Bloqueos de teclado (Ctrl+V, Cmd+V)
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+                        e.preventDefault();
+                        alertFraud(ta, "Atajo de pegado bloqueado.");
+                        return;
+                    }
+
+                    // Ignorar teclas de control
+                    if(e.key.length > 1) return; 
+
+                    const now = Date.now();
+                    keyTimes.push(now);
+                    if(keyTimes.length > 5) keyTimes.shift();
+
+                    if(keyTimes.length === 5) {
+                        let totalDiff = 0;
+                        for(let i=1; i<keyTimes.length; i++){
+                            totalDiff += (keyTimes[i] - keyTimes[i-1]);
+                        }
+                        let avg = totalDiff / 4;
+                        // Si escribe 5 teclas en promedio menos de 40ms c/u (imposible para un humano escribiendo normal)
+                        if(avg < 40) {
+                            ta.value = "";
+                            keyTimes = [];
+                            alertFraud(ta, "¡Fraude detectado! Velocidad inhumana (Posible bot o copy-paste externo). Texto borrado.");
+                            e.preventDefault();
+                        }
+                    }
+                });
+
+                ta.addEventListener('input', () => {
+                    state.texts[ta.id] = ta.value;
+                    saveState();
+                });
+            });
+        }
+
+        function alertFraud(element, msg) {
+            let alertBox = document.getElementById('alert-' + element.id);
+            alertBox.textContent = msg;
+            alertBox.style.display = 'block';
+            setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
+        }
+
+        // --- 4. SISTEMA DRAG & DROP (VAINILLA) ---
+        function initDragAndDrop() {
+            const games = [
+                {id: 1, type: 'letters', word: 'PATENTE'},
+                {id: 2, type: 'words', word: 'La soberanía alimentaria protege nuestras semillas'},
+                {id: 3, type: 'letters', word: 'BIOPIRATERIA'},
+                {id: 4, type: 'words', word: 'Las leyes de patentes privatizan la vida'}
+            ];
+
+            games.forEach(game => {
+                if(state.gamesDone.includes(game.id)) return; // Ya resuelto en sesión anterior
+
+                let items = [];
+                if(game.type === 'letters') items = game.word.split('');
+                if(game.type === 'words') items = game.word.split(' ');
+                
+                // Shuffle Array
+                let shuffled = [...items].sort(() => Math.random() - 0.5);
+
+                const dragArea = document.getElementById(`drag-area-${game.id}`);
+                const dropArea = document.getElementById(`drop-area-${game.id}`);
+
+                // Generar Draggables
+                shuffled.forEach((item, index) => {
+                    let div = document.createElement('div');
+                    div.className = `drag-item ${game.type === 'letters' ? 'letter' : ''}`;
+                    div.draggable = true;
+                    div.id = `drag-${game.id}-${index}`;
+                    div.textContent = item;
+                    div.dataset.val = item;
+                    
+                    div.addEventListener('dragstart', dragStart);
+                    dragArea.appendChild(div);
+                });
+
+                // Generar Slots
+                items.forEach((item, index) => {
+                    let slot = document.createElement('div');
+                    slot.className = `drop-slot ${game.type === 'letters' ? 'letter-slot' : ''}`;
+                    slot.dataset.targetId = game.id;
+                    
+                    slot.addEventListener('dragover', dragOver);
+                    slot.addEventListener('dragenter', dragEnter);
+                    slot.addEventListener('dragleave', dragLeave);
+                    slot.addEventListener('drop', dropEvent);
+                    
+                    dropArea.appendChild(slot);
+                });
+            });
+        }
+
+        let draggedElement = null;
+
+        function dragStart(e) {
+            draggedElement = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', e.target.id);
+        }
+
+        function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+        function dragEnter(e) { e.preventDefault(); this.classList.add('hovered'); }
+        function dragLeave(e) { this.classList.remove('hovered'); }
+
+        function dropEvent(e) {
+            e.preventDefault();
+            this.classList.remove('hovered');
+            
+            // Si el slot ya tiene un hijo, devolver el hijo viejo al drag-area
+            if(this.children.length > 0) {
+                let oldChild = this.children[0];
+                let gameId = this.dataset.targetId;
+                document.getElementById(`drag-area-${gameId}`).appendChild(oldChild);
+            }
+            
+            this.appendChild(draggedElement);
+            checkGameCompletion(this.dataset.targetId);
+        }
+
+        function checkGameCompletion(gameId) {
+            const dropArea = document.getElementById(`drop-area-${gameId}`);
+            const slots = dropArea.querySelectorAll('.drop-slot');
+            const targetWord = dropArea.dataset.word;
+            const type = dropArea.dataset.type;
+            
+            let currentStr = '';
+            let allFilled = true;
+
+            slots.forEach(slot => {
+                if(slot.children.length === 0) {
+                    allFilled = false;
+                } else {
+                    currentStr += slot.children[0].dataset.val + (type==='words' ? ' ' : '');
+                }
+            });
+
+            currentStr = currentStr.trim();
+
+            if(allFilled) {
+                if(currentStr === targetWord) {
+                    // Ganó
+                    document.getElementById(`status-game-${gameId}`).textContent = "¡Correcto! +1 Punto Estrella";
+                    document.getElementById(`status-game-${gameId}`).style.color = "var(--verde-hoja)";
+                    dropArea.style.pointerEvents = 'none'; // Congelar
+                    
+                    state.points += 1;
+                    state.gamesDone.push(parseInt(gameId));
+                    saveState();
+                } else {
+                    document.getElementById(`status-game-${gameId}`).textContent = "Orden incorrecto, inténtalo de nuevo.";
+                }
+            }
+        }
+
+        // --- 5. ANIMACIÓN HTML5 CANVAS (60 FPS) ---
+        function initCanvasSimulation() {
+            const canvas = document.getElementById('simCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Adaptar tamaño
+            function resizeCanvas() {
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = 400; // Fixed height
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            // Clases para la animación
+            class Plant {
+                constructor(x, isGM) {
+                    this.x = x;
+                    this.isGM = isGM;
+                }
+                draw(ctx) {
+                    // Tallo
+                    ctx.fillStyle = '#4A3B32';
+                    ctx.fillRect(this.x - 5, 250, 10, 150);
+                    
+                    // Hojas/Copa
+                    ctx.fillStyle = this.isGM ? '#82B366' : '#2E5D3A';
+                    ctx.beginPath();
+                    ctx.arc(this.x, 200, 60, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(this.x - 30, 230, 40, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(this.x + 30, 230, 40, 0, Math.PI*2);
+                    ctx.fill();
+
+                    // Etiqueta
+                    ctx.fillStyle = '#333';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(this.isGM ? "Patentada (Propiedad)" : "Tradicional (Libre)", this.x, 380);
+                }
+            }
+
+            class Pollen {
+                constructor(startX, startY) {
+                    this.x = startX;
+                    this.y = startY;
+                    this.vx = - (Math.random() * 2 + 1); // Viento hacia la izquierda
+                    this.vy = (Math.random() - 0.5) * 2;
+                    this.active = true;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    // Reset if out of bounds
+                    if(this.x < 0) this.active = false;
+                }
+                draw(ctx) {
+                    ctx.fillStyle = '#C0392B'; // Polen rojo peligro
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 3, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            }
+
+            let plantTrad = new Plant(canvas.width * 0.25, false);
+            let plantGM = new Plant(canvas.width * 0.75, true);
+            let particles = [];
+            let contaminationLevel = 0;
+
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Dibujar Viento (Líneas sutiles)
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                let windOffset = (Date.now() / 10) % canvas.width;
+                ctx.moveTo(canvas.width - windOffset, 100); ctx.lineTo(canvas.width - windOffset - 100, 100);
+                ctx.moveTo(canvas.width - windOffset + 200, 150); ctx.lineTo(canvas.width - windOffset + 100, 150);
+                ctx.stroke();
+
+                // Plantas
+                plantTrad.x = canvas.width * 0.25;
+                plantGM.x = canvas.width * 0.75;
+                plantTrad.draw(ctx);
+                plantGM.draw(ctx);
+
+                // Emisión de polen (Aprox 1 por frame)
+                if(Math.random() < 0.1) {
+                    particles.push(new Pollen(plantGM.x + (Math.random()*60-30), 200 + (Math.random()*60-30)));
+                }
+
+                // Update y draw polen
+                for(let i=particles.length-1; i>=0; i--) {
+                    let p = particles[i];
+                    p.update();
+                    p.draw(ctx);
+                    
+                    // Colisión con planta tradicional
+                    let dist = Math.hypot(p.x - plantTrad.x, p.y - 200);
+                    if(dist < 60 && p.active) {
+                        p.active = false;
+                        contaminationLevel += 1;
+                    }
+                    if(!p.active) particles.splice(i, 1);
+                }
+
+                // Mostrar "Candados" según contaminación
+                if(contaminationLevel > 50) {
+                    ctx.fillStyle = '#C0392B';
+                    ctx.font = '24px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText("🔒", plantTrad.x, 200);
+                    ctx.fillStyle = '#333';
+                    ctx.font = '14px Arial';
+                    ctx.fillText("Semilla contaminada y privatizada", plantTrad.x, 150);
+                }
+
+                // Reset contaminación periódico para loop
+                if(contaminationLevel > 200) contaminationLevel = 0;
+
+                requestAnimationFrame(loop);
+            }
+            
+            loop();
+        }
+
+        // --- 6. EVALUACIÓN FINAL Y EXPORTACIÓN ---
+        function finalizarOVA() {
+            // Recoger respuestas selección múltiple eval
+            let m1 = document.querySelector('input[name="eval_m1"]:checked');
+            let m2 = document.querySelector('input[name="eval_m2"]:checked');
+            let m3 = document.querySelector('input[name="eval_m3"]:checked');
+            let m4 = document.querySelector('input[name="eval_m4"]:checked');
+            let m5 = document.querySelector('input[name="eval_m5"]:checked');
+
+            if(!m1 || !m2 || !m3 || !m4 || !m5) {
+                alert("Debes responder todas las preguntas de selección múltiple.");
+                return;
+            }
+
+            // Calificación rápida MCQ (b, a, b, a, c)
+            let correctas = 0;
+            if(m1.value === 'b') correctas++;
+            if(m2.value === 'a') correctas++;
+            if(m3.value === 'b') correctas++;
+            if(m4.value === 'a') correctas++;
+            if(m5.value === 'c') correctas++;
+
+            let notaFinal = (correctas / 5) * 5.0; // Escala 0-5
+
+            // Ocultar form, mostrar resultados
+            document.getElementById('form-evaluacion').style.display = 'none';
+            document.getElementById('sec-resultados').style.display = 'block';
+
+            let feed = document.getElementById('feedback-content');
+            let ruta = document.getElementById('ruta-content');
+
+            feed.innerHTML = `<strong>Nota Cuestionario:</strong> ${notaFinal.toFixed(1)} / 5.0<br>
+                              <strong>Puntos Gamificación:</strong> ${state.points} / 5<br>`;
+
+            // Lógica de Ruta de Fortalecimiento
+            let sugerencias = "<h3>Ruta de Fortalecimiento Personalizada:</h3><ul>";
+            if(notaFinal === 5.0) {
+                sugerencias += "<li>¡Excelente! Has comprendido a la perfección los riesgos de las patentes sobre la vida. Tu misión ahora es compartir este conocimiento en la vereda.</li>";
+            } else {
+                if(m1.value !== 'b') sugerencias += "<li><strong>Repasa:</strong> El concepto de Biopiratería en la Sección 4. Recuerda que es un robo de saberes.</li>";
+                if(m2.value !== 'a') sugerencias += "<li><strong>Repasa:</strong> Qué son las semillas Terminator (GURTs) en la Sección 4. Son tecnología de esterilización.</li>";
+                if(m3.value !== 'b') sugerencias += "<li><strong>Repasa:</strong> La Sección 2 sobre el contrato legal que rompe la tradición de guardar semilla.</li>";
+                if(m4.value !== 'a') sugerencias += "<li><strong>Repasa:</strong> La animación interactiva sobre la contaminación genética y el viento.</li>";
+                if(m5.value !== 'c') sugerencias += "<li><strong>Repasa:</strong> El papel de los Bancos Comunitarios de Semillas como defensa del territorio.</li>";
+            }
+            sugerencias += "</ul>";
+            ruta.innerHTML = sugerencias;
+
+            // Guardar para exportación
+            state.notaFinal = notaFinal;
+            saveState();
+        }
+
+        function descargarResultados() {
+            // Recoger data abierta
+            let o1 = document.getElementById('eval_o1').value.replace(/\n/g, ' ');
+            let o2 = document.getElementById('eval_o2').value.replace(/\n/g, ' ');
+            let o3 = document.getElementById('eval_o3').value.replace(/\n/g, ' ');
+            let o4 = document.getElementById('eval_o4').value.replace(/\n/g, ' ');
+            let o5 = document.getElementById('eval_o5').value.replace(/\n/g, ' ');
+
+            let content = `================================================
+REPORTE DE ESTUDIANTE: OVA "¿De quién es la Naturaleza?"
+================================================
+Estudiante: ${state.nombres} ${state.apellidos}
+Fecha: ${new Date().toLocaleDateString()}
+------------------------------------------------
+GAMIFICACIÓN:
+Puntos Estrella (Minijuegos): ${state.points} / 5
+------------------------------------------------
+NOTA CUESTIONARIO (Selección Múltiple): ${state.notaFinal} / 5.0
+------------------------------------------------
+RESPUESTAS ABIERTAS (Análisis Anti-Fraude Superado):
+P6 (PCC y Patentes): ${o1}
+P7 (Soberanía Alimentaria): ${o2}
+P8 (Biopiratería e Injusticia): ${o3}
+P9 (Riesgo Tecnología Terminator): ${o4}
+P10 (Conclusión Personal): ${o5}
+================================================
+* Documento generado automáticamente con integridad verificada. *`;
+
+            let blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement("a");
+            a.href = url;
+            a.download = `Reporte_${state.apellidos}_${state.nombres}_Quimbaya.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+</html>

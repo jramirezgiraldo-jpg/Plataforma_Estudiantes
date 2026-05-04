@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: La Célula como Finca - Quimbaya</title>
+    <style>
+        /* =========================================
+           VARIABLES Y DISEÑO BASE (PCC)
+           ========================================= */
+        :root {
+            --cafe-oscuro: #3E2723;
+            --cafe-claro: #8D6E63;
+            --verde-quindio: #2E7D32;
+            --verde-hoja: #81C784;
+            --naranja-citrico: #E65100;
+            --crema-fondo: #F1F8E9;
+            --blanco: #FFFFFF;
+            --gris-texto: #37474F;
+            --oro-au: #FFD700;
+            --plata-ag: #C0C0C0;
+            --hierro-fe: #A19D94;
+            --rojo-error: #D32F2F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--crema-fondo);
+            color: var(--gris-texto);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* =========================================
+           SISTEMA DE AUTENTICACIÓN
+           ========================================= */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, var(--verde-quindio), var(--cafe-oscuro));
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 0.6s ease;
+        }
+
+        .login-box {
+            background: var(--blanco); padding: 40px; border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4); text-align: center; max-width: 450px; width: 90%;
+            border-top: 6px solid var(--naranja-citrico);
+        }
+
+        .login-box h1 { color: var(--cafe-oscuro); margin-bottom: 10px; font-size: 1.8em; }
+        .login-box p { font-size: 0.95em; margin-bottom: 25px; color: #555; }
+
+        .input-group { margin-bottom: 18px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 6px; font-weight: 700; color: var(--cafe-claro); }
+        .input-group input {
+            width: 100%; padding: 12px; border: 2px solid #C8E6C9; border-radius: 8px; font-size: 1em;
+        }
+        .input-group input:focus { border-color: var(--naranja-citrico); outline: none; }
+
+        .btn {
+            background-color: var(--naranja-citrico); color: var(--blanco); border: none;
+            padding: 12px 25px; border-radius: 8px; font-size: 1.1em; cursor: pointer;
+            font-weight: bold; transition: transform 0.2s; width: 100%;
+        }
+        .btn:hover { background-color: #BF360C; transform: scale(1.02); }
+        .btn:disabled { background-color: #B0BEC5; cursor: not-allowed; transform: none; }
+
+        /* =========================================
+           INTERFAZ PRINCIPAL Y GAMIFICACIÓN
+           ========================================= */
+        #main-app { display: none; }
+
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; background: var(--blanco);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1); z-index: 500; padding: 12px 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 4px solid var(--verde-quindio);
+        }
+
+        .user-badge { font-weight: bold; color: var(--cafe-oscuro); display: flex; align-items: center; gap: 10px; font-size: 1.1em;}
+        
+        .score-board {
+            display: flex; align-items: center; gap: 15px; background: var(--verde-quindio);
+            color: white; padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 1.2em;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        main { max-width: 800px; margin: 90px auto 50px auto; padding: 20px; }
+
+        /* =========================================
+           TEXTOS PEDAGÓGICOS
+           ========================================= */
+        .content-section {
+            background: var(--blanco); padding: 30px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 40px;
+            border-left: 6px solid var(--cafe-claro);
+        }
+
+        h2 { color: var(--verde-quindio); border-bottom: 2px solid var(--naranja-citrico); padding-bottom: 8px; margin-bottom: 20px; }
+        p { margin-bottom: 15px; text-align: justify; font-size: 1.05em; }
+        .highlight { background-color: #FFF3E0; padding: 2px 5px; font-weight: bold; color: var(--naranja-citrico); border-radius: 3px;}
+
+        /* =========================================
+           DISEÑO DE ACTIVIDADES (JUEGOS)
+           ========================================= */
+        .activity-card {
+            background: #FAFAFA; border: 2px solid #E0E0E0; border-radius: 10px;
+            padding: 20px; margin: 25px 0; position: relative;
+            transition: border-color 0.3s;
+        }
+        .activity-card.solved { border-color: var(--verde-quindio); background: #F1F8E9; }
+        .activity-card.failed { border-color: var(--rojo-error); background: #FFEBEE; }
+
+        .act-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .act-type { font-size: 0.85em; font-weight: bold; color: var(--blanco); background: var(--cafe-claro); padding: 4px 10px; border-radius: 12px; text-transform: uppercase;}
+        .act-attempts { font-size: 0.9em; font-weight: bold; color: var(--naranja-citrico); }
+        
+        /* Contenedor Anagrama */
+        .anagram-display {
+            font-size: 1.8em; font-weight: bold; color: var(--cafe-oscuro);
+            text-align: center; letter-spacing: 5px; margin: 15px 0;
+            background: #ECEFF1; padding: 15px; border-radius: 8px; font-family: monospace;
+        }
+        
+        .answer-input {
+            width: 100%; padding: 12px; font-size: 1.1em; border: 2px solid #B0BEC5; border-radius: 6px;
+            text-align: center; text-transform: uppercase; margin-bottom: 10px;
+        }
+
+        /* Contenedor Ordenar Palabras */
+        .word-bank {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 15px 0; min-height: 45px;
+        }
+        .word-btn {
+            background: var(--verde-hoja); color: var(--cafe-oscuro); border: none; padding: 8px 15px;
+            border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.1s;
+        }
+        .word-btn:active { transform: scale(0.95); }
+        
+        .sentence-builder {
+            display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start;
+            background: #ECEFF1; padding: 15px; border-radius: 8px; min-height: 60px; margin-bottom: 15px;
+            border: 2px dashed #90A4AE;
+        }
+        .word-btn.selected { background: var(--naranja-citrico); color: var(--blanco); }
+
+        .btn-clear { background: #90A4AE; margin-top: 5px; width: auto; padding: 8px 15px;}
+
+        /* Recompensas (Tabla Periódica) */
+        .medal-badge {
+            position: absolute; top: -15px; right: -15px; width: 50px; height: 50px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.2em; color: var(--cafe-oscuro);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3); border: 3px solid white; display: none;
+            flex-direction: column; line-height: 1;
+        }
+        .medal-badge span { font-size: 0.4em; }
+        .medal-au { background: var(--oro-au); display: flex; }
+        .medal-ag { background: var(--plata-ag); display: flex; }
+        .medal-fe { background: var(--hierro-fe); color: white; display: flex; }
+
+        .feedback-msg { margin-top: 10px; font-weight: bold; text-align: center; font-size: 1.1em;}
+
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         PANTALLA DE INGRESO
+         ========================================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>La Finca Microscópica</h1>
+            <p>Laboratorio de Biología - Grado 6°<br>Vereda Pueblo Rico, Quimbaya</p>
+            <div class="input-group">
+                <label for="inp-nombre">Nombre del Estudiante:</label>
+                <input type="text" id="inp-nombre" placeholder="Ej: Juan">
+            </div>
+            <div class="input-group">
+                <label for="inp-apellido">Apellido del Estudiante:</label>
+                <input type="text" id="inp-apellido" placeholder="Ej: Pérez">
+            </div>
+            <button class="btn" id="btn-iniciar">Ingresar a la Finca</button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         INTERFAZ PRINCIPAL
+         ========================================= -->
+    <div id="main-app">
+        <header>
+            <div class="user-badge">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--cafe-oscuro)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span id="display-name">Estudiante</span>
+            </div>
+            <div class="score-board">
+                <span>Puntaje:</span>
+                <span id="display-score">0</span>
+            </div>
+        </header>
+
+        <main id="content-container">
+            <!-- El contenido y los 20 juegos se generarán dinámicamente aquí mediante JS para mantener el código HTML limpio y ordenado -->
+        </main>
+    </div>
+
+    <!-- =========================================
+         LÓGICA JAVASCRIPT (VANILLA)
+         ========================================= -->
+    <script>
+        // --- 1. DATOS PEDAGÓGICOS (20 ACTIVIDADES) ---
+        // Secciones de contenido entrelazadas con las actividades
+        const courseContent = [
+            {
+                type: 'text',
+                title: '1. La Célula: Una Finca en Miniatura',
+                content: `En la Vereda Pueblo Rico, Quimbaya, todos conocemos cómo funciona una finca cafetera. Tiene un patrón que da las órdenes, un beneficiadero que produce energía, cafetales que fabrican el producto y una cerca que la protege. En la biología de grado 6, aprenderemos que todo ser vivo (tú, las vacas, las matas de café) está hecho de millones de fincas diminutas llamadas <span class="highlight">Células</span>.<br><br>
+                En esta finca microscópica, el <strong>Núcleo</strong> es como el patrón de la finca: guarda la información (ADN) y da las órdenes. Las <strong>Mitocondrias</strong> son el beneficiadero: transforman los nutrientes en energía. La <strong>Pared Celular</strong> (en las plantas) es como una cerca de madera gruesa que le da fuerza al árbol de café para que crezca alto hacia el sol.`
+            },
+            { type: 'anagram', id: 'a1', answer: 'CELULA', hint: 'La finca microscópica que forma la vida.' },
+            { type: 'anagram', id: 'a2', answer: 'NUCLEO', hint: 'El patrón que guarda las instrucciones y da las órdenes.' },
+            { type: 'sentence', id: 's1', answer: 'La célula es la unidad básica de la vida', hint: 'Concepto principal de biología.' },
+            { type: 'sentence', id: 's2', answer: 'El núcleo guarda la información de la planta', hint: 'Función del centro de mando.' },
+            { type: 'anagram', id: 'a3', answer: 'PARED', hint: 'La cerca que le da fuerza a la célula vegetal.' },
+            
+            {
+                type: 'text',
+                title: '2. La Membrana: Las Puertas de la Finca',
+                content: `Toda finca necesita controlar quién entra y quién sale. No queremos que entren plagas, pero sí necesitamos que entre el abono. En la célula, la encargada de esta vigilancia es la <span class="highlight">Membrana Plasmática</span>. Actúa como los portones y los perros guardianes de la finca.<br><br>
+                La membrana es semipermeable, lo que significa que deja pasar algunas cosas (como el agua y nutrientes) y bloquea otras (como toxinas). Este control estricto es lo que permite que la célula mantenga su <span class="highlight">Equilibrio Interno</span> (Homeostasis). Sin la membrana, la célula se inundaría o se secaría y moriría.`
+            },
+            { type: 'anagram', id: 'a4', answer: 'MEMBRANA', hint: 'La puerta vigilante de la célula.' },
+            { type: 'sentence', id: 's3', answer: 'La membrana plasmática controla qué entra y sale', hint: 'La función de vigilancia.' },
+            { type: 'sentence', id: 's4', answer: 'La membrana mantiene el equilibrio interno de la célula', hint: 'La meta de controlar las puertas.' },
+            { type: 'anagram', id: 'a5', answer: 'EQUILIBRIO', hint: 'Estado de paz y salud interna de la célula.' },
+            { type: 'sentence', id: 's5', answer: 'Sin la membrana la célula se secaría y moriría', hint: 'El riesgo de no tener puertas.' },
+
+            {
+                type: 'text',
+                title: '3. Transporte: Ósmosis en la Cocina',
+                content: `¿Alguna vez has visto a tus abuelos remojar frijoles de un día para otro en la cocina? Los frijoles secos se hinchan. Este es un ejemplo perfecto de <span class="highlight">Ósmosis</span>, un tipo especial de transporte en la célula.<br><br>
+                La Ósmosis es el viaje del <strong>Agua</strong> a través de la membrana. El agua es muy inteligente: siempre viaja hacia donde hay más partículas sólidas concentradas (llamadas <strong>Solutos</strong>, como sales o azúcares), con el fin de aguarlas y buscar el equilibrio. Si echas abono (soluto) a la tierra del café, las raíces de la planta usan la ósmosis para absorber el agua del suelo hacia su interior, hidratando los granos de café.`
+            },
+            { type: 'anagram', id: 'a6', answer: 'OSMOSIS', hint: 'El viaje del agua a través de la membrana.' },
+            { type: 'anagram', id: 'a7', answer: 'AGUA', hint: 'El líquido vital que viaja en la ósmosis.' },
+            { type: 'sentence', id: 's6', answer: 'La ósmosis es el paso del agua por la membrana', hint: 'Definición de ósmosis.' },
+            { type: 'anagram', id: 'a8', answer: 'SOLUTO', hint: 'Las partículas concentradas, como el azúcar o la sal.' },
+            { type: 'sentence', id: 's7', answer: 'El agua viaja hacia donde hay más solutos concentrados', hint: 'La regla de oro del agua.' },
+            
+            {
+                type: 'text',
+                title: '4. El Trabajo en Equipo',
+                content: `La próxima vez que camines por un cafetal en Pueblo Rico, recuerda que debajo de esas hojas verdes, millones de células están trabajando juntas. Las mitocondrias producen <strong>Energía</strong>, la membrana permite la <strong>Entrada</strong> de nutrientes mediante el <strong>Transporte</strong>, y todo el sistema opera en perfecta armonía. ¡La biología ocurre en cada rincón de nuestra vereda!`
+            },
+            { type: 'anagram', id: 'a9', answer: 'ENERGIA', hint: 'Lo que produce la mitocondria para trabajar.' },
+            { type: 'sentence', id: 's8', answer: 'En la cocina la ósmosis hincha los granos secos', hint: 'El ejemplo práctico del agua.' },
+            { type: 'sentence', id: 's9', answer: 'Las plantas de café absorben agua del suelo', hint: 'Cómo se hidrata la finca.' },
+            { type: 'anagram', id: 'a10', answer: 'TRANSPORTE', hint: 'El movimiento de sustancias hacia adentro o afuera.' },
+            { type: 'sentence', id: 's10', answer: 'El equilibrio interno permite que la célula sobreviva sana', hint: 'La conclusión de una finca bien administrada.' }
+        ];
+
+        // --- 2. ESTADO GLOBAL Y LOCALSTORAGE ---
+        const LOCAL_KEY = 'ova_quimbaya_celula_g6_state';
+        let gameState = {
+            nombre: '',
+            apellido: '',
+            score: 0,
+            activities: {} // Guarda el estado de las 20 actividades
+        };
+
+        // --- 3. ALGORITMOS DE MEZCLA (FISHER-YATES) ---
+        
+        // Desordena Letras (Asegura que quede desordenado y con guiones explícitos A-M-R-...)
+        function shuffleLetters(word) {
+            let arr = word.split('');
+            let shuffled;
+            // Algoritmo Fisher-Yates
+            do {
+                shuffled = [...arr];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+            } while (shuffled.join('') === word && word.length > 2); // Evita entregar la palabra resuelta
+            
+            return shuffled.join('-');
+        }
+
+        // Desordena Palabras de una frase
+        function shuffleWords(sentence) {
+            let arr = sentence.split(' ');
+            let shuffled;
+            do {
+                shuffled = [...arr];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+            } while (shuffled.join(' ') === sentence && arr.length > 2);
+            
+            return shuffled;
+        }
+
+        // --- 4. RENDERIZADO DE LA INTERFAZ ---
+        document.addEventListener("DOMContentLoaded", () => {
+            configurarLogin();
+            loadState();
+        });
+
+        function configurarLogin() {
+            document.getElementById('btn-iniciar').addEventListener('click', () => {
+                const nombre = document.getElementById('inp-nombre').value.trim();
+                const apellido = document.getElementById('inp-apellido').value.trim();
+                
+                if (nombre === '' || apellido === '') {
+                    alert("Por favor, ingresa tu Nombre y Apellido para comenzar.");
+                    return;
+                }
+                gameState.nombre = nombre;
+                gameState.apellido = apellido;
+                saveState();
+                mostrarApp();
+            });
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(LOCAL_KEY);
+            if (saved) {
+                gameState = JSON.parse(saved);
+                if (gameState.nombre !== '') {
+                    mostrarApp();
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(gameState));
+            updateHeader();
+        }
+
+        function mostrarApp() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                updateHeader();
+                renderContent();
+            }, 500);
+        }
+
+        function updateHeader() {
+            document.getElementById('display-name').textContent = `${gameState.nombre} ${gameState.apellido}`;
+            document.getElementById('display-score').textContent = gameState.score;
+        }
+
+        // --- 5. GENERACIÓN DINÁMICA DE LAS 20 ACTIVIDADES ---
+        function renderContent() {
+            const container = document.getElementById('content-container');
+            container.innerHTML = ''; // Limpiar
+
+            let anagramCount = 1;
+            let sentenceCount = 1;
+
+            courseContent.forEach(item => {
+                if (item.type === 'text') {
+                    // Renderizar Textos
+                    const div = document.createElement('div');
+                    div.className = 'content-section';
+                    div.innerHTML = `<h2>${item.title}</h2><p>${item.content}</p>`;
+                    container.appendChild(div);
+                } 
+                else if (item.type === 'anagram') {
+                    // Renderizar Juego Anagrama
+                    const div = createAnagramUI(item, anagramCount);
+                    container.appendChild(div);
+                    anagramCount++;
+                }
+                else if (item.type === 'sentence') {
+                    // Renderizar Juego Ordenar Frase
+                    const div = createSentenceUI(item, sentenceCount);
+                    container.appendChild(div);
+                    sentenceCount++;
+                }
+            });
+
+            // Configurar Prevención Anti-Fraude en los inputs generados
+            configurarAntiFraudeInputs();
+        }
+
+        function getActState(id) {
+            if (!gameState.activities[id]) {
+                gameState.activities[id] = { attempts: 0, solved: false, medal: null };
+            }
+            return gameState.activities[id];
+        }
+
+        function getMedalHTML(medal) {
+            if (!medal || medal === 'Failed') return '';
+            let symbol = medal === 'Au' ? 'Au' : (medal === 'Ag' ? 'Ag' : 'Fe');
+            let text = medal === 'Au' ? 'Oro' : (medal === 'Ag' ? 'Plata' : 'Hierro');
+            return `<div class="medal-badge medal-${medal.toLowerCase()}">${symbol}<br><span>${text}</span></div>`;
+        }
+
+        // --- 5.1 CONSTRUCTOR ANAGRAMAS ---
+        function createAnagramUI(item, index) {
+            const state = getActState(item.id);
+            const div = document.createElement('div');
+            
+            let statusClass = state.solved ? (state.medal === 'Failed' ? 'failed' : 'solved') : '';
+            div.className = `activity-card ${statusClass}`;
+            div.id = `card-${item.id}`;
+
+            let displayWord = state.solved && state.medal !== 'Failed' ? item.answer.split('').join('-') : shuffleLetters(item.answer);
+            
+            let attemptsLeft = 3 - state.attempts;
+            
+            let html = `
+                ${getMedalHTML(state.medal)}
+                <div class="act-header">
+                    <span class="act-type">Anagrama #${index}</span>
+                    <span class="act-attempts" id="att-${item.id}">Intentos restantes: ${attemptsLeft}</span>
+                </div>
+                <p>Ordena las letras para encontrar el concepto escondido. Pista: <em>${item.hint}</em></p>
+                <div class="anagram-display" id="disp-${item.id}">${displayWord}</div>
+            `;
+
+            if (state.solved) {
+                if (state.medal === 'Failed') {
+                    html += `<div class="feedback-msg" style="color: var(--rojo-error);">Agotaste los intentos. La respuesta correcta era: <strong>${item.answer}</strong></div>`;
+                } else {
+                    html += `<div class="feedback-msg" style="color: var(--verde-quindio);">¡Correcto! Ganaste ${state.medal === 'Au'? 5 : (state.medal === 'Ag'? 3 : 1.5)} puntos.</div>`;
+                }
+            } else {
+                html += `
+                    <input type="text" class="answer-input anti-fraud" id="inp-${item.id}" placeholder="Escribe tu respuesta aquí..." autocomplete="off">
+                    <button class="btn" id="btn-${item.id}" onclick="validateAnagram('${item.id}', '${item.answer}')">Validar Concepto</button>
+                    <div class="feedback-msg" id="feed-${item.id}"></div>
+                `;
+            }
+            div.innerHTML = html;
+            return div;
+        }
+
+        // --- 5.2 CONSTRUCTOR ORDENAR FRASES ---
+        function createSentenceUI(item, index) {
+            const state = getActState(item.id);
+            const div = document.createElement('div');
+            
+            let statusClass = state.solved ? (state.medal === 'Failed' ? 'failed' : 'solved') : '';
+            div.className = `activity-card ${statusClass}`;
+            div.id = `card-${item.id}`;
+
+            let attemptsLeft = 3 - state.attempts;
+            
+            let html = `
+                ${getMedalHTML(state.medal)}
+                <div class="act-header">
+                    <span class="act-type">Armar Frase #${index}</span>
+                    <span class="act-attempts" id="att-${item.id}">Intentos restantes: ${attemptsLeft}</span>
+                </div>
+                <p>Selecciona las palabras en el orden correcto para reconstruir la oración técnica.</p>
+            `;
+
+            if (state.solved) {
+                if (state.medal === 'Failed') {
+                    html += `<div class="feedback-msg" style="color: var(--rojo-error);">Agotaste los intentos. La frase era:<br><strong>${item.answer}</strong></div>`;
+                } else {
+                    html += `<div class="sentence-builder" style="border-color: var(--verde-quindio); justify-content:center; align-items:center;"><strong>${item.answer}</strong></div>`;
+                    html += `<div class="feedback-msg" style="color: var(--verde-quindio);">¡Frase coherente! Ganaste ${state.medal === 'Au'? 5 : (state.medal === 'Ag'? 3 : 1.5)} puntos.</div>`;
+                }
+            } else {
+                let words = shuffleWords(item.answer);
+                
+                // Zona de armado
+                html += `<div class="sentence-builder" id="builder-${item.id}"></div>`;
+                
+                // Banco de palabras
+                html += `<div class="word-bank" id="bank-${item.id}">`;
+                words.forEach((w, i) => {
+                    html += `<button class="word-btn" id="wb-${item.id}-${i}" onclick="selectWord('${item.id}', '${w}', this.id)">${w}</button>`;
+                });
+                html += `</div>`;
+                
+                html += `
+                    <button class="btn btn-clear" onclick="clearSentence('${item.id}')">🔄 Borrar y Empezar de nuevo</button>
+                    <button class="btn" id="btn-${item.id}" onclick="validateSentence('${item.id}', '${item.answer}')" style="margin-top:10px;">Validar Frase</button>
+                    <div class="feedback-msg" id="feed-${item.id}"></div>
+                `;
+            }
+            div.innerHTML = html;
+            return div;
+        }
+
+        // Lógica interactiva para armado de frases
+        // Guarda temporalmente el estado del DOM en memoria
+        let sentenceMemory = {};
+
+        function selectWord(actId, word, btnId) {
+            let btn = document.getElementById(btnId);
+            if(btn.classList.contains('selected')) return; // Ya usado
+            
+            btn.classList.add('selected');
+            
+            if(!sentenceMemory[actId]) sentenceMemory[actId] = [];
+            sentenceMemory[actId].push(word);
+            
+            renderSentenceBuilder(actId);
+        }
+
+        function clearSentence(actId) {
+            sentenceMemory[actId] = [];
+            renderSentenceBuilder(actId);
+            // Desmarcar botones del banco
+            let bank = document.getElementById(`bank-${actId}`);
+            let btns = bank.querySelectorAll('.word-btn');
+            btns.forEach(b => b.classList.remove('selected'));
+        }
+
+        function renderSentenceBuilder(actId) {
+            let builder = document.getElementById(`builder-${actId}`);
+            let arr = sentenceMemory[actId] || [];
+            builder.innerHTML = arr.map(w => `<span class="word-btn" style="background:var(--naranja-citrico); color:white; cursor:default;">${w}</span>`).join('');
+        }
+
+        // --- 6. VALIDACIONES Y GAMIFICACIÓN ---
+
+        function processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl) {
+            let state = gameState.activities[id];
+            
+            if (isCorrect) {
+                state.solved = true;
+                let points = 0; let medal = '';
+                if(state.attempts === 0) { points = 5; medal = 'Au'; }
+                else if(state.attempts === 1) { points = 3; medal = 'Ag'; }
+                else if(state.attempts === 2) { points = 1.5; medal = 'Fe'; }
+
+                state.medal = medal;
+                gameState.score += points;
+                
+                cardEl.classList.add('solved');
+                feedEl.style.color = 'var(--verde-quindio)';
+                feedEl.textContent = `¡Correcto! Has ganado insignia de ${medal} (+${points} pts).`;
+                btnEl.disabled = true;
+                cardEl.insertAdjacentHTML('afterbegin', getMedalHTML(medal));
+                
+                // Redibujar la actividad para limpiar los controles
+                setTimeout(renderContent, 1500); 
+
+            } else {
+                state.attempts++;
+                let remaining = 3 - state.attempts;
+                attEl.textContent = `Intentos restantes: ${remaining}`;
+                
+                if (state.attempts >= 3) {
+                    state.solved = true;
+                    state.medal = 'Failed';
+                    cardEl.classList.add('failed');
+                    btnEl.disabled = true;
+                    feedEl.style.color = 'var(--rojo-error)';
+                    feedEl.textContent = `Intentos agotados. Sistema bloqueado.`;
+                    setTimeout(renderContent, 2000);
+                } else {
+                    feedEl.style.color = 'var(--rojo-error)';
+                    feedEl.textContent = `Incorrecto. Intenta nuevamente.`;
+                    
+                    // Efecto vibración error
+                    cardEl.style.transform = 'translateX(5px)';
+                    setTimeout(()=> cardEl.style.transform = 'translateX(-5px)', 100);
+                    setTimeout(()=> cardEl.style.transform = 'translateX(5px)', 200);
+                    setTimeout(()=> cardEl.style.transform = 'translateX(0)', 300);
+                }
+            }
+            saveState();
+        }
+
+        function validateAnagram(id, correctAnswer) {
+            let state = getActState(id);
+            if(state.solved || state.attempts >= 3) return;
+
+            let inputEl = document.getElementById(`inp-${id}`);
+            let feedEl = document.getElementById(`feed-${id}`);
+            let attEl = document.getElementById(`att-${id}`);
+            let cardEl = document.getElementById(`card-${id}`);
+            let btnEl = document.getElementById(`btn-${id}`);
+
+            let userVal = inputEl.value.trim().toUpperCase();
+            if(userVal === '') return;
+
+            let isCorrect = (userVal === correctAnswer.toUpperCase());
+            processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl);
+        }
+
+        function validateSentence(id, correctAnswer) {
+            let state = getActState(id);
+            if(state.solved || state.attempts >= 3) return;
+
+            let feedEl = document.getElementById(`feed-${id}`);
+            let attEl = document.getElementById(`att-${id}`);
+            let cardEl = document.getElementById(`card-${id}`);
+            let btnEl = document.getElementById(`btn-${id}`);
+
+            let currentArr = sentenceMemory[id] || [];
+            if(currentArr.length === 0) return;
+
+            let userVal = currentArr.join(' ');
+            let isCorrect = (userVal === correctAnswer);
+            
+            processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl);
+            if(!isCorrect && state.attempts < 3) {
+                // Limpiar armado para intentar de nuevo automáticamente
+                clearSentence(id);
+            }
+        }
+
+        // --- 7. SISTEMA ANTI-FRAUDE ---
+        function configurarAntiFraudeInputs() {
+            const inputs = document.querySelectorAll('.anti-fraud');
+            inputs.forEach(inp => {
+                // Bloqueo de Pegado y Arrastre
+                inp.addEventListener('paste', e => { e.preventDefault(); alert("Acción de pegado bloqueada por el Laboratorio."); });
+                inp.addEventListener('drop', e => { e.preventDefault(); });
+                inp.addEventListener('contextmenu', e => { e.preventDefault(); });
+
+                // Cadencia de tecleo (Detección de IA/Bots inyectando texto)
+                let keyTimes = [];
+                inp.addEventListener('keydown', e => {
+                    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'v')) {
+                        e.preventDefault(); return;
+                    }
+                    if(e.key.length > 1) return; 
+                    
+                    const now = Date.now();
+                    keyTimes.push(now);
+                    if(keyTimes.length > 4) keyTimes.shift();
+
+                    if(keyTimes.length === 4) {
+                        let totalDiff = 0;
+                        for(let i=1; i<keyTimes.length; i++){ totalDiff += (keyTimes[i] - keyTimes[i-1]); }
+                        let avg = totalDiff / 3;
+                        
+                        // Velocidad sobrehumana (ej. inyección instantánea)
+                        if(avg < 25) {
+                            inp.value = ""; keyTimes = [];
+                            alert("Cadencia inhumana detectada. El sistema ha borrado el texto.");
+                            e.preventDefault();
+                        }
+                    }
+                });
+            });
+        }
+
+    </script>
+</body>
+</html>

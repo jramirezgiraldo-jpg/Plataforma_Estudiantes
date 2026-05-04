@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Impacto Ambiental de los OMG</title>
+    <style>
+        :root {
+            --bio-primary: #2d5a27;
+            --bio-secondary: #4caf50;
+            --bio-accent: #ff9800;
+            --bio-danger: #d32f2f;
+            --bg-canvas: #0a0e0a;
+            --text-dark: #2c3e50;
+            --bg-soft: #f4f7f6;
+            --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; scroll-behavior: smooth; }
+        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-soft); color: var(--text-dark); overflow-x: hidden; }
+
+        /* Pantalla de Logueo */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, var(--bio-primary), #000);
+            display: flex; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .login-card {
+            background: var(--white); padding: 3rem; border-radius: 20px;
+            width: 90%; max-width: 450px; text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+        .login-card h2 { color: var(--bio-primary); margin-bottom: 2rem; }
+        .input-group { text-align: left; margin-bottom: 1.5rem; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 0.5rem; color: #555; }
+        .input-group input { width: 100%; padding: 0.8rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .btn-start {
+            background: var(--bio-secondary); color: white; border: none; padding: 1rem 2rem;
+            border-radius: 50px; cursor: pointer; font-size: 1.1rem; font-weight: bold;
+            width: 100%; transition: 0.3s;
+        }
+        .btn-start:hover { background: var(--bio-primary); transform: translateY(-2px); }
+
+        /* Navegación y Progreso */
+        #main-content { display: none; }
+        nav {
+            position: fixed; top: 0; width: 100%; height: 70px; background: var(--white);
+            display: flex; align-items: center; padding: 0 5%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000;
+        }
+        .nav-user { font-weight: bold; color: var(--bio-primary); min-width: 250px; }
+        .nav-progress-wrapper { flex-grow: 1; margin: 0 2rem; }
+        .progress-bar-bg { width: 100%; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; }
+        .progress-bar-fill { width: 0%; height: 100%; background: var(--bio-secondary); transition: 0.5s; }
+        .gamification-icons { display: flex; gap: 10px; margin-left: 1rem; }
+        .bio-icon { width: 30px; height: 30px; opacity: 0.2; transition: 0.4s; }
+        .bio-icon.active { opacity: 1; filter: drop-shadow(0 0 5px var(--bio-secondary)); }
+
+        /* Secciones */
+        header { height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 10%; background: linear-gradient(180deg, #e8f5e9, var(--bg-soft)); }
+        header h1 { font-size: 3.5rem; color: var(--bio-primary); margin: 0; }
+        
+        section { max-width: 1100px; margin: 0 auto 5rem; padding: 2rem; }
+        .content-card { background: var(--white); padding: 3.5rem; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+
+        h2 { font-size: 2rem; color: var(--bio-primary); border-left: 6px solid var(--bio-accent); padding-left: 1rem; margin-bottom: 2rem; }
+
+        /* Arte Científico SVG */
+        .dna-art { width: 100%; max-width: 600px; display: block; margin: 2rem auto; }
+
+        /* Cuadros Comparativos */
+        .comparison-container { overflow-x: auto; margin: 2rem 0; }
+        .comp-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; }
+        .comp-table th { background: var(--bio-primary); color: white; padding: 1.2rem; text-align: left; }
+        .comp-table td { padding: 1.2rem; border-bottom: 1px solid #eee; }
+        .comp-table tr:hover td { background-color: #f1f8e9; }
+        .pros { color: #2e7d32; font-weight: bold; }
+        .cons { color: #c62828; font-weight: bold; }
+
+        /* Pausas Activas */
+        .pause-box { 
+            background: #fff8e1; border: 2px dashed var(--bio-accent); 
+            padding: 2rem; border-radius: 15px; margin: 3rem 0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .pause-text { flex-grow: 1; padding-right: 2rem; }
+        .btn-check { 
+            background: var(--bio-accent); color: white; border: none; padding: 0.8rem 1.5rem;
+            border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap;
+        }
+        .btn-check.done { background: var(--bio-secondary); }
+
+        /* Gráficas SVG Analíticas */
+        .chart-container { background: #fff; padding: 2rem; border-radius: 15px; border: 1px solid #eee; text-align: center; margin: 2rem 0; }
+        .bar { transition: 0.3s; cursor: help; }
+        .bar:hover { filter: brightness(1.2); }
+
+        /* Canvas Central */
+        .simulation-wrapper { 
+            position: relative; width: 100%; height: 500px; 
+            background: var(--bg-canvas); border-radius: 20px; 
+            margin: 3rem 0; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        #simCanvas { width: 100%; height: 100%; cursor: crosshair; }
+        .sim-legend { 
+            position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.1); 
+            color: white; padding: 1rem; border-radius: 8px; pointer-events: none; 
+            backdrop-filter: blur(5px);
+        }
+
+        /* Taller y Evaluaciones */
+        .quiz-item { margin-bottom: 2rem; padding: 1.5rem; border: 1px solid #eee; border-radius: 12px; }
+        .option { 
+            display: block; width: 100%; padding: 1rem; margin: 0.5rem 0; 
+            background: #f9f9f9; border: 2px solid #eee; border-radius: 10px;
+            text-align: left; cursor: pointer; transition: 0.2s;
+        }
+        .option:hover { border-color: var(--bio-secondary); background: #f1f8e9; }
+        .option.correct { background: #e8f5e9; border-color: var(--bio-secondary); }
+        .option.wrong { background: #ffebee; border-color: var(--bio-danger); }
+        
+        .open-question { margin-bottom: 2.5rem; }
+        textarea { width: 100%; padding: 1rem; border: 2px solid #eee; border-radius: 12px; height: 100px; resize: none; }
+        .char-counter { text-align: right; font-size: 0.8rem; color: #666; margin-top: 5px; }
+
+        .btn-final {
+            display: block; width: 100%; max-width: 400px; margin: 4rem auto;
+            padding: 1.5rem; background: var(--bio-primary); color: white;
+            border: none; border-radius: 50px; font-size: 1.2rem; font-weight: bold;
+            cursor: pointer; box-shadow: 0 10px 25px rgba(45, 90, 39, 0.3);
+        }
+
+        #fortification-path {
+            display: none; background: #e3f2fd; border: 2px solid #2196f3;
+            padding: 2rem; border-radius: 15px; margin-top: 2rem;
+        }
+
+        /* Animaciones */
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Bienvenida y Logueo -->
+    <div id="login-screen">
+        <div class="login-card">
+            <svg viewBox="0 0 100 100" width="80" height="80">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="var(--bio-secondary)" stroke-width="2"/>
+                <path d="M50 20 L50 80 M30 40 L70 40 M30 60 L70 60" stroke="var(--bio-secondary)" stroke-width="5" stroke-linecap="round"/>
+                <circle cx="50" cy="50" r="10" fill="var(--bio-accent)"/>
+            </svg>
+            <h2>BioLab: OMG & Agricultura</h2>
+            <p>Unidad de Análisis de Impacto Ambiental para Grado 10°</p>
+            
+            <div class="input-group">
+                <label>Apellidos:</label>
+                <input type="text" id="user-lastname" placeholder="Ingresa tus apellidos">
+            </div>
+            <div class="input-group">
+                <label>Nombres:</label>
+                <input type="text" id="user-firstname" placeholder="Ingresa tus nombres">
+            </div>
+            
+            <button type="button" class="btn-start" onclick="startApp()">Iniciar Investigación</button>
+        </div>
+    </div>
+
+    <!-- Aplicación Principal -->
+    <div id="main-content">
+        <nav>
+            <div class="nav-user" id="user-display">---</div>
+            <div class="nav-progress-wrapper">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="p-bar"></div>
+                </div>
+            </div>
+            <div class="gamification-icons">
+                <!-- Iconos de Hoja (Progreso) -->
+                <svg class="bio-icon" id="icon-1" viewBox="0 0 24 24" fill="currentColor"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>
+                <svg class="bio-icon" id="icon-2" viewBox="0 0 24 24" fill="currentColor"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>
+                <svg class="bio-icon" id="icon-3" viewBox="0 0 24 24" fill="currentColor"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>
+                <svg class="bio-icon" id="icon-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>
+                <svg class="bio-icon" id="icon-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>
+            </div>
+            <div id="score-text" style="font-weight: bold; margin-left: 20px;">Nota: 0.0</div>
+        </nav>
+
+        <header>
+            <h1>Consecuencias de los Transgénicos</h1>
+            <p>Explorando los límites de la biotecnología y la seguridad ambiental.</p>
+        </header>
+
+        <!-- Inicio: Pre-saberes -->
+        <section>
+            <div class="content-card">
+                <h2>Objetivo de Aprendizaje</h2>
+                <p>Evaluar críticamente los impactos ambientales derivados del uso de Organismos Modificados Genéticamente (OMG) en la agricultura tecnificada, analizando los riesgos de transferencia genética y la alteración de la biodiversidad local.</p>
+                
+                <div style="margin-top: 3rem; background: #f1f8e9; padding: 2rem; border-radius: 15px;">
+                    <h3>Desafío de Pre-saberes</h3>
+                    <div class="quiz-item">
+                        <p>1. ¿Qué significa exactamente que un organismo sea transgénico?</p>
+                        <button class="option" onclick="feedbackPre(this, true)">Posee un gen de una especie distinta insertado artificialmente.</button>
+                        <button class="option" onclick="feedbackPre(this, false)">Es un organismo que ha mutado de forma natural por el sol.</button>
+                        <button class="option" onclick="feedbackPre(this, false)">Es un clon idéntico de su progenitor.</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cuerpo Inductivo -->
+        <section id="inductivo">
+            <h2>I. El Paradigma de la Revolución Biotecnológica</h2>
+            <div class="content-card">
+                <p>La introducción de los Organismos Modificados Genéticamente (OMG) en la agricultura global ha marcado uno de los cambios tecnológicos más profundos y polémicos de la historia contemporánea. Un transgénico es un organismo vivo que ha sido modificado mediante la inserción de genes de otras especies (bacterias, virus o incluso animales) para dotarlo de características específicas que no posee naturalmente. En el ámbito agrícola, las modificaciones más comunes incluyen la resistencia a herbicidas químicos potentes y la producción interna de toxinas insecticidas, como la proteína Bt derivada de la bacteria <i>Bacillus thuringiensis</i>.</p>
+
+                <!-- Arte SVG: ADN y Plásmido -->
+                <svg class="dna-art" viewBox="0 0 800 200">
+                    <defs>
+                        <linearGradient id="dnaGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#4caf50" />
+                            <stop offset="100%" style="stop-color:#1b5e20" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M0 100 Q 50 20, 100 100 T 200 100 T 300 100 T 400 100 T 500 100 T 600 100 T 700 100 T 800 100" stroke="url(#dnaGrad)" stroke-width="4" fill="none"/>
+                    <path d="M0 100 Q 50 180, 100 100 T 200 100 T 300 100 T 400 100 T 500 100 T 600 100 T 700 100 T 800 100" stroke="#ff9800" stroke-width="4" fill="none" opacity="0.5"/>
+                    <circle cx="400" cy="100" r="30" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5,5">
+                        <animateTransform attributeName="transform" type="rotate" from="0 400 100" to="360 400 100" dur="10s" repeatCount="indefinite" />
+                    </circle>
+                    <text x="360" y="150" font-size="12" fill="#d32f2f" font-weight="bold">INSERCIÓN TRANSGÉNICA</text>
+                </svg>
+
+                <p>Desde una perspectiva inductiva, debemos observar cómo este cambio tecnológico altera el equilibrio de los ecosistemas locales. El principal argumento a favor de los transgénicos ha sido la promesa de una mayor productividad y la seguridad alimentaria mundial. Sin embargo, la realidad ambiental presenta una complejidad mucho mayor. Al cultivar millones de hectáreas con variedades genéticamente idénticas (monocultivos), reducimos drásticamente la diversidad genética. Esta homogeneidad hace que nuestros sistemas alimentarios sean más vulnerables a nuevas plagas o cambios climáticos repentinos, eliminando las defensas naturales que la evolución ha construido durante milenios.</p>
+
+                <div class="pause-box">
+                    <div class="pause-text">
+                        <h4>Pausa Activa 1: Reflexión Sistémica</h4>
+                        <p>Escribe en tu cuaderno: ¿Qué pasaría con un bosque si todos los árboles fueran clones idénticos del más fuerte? Describe una consecuencia.</p>
+                    </div>
+                    <button class="btn-check" onclick="markTask(this, 1)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <p>Otro impacto directo es la alteración de la dinámica de los suelos. Los cultivos diseñados para resistir herbicidas (como el glifosato) permiten la aplicación masiva de estos químicos, eliminando todas las plantas que no sean el cultivo principal. Esto no solo afecta la microbiota del suelo, sino que elimina las fuentes de alimento y refugio para insectos beneficiosos, polinizadores y aves. El resultado es un "desierto verde": una extensión inmensa de plantas verdes donde la vida silvestre no puede prosperar. La pérdida de insectos polinizadores, en particular, representa una amenaza existencial para el resto de la agricultura no transgénica.</p>
+
+                <div class="pause-box">
+                    <div class="pause-text">
+                        <h4>Pausa Activa 2: El Desierto Verde</h4>
+                        <p>Dibuja en tu cuaderno una red trófica simple y tacha los elementos que desaparecerían si se aplicara un herbicida total en un campo.</p>
+                    </div>
+                    <button class="btn-check" onclick="markTask(this, 2)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <p>Finalmente, debemos considerar el fenómeno de las "supermalezas". La presión selectiva ejercida por el uso constante de un solo tipo de herbicida ha llevado a que las malezas desarrollen su propia resistencia, obligando a los agricultores a usar químicos aún más tóxicos y en mayores cantidades. Este ciclo de dependencia química es una de las consecuencias ambientales más evidentes y costosas del modelo transgénico actual. No se trata solo de la planta en sí, sino de todo el paquete tecnológico que la acompaña, el cual genera una huella química persistente en los cuerpos de agua y el aire que respiramos.</p>
+
+                <!-- Cuadro Comparativo Inductivo -->
+                <h3>Comparativa de Impactos Agrarios</h3>
+                <div class="comparison-container">
+                    <table class="comp-table">
+                        <thead>
+                            <tr>
+                                <th>Factor de Análisis</th>
+                                <th>Agricultura Convencional/Orgánica</th>
+                                <th>Agricultura de Transgénicos (OMG)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Diversidad Genética</strong></td>
+                                <td>Alta: Uso de variedades locales y criollas.</td>
+                                <td class="cons">Baja: Monocultivo de clones patentados.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Control de Plagas</strong></td>
+                                <td>Rotación de cultivos y control biológico.</td>
+                                <td>Uso de plantas que producen su propia toxina.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dependencia Química</strong></td>
+                                <td class="pros">Moderada a Nula: Se busca equilibrio natural.</td>
+                                <td class="cons">Extrema: Paquetes obligatorios de herbicidas.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Costo de Semilla</strong></td>
+                                <td>Accesible: Se puede guardar para el otro año.</td>
+                                <td class="cons">Elevado: Pago de patentes cada temporada.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pause-box">
+                    <div class="pause-text">
+                        <h4>Pausa Activa 3: Análisis de Cuadro</h4>
+                        <p>Según la tabla, ¿qué modelo de agricultura crees que es más resiliente (resistente) ante un cambio climático extremo? Justifica en tu cuaderno.</p>
+                    </div>
+                    <button class="btn-check" onclick="markTask(this, 3)">Ya lo hice (+0.5)</button>
+                </div>
+            </div>
+
+            <!-- Pregunta ICFES Basada en Gráfica -->
+            <div class="content-card">
+                <h3>Análisis de Datos: El Ciclo de la Resistencia</h3>
+                <p>Analiza la siguiente gráfica que muestra el incremento en el uso de herbicidas tras la aparición de malezas resistentes en cultivos de soya transgénica.</p>
+                
+                <div class="chart-container">
+                    <svg width="500" height="300" viewBox="0 0 500 300">
+                        <!-- Ejes -->
+                        <line x1="60" y1="250" x2="450" y2="250" stroke="#333" stroke-width="2"/>
+                        <line x1="60" y1="50" x2="60" y2="250" stroke="#333" stroke-width="2"/>
+                        <!-- Barras -->
+                        <rect x="100" y="180" width="50" height="70" fill="#a5d6a7" class="bar"/>
+                        <rect x="200" y="140" width="50" height="110" fill="#66bb6a" class="bar"/>
+                        <rect x="300" y="80" width="50" height="170" fill="#2e7d32" class="bar"/>
+                        <!-- Etiquetas -->
+                        <text x="100" y="270" font-size="12">Año 1</text>
+                        <text x="200" y="270" font-size="12">Año 5</text>
+                        <text x="300" y="270" font-size="12">Año 10</text>
+                        <text x="10" y="150" transform="rotate(-90 10,150)" font-size="12">Uso Herbicida (kg/ha)</text>
+                    </svg>
+                    <p><small>Gráfico 1: Evolución del uso de químicos en sistemas OMG.</small></p>
+                </div>
+
+                <div style="border: 2px solid var(--bio-primary); padding: 1.5rem; border-radius: 12px; margin-top: 2rem;">
+                    <h4>Pregunta de Competencia (Indagar)</h4>
+                    <p>De acuerdo con la tendencia observada en la gráfica, ¿cuál es la explicación biológica más probable para el aumento del uso de herbicidas a través del tiempo?</p>
+                    <button class="option" onclick="feedbackIcfes(this, false)">Las plantas transgénicas necesitan más químicos para crecer más rápido.</button>
+                    <button class="option" onclick="feedbackIcfes(this, true)">La selección artificial favorece la supervivencia de malezas con mutaciones de resistencia.</button>
+                    <button class="option" onclick="feedbackIcfes(this, false)">El suelo pierde nutrientes y debe ser compensado con más líquidos químicos.</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cuerpo Deductivo -->
+        <section id="deductivo">
+            <h2>II. Contaminación Genética y Flujo Polínico</h2>
+            <div class="content-card">
+                <p>Desde una visión deductiva, podemos establecer principios generales sobre cómo el material genético artificial se dispersa fuera del control humano. El concepto clave aquí es el <strong>Flujo Polínico</strong>. El polen de los cultivos transgénicos, transportado por el viento o por insectos, puede fecundar plantas silvestres emparentadas o cultivos orgánicos vecinos. Este proceso se conoce como <strong>Contaminación Genética</strong>. Una vez que un gen artificial se libera al medio ambiente y entra en el acervo genético de una población silvestre, es prácticamente imposible de retirar, creando efectos evolutivos permanentes e impredecibles.</p>
+
+                <div class="pause-box">
+                    <div class="pause-text">
+                        <h4>Pausa Activa 4: El Viento Invisible</h4>
+                        <p>Sal un momento y observa el movimiento del viento. Imagina que cada partícula de polvo es polen. En tu cuaderno, haz una lista de 3 lugares donde ese polen podría aterrizar.</p>
+                    </div>
+                    <button class="btn-check" onclick="markTask(this, 4)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <!-- Simulación Canvas -->
+                <h3>Simulador de Dispersión Genética</h3>
+                <p>Haz clic para simular la liberación de polen transgénico (naranja) y observa cómo interactúa con los cultivos nativos (verdes). La mezcla de colores representa la contaminación genética.</p>
+                <div class="simulation-wrapper">
+                    <div class="sim-legend">
+                        🟢 Cultivo Nativo<br>
+                        🟠 Polen Transgénico<br>
+                        💥 Híbrido Contaminado
+                    </div>
+                    <canvas id="simCanvas"></canvas>
+                </div>
+
+                <p>La consecuencia más grave de este flujo es la pérdida de la identidad de las semillas nativas. En México, centro de origen del maíz, se han encontrado secuencias de ADN transgénico en variedades criollas cultivadas en zonas remotas. Esto pone en peligro la soberanía alimentaria, ya que las comunidades pierden el control sobre sus propias semillas tradicionales. Además, si el gen transferido confiere resistencia a herbicidas a una pariente silvestre, podríamos estar creando "malezas" que ninguna herramienta agrícola convencional podría controlar, alterando la competencia natural entre especies.</p>
+
+                <div class="pause-box">
+                    <div class="pause-text">
+                        <h4>Pausa Activa 5: Semilla Ancestral</h4>
+                        <p>Dibuja una mazorca de maíz de muchos colores en tu cuaderno. Escribe: "Biodiversidad es Seguridad".</p>
+                    </div>
+                    <button class="btn-check" onclick="markTask(this, 5)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <p>Otro principio deductivo es el impacto sobre especies "no objetivo". El polen de maíz Bt, por ejemplo, puede caer sobre el algodoncillo que comen las orugas de la mariposa Monarca, causándoles daño o la muerte. Aunque el transgénico está diseñado para matar una plaga específica (como el taladro del maíz), su toxina puede afectar a muchos otros insectos que cumplen funciones ecológicas vitales. La biotecnología a gran escala a menudo ignora las intrincadas redes de interdependencia que sostienen la vida; un cambio en un solo eslabón de la cadena puede desmoronar toda la estructura del ecosistema.</p>
+
+                <div class="pause-box">
+                    <div class="pause-text">
+                        <h4>Pausa Activa 6: Cadena Rota</h4>
+                        <p>Representa con un esquema simple en tu cuaderno cómo un veneno en una hoja puede llegar a afectar a un pájaro que no come hojas.</p>
+                    </div>
+                    <button class="btn-check" onclick="markTask(this, 6)">Ya lo hice (+0.5)</button>
+                </div>
+
+                <p>Por último, el marco legal y ético se complica por la propiedad intelectual. Los transgénicos están patentados. Si una finca orgánica se contamina accidentalmente por el polen de un vecino transgénico, irónicamente, el agricultor orgánico podría ser demandado por la empresa dueña del gen por "uso ilegal de tecnología". Esto crea un conflicto profundo entre los derechos de la naturaleza a permanecer pura y los derechos comerciales de las corporaciones. La deducción es clara: la tecnología transgénica no es solo una herramienta biológica, sino una herramienta de control económico que redefine nuestra relación con la vida misma.</p>
+
+                <div class="pause-box">
+                    <div class="pause-text">
+                        <h4>Pausa Activa 7: Debate Ético</h4>
+                        <p>Escribe 3 palabras que sientas al pensar que una empresa puede ser "dueña" de una planta.</p>
+                    </div>
+                    <button class="btn-check" onclick="markTask(this, 7)">Ya lo hice (+0.5)</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Evaluación Final -->
+        <section id="evaluacion">
+            <div class="content-card">
+                <h2>Taller de Evaluación: Bioética y Ambiente</h2>
+                
+                <h3>I. Evaluación de Selección Múltiple</h3>
+                <div class="quiz-item">
+                    <p>1. ¿Cuál es la principal causa de la aparición de "supermalezas" en cultivos OMG?</p>
+                    <button class="option" onclick="evalQuiz(this, true)">El uso repetitivo y masivo de un mismo herbicida que selecciona variantes resistentes.</button>
+                    <button class="option" onclick="evalQuiz(this, false)">La mutación espontánea del maíz que se vuelve agresivo.</button>
+                    <button class="option" onclick="evalQuiz(this, false)">El exceso de agua que fortalece las raíces de las malezas.</button>
+                </div>
+
+                <div class="quiz-item">
+                    <p>2. El "Flujo Polínico" es preocupante para la biodiversidad porque:</p>
+                    <button class="option" onclick="evalQuiz(this, false)">Hace que las abejas produzcan menos miel.</button>
+                    <button class="option" onclick="evalQuiz(this, true)">Permite que genes artificiales se integren permanentemente en especies silvestres.</button>
+                    <button class="option" onclick="evalQuiz(this, false)">Aumenta el tamaño de todas las flores del bosque de forma exagerada.</button>
+                </div>
+
+                <h3>II. Respuestas Abiertas (Análisis Crítico)</h3>
+                <p>Responde en un máximo de 15 palabras.</p>
+
+                <div class="open-question">
+                    <p>1. Define con tus palabras qué es la "Contaminación Genética".</p>
+                    <textarea id="open-1" oninput="countWords(this)" placeholder="Escribe aquí..."></textarea>
+                    <div class="char-counter" id="count-1">Palabras: 0 / 15</div>
+                </div>
+
+                <div class="open-question">
+                    <p>2. ¿Por qué el monocultivo de transgénicos hace a la agricultura más vulnerable?</p>
+                    <textarea id="open-2" oninput="countWords(this)" placeholder="Escribe aquí..."></textarea>
+                    <div class="char-counter" id="count-2">Palabras: 0 / 15</div>
+                </div>
+
+                <div id="fortification-path">
+                    <h3>Tu Ruta de Fortalecimiento</h3>
+                    <p id="path-msg"></p>
+                </div>
+
+                <button type="button" class="btn-final" onclick="generateReport()">Generar Informe de Resultados</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Estado Global
+        let user = { lastname: "", firstname: "", score: 0, progress: 0, tasks: 0, quizCorrect: 0 };
+        const totalTasks = 10; 
+
+        // Iniciar App
+        function startApp() {
+            const ln = document.getElementById('user-lastname').value.trim();
+            const fn = document.getElementById('user-firstname').value.trim();
+            
+            if (!ln || !fn) {
+                alert("Por favor completa tus datos para iniciar.");
+                return;
+            }
+
+            user.lastname = ln;
+            user.firstname = fn;
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('user-display').innerText = `INVESTIGADOR: ${ln.toUpperCase()}, ${fn.toUpperCase()}`;
+            
+            initCanvas();
+            updateUI();
+        }
+
+        function updateUI() {
+            const bar = document.getElementById('p-bar');
+            bar.style.width = user.progress + "%";
+            document.getElementById('score-text').innerText = `Nota: ${user.score.toFixed(1)}`;
+            
+            // Gamificación
+            for(let i=1; i<=5; i++) {
+                if (user.score >= i) document.getElementById(`icon-${i}`).classList.add('active');
+            }
+            saveState();
+        }
+
+        function markTask(btn, id) {
+            if (!btn.classList.contains('done')) {
+                btn.classList.add('done');
+                btn.innerText = "¡Completado!";
+                user.tasks++;
+                user.score += 0.25;
+                user.progress += 8;
+                updateUI();
+            }
+        }
+
+        function feedbackPre(btn, isCorrect) {
+            btn.style.borderColor = isCorrect ? 'var(--bio-secondary)' : 'var(--bio-danger)';
+            if (isCorrect) {
+                user.score += 0.2;
+                user.progress += 4;
+            }
+            const parent = btn.parentElement;
+            Array.from(parent.querySelectorAll('.option')).forEach(b => b.disabled = true);
+            updateUI();
+        }
+
+        function feedbackIcfes(btn, isCorrect) {
+            btn.className = isCorrect ? 'option correct' : 'option wrong';
+            if (isCorrect) {
+                user.score += 0.5;
+                user.progress += 10;
+            }
+            const parent = btn.parentElement;
+            Array.from(parent.querySelectorAll('.option')).forEach(b => b.disabled = true);
+            updateUI();
+        }
+
+        function evalQuiz(btn, isCorrect) {
+            btn.className = isCorrect ? 'option correct' : 'option wrong';
+            if (isCorrect) {
+                user.quizCorrect++;
+                user.score += 0.5;
+                user.progress += 5;
+            }
+            const parent = btn.parentElement;
+            Array.from(parent.querySelectorAll('.option')).forEach(b => b.disabled = true);
+            updateUI();
+        }
+
+        function countWords(el) {
+            const words = el.value.trim().split(/\s+/).filter(w => w.length > 0);
+            const counterId = "count-" + el.id.split('-')[1];
+            document.getElementById(counterId).innerText = `Palabras: ${words.length} / 15`;
+            el.style.borderColor = (words.length > 15) ? 'var(--bio-danger)' : '#eee';
+        }
+
+        function saveState() {
+            localStorage.setItem('ova_transgenicos_save', JSON.stringify(user));
+        }
+
+        // Canvas Simulation Logic
+        function initCanvas() {
+            const canvas = document.getElementById('simCanvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+
+            function resize() {
+                width = canvas.width = canvas.offsetWidth;
+                height = canvas.height = canvas.offsetHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            const particles = [];
+            const plants = [];
+
+            // Generar plantas nativas
+            for (let i = 0; i < 15; i++) {
+                plants.push({
+                    x: Math.random() * width,
+                    y: height - 40,
+                    state: 'native', // native, contaminated
+                    size: 20 + Math.random() * 20
+                });
+            }
+
+            class Pollen {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.vx = (Math.random() - 0.5) * 4;
+                    this.vy = Math.random() * 2 + 1;
+                    this.life = 100;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.life -= 0.5;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 152, 0, ${this.life / 100})`;
+                    ctx.fill();
+                }
+            }
+
+            canvas.addEventListener('mousedown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                for (let i = 0; i < 20; i++) {
+                    particles.push(new Pollen(e.clientX - rect.left, e.clientY - rect.top));
+                }
+            });
+
+            function draw() {
+                ctx.fillStyle = 'rgba(10, 14, 10, 0.3)';
+                ctx.fillRect(0, 0, width, height);
+
+                // Dibujar Plantas
+                plants.forEach(p => {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, height);
+                    ctx.lineTo(p.x, height - p.size);
+                    ctx.strokeStyle = p.state === 'native' ? '#4caf50' : '#ffeb3b';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                    
+                    // Flor/Fruto
+                    ctx.beginPath();
+                    ctx.arc(p.x, height - p.size, 8, 0, Math.PI * 2);
+                    ctx.fillStyle = p.state === 'native' ? '#2e7d32' : '#ff9800';
+                    ctx.fill();
+
+                    // Detectar colisión con polen
+                    particles.forEach(pol => {
+                        const dx = pol.x - p.x;
+                        const dy = pol.y - (height - p.size);
+                        if (Math.sqrt(dx*dx + dy*dy) < 15 && p.state === 'native') {
+                            p.state = 'contaminated';
+                        }
+                    });
+                });
+
+                // Actualizar Polen
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update();
+                    particles[i].draw();
+                    if (particles[i].life <= 0 || particles[i].y > height) {
+                        particles.splice(i, 1);
+                    }
+                }
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        function generateReport() {
+            const finalScore = Math.min(user.score, 5.0).toFixed(1);
+            const pathBox = document.getElementById('fortification-path');
+            const pathMsg = document.getElementById('path-msg');
+            pathBox.style.display = 'block';
+
+            if (finalScore < 3.0) {
+                pathMsg.innerText = "Debes reforzar los conceptos de biodiversidad y flujo genético. Te recomendamos volver a ver la animación interactiva y leer sobre la pérdida de semillas nativas.";
+            } else if (finalScore < 4.5) {
+                pathMsg.innerText = "¡Buen trabajo! Tienes claros los impactos. Te invitamos a investigar sobre casos reales de supermalezas en países como Argentina y Brasil.";
+            } else {
+                pathMsg.innerText = "Excelente análisis. Dominas el tema. Podrías profundizar en legislación internacional sobre bioseguridad y el Protocolo de Cartagena.";
+            }
+
+            const report = `INFORME DE INVESTIGACIÓN: OMG Y MEDIO AMBIENTE
+--------------------------------------------------
+ESTUDIANTE: ${user.lastname}, ${user.firstname}
+NOTA FINAL: ${finalScore} / 5.0
+PROGRESO TOTAL: ${user.progress}%
+TAREAS DE CUADERNO: ${user.tasks}
+RESPUESTAS CORRECTAS: ${user.quizCorrect}
+--------------------------------------------------
+FECHA: ${new Date().toLocaleDateString()}
+BioLab Virtual 2024 - Educación Ambiental Superior
+`;
+            const blob = new Blob([report], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Reporte_${user.lastname}.txt`;
+            link.click();
+        }
+    </script>
+</body>
+</html>

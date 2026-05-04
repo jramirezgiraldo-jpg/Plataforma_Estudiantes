@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Sol - Patrón de la Finca Pueblo Rico</title>
+    <style>
+        :root {
+            --cafe-oscuro: #3e2723;
+            --cafe-claro: #795548;
+            --verde-quindio: #2e7d32;
+            --verde-lima: #8bc34a;
+            --naranja-sol: #fb8c00;
+            --amarillo-brillo: #fdd835;
+            --blanco-fondo: #fafafa;
+            --gris-texto: #424242;
+            --shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--blanco-fondo); 
+            color: var(--gris-texto);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Barra de Navegación */
+        nav {
+            position: fixed; top: 0; width: 100%; height: 60px;
+            background: var(--cafe-oscuro); color: white;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 2rem; z-index: 1000; box-shadow: var(--shadow);
+        }
+
+        .user-info { font-weight: bold; font-size: 0.9rem; }
+        .progress-container { width: 200px; height: 10px; background: #5d4037; border-radius: 5px; overflow: hidden; }
+        #main-progress { height: 100%; width: 0%; background: var(--verde-lima); transition: 0.5s; }
+
+        /* Pantalla de Bienvenida */
+        #welcome-screen {
+            position: fixed; inset: 0; background: linear-gradient(135deg, var(--cafe-oscuro), var(--verde-quindio));
+            z-index: 2000; display: flex; align-items: center; justify-content: center; color: white;
+            text-align: center;
+        }
+        .login-card {
+            background: white; color: var(--gris-texto); padding: 3rem; border-radius: 20px;
+            width: 90%; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .btn-start { 
+            background: var(--naranja-sol); color: white; border: none; padding: 15px 30px; 
+            border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%;
+        }
+        .btn-start:hover { transform: scale(1.05); background: #f57c00; }
+
+        /* Contenedor Principal */
+        .main-content { max-width: 1000px; margin: 80px auto; padding: 2rem; display: none; }
+
+        h1, h2, h3 { color: var(--cafe-oscuro); margin-bottom: 1.5rem; }
+        .section-card { background: white; padding: 2.5rem; border-radius: 15px; margin-bottom: 2rem; box-shadow: var(--shadow); border-left: 8px solid var(--verde-quindio); }
+
+        /* SVG Artístico y Gráficas */
+        .svg-container { text-align: center; margin: 2rem 0; background: #e8f5e9; border-radius: 15px; padding: 20px; }
+        
+        /* Tabla Comparativa */
+        .comparison-table { width: 100%; border-collapse: collapse; margin: 2rem 0; border-radius: 10px; overflow: hidden; }
+        .comparison-table th { background: var(--verde-quindio); color: white; padding: 15px; text-align: left; }
+        .comparison-table td { border: 1px solid #eee; padding: 15px; }
+        .comparison-table tr:nth-child(even) { background: #f9f9f9; }
+
+        /* Pausas Activas */
+        .pause-task { 
+            background: #fff8e1; border: 2px dashed var(--naranja-sol); 
+            padding: 1.5rem; margin: 1.5rem 0; border-radius: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .icon-unlocked { font-size: 2rem; filter: grayscale(1); transition: 0.5s; }
+        .active-task .icon-unlocked { filter: grayscale(0); }
+
+        /* Canvas Animation */
+        #solarCanvas { 
+            width: 100%; height: 400px; background: #000; border-radius: 15px; 
+            margin: 2rem 0; cursor: crosshair;
+        }
+
+        /* Quiz UI */
+        .quiz-option { 
+            display: block; width: 100%; padding: 12px; margin: 8px 0; 
+            border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: 0.2s;
+            text-align: left; background: white;
+        }
+        .quiz-option:hover { background: #f1f8e9; border-color: var(--verde-quindio); }
+        .correct { background: #c8e6c9 !important; border-color: var(--verde-quindio); }
+        .incorrect { background: #ffcdd2 !important; border-color: #d32f2f; }
+
+        /* Feedback y Alertas */
+        .alert-fraud { color: #d32f2f; font-weight: bold; display: none; font-size: 0.8rem; margin-top: 5px; }
+
+        textarea { width: 100%; height: 100px; padding: 12px; border-radius: 8px; border: 2px solid #ddd; resize: none; font-family: inherit; }
+
+        @media (max-width: 600px) { .main-content { padding: 1rem; } .pause-task { flex-direction: column; text-align: center; } }
+    </style>
+</head>
+<body>
+
+<!-- Pantalla de Bienvenida -->
+<div id="welcome-screen">
+    <div class="login-card">
+        <svg viewBox="0 0 100 100" width="80">
+            <circle cx="50" cy="50" r="40" fill="#fdd835" />
+            <path d="M50 10 L50 20 M50 80 L50 90 M10 50 L20 50 M80 50 L90 50" stroke="#fb8c00" stroke-width="5" />
+        </svg>
+        <h2 style="margin: 1rem 0;">Misión Pueblo Rico</h2>
+        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.5rem;">Identifica al Patrón de la Finca: El Sol</p>
+        <input type="text" id="userLastname" placeholder="Apellidos">
+        <input type="text" id="userName" placeholder="Nombres">
+        <button class="btn-start" onclick="initApp()">Ingresar al Sistema</button>
+    </div>
+</div>
+
+<!-- Navegación -->
+<nav>
+    <div class="user-info" id="nav-user">Bienvenido, Ingeniero(a)</div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <span id="score-display">Puntos: 0.0</span>
+        <div class="progress-container"><div id="main-progress"></div></div>
+    </div>
+</nav>
+
+<!-- Contenido Principal -->
+<div class="main-content" id="content">
+    
+    <!-- INICIO: Pre-saberes -->
+    <section class="section-card">
+        <h1>1. El Despertar del Campo</h1>
+        <p>Antes de recorrer los cafetales de <strong>Pueblo Rico</strong>, veamos qué sabes sobre la luz que baña nuestra vereda cada mañana.</p>
+        <div id="pre-quiz">
+            <div class="q-block" data-q="0">
+                <p><strong>1. ¿Quién es el principal proveedor de energía para que el café florezca?</strong></p>
+                <button class="quiz-option" onclick="checkPre(0, false)">El abono químico</button>
+                <button class="quiz-option" onclick="checkPre(0, true)">La radiación solar</button>
+                <button class="quiz-option" onclick="checkPre(0, false)">La lluvia constante</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CUERPO INDUCTIVO -->
+    <section class="section-card">
+        <h2>2. La Ciencia en el Paisaje Cafetero</h2>
+        <div style="column-count: 2; column-gap: 2rem;">
+            <p>En la vereda <strong>Pueblo Rico</strong>, el sol no es solo una luz en el cielo; es el gerente técnico de cada hectárea de café y cítricos. Cuando amanece sobre la cordillera y los primeros rayos tocan las hojas del café (<em>Coffea arabica</em>), se activa una maquinaria química silenciosa pero poderosa. Este proceso, llamado fotosíntesis, transforma la energía electromagnética del sol en energía química almacenada en forma de glucosa (C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>). Sin esta energía, las plantas de nuestra vereda no podrían crecer, y la economía de Quimbaya se detendría.</p>
+            <p>La ubicación estratégica de Quimbaya nos permite recibir una radiación solar óptima. Sin embargo, no todas las plantas en Pueblo Rico quieren la misma cantidad de sol. Por ejemplo, los cultivos de café bajo sombra utilizan árboles como el Guamo para filtrar la luz, creando un microclima que protege el suelo y la biodiversidad. Esta interacción entre la luz y la sombra define la calidad de la tasa de café que el turista disfruta en las fincas de la zona.</p>
+            <p>Observar cómo crece una planta de plátano a pleno sol comparada con una bajo el dosel del bosque en la escuela es entender la ecología aplicada. Las plantas que reciben sol directo suelen tener hojas más pequeñas y gruesas para evitar la deshidratación, mientras que las de sombra desarrollan hojas anchas para captar cada fotón perdido. Es una batalla por la energía donde el sol dicta las reglas del crecimiento.</p>
+        </div>
+
+        <div class="svg-container">
+            <h3>Distribución de Energía en la Finca</h3>
+            <svg viewBox="0 0 400 200" width="100%">
+                <!-- Gráfica de Barras SVG -->
+                <rect x="50" y="150" width="40" height="0" fill="#2e7d32">
+                    <animate attributeName="height" from="0" to="100" dur="1s" fill="freeze" />
+                    <animate attributeName="y" from="150" to="50" dur="1s" fill="freeze" />
+                </rect>
+                <text x="50" y="170" font-size="10">Café Sol</text>
+                
+                <rect x="150" y="150" width="40" height="0" fill="#8bc34a">
+                    <animate attributeName="height" from="0" to="60" dur="1s" fill="freeze" />
+                    <animate attributeName="y" from="150" to="90" dur="1s" fill="freeze" />
+                </rect>
+                <text x="145" y="170" font-size="10">Café Sombra</text>
+
+                <rect x="250" y="150" width="40" height="0" fill="#fb8c00">
+                    <animate attributeName="height" from="0" to="130" dur="1s" fill="freeze" />
+                    <animate attributeName="y" from="150" to="20" dur="1s" fill="freeze" />
+                </rect>
+                <text x="255" y="170" font-size="10">Pastizales</text>
+
+                <line x1="40" y1="150" x2="350" y2="150" stroke="#333" />
+                <text x="100" y="195" font-size="12" fill="#666">Comparativa de Captación Solar por Cobertura</text>
+            </svg>
+        </div>
+
+        <!-- Tabla Técnica -->
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Factor de Comparación</th>
+                    <th>Cultivo a Pleno Sol</th>
+                    <th>Cultivo Bajo Sombra (Monte)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Velocidad de Crecimiento</td>
+                    <td>Alta (Requiere más abono)</td>
+                    <td>Moderada (Sostenible)</td>
+                </tr>
+                <tr>
+                    <td>Evaporación de Agua</td>
+                    <td>Muy Elevada</td>
+                    <td>Baja / Conserva Humedad</td>
+                </tr>
+                <tr>
+                    <td>Biodiversidad (Aves/Insectos)</td>
+                    <td>Limitada</td>
+                    <td>Muy Alta (Control biológico)</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- PAUSAS ACTIVAS 1-5 -->
+    <section class="section-card">
+        <h3>3. Retos para tu Cuaderno (Fase Inicial)</h3>
+        <p>Realiza estas actividades en tu cuaderno físico. Cuando termines cada una, presiona el grano de café para desbloquear puntos.</p>
+        <div id="tasks-set-1"></div>
+    </section>
+
+    <!-- ANIMACIÓN CANVAS -->
+    <section class="section-card">
+        <h2>4. El Motor Fotovoltaico: Mitocondrias y Cloroplastos</h2>
+        <p>Interactúa con la simulación. Haz clic para simular la llegada de fotones a la hoja de café y observa cómo se desprende el Oxígeno (O<sub>2</sub>).</p>
+        <canvas id="solarCanvas"></canvas>
+        <div style="text-align: center; color: var(--naranja-sol); font-weight: bold;">[ Simulación en tiempo real: Fotólisis del Agua ]</div>
+    </section>
+
+    <!-- CUERPO DEDUCTIVO -->
+    <section class="section-card">
+        <h2>5. Leyes Energéticas en la Ganadería y Cítricos</h2>
+        <p>El flujo de energía en nuestra vereda <strong>Pueblo Rico</strong> sigue las leyes de la termodinámica. La energía solar captada por el pasto estrella o la brachiaria en las fincas ganaderas solo se transfiere en un 10% al ganado que pasta. Esto significa que para producir un kilo de carne en Quimbaya, se requiere una vasta cantidad de luz solar transformada primero en biomasa vegetal. Por ello, la eficiencia de la finca depende de qué tan bien manejamos esa "cosecha de sol".</p>
+        <p>En los cultivos de cítricos como la naranja Valencia, tan comunes en la vía a Filandia, la exposición solar determina el nivel de grados Brix (azúcar) en el fruto. Una naranja que crece en el interior del árbol, sombreada por el follaje denso, suele ser menos dulce que una expuesta directamente al sol del mediodía quindiano. Aquí vemos la ley del mínimo: el sol es el factor limitante para la calidad del producto exportable de nuestra región.</p>
+    </section>
+
+    <!-- PAUSAS ACTIVAS 6-10 -->
+    <section class="section-card">
+        <h3>6. Retos para tu Cuaderno (Fase Avanzada)</h3>
+        <div id="tasks-set-2"></div>
+    </section>
+
+    <!-- EVALUACIÓN FINAL -->
+    <section class="section-card">
+        <h2>7. Evaluación de Competencias</h2>
+        <div id="final-quiz">
+            <!-- Selección Múltiple -->
+            <div class="q-block">
+                <p><strong>¿Qué molécula es el producto final de la transformación solar en la planta?</strong></p>
+                <button class="quiz-option" data-correct="true">Glucosa</button>
+                <button class="quiz-option" data-correct="false">Ácido cítrico</button>
+                <button class="quiz-option" data-correct="false">Nitrógeno líquido</button>
+            </div>
+
+            <!-- Preguntas Abiertas con Validación Anti-IA -->
+            <div style="margin-top:2rem;">
+                <p><strong>Escribe una reflexión corta (10-15 palabras) sobre por qué es importante proteger los árboles de sombra en los cafetales de Pueblo Rico:</strong></p>
+                <textarea id="open-q1" onkeyup="checkCadence(this)"></textarea>
+                <div id="fraud-msg" class="alert-fraud">⚠️ Se ha detectado un comportamiento inusual. Por favor, escribe tu respuesta manualmente.</div>
+            </div>
+        </div>
+        <button class="btn-start" style="margin-top: 2rem;" onclick="finishOVA()">Finalizar Misión y Descargar Reporte</button>
+    </section>
+</div>
+
+<script>
+    // Variables de Estado
+    let user = { firstname: "", lastname: "", score: 0, progress: 0 };
+    let tasksCompleted = 0;
+    let typingData = { lastTime: 0, deltas: [] };
+    const totalTasks = 10;
+    const canvas = document.getElementById('solarCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // 1. Inicialización
+    function initApp() {
+        user.firstname = document.getElementById('userName').value.trim();
+        user.lastname = document.getElementById('userLastname').value.trim();
+        
+        if(!user.firstname || !user.lastname) {
+            alert("Por favor, ingresa tus datos completos.");
+            return;
+        }
+
+        document.getElementById('welcome-screen').style.fadeOut = "0.5s";
+        setTimeout(() => {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+            document.getElementById('nav-user').innerText = `Agente: ${user.firstname} ${user.lastname}`;
+            renderTasks();
+            initCanvas();
+        }, 500);
+    }
+
+    // 2. Sistema de Tareas
+    const tasks = [
+        "Escribe en tu cuaderno: ¿Qué pasaría con la finca si el sol dejara de brillar por una semana?",
+        "Dibuja una planta de café y señala el camino de la luz hasta la hoja.",
+        "Crea un mapa mental sobre el uso del sol en la Vereda Pueblo Rico (Café, Cítricos, Turismo).",
+        "Haz un cuadro comparativo entre el sol de la mañana y el sol de la tarde en la escuela.",
+        "Dibuja un diagrama de flujo: Sol -> Pasto -> Vaca -> Leche.",
+        "Construye un mapa conceptual sobre la Fotosíntesis en Quimbaya.",
+        "Tabla de datos: Observa 5 plantas de la escuela y anota si están al sol o sombra y su color.",
+        "Dibujo técnico: Esquematiza una hoja de naranja y sus partes internas bajo el sol.",
+        "Resumen: Escribe en 5 renglones cómo el sol influye en el turismo de nuestra vereda.",
+        "Problema: Si un panel solar en Pueblo Rico capta 500W, ¿cuánta energía capta en 4 horas?"
+    ];
+
+    function renderTasks() {
+        const set1 = document.getElementById('tasks-set-1');
+        const set2 = document.getElementById('tasks-set-2');
+        
+        tasks.forEach((t, i) => {
+            const html = `
+                <div class="pause-task" id="task-${i}">
+                    <span><strong>Reto ${i+1}:</strong> ${t}</span>
+                    <button class="btn-start" style="padding:10px; width:auto;" onclick="completeTask(${i})">
+                        <span class="icon-unlocked">☕</span> Ya lo hice
+                    </button>
+                </div>
+            `;
+            if(i < 5) set1.innerHTML += html;
+            else set2.innerHTML += html;
+        });
+    }
+
+    function completeTask(i) {
+        const el = document.getElementById(`task-${i}`);
+        if(!el.classList.contains('active-task')) {
+            el.classList.add('active-task');
+            tasksCompleted++;
+            updateScore(0.3);
+            updateProgress();
+        }
+    }
+
+    // 3. Quiz de Pre-saberes
+    function checkPre(q, correct) {
+        const btn = event.target;
+        if(correct) {
+            btn.classList.add('correct');
+            updateScore(0.2);
+        } else {
+            btn.classList.add('incorrect');
+        }
+        const options = btn.parentElement.querySelectorAll('.quiz-option');
+        options.forEach(o => o.disabled = true);
+    }
+
+    // 4. Lógica de Puntuación y Progreso
+    function updateScore(pts) {
+        user.score = Math.min(5, user.score + pts);
+        document.getElementById('score-display').innerText = `Puntos: ${user.score.toFixed(1)}`;
+    }
+
+    function updateProgress() {
+        user.progress = (tasksCompleted / totalTasks) * 100;
+        document.getElementById('main-progress').style.width = `${user.progress}%`;
+    }
+
+    // 5. Animación Canvas (Partículas de Luz)
+    let particles = [];
+    function initCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        animate();
+    }
+
+    class Particle {
+        constructor(x, y, color, type) {
+            this.x = x; this.y = y; this.color = color; this.type = type;
+            this.vx = (Math.random() - 0.5) * 4;
+            this.vy = (Math.random() - 0.5) * 4;
+            this.life = 100;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 4, 0, Math.PI*2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        }
+        update() {
+            this.x += this.vx; this.y += this.vy; this.life--;
+        }
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        for(let i=0; i<10; i++) {
+            particles.push(new Particle(e.offsetX, e.offsetY, '#fdd835', 'photon'));
+            particles.push(new Particle(e.offsetX, e.offsetY, '#81d4fa', 'oxygen'));
+        }
+    });
+
+    function animate() {
+        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+        
+        // Dibujo de Hoja
+        ctx.fillStyle = '#2e7d32';
+        ctx.beginPath();
+        ctx.ellipse(canvas.width/2, canvas.height/2, 100, 50, 0, 0, Math.PI*2);
+        ctx.fill();
+
+        particles.forEach((p, i) => {
+            p.update(); p.draw();
+            if(p.life <= 0) particles.splice(i, 1);
+        });
+        requestAnimationFrame(animate);
+    }
+
+    // 6. Protección Anti-Fraude
+    function checkCadence(el) {
+        const now = Date.now();
+        if(typingData.lastTime !== 0) {
+            const delta = now - typingData.lastTime;
+            typingData.deltas.push(delta);
+        }
+        typingData.lastTime = now;
+
+        // Si hay más de 5 caracteres pegados casi instantáneamente
+        if(typingData.deltas.length > 2) {
+            const avg = typingData.deltas.reduce((a,b)=>a+b)/typingData.deltas.length;
+            if(avg < 20) { // Menos de 20ms por tecla es inhumano
+                document.getElementById('fraud-msg').style.display = 'block';
+                el.value = "";
+                typingData.deltas = [];
+            }
+        }
+    }
+
+    // Bloqueadores
+    ['paste', 'drop', 'contextmenu'].forEach(evt => {
+        document.addEventListener(evt, e => {
+            if(e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
+                e.preventDefault();
+                alert("La copia externa no está permitida. Escribe con tus propias palabras quindianas.");
+            }
+        });
+    });
+
+    // 7. Finalización y Exportación
+    function finishOVA() {
+        const openAns = document.getElementById('open-q1').value;
+        if(openAns.length < 10) {
+            alert("Por favor completa la respuesta abierta con al menos 10 palabras.");
+            return;
+        }
+
+        const report = `
+REPORTES DE MISIÓN: EL SOL PATRÓN DE LA FINCA
+---------------------------------------------
+ESTUDIANTE: ${user.firstname} ${user.lastname}
+VEREDA: Pueblo Rico, Quimbaya (Quindío)
+NOTA FINAL: ${user.score.toFixed(1)} / 5.0
+PROGRESO DE ACTIVIDADES: ${user.progress}%
+---------------------------------------------
+RESPUESTA ABIERTA (FOTOSÍNTESIS Y SOMBRA):
+"${openAns}"
+---------------------------------------------
+Firma: Sistema OVA de Educación Rural - Grado 7
+        `;
+
+        const blob = new Blob([report], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Reporte_${user.lastname}_PuebloRico.txt`;
+        a.click();
+        alert("¡Misión Cumplida! Tu reporte se ha descargado.");
+    }
+</script>
+
+</body>
+</html>

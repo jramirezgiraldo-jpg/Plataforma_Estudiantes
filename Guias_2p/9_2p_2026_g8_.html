@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variabilidad en la Familia Humana - Quimbaya</title>
+    <style>
+        /* ================= PALETA DE COLORES (PAISAJE CULTURAL CAFETERO) ================= */
+        :root {
+            --c-cafe-oscuro: #3E2723;
+            --c-cafe-claro: #8D6E63;
+            --c-verde-follaje: #2E7D32;
+            --c-verde-limon: #9CCC65;
+            --c-naranja-citrico: #FF9800;
+            --c-crema-fondo: #FFF8E1;
+            --c-blanco: #FFFFFF;
+            --c-peligro: #D32F2F;
+            --c-exito: #388E3C;
+            --c-texto: #212121;
+            --font-principal: 'Segoe UI', system-ui, sans-serif;
+            --radio-borde: 12px;
+            --sombra-suave: 0 6px 16px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-principal); }
+        body { background-color: var(--c-crema-fondo); color: var(--c-texto); line-height: 1.7; overflow-x: hidden; scroll-behavior: smooth; }
+
+        /* ================= HUD Y GAMIFICACIÓN ================= */
+        #hud-top {
+            position: fixed; top: 0; left: 0; width: 100%; height: 65px;
+            background: linear-gradient(90deg, var(--c-verde-follaje), var(--c-cafe-oscuro));
+            color: var(--c-blanco); display: flex; justify-content: space-between; align-items: center;
+            padding: 0 25px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.4s;
+        }
+        .hud-oculto { transform: translateY(-100%); }
+        .hud-info { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 1.1rem; }
+        
+        .progreso-contenedor {
+            flex-grow: 1; margin: 0 40px; background: rgba(255,255,255,0.25); height: 16px;
+            border-radius: 8px; position: relative; overflow: hidden;
+        }
+        #barra-progreso {
+            height: 100%; width: 0%; background: var(--c-naranja-citrico);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px var(--c-naranja-citrico);
+        }
+        .svg-icon { width: 28px; height: 28px; fill: currentColor; }
+
+        /* ================= PANTALLA DE BIENVENIDA ================= */
+        #pantalla-bienvenida {
+            height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: radial-gradient(circle at center, rgba(46,125,50,0.85), rgba(62,39,35,0.95)), 
+                        url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M50 10 Q60 40 90 50 Q60 60 50 90 Q40 60 10 50 Q40 40 50 10" fill="none" stroke="%23ffffff" stroke-width="2" opacity="0.1"/></svg>');
+            color: var(--c-blanco); text-align: center; padding: 20px;
+        }
+        .login-box {
+            background: rgba(255,255,255,0.08); backdrop-filter: blur(12px); padding: 50px;
+            border-radius: var(--radio-borde); border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); max-width: 450px; width: 100%;
+        }
+        .login-box h1 { font-size: 2.8rem; margin-bottom: 5px; color: var(--c-blanco); border:none; padding:0; }
+        .login-box p { font-size: 1.2rem; color: #E8F5E9; margin-bottom: 30px; }
+        
+        .input-group { margin-bottom: 25px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #fff; }
+        .input-style {
+            width: 100%; padding: 15px; border-radius: 8px; border: 2px solid transparent;
+            font-size: 1.1rem; outline: none; transition: 0.3s; background: rgba(255,255,255,0.95);
+        }
+        .input-style:focus { border-color: var(--c-naranja-citrico); box-shadow: 0 0 12px rgba(255,152,0,0.6); }
+        
+        .btn-principal {
+            background-color: var(--c-naranja-citrico); color: var(--c-blanco); border: none;
+            padding: 16px 30px; border-radius: 30px; font-size: 1.2rem; font-weight: 800;
+            cursor: pointer; transition: 0.3s; text-transform: uppercase; width: 100%; letter-spacing: 1px;
+        }
+        .btn-principal:hover:not(:disabled) { transform: translateY(-3px); background-color: #F57C00; box-shadow: 0 8px 20px rgba(255,152,0,0.4); }
+        .btn-principal:disabled { background: #9E9E9E; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ================= ESTRUCTURA OVA ================= */
+        #contenido-main { display: none; padding-top: 85px; max-width: 1000px; margin: 0 auto; padding-bottom: 100px; }
+        
+        .seccion-card {
+            background: var(--c-blanco); margin: 30px 20px; padding: 45px;
+            border-radius: var(--radio-borde); box-shadow: var(--sombra-suave);
+            border-top: 6px solid var(--c-verde-follaje);
+        }
+        
+        h1, h2, h3 { color: var(--c-verde-follaje); margin-bottom: 20px; line-height: 1.3; }
+        h1 { font-size: 2.5rem; border-bottom: 3px solid var(--c-naranja-citrico); padding-bottom: 10px; }
+        h2 { font-size: 1.9rem; margin-top: 35px; color: var(--c-cafe-oscuro); }
+        h3 { font-size: 1.4rem; color: var(--c-cafe-claro); }
+
+        .texto-narrativo { text-align: justify; margin-bottom: 25px; font-size: 1.15rem; color: #333; }
+        .texto-narrativo::first-letter { font-size: 2.5em; color: var(--c-naranja-citrico); font-weight: bold; float: left; margin-right: 8px; line-height: 1; }
+
+        /* ================= BOTONES Y PREGUNTAS ================= */
+        .bloque-quiz {
+            background: #FAFAFA; border: 2px solid #EEEEEE; padding: 25px;
+            border-radius: var(--radio-borde); margin-bottom: 25px; transition: 0.3s;
+        }
+        .bloque-quiz:hover { border-color: var(--c-verde-limon); }
+        .bloque-quiz p { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; }
+        
+        .btn-opcion {
+            display: block; width: 100%; text-align: left; padding: 14px 20px; margin: 8px 0;
+            background: var(--c-blanco); border: 2px solid var(--c-verde-limon);
+            border-radius: 8px; cursor: pointer; font-size: 1.05rem; transition: 0.2s; color: var(--c-texto);
+        }
+        .btn-opcion:hover:not(:disabled) { background: #F1F8E9; transform: translateX(5px); }
+        .btn-opcion.correcta { background: #E8F5E9; border-color: var(--c-exito); color: var(--c-exito); font-weight: bold; }
+        .btn-opcion.incorrecta { background: #FFEBEE; border-color: var(--c-peligro); color: var(--c-peligro); }
+
+        /* ================= PAUSAS ACTIVAS ================= */
+        .caja-pausa {
+            background: linear-gradient(to right, #FFFDE7, #FFF); border-left: 6px solid var(--c-naranja-citrico);
+            padding: 25px; margin: 30px 0; border-radius: 0 10px 10px 0; box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .btn-pausa {
+            background: var(--c-cafe-claro); color: var(--c-blanco); border: none; padding: 10px 22px;
+            border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s;
+        }
+        .btn-pausa:hover:not(:disabled) { background: var(--c-cafe-oscuro); }
+        .btn-pausa:disabled { background: var(--c-exito); cursor: default; }
+
+        /* ================= TABLAS ================= */
+        .tabla-quindiana {
+            width: 100%; border-collapse: collapse; margin: 30px 0; font-size: 1.05rem;
+            box-shadow: var(--sombra-suave); border-radius: 10px; overflow: hidden;
+        }
+        .tabla-quindiana th, .tabla-quindiana td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        .tabla-quindiana th { background: var(--c-verde-follaje); color: var(--c-blanco); }
+        .tabla-quindiana tr:nth-child(even) { background: #F5F5F5; }
+
+        /* ================= JUEGOS DRAG & DROP ================= */
+        .zona-dd {
+            background: #FDFDFD; border: 3px dashed var(--c-naranja-citrico); border-radius: var(--radio-borde);
+            padding: 30px; margin: 35px 0; text-align: center;
+        }
+        .dd-items, .dd-huecos { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 20px 0; min-height: 55px; }
+        
+        .item-drag {
+            background: var(--c-cafe-oscuro); color: var(--c-blanco); padding: 10px 20px;
+            border-radius: 6px; cursor: grab; font-weight: bold; font-size: 1.15rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); user-select: none; transition: transform 0.1s;
+        }
+        .item-drag:active { cursor: grabbing; transform: scale(1.05); }
+        
+        .hueco-drop {
+            min-width: 55px; height: 55px; border: 3px solid var(--c-cafe-claro); border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; background: var(--c-blanco);
+            font-weight: bold; font-size: 1.15rem; color: var(--c-texto); transition: 0.2s;
+        }
+        .hueco-drop.palabra { min-width: 140px; padding: 0 15px; }
+        .hueco-drop.hover { background: #FFF3E0; border-color: var(--c-naranja-citrico); transform: scale(1.05); }
+
+        /* ================= VISUALES Y CANVAS ================= */
+        .caja-svg {
+            margin: 40px 0; text-align: center; background: #fff; padding: 25px;
+            border-radius: var(--radio-borde); box-shadow: var(--sombra-suave); border: 1px solid #E0E0E0;
+        }
+        canvas {
+            background: #1A1A1A; border-radius: 10px; max-width: 100%;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4); cursor: pointer; margin-top: 15px;
+        }
+
+        /* ================= ANTI-FRAUDE ================= */
+        .textarea-seguro {
+            width: 100%; height: 120px; padding: 15px; border: 2px solid #ccc; border-radius: 8px;
+            resize: vertical; font-size: 1.05rem; transition: 0.3s; margin-top: 10px;
+        }
+        .textarea-seguro:focus { border-color: var(--c-verde-follaje); box-shadow: 0 0 10px rgba(46,125,50,0.2); outline: none; }
+        
+        #alerta-fraude {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+            display: none; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(5px);
+        }
+        .modal-fraude {
+            background: var(--c-blanco); padding: 40px; border-radius: var(--radio-borde);
+            text-align: center; max-width: 480px; border-top: 12px solid var(--c-peligro);
+            animation: vibrar 0.3s ease-in-out;
+        }
+        @keyframes vibrar { 0%,100%{transform: translateX(0);} 25%,75%{transform: translateX(-10px);} 50%{transform: translateX(10px);} }
+
+        #resultados-finales {
+            display: none; background: #E8F5E9; padding: 40px; border-radius: var(--radio-borde);
+            text-align: center; margin-top: 50px; border: 3px solid var(--c-exito);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- HUD SUPERIOR -->
+    <div id="hud-top" class="hud-oculto">
+        <div class="hud-info">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/></svg>
+            <span id="ui-nombre">Estudiante</span>
+        </div>
+        <div class="progreso-contenedor">
+            <div id="barra-progreso"></div>
+        </div>
+        <div class="hud-info">
+            <span>Puntos:</span>
+            <span id="ui-puntos" style="color: var(--c-naranja-citrico); font-size: 1.4rem;">0.0</span> / 5.0
+            <svg class="svg-icon" style="fill: var(--c-naranja-citrico);" viewBox="0 0 24 24">
+                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12C20,14.43 18.9,16.61 17.15,18.06C15.53,19.26 13.34,20 11,20C8.66,20 6.47,19.26 4.85,18.06C3.1,16.61 2,14.43 2,12A8,8 0 0,1 12,4M11,16H13V18H11V16M12,6C10.34,6 9,7.34 9,9H11C11,8.45 11.45,8 12,8C12.55,8 13,8.45 13,9C13,10.5 11,10.25 11,13H13C13,11.25 15,11 15,9C15,7.34 13.66,6 12,6Z"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- MODAL ANTI-FRAUDE -->
+    <div id="alerta-fraude">
+        <div class="modal-fraude">
+            <svg style="width:70px; fill: var(--c-peligro); margin-bottom:15px;" viewBox="0 0 24 24"><path d="M13 14H11V9H13M13 18H11V16H13M1 21H23L12 2L1 21Z"/></svg>
+            <h2 style="color: var(--c-peligro);">¡Atención! Integridad Académica</h2>
+            <p style="font-size: 1.1rem; margin: 15px 0;">El sistema detectó un intento de copiar/pegar o una velocidad de escritura anormal (uso de IA).</p>
+            <p style="color: #666; font-style:italic;">"En Quimbaya cosechamos nuestras propias ideas."</p>
+            <p>El campo ha sido borrado. Por favor, escribe tu respuesta manualmente.</p>
+            <button class="btn-principal" style="margin-top: 20px; background-color: var(--c-cafe-oscuro);" onclick="document.getElementById('alerta-fraude').style.display='none'">Entendido</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA INGRESO -->
+    <div id="pantalla-bienvenida">
+        <div class="login-box">
+            <h1>ADN Quindiano</h1>
+            <p>La Variabilidad en la Familia Humana (Grado 9)</p>
+            
+            <div class="input-group">
+                <label>Nombres Completos:</label>
+                <input type="text" id="in-nom" class="input-style" placeholder="Ej: Camilo Andrés">
+            </div>
+            <div class="input-group">
+                <label>Apellidos Completos:</label>
+                <input type="text" id="in-ape" class="input-style" placeholder="Ej: Restrepo Gómez">
+            </div>
+            
+            <button id="btn-iniciar" class="btn-principal">Ingresar al Recorrido</button>
+        </div>
+    </div>
+
+    <!-- CONTENIDO OVA -->
+    <div id="contenido-main">
+
+        <!-- SECCIÓN 1: INTRODUCCIÓN -->
+        <div class="seccion-card">
+            <h1>La Biodiversidad de Nuestra Gente</h1>
+            <h3>Objetivo de Aprendizaje</h3>
+            <p class="texto-narrativo">
+                Identificar las causas biológicas y ambientales de la variabilidad genética entre hermanos, comprendiendo procesos como la meiosis, el entrecruzamiento cromosómico y la fecundación aleatoria, utilizando como analogía las familias, los cultivos de cítricos y la ganadería de la Vereda Pueblo Rico en Quimbaya.
+            </p>
+
+            <h3 style="margin-top: 35px;">Pre-saberes: ¿Qué observas en la vereda?</h3>
+            <p>Responde a estas situaciones de la vida real (Aciertos: +0.1 pts).</p>
+
+            <div class="bloque-quiz" id="pre-1">
+                <p>1. En la familia de Don Pedro (caficultor de Pueblo Rico), tienen tres hijos biológicos. Uno es muy alto y de piel clara, el otro es de estatura media y cabello rizado, y la menor es bajita con ojos claros. ¿Son genéticamente idénticos?</p>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('pre-1', this, false)">A. Sí, porque provienen exactamente de los mismos padres.</button>
+                <button class="btn-opcion" data-correct="true" onclick="verificarQuiz('pre-1', this, true)">B. No, cada hermano (salvo gemelos idénticos) hereda una combinación única de genes.</button>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('pre-1', this, false)">C. Depende de la alimentación que hayan tenido.</button>
+            </div>
+
+            <div class="bloque-quiz" id="pre-2">
+                <p>2. En biología, ¿cuál es el proceso celular responsable de crear óvulos y espermatozoides con la mitad de la información genética?</p>
+                <button class="btn-opcion" data-correct="true" onclick="verificarQuiz('pre-2', this, true)">A. La Meiosis.</button>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('pre-2', this, false)">B. La Mitosis celular de la piel.</button>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('pre-2', this, false)">C. La fotosíntesis.</button>
+            </div>
+
+            <div class="bloque-quiz" id="pre-3">
+                <p>3. Si siembras semillas extraídas de una misma naranja cultivada en Quimbaya, ¿crecerán árboles exactamente iguales?</p>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('pre-3', this, false)">A. Sí, porque son clones de la misma fruta.</button>
+                <button class="btn-opcion" data-correct="true" onclick="verificarQuiz('pre-3', this, true)">B. No, cada semilla es resultado de una polinización única y tendrá variaciones.</button>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('pre-3', this, false)">C. Solo si se siembran el mismo día del año.</button>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: CUERPO INDUCTIVO -->
+        <div class="seccion-card">
+            <h2>Hermanos de una Misma Cosecha</h2>
+            
+            <p class="texto-narrativo">
+                Camina por los senderos de la Vereda Pueblo Rico y observarás algo fascinante en las familias tradicionales que han habitado el municipio de Quimbaya por generaciones. Toma como ejemplo a la familia de los recolectores de café. Tienen cinco hijos nacidos del mismo padre y la misma madre. Sin embargo, al verlos reunidos en el pasillo de la finca, ninguno es igual al otro. Uno sacó la nariz aguileña del abuelo, otro heredó la resistencia física de la madre, uno tiene el cabello negro lacio y su hermana tiene rizos castaños. Si todos vienen de la misma "fábrica" genética, ¿por qué existe tanta variabilidad?
+            </p>
+            <p class="texto-narrativo">
+                Esta variabilidad no es exclusiva de los seres humanos. En las fincas ganaderas de la región, un toro semental y una misma vaca pueden tener múltiples terneros a lo largo de los años. Al igual que los hermanos de la familia cafetera, ningún ternero tendrá exactamente el mismo patrón de manchas ni el mismo temperamento. Lo mismo ocurre en los cultivos de cítricos: si tomas diez semillas de una naranja y las siembras, cada árbol crecerá con ligeras diferencias en su resistencia, altura o dulzor de la fruta. A este fenómeno natural se le conoce como <strong>Variabilidad Genética</strong>.
+            </p>
+            <p class="texto-narrativo">
+                Para entender este misterio, debemos mirar dentro de las células reproductivas. A diferencia de las células de tu piel o tus músculos, que se clonan haciendo copias exactas de sí mismas (mitosis), los espermatozoides y los óvulos se forman mediante un proceso radicalmente distinto llamado <strong>Meiosis</strong>. La meiosis es como un "barajador de cartas" profesional. Su objetivo principal no es solo reducir a la mitad la cantidad de cromosomas (de 46 a 23 en humanos), sino mezclar la información genética para que cada gameto (célula sexual) sea absolutamente único e irrepetible en la historia del universo.
+            </p>
+            <p class="texto-narrativo">
+                Además de la genética, hay otro factor crucial en Pueblo Rico que genera diferencias entre hermanos: <strong>El Ambiente</strong>. La genética te da las "instrucciones base" (Genotipo), pero el ambiente donde creces moldea cómo se expresan esas instrucciones (Fenotipo). Imagina a dos hermanos. Uno de ellos dedica su vida a trabajar cargando bultos de café bajo el sol quindiano y comiendo sancocho tradicional; el otro trabaja en una oficina de turismo en el pueblo. Con los años, el primero será más musculoso, su piel estará bronceada y curtida, mientras que el segundo tendrá una complexión distinta. Aunque comparten genética, el ambiente los hizo fenotípicamente diferentes.
+            </p>
+            <p class="texto-narrativo">
+                En resumen, la diversidad en una familia humana es el resultado de una lotería biológica increíblemente compleja combinada con el entorno. La meiosis garantiza que los padres entreguen una versión mezclada de su historia familiar a cada hijo. Esta es la base de la evolución y la razón por la cual las comunidades de Quindío son tan ricas, diversas y capaces de adaptarse a los retos del futuro.
+            </p>
+
+            <!-- TABLA COMPARATIVA -->
+            <h3>Cuadro Comparativo: Fuentes de Variación en Quimbaya</h3>
+            <table class="tabla-quindiana">
+                <thead>
+                    <tr>
+                        <th>Origen de la Diferencia</th>
+                        <th>Nivel de Acción</th>
+                        <th>Ejemplo en la Vereda Pueblo Rico</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Genético (Meiosis)</strong></td>
+                        <td>Interno (ADN)</td>
+                        <td>Un hermano hereda gen de ojos claros y otro de ojos oscuros de los mismos padres.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fecundación Aleatoria</strong></td>
+                        <td>Momento de Concepción</td>
+                        <td>De millones de granos de polen en un cítrico, solo uno fecunda al óvulo específico.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ambiental / Epigenético</strong></td>
+                        <td>Externo (Estilo de vida, nutrición)</td>
+                        <td>Dos hermanos; uno toma mucha leche de la finca y crece más alto por mejor nutrición.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- ACTIVIDAD DD LETRAS -->
+            <div class="zona-dd" id="act-letras-1">
+                <h3>Actividad 1: El Barajador Genético (0.2 pts)</h3>
+                <p>Ordena las letras para formar el nombre del proceso de división celular que asegura que los hermanos nazcan con información genética mezclada y reducida a la mitad.</p>
+                <div class="dd-items" id="items-L1"></div>
+                <div class="dd-huecos" id="huecos-L1"></div>
+                <button class="btn-principal" onclick="validarLetras('act-letras-1', 'MEIOSIS', 0.2)">Comprobar Palabra</button>
+            </div>
+
+            <!-- ACTIVIDAD DD PALABRAS -->
+            <div class="zona-dd" id="act-palabras-1">
+                <h3>Actividad 2: Identidad Biológica (0.2 pts)</h3>
+                <p>Ordena las palabras para formar un principio básico sobre los hermanos en una familia (no gemelos).</p>
+                <div class="dd-items" id="items-P1"></div>
+                <div class="dd-huecos" id="huecos-P1"></div>
+                <button class="btn-principal" onclick="validarPalabras('act-palabras-1', 'CADA HERMANO TIENE ADN UNICO', 0.2)">Comprobar Frase</button>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 1-5 -->
+            <h2>Retos para tu Cuaderno Físico (Pausas Activas)</h2>
+            <p>Realiza estas actividades desconectado. (Ganarás 0.1 pts al marcarlas como hechas).</p>
+            
+            <div class="caja-pausa">
+                <h3>1. Reflexión Familiar</h3>
+                <p>Escribe tres características físicas en las que te pareces a tus hermanos o padres (ej: color de pelo, altura) y tres en las que eres totalmente diferente.</p>
+                <button class="btn-pausa" id="btn-p1" onclick="marcarPausa(1)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>2. Dibujo de Proceso</h3>
+                <p>Dibuja dos espermatozoides y dos óvulos. Ponles colores diferentes adentro para representar que ninguno lleva la misma carga genética exacta.</p>
+                <button class="btn-pausa" id="btn-p2" onclick="marcarPausa(2)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>3. Mapa Mental Simple</h3>
+                <p>Crea un mapa mental con "Variabilidad" en el centro. Ramas: Meiosis, Ambiente, Mutaciones, Fecundación.</p>
+                <button class="btn-pausa" id="btn-p3" onclick="marcarPausa(3)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>4. Factor Ambiental Quindiano</h3>
+                <p>Anota: Si dos hermanos heredan el gen para ser altos, pero en su infancia hay una crisis y uno sufre desnutrición en la finca, ¿qué pasará con su altura final?</p>
+                <button class="btn-pausa" id="btn-p4" onclick="marcarPausa(4)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>5. Diagrama de Flujo</h3>
+                <p>Haz este flujo: ADN Padre + ADN Madre -> Meiosis (mezcla) -> Fecundación (azar) -> Hijo Único.</p>
+                <button class="btn-pausa" id="btn-p5" onclick="marcarPausa(5)">Ya lo hice en el cuaderno</button>
+            </div>
+
+        </div>
+
+        <!-- PREGUNTA ICFES (SVG) -->
+        <div class="seccion-card">
+            <h2>Competencia Científica: Indagar (0.4 pts)</h2>
+            <p class="texto-narrativo">En una investigación de salud en Pueblo Rico, se midió la estatura (fenotipo) de 100 jóvenes adultos hijos de familias cafeteras de la misma región. Observa la gráfica de distribución poblacional (Campana de Gauss).</p>
+
+            <div class="caja-svg">
+                <svg width="500" height="300" viewBox="0 -20 500 320">
+                    <!-- Ejes -->
+                    <line x1="50" y1="250" x2="450" y2="250" stroke="#333" stroke-width="2"/>
+                    <line x1="50" y1="20" x2="50" y2="250" stroke="#333" stroke-width="2"/>
+                    
+                    <!-- Textos Ejes -->
+                    <text x="250" y="290" font-size="14" font-weight="bold" text-anchor="middle">Estatura en cm (Fenotipo)</text>
+                    <text x="20" y="150" font-size="14" font-weight="bold" transform="rotate(-90, 20, 150)" text-anchor="middle">Número de Personas</text>
+                    
+                    <!-- Marcas X -->
+                    <text x="100" y="270" font-size="12" text-anchor="middle">150cm</text>
+                    <text x="180" y="270" font-size="12" text-anchor="middle">160cm</text>
+                    <text x="250" y="270" font-size="12" text-anchor="middle">170cm</text>
+                    <text x="320" y="270" font-size="12" text-anchor="middle">180cm</text>
+                    <text x="400" y="270" font-size="12" text-anchor="middle">190cm</text>
+
+                    <!-- Campana de Gauss (Variabilidad continua) -->
+                    <path d="M 50 250 Q 150 250 200 120 T 250 40 T 300 120 T 350 250 L 450 250" fill="rgba(255, 152, 0, 0.4)" stroke="#FF9800" stroke-width="3"/>
+                    
+                    <!-- Línea Media -->
+                    <line x1="250" y1="40" x2="250" y2="250" stroke="#D32F2F" stroke-dasharray="5,5" stroke-width="2"/>
+                    <text x="260" y="80" font-size="12" fill="#D32F2F">Promedio poblacional</text>
+                </svg>
+            </div>
+
+            <div class="bloque-quiz" id="icfes-1">
+                <p>A partir de la gráfica, que muestra una gran variación continua de estaturas en lugar de solo "altos" o "bajos", ¿qué se puede concluir sobre la estatura en la familia humana?</p>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('icfes-1', this, false)">A. La estatura depende de un solo gen dominante o recesivo, como en los experimentos de Mendel.</button>
+                <button class="btn-opcion" data-correct="true" onclick="verificarQuiz('icfes-1', this, true)">B. La estatura es un rasgo poligénico (muchos genes involucrados) y fuertemente influenciado por el ambiente (nutrición), creando variabilidad continua.</button>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('icfes-1', this, false)">C. Todos los hermanos heredarán obligatoriamente la estatura promedio de 170cm.</button>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: CUERPO DEDUCTIVO -->
+        <div class="seccion-card">
+            <h2>El Entrecruzamiento: La Lotería de la Vida</h2>
+            
+            <p class="texto-narrativo">
+                Profundicemos en el momento exacto donde ocurre la "magia" de la variabilidad biológica. Cuando los testículos o los ovarios producen células sexuales, ocurre la Meiosis. Durante la <strong>Profase I</strong> de la meiosis, sucede un evento biológico llamado <em>Crossing-over</em> o <strong>Entrecruzamiento Cromosómico</strong>. Imagina que tienes un cromosoma heredado de tu abuelo paterno y otro de tu abuela paterna. En lugar de pasar uno de ellos intacto a tu hijo, estos dos cromosomas se abrazan e intercambian fragmentos de ADN. Crean un "cromosoma Frankenstein" completamente nuevo que nunca antes había existido en la historia.
+            </p>
+            <p class="texto-narrativo">
+                Después de este intercambio de piezas, viene la <strong>Permutación Cromosómica</strong>. Los 23 pares de cromosomas humanos se alinean en el centro de la célula y se reparten al azar. Es como lanzar 23 monedas al aire al mismo tiempo para ver cuántas caen cara y cuántas sello. Matemáticamente, solo por este proceso de distribución al azar, un humano puede generar más de 8 millones de combinaciones distintas de espermatozoides u óvulos. 
+            </p>
+            <p class="texto-narrativo">
+                Ahora, multiplica eso por la fecundación. Si un hombre produce 8 millones de combinaciones de espermatozoides y una mujer 8 millones de combinaciones de óvulos, la probabilidad de que la misma pareja tenga dos hijos genéticamente idénticos (en embarazos distintos) es de 1 en 64 billones. Es literalmente más probable ganarse el Baloto en Colombia varias veces seguidas que tener un hermano no gemelo genéticamente igual a ti.
+            </p>
+            <p class="texto-narrativo">
+                Esta inmensa lotería genética es la defensa natural de la vida. En la ganadería de Pueblo Rico, si todos los terneros fueran clones exactos de los padres, un solo virus nuevo podría aniquilar a todo el hato ganadero porque todos tendrían la misma debilidad genética. Al haber variabilidad, siempre habrá algunos individuos en la familia o en la población que, por suerte genética, nazcan con resistencia a nuevas enfermedades o con mejor adaptación a cambios climáticos extremos en el Quindío.
+            </p>
+            <p class="texto-narrativo">
+                Por último, las <strong>Mutaciones</strong> (cambios aleatorios en el ADN) aportan nuevas cartas a la baraja a lo largo de las generaciones. A esto súmale la Epigenética, que es cómo el turismo, el trabajo físico en el campo, el estrés y la alimentación encienden o apagan genes durante la vida. Así, la variabilidad de tu familia es un triunfo de la estadística biológica y del Paisaje Cultural Cafetero.
+            </p>
+
+            <!-- SIMULADOR CANVAS: CROSSING OVER -->
+            <div class="caja-svg">
+                <h3>Simulador a 60fps: Entrecruzamiento (Crossing Over)</h3>
+                <p style="font-size:0.9rem; margin-bottom: 10px;">Haz clic sobre los cromosomas para simular cómo intercambian pedazos de ADN en la Profase I, creando variabilidad.</p>
+                <canvas id="canvas-crossing" width="600" height="300"></canvas>
+                <p id="txt-canvas" style="font-weight: bold; margin-top: 10px; color: var(--c-naranja-citrico);">Cromosomas Originales (Abuelo y Abuela)</p>
+            </div>
+
+            <!-- ACTIVIDAD DD LETRAS 2 -->
+            <div class="zona-dd" id="act-letras-2">
+                <h3>Actividad 3: La Célula Sexual (0.2 pts)</h3>
+                <p>Ordena las letras para formar el término científico que agrupa a óvulos y espermatozoides (las células que llevan la información mezclada).</p>
+                <div class="dd-items" id="items-L2"></div>
+                <div class="dd-huecos" id="huecos-L2"></div>
+                <button class="btn-principal" onclick="validarLetras('act-letras-2', 'GAMETO', 0.2)">Comprobar Palabra</button>
+            </div>
+
+            <!-- ACTIVIDAD DD PALABRAS 2 -->
+            <div class="zona-dd" id="act-palabras-2">
+                <h3>Actividad 4: La Clave de la Variabilidad (0.2 pts)</h3>
+                <p>Ordena las palabras para revelar qué genera el abrazo cromosómico (Crossing-over).</p>
+                <div class="dd-items" id="items-P2"></div>
+                <div class="dd-huecos" id="huecos-P2"></div>
+                <button class="btn-principal" onclick="validarPalabras('act-palabras-2', 'EL ENTRECRUZAMIENTO GENERA NUEVAS COMBINACIONES', 0.2)">Comprobar Frase</button>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 6-10 -->
+            <h2>Retos Finales para el Cuaderno</h2>
+            
+            <div class="caja-pausa">
+                <h3>6. Matemáticas del Azar</h3>
+                <p>Anota la fórmula: 8 millones de espermatozoides X 8 millones de óvulos = 64 Billones de posibles hermanos diferentes.</p>
+                <button class="btn-pausa" id="btn-p6" onclick="marcarPausa(6)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>7. Dibujo del Crossing-Over</h3>
+                <p>Dibuja dos X (cromosomas) abrazándose. Luego dibuja cómo quedan: Uno rojo con la punta azul y el otro azul con la punta roja.</p>
+                <button class="btn-pausa" id="btn-p7" onclick="marcarPausa(7)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>8. Tabla de Datos Ambientales</h3>
+                <p>Crea una tabla con dos columnas: "Rasgo Genético" (Ej: Piel clara) y "Modificación Ambiental" (Ej: Piel bronceada por recolectar café).</p>
+                <button class="btn-pausa" id="btn-p8" onclick="marcarPausa(8)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>9. Gemelos Idénticos</h3>
+                <p>Investiga y escribe en tu cuaderno: Si la meiosis siempre mezcla, ¿por qué los gemelos idénticos sí son iguales? (Pista: ocurre DESPUÉS de la fecundación).</p>
+                <button class="btn-pausa" id="btn-p9" onclick="marcarPausa(9)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>10. Síntesis Evolutiva</h3>
+                <p>Escribe 3 renglones explicando por qué a las fincas de Quimbaya les conviene que haya variabilidad en sus semillas y en sus animales ante una plaga.</p>
+                <button class="btn-pausa" id="btn-p10" onclick="marcarPausa(10)">Ya lo hice en el cuaderno</button>
+            </div>
+        </div>
+
+        <!-- EVALUACIÓN FINAL -->
+        <div class="seccion-card">
+            <h2>Taller Final: El Genoma Quindiano</h2>
+            <p style="color: var(--c-peligro); font-weight:bold; margin-bottom: 20px;">Atención: El sistema Anti-Fraude está activado. No puedes pegar texto.</p>
+
+            <h3>Selección Múltiple (0.3 pts c/u)</h3>
+            
+            <div class="bloque-quiz" id="eval-m1">
+                <p>1. ¿Cuál es la principal fuente de variabilidad genética durante la meiosis (Profase I)?</p>
+                <select id="sel-m1" class="input-style" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">La mitosis de las células del estómago.</option>
+                    <option value="B">El entrecruzamiento cromosómico (Crossing-over).</option>
+                    <option value="C">La nutrición a base de cítricos y plátano.</option>
+                </select>
+            </div>
+
+            <div class="bloque-quiz" id="eval-m2">
+                <p>2. Si dos hermanos crecen en el mismo hogar en Pueblo Rico, pero uno es expuesto constantemente al sol y desarrolla pecas, estamos ante un caso de:</p>
+                <select id="sel-m2" class="input-style" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">Variación inducida por el ambiente (Fenotipo).</option>
+                    <option value="B">Mutación genética mortal.</option>
+                    <option value="C">Clonación genética espontánea.</option>
+                </select>
+            </div>
+
+            <div class="bloque-quiz" id="eval-m3">
+                <p>3. ¿A qué nos referimos con la "lotería de la fecundación"?</p>
+                <select id="sel-m3" class="input-style" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">A que la herencia genética se puede comprar en la vereda.</option>
+                    <option value="B">Al azar de qué espermatozoide específico (de entre millones) fecunda a qué óvulo específico.</option>
+                    <option value="C">A que el ADN se rompe y desaparece.</option>
+                </select>
+            </div>
+
+            <div class="bloque-quiz" id="eval-m4">
+                <p>4. La permutación cromosómica asegura que:</p>
+                <select id="sel-m4" class="input-style" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">Los gametos reciban una mezcla aleatoria de cromosomas paternos y maternos.</option>
+                    <option value="B">Todos los hijos varones sean idénticos al padre.</option>
+                    <option value="C">Los cromosomas se conviertan en proteínas.</option>
+                </select>
+            </div>
+
+            <div class="bloque-quiz" id="eval-m5">
+                <p>5. Evolutivamente, la variabilidad genética en una familia o población sirve para:</p>
+                <select id="sel-m5" class="input-style" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">Que todos se vean bonitos y estéticos para el turismo.</option>
+                    <option value="B">Aumentar la supervivencia de la especie ante enfermedades o cambios ambientales.</option>
+                    <option value="C">Generar gemelos idénticos masivamente.</option>
+                </select>
+            </div>
+
+            <h3 style="margin-top: 35px;">Preguntas Abiertas (Mín. 10 palabras c/u) (0.2 pts c/u)</h3>
+
+            <div class="bloque-quiz">
+                <label><strong>1. Análisis:</strong> Explica con tus palabras por qué es matemáticamente casi imposible que dos hermanos (no gemelos) sean genéticamente idénticos.</label>
+                <textarea id="eval-a1" class="textarea-seguro" placeholder="Redacta tu explicación aquí..."></textarea>
+            </div>
+
+            <div class="bloque-quiz">
+                <label><strong>2. Contexto Local:</strong> Imagina dos crías de vaca (terneros) de los mismos padres en una finca de Quimbaya. Describe cómo el ambiente (ej. alimentación, parásitos) podría hacerlos fenotípicamente diferentes de adultos.</label>
+                <textarea id="eval-a2" class="textarea-seguro" placeholder="Redacta tu explicación aquí..."></textarea>
+            </div>
+
+            <div class="bloque-quiz">
+                <label><strong>3. Concepto Físico:</strong> ¿Qué papel juegan los espermatozoides y los óvulos (gametos) en transmitir la variabilidad, en lugar de transmitir copias exactas como las células de la piel?</label>
+                <textarea id="eval-a3" class="textarea-seguro" placeholder="Redacta tu explicación aquí..."></textarea>
+            </div>
+
+            <div class="bloque-quiz">
+                <label><strong>4. Analogía Agrícola:</strong> Compara el "Crossing-over" cromosómico con un caficultor que intenta mezclar la resistencia a enfermedades de una planta con el gran tamaño de fruto de otra.</label>
+                <textarea id="eval-a4" class="textarea-seguro" placeholder="Redacta tu explicación aquí..."></textarea>
+            </div>
+
+            <div class="bloque-quiz">
+                <label><strong>5. Reflexión Personal:</strong> Pensando en tu propia familia o en familias de la vereda, ¿consideras que las diferencias físicas o de carácter son más por la genética (meiosis) o por el ambiente y la crianza? Justifica.</label>
+                <textarea id="eval-a5" class="textarea-seguro" placeholder="Redacta tu explicación aquí..."></textarea>
+            </div>
+
+            <button id="btn-finalizar" class="btn-principal" style="margin-top: 25px;">Finalizar y Descargar Certificado</button>
+
+            <!-- RESULTADOS -->
+            <div id="resultados-finales">
+                <h2 style="color: var(--c-exito); font-size: 2.3rem;">¡Laboratorio Finalizado!</h2>
+                <p style="font-size: 1.5rem;">Calificación Final: <strong id="nota-final" style="font-size: 2.2rem; color: var(--c-cafe-oscuro);">0.0</strong> / 5.0</p>
+                
+                <div id="feedback-dinamico" style="background: white; padding: 25px; border-radius: 10px; text-align: left; margin: 25px 0; border: 1px solid #ddd;">
+                    <!-- JS Feed -->
+                </div>
+
+                <button class="btn-principal" onclick="descargarReporteTxt()" style="background-color: var(--c-verde-follaje); width: auto; padding: 12px 30px;">Descargar Reporte (.txt)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT PRINCIPAL -->
+    <script>
+        /**
+         * ==========================================
+         * 1. ESTADO Y LOCALSTORAGE
+         * ==========================================
+         */
+        const SYS_KEY = 'ova_variabilidad_quimbaya_v1';
+        let state = {
+            nom: '', ape: '', pts: 0.0, prog: 0,
+            completados: [], repLocales: {}, finalizado: false
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const m = localStorage.getItem(SYS_KEY);
+            if(m) { state = JSON.parse(m); restaurarUI(); }
+        });
+
+        function guardarData() { localStorage.setItem(SYS_KEY, JSON.stringify(state)); renderHUD(); }
+
+        function addPuntos(cant, id) {
+            if(!state.completados.includes(id)) {
+                state.pts = Math.min(5.0, state.pts + cant);
+                state.prog = Math.min(100, state.prog + 3.4); // Aprox 29 interacciones = 100%
+                state.completados.push(id);
+                guardarData(); return true;
+            }
+            return false;
+        }
+
+        function renderHUD() {
+            document.getElementById('ui-nombre').innerText = `${state.nom} ${state.ape}`;
+            document.getElementById('ui-puntos').innerText = state.pts.toFixed(1);
+            document.getElementById('barra-progreso').style.width = `${state.prog}%`;
+        }
+
+        document.getElementById('btn-iniciar').addEventListener('click', () => {
+            const n = document.getElementById('in-nom').value.trim();
+            const a = document.getElementById('in-ape').value.trim();
+            if(!n || !a) return alert("Por favor ingresa tus nombres y apellidos.");
+            state.nom = n; state.ape = a; guardarData(); arrancarOVA();
+        });
+
+        function arrancarOVA() {
+            document.getElementById('pantalla-bienvenida').style.display = 'none';
+            document.getElementById('contenido-main').style.display = 'block';
+            document.getElementById('hud-top').classList.remove('hud-oculto');
+            renderHUD(); inicializarCanvas();
+        }
+
+        function restaurarUI() {
+            if(state.nom) {
+                arrancarOVA();
+                state.completados.forEach(id => {
+                    if(id.startsWith('pre-') || id.startsWith('icfes-')) {
+                        const b = document.querySelector(`#${id} button[data-correct="true"]`);
+                        if(b) b.classList.add('correcta');
+                        document.querySelectorAll(`#${id} button`).forEach(btn => btn.disabled = true);
+                    }
+                    if(id.startsWith('p')) {
+                        const b = document.getElementById(`btn-${id}`);
+                        if(b) { b.disabled = true; b.textContent = "Completado ✓"; }
+                    }
+                    if(id.startsWith('act-')) {
+                        const b = document.querySelector(`#${id} .btn-principal`);
+                        if(b) { b.disabled = true; b.textContent = "Verificado ✓"; b.style.background = "var(--c-exito)"; }
+                    }
+                });
+                for(let i=1; i<=5; i++) {
+                    if(state.repLocales[`sel-m${i}`]) document.getElementById(`sel-m${i}`).value = state.repLocales[`sel-m${i}`];
+                    if(state.repLocales[`eval-a${i}`]) document.getElementById(`eval-a${i}`).value = state.repLocales[`eval-a${i}`];
+                }
+                if(state.finalizado) presentarFeedback();
+            }
+        }
+
+        /**
+         * ==========================================
+         * 2. QUIZ Y PAUSAS
+         * ==========================================
+         */
+        function verificarQuiz(idContainer, btnObj, esCorrecta) {
+            document.querySelectorAll(`#${idContainer} button`).forEach(b => b.disabled = true);
+            if(esCorrecta) {
+                btnObj.classList.add('correcta');
+                let pts = idContainer.startsWith('icfes') ? 0.4 : 0.1;
+                addPuntos(pts, idContainer);
+            } else {
+                btnObj.classList.add('incorrecta');
+                document.querySelectorAll(`#${idContainer} button`).forEach(b => {
+                    if(b.getAttribute('data-correct') === 'true') b.style.border = '3px solid var(--c-exito)';
+                });
+                state.completados.push(idContainer); guardarData();
+            }
+        }
+
+        function marcarPausa(n) {
+            const b = document.getElementById(`btn-p${n}`);
+            b.disabled = true; b.textContent = "Completado ✓";
+            addPuntos(0.1, `p${n}`);
+        }
+
+        /**
+         * ==========================================
+         * 3. DRAG AND DROP (Vanilla JS)
+         * ==========================================
+         */
+        let dragSrcEl = null;
+
+        function crearDD(idCaja, idItems, idHuecos, arregloTxt, isPalabra) {
+            const contItems = document.getElementById(idItems);
+            const contHuecos = document.getElementById(idHuecos);
+            contItems.innerHTML = ''; contHuecos.innerHTML = '';
+
+            const barajado = [...arregloTxt].sort(() => Math.random() - 0.5);
+
+            barajado.forEach(txt => {
+                const el = document.createElement('div');
+                el.className = 'item-drag'; el.textContent = txt; el.draggable = true;
+                el.addEventListener('dragstart', e => {
+                    dragSrcEl = el; e.dataTransfer.setData('text/plain', txt);
+                    setTimeout(() => el.style.opacity = '0.5', 0);
+                });
+                el.addEventListener('dragend', () => el.style.opacity = '1');
+                contItems.appendChild(el);
+            });
+
+            arregloTxt.forEach(() => {
+                const h = document.createElement('div');
+                h.className = `hueco-drop ${isPalabra ? 'palabra' : ''}`;
+                h.addEventListener('dragover', e => { e.preventDefault(); h.classList.add('hover'); });
+                h.addEventListener('dragleave', () => h.classList.remove('hover'));
+                h.addEventListener('drop', e => {
+                    e.preventDefault(); h.classList.remove('hover');
+                    if(dragSrcEl) {
+                        if(h.textContent !== '') {
+                            // Devolver el que ya estaba
+                            const viejo = document.createElement('div');
+                            viejo.className = 'item-drag'; viejo.textContent = h.textContent; viejo.draggable = true;
+                            viejo.addEventListener('dragstart', ev => { dragSrcEl=viejo; ev.dataTransfer.setData('text', viejo.textContent); setTimeout(()=>viejo.style.opacity='0.5',0); });
+                            viejo.addEventListener('dragend', () => viejo.style.opacity='1');
+                            contItems.appendChild(viejo);
+                        }
+                        h.textContent = dragSrcEl.textContent; dragSrcEl.remove();
+                    }
+                });
+                h.addEventListener('click', () => {
+                    if(h.textContent !== '') {
+                        const viejo = document.createElement('div');
+                        viejo.className = 'item-drag'; viejo.textContent = h.textContent; viejo.draggable = true;
+                        viejo.addEventListener('dragstart', ev => { dragSrcEl=viejo; ev.dataTransfer.setData('text', viejo.textContent); setTimeout(()=>viejo.style.opacity='0.5',0); });
+                        viejo.addEventListener('dragend', () => viejo.style.opacity='1');
+                        contItems.appendChild(viejo);
+                        h.textContent = '';
+                    }
+                });
+                contHuecos.appendChild(h);
+            });
+        }
+
+        crearDD('act-letras-1', 'items-L1', 'huecos-L1', ['M','E','I','O','S','I','S'], false);
+        crearDD('act-palabras-1', 'items-P1', 'huecos-P1', ['CADA','HERMANO','TIENE','ADN','UNICO'], true);
+        crearDD('act-letras-2', 'items-L2', 'huecos-L2', ['G','A','M','E','T','O'], false);
+        crearDD('act-palabras-2', 'items-P2', 'huecos-P2', ['EL','ENTRECRUZAMIENTO','GENERA','NUEVAS','COMBINACIONES'], true);
+
+        function validarLetras(id, res, pts) {
+            let str = '';
+            document.querySelectorAll(`#huecos-${id.split('-')[2]} .hueco-drop`).forEach(h => str += h.textContent);
+            if(str === res) {
+                if(addPuntos(pts, id)) {
+                    const btn = document.querySelector(`#${id} button`);
+                    btn.disabled = true; btn.textContent = "Verificado ✓"; btn.style.background = "var(--c-exito)";
+                    alert("¡Excelente! Orden genético correcto.");
+                }
+            } else alert("Estructura incorrecta, revisa las letras.");
+        }
+
+        function validarPalabras(id, res, pts) {
+            let arr = [];
+            document.querySelectorAll(`#huecos-${id.split('-')[2]} .hueco-drop`).forEach(h => { if(h.textContent) arr.push(h.textContent); });
+            if(arr.join(' ') === res) {
+                if(addPuntos(pts, id)) {
+                    const btn = document.querySelector(`#${id} button`);
+                    btn.disabled = true; btn.textContent = "Verificado ✓"; btn.style.background = "var(--c-exito)";
+                    alert("¡Correcto! Entiendes el principio de la variabilidad.");
+                }
+            } else alert("La frase no tiene sentido biológico. Intenta de nuevo.");
+        }
+
+        /**
+         * ==========================================
+         * 4. ANIMACIÓN CANVAS: CROSSING OVER
+         * ==========================================
+         */
+        function inicializarCanvas() {
+            const cvs = document.getElementById('canvas-crossing');
+            const ctx = cvs.getContext('2d');
+            const txt = document.getElementById('txt-canvas');
+            let estadoCvs = 0; // 0=Separados, 1=Acercando, 2=Crossing, 3=Alejando
+            
+            // Cromosomas (Azul y Naranja)
+            let cr1 = { x: 200, y: 150, cx: '#2196F3', pSup: '#2196F3', pInf: '#2196F3' };
+            let cr2 = { x: 400, y: 150, cx: '#FF9800', pSup: '#FF9800', pInf: '#FF9800' };
+
+            cvs.addEventListener('click', () => {
+                if(estadoCvs === 0) { estadoCvs = 1; txt.textContent = "Sinapsis: Se buscan y se abrazan..."; }
+                else if(estadoCvs === 3) {
+                    // Reset
+                    estadoCvs = 0; cr1.x=200; cr2.x=400;
+                    cr1.pSup='#2196F3'; cr1.pInf='#2196F3';
+                    cr2.pSup='#FF9800'; cr2.pInf='#FF9800';
+                    txt.textContent = "Cromosomas Originales (Clic para iniciar)";
+                }
+            });
+
+            function dibujarCromosoma(c) {
+                // Brazo Superior
+                ctx.fillStyle = c.pSup;
+                ctx.beginPath(); ctx.roundRect(c.x-10, c.y-70, 20, 65, 10); ctx.fill();
+                // Brazo Inferior
+                ctx.fillStyle = c.pInf;
+                ctx.beginPath(); ctx.roundRect(c.x-10, c.y+5, 20, 65, 10); ctx.fill();
+                // Centrómero
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(c.x, c.y, 8, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke();
+            }
+
+            function frame() {
+                ctx.fillStyle = 'rgba(26,26,26,0.3)';
+                ctx.fillRect(0,0,cvs.width, cvs.height);
+
+                if(estadoCvs === 1) {
+                    cr1.x += 1; cr2.x -= 1;
+                    if(cr1.x >= 280) { estadoCvs = 2; setTimeout(() => { estadoCvs = 3; }, 1000); }
+                }
+                if(estadoCvs === 2) {
+                    txt.textContent = "¡Crossing-over! Intercambio de ADN (Recombinación)";
+                    // Intercambiar piernas (parte inferior)
+                    cr1.pInf = '#FF9800'; cr2.pInf = '#2196F3';
+                }
+                if(estadoCvs === 3) {
+                    if(cr1.x > 200) { cr1.x -= 1; cr2.x += 1; }
+                    txt.textContent = "Nuevos Cromosomas Recombinantes (Clic para reiniciar)";
+                }
+
+                dibujarCromosoma(cr1); dibujarCromosoma(cr2);
+
+                // Inst
+                if(estadoCvs === 0) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                    ctx.font = '14px Arial'; ctx.textAlign = 'center';
+                    ctx.fillText('Clic aquí para iniciar el Entrecruzamiento', 300, 280);
+                }
+
+                requestAnimationFrame(frame);
+            }
+            frame();
+        }
+
+        /**
+         * ==========================================
+         * 5. SISTEMA ANTI-FRAUDE (Strict)
+         * ==========================================
+         */
+        document.querySelectorAll('.textarea-seguro').forEach(tx => {
+            let lastTime = Date.now();
+
+            const block = (e) => {
+                e.preventDefault(); tx.value = '';
+                document.getElementById('alerta-fraude').style.display = 'flex';
+            };
+
+            tx.addEventListener('paste', block);
+            tx.addEventListener('drop', block);
+            tx.addEventListener('contextmenu', e => e.preventDefault());
+
+            tx.addEventListener('keydown', e => {
+                if((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) { block(e); return; }
+                const now = Date.now();
+                if(e.key.length === 1 && (now - lastTime) < 18) { block(e); }
+                lastTime = now;
+                
+                state.repLocales[tx.id] = tx.value; guardarData();
+            });
+            tx.addEventListener('blur', () => { state.repLocales[tx.id] = tx.value; guardarData(); });
+        });
+
+        for(let i=1; i<=5; i++){
+            const s = document.getElementById(`sel-m${i}`);
+            s.addEventListener('change', () => { state.repLocales[s.id] = s.value; guardarData(); });
+        }
+
+        /**
+         * ==========================================
+         * 6. CALIFICACIÓN Y FEEDBACK
+         * ==========================================
+         */
+        document.getElementById('btn-finalizar').addEventListener('click', () => {
+            // Validar textos (>10 words)
+            for(let i=1; i<=5; i++) {
+                const w = document.getElementById(`eval-a${i}`).value.trim();
+                if(w.split(/\s+/).filter(x=>x.length>0).length < 10) return alert(`Pregunta abierta #${i} incompleta. Elabora una respuesta argumentada (Mín. 10 palabras).`);
+            }
+            for(let i=1; i<=5; i++) {
+                if(!document.getElementById(`sel-m${i}`).value) return alert(`Responde la pregunta múltiple #${i}.`);
+            }
+
+            // Calificar: 1:B, 2:A, 3:B, 4:A, 5:B
+            const cores = ['B','A','B','A','B'];
+            let scoreTest = 0;
+            for(let i=1; i<=5; i++) { if(document.getElementById(`sel-m${i}`).value === cores[i-1]) scoreTest += 0.3; }
+
+            // Base escritural anti-fraude (1.0 pts)
+            const scoreText = 1.0;
+
+            state.pts = Math.min(5.0, state.pts + scoreTest + scoreText);
+            state.prog = 100; state.finalizado = true;
+            guardarData(); presentarFeedback();
+        });
+
+        function presentarFeedback() {
+            document.getElementById('btn-finalizar').style.display = 'none';
+            document.getElementById('resultados-finales').style.display = 'block';
+            document.getElementById('nota-final').textContent = state.pts.toFixed(1);
+
+            let feed = "";
+            if(state.pts >= 4.5) feed = "<strong>¡Genetista Quindiano Experto!</strong> Comprendes a la perfección que la variabilidad es el tesoro de la familia y de la naturaleza. Entiendes que el entrecruzamiento y el azar en la fecundación aseguran que nadie sea igual a nadie. Sigue analizando la biodiversidad de nuestra tierra.";
+            else if(state.pts >= 3.0) feed = "<strong>¡Aprobado con buenas nociones!</strong> Entiendes el concepto general del azar y el ambiente, pero te sugiero repasar qué pasa a nivel celular durante la 'Meiosis'. Recuerda que el Crossing-over es el evento estrella de la variabilidad.";
+            else feed = "<strong>Necesitamos repasar las bases celulares.</strong> Te confundes un poco entre cómo se clonan las células (mitosis) y cómo se mezclan para los hijos (meiosis). Revisa la animación interactiva de los cromosomas intercambiando pedazos.";
+
+            document.getElementById('feedback-dinamico').innerHTML = feed;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function descargarReporteTxt() {
+            let rs = "=========================================================\n";
+            rs += "   REPORTE: VARIABILIDAD EN LA FAMILIA HUMANA (QUIMBAYA)\n";
+            rs += "=========================================================\n\n";
+            rs += `Estudiante: ${state.nom} ${state.ape}\n`;
+            rs += `Calificación Final: ${state.pts.toFixed(1)} / 5.0\n`;
+            rs += `Certificación Anti-Fraude: VÁLIDA.\n\n`;
+
+            rs += "--- SELECCIÓN MÚLTIPLE ---\n";
+            const c = ['B','A','B','A','B'];
+            for(let i=1; i<=5; i++) { rs += `P${i}: Opción seleccionada [${state.repLocales[`sel-m${i}`]}] -> Correcta era [${c[i-1]}]\n`; }
+
+            rs += "\n--- PREGUNTAS ABIERTAS ---\n";
+            for(let i=1; i<=5; i++) { rs += `R${i}: ${state.repLocales[`eval-a${i}`]}\n\n`; }
+            rs += "\n* Documento validado pedagógicamente por Sistema OVA-Quimbaya.";
+
+            const b = new Blob([rs], { type: 'text/plain;charset=utf-8' });
+            const u = URL.createObjectURL(b);
+            const a = document.createElement('a');
+            a.href = u; a.download = `Certificado_Variabilidad_${state.ape}.txt`;
+            a.click(); URL.revokeObjectURL(u);
+        }
+
+    </script>
+</body>
+</html>

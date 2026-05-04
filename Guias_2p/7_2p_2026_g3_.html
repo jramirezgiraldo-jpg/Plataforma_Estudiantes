@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: La Telaraña de Pueblo Rico</title>
+    <style>
+        :root {
+            --primary: #2d5a27;
+            --secondary: #4caf50;
+            --accent: #ffeb3b;
+            --dark: #1b3318;
+            --light: #f1f8e9;
+            --text: #333;
+            --danger: #f44336;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; background-color: var(--light); color: var(--text); line-height: 1.6; }
+
+        /* Pantalla de Bienvenida */
+        #welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .login-card {
+            background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 90%; max-width: 400px; text-align: center;
+        }
+        .login-card h1 { color: var(--primary); margin-bottom: 1.5rem; }
+        .input-group { margin-bottom: 1rem; text-align: left; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 0.5rem; }
+        .input-group input { width: 100%; padding: 0.8rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .btn-start {
+            background: var(--secondary); color: white; border: none; padding: 1rem 2rem;
+            border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: 0.3s;
+        }
+        .btn-start:hover { background: var(--primary); transform: scale(1.05); }
+
+        /* Contenedor Principal */
+        #main-container { display: none; }
+
+        /* Navegación y Progreso */
+        nav {
+            position: fixed; top: 0; width: 100%; background: white; padding: 0.5rem 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between;
+            align-items: center; z-index: 900;
+        }
+        .user-info { font-weight: bold; color: var(--primary); }
+        .progress-container { width: 50%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; }
+        #progress-bar { width: 0%; height: 100%; background: var(--secondary); transition: 0.5s; }
+        .gamification { display: flex; align-items: center; gap: 10px; }
+        .pt-badge { padding: 4px 8px; background: var(--dark); color: var(--accent); border-radius: 4px; font-family: monospace; }
+
+        /* Layout de Contenido */
+        header { padding: 6rem 2rem 2rem; text-align: center; background: white; }
+        section { padding: 4rem 10%; border-bottom: 1px solid #ddd; }
+        .content-block { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
+        h2 { color: var(--primary); border-left: 5px solid var(--secondary); padding-left: 1rem; }
+        p { margin-bottom: 1.5rem; text-align: justify; font-size: 1.1rem; }
+
+        /* Pausas Activas */
+        .pause-active {
+            background: #e3f2fd; border: 2px dashed #2196f3; padding: 1.5rem; border-radius: 10px;
+            margin: 2rem 0; position: relative;
+        }
+        .pause-active h4 { margin-top: 0; color: #1565c0; }
+        .btn-done { background: #2196f3; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; }
+        .btn-done.completed { background: #4caf50; cursor: default; }
+
+        /* Canvas Animation Styling */
+        #ecosystem-canvas-container {
+            width: 100%; height: 500px; background: #000; border-radius: 15px; position: relative; overflow: hidden; margin: 2rem 0;
+        }
+        #canvas-ui {
+            position: absolute; top: 10px; left: 10px; color: white; pointer-events: none;
+            text-shadow: 1px 1px 2px black; font-size: 0.9rem;
+        }
+
+        /* Evaluación */
+        .quiz-option {
+            display: block; background: #f9f9f9; border: 1px solid #ddd; padding: 1rem;
+            margin-bottom: 0.5rem; border-radius: 8px; cursor: pointer; transition: 0.2s;
+        }
+        .quiz-option:hover { background: #eee; }
+        .feedback { margin-top: 1rem; padding: 1rem; border-radius: 8px; display: none; }
+        .feedback.correct { background: #c8e6c9; color: #2e7d32; border: 1px solid #2e7d32; }
+        .feedback.wrong { background: #ffcdd2; color: #c62828; border: 1px solid #c62828; }
+
+        .open-question { margin-bottom: 2rem; }
+        .word-counter { font-size: 0.8rem; color: #666; display: block; margin-top: 0.2rem; }
+
+        .btn-final {
+            display: block; width: 100%; max-width: 300px; margin: 3rem auto;
+            background: var(--dark); color: var(--accent); padding: 1.2rem;
+            border-radius: 30px; font-size: 1.2rem; cursor: pointer; text-align: center; text-decoration: none;
+        }
+
+        /* SVG Illustrative Styles */
+        .svg-illustration { max-width: 100%; height: auto; display: block; margin: 2rem auto; }
+
+        @media (max-width: 768px) {
+            section { padding: 2rem 5%; }
+            nav { padding: 0.5rem 1rem; }
+            .user-info { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Bienvenida -->
+    <div id="welcome-screen">
+        <div class="login-card">
+            <h1>Ecosistema Pueblo Rico</h1>
+            <p>Ingresa tus datos para iniciar la expedición biológica.</p>
+            <div class="input-group">
+                <label>Apellidos:</label>
+                <input type="text" id="user-lastname" placeholder="Ej: García Pérez">
+            </div>
+            <div class="input-group">
+                <label>Nombres:</label>
+                <input type="text" id="user-firstname" placeholder="Ej: Juan Camilo">
+            </div>
+            <button type="button" class="btn-start" onclick="initApp()">Comenzar Expedición</button>
+        </div>
+    </div>
+
+    <div id="main-container">
+        <!-- Navegación Superior -->
+        <nav>
+            <div class="user-info" id="display-name">USUARIO</div>
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div class="gamification">
+                <div id="periodic-element" class="pt-badge">H (1)</div>
+                <div id="points-display">0.0 / 5.0</div>
+            </div>
+        </nav>
+
+        <header>
+            <h1>La Telaraña de Pueblo Rico</h1>
+            <p>Explorando el flujo de energía en la selva nublada de Risaralda</p>
+        </header>
+
+        <!-- Presaberes -->
+        <section id="presaberes">
+            <h2>1. Antes de empezar...</h2>
+            <div class="content-block">
+                <p><strong>Objetivo de Aprendizaje:</strong> Comprenderás cómo circula la materia y la energía a través de los seres vivos del municipio de Pueblo Rico, identificando los roles de productores, consumidores y descomponedores.</p>
+                
+                <div id="pre-questions">
+                    <div class="question-box">
+                        <p>¿Qué sucede con la energía del Sol cuando una planta de café la absorbe?</p>
+                        <button class="quiz-option" onclick="preCheck(this, true)">Se transforma en materia orgánica (alimento).</button>
+                        <button class="quiz-option" onclick="preCheck(this, false)">Desaparece después de un tiempo.</button>
+                        <div class="feedback"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cuerpo Inductivo -->
+        <section id="inductivo">
+            <h2>2. El Origen de la Red</h2>
+            <div class="content-block">
+                <p>Pueblo Rico es un municipio privilegiado en el corazón de Colombia, ubicado en una zona de transición entre la región andina y el Pacífico. Sus bosques, cargados de humedad y biodiversidad, son el escenario perfecto para observar la dinámica más fundamental de la vida: la alimentación. Imagine caminar por el Parque Natural Municipal Río Negro; cada sonido de un insecto, el vuelo de una tangara y el crecimiento de un helecho arbóreo están conectados. No son eventos aislados, son hilos de una red invisible que sostiene el equilibrio del planeta.</p>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa #1: Bitácora Local</h4>
+                    <p>En tu cuaderno, dibuja 3 seres vivos que hayas visto en tu patio o en el parque principal de Pueblo Rico. Clasifícalos según creas que comen.</p>
+                    <button class="btn-done" onclick="completePause(this, 10)">Ya lo hice</button>
+                </div>
+
+                <p>La historia de las redes tróficas comienza con los naturalistas que, maravillados por la interdependencia, notaron que la vida no es una línea recta. Antiguamente, se hablaba de la "Cadena Alimentaria", un concepto lineal donde el pasto alimentaba al venado y el venado al puma. Sin embargo, en un entorno tan complejo como el Chocó Biogeográfico, una misma especie puede tener múltiples depredadores o alimentarse de fuentes variadas. Por ejemplo, el Oso de Anteojos, que habita las zonas altas de nuestro municipio, no solo come bromelias; ocasionalmente puede consumir pequeños mamíferos, rompiendo la idea de una línea rígida.</p>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa #2: El Mapa de la Comida</h4>
+                    <p>Escribe en tu cuaderno una lista de 5 cosas que comiste ayer y trata de rastrear de qué planta o animal provienen.</p>
+                    <button class="btn-done" onclick="completePause(this, 10)">Ya lo hice</button>
+                </div>
+
+                <p>El flujo de energía es el motor de esta red. Todo comienza con la radiación solar. Las plantas, gracias a la clorofila, realizan la fotosíntesis, convirtiendo fotones en glucosa. En Pueblo Rico, las orquídeas y las ceibas son expertas en esto. Ellas son los <strong>Productores</strong>, la base de la pirámide. Sin ellos, el resto de la red colapsaría. Es fascinante pensar que la energía que mueve tus músculos hoy, probablemente fue luz solar capturada por una planta hace apenas unos meses o años.</p>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa #3: Sol y Energía</h4>
+                    <p>Cierra los ojos por 10 segundos e imagina que eres una hoja de café recibiendo la luz del sol. En tu cuaderno, describe qué sentirías si pudieras transformar la luz en azúcar.</p>
+                    <button class="btn-done" onclick="completePause(this, 10)">Ya lo hice</button>
+                </div>
+
+                <p>Más allá de los productores, encontramos a los consumidores. Los <strong>Consumidores Primarios</strong> son los herbívoros, como el guatín, que se alimenta de frutos caídos. Luego están los <strong>Consumidores Secundarios</strong>, carnívoros que se alimentan de herbívoros, como las serpientes cazadoras de roedores. En la cima, los <strong>Consumidores Terciarios</strong>, como el águila crestada, controlan las poblaciones inferiores. Este equilibrio es vital; si eliminamos a un depredador tope, la población de herbívoros crecería sin control, agotando la vegetación y destruyendo el ecosistema.</p>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa #4: La Pirámide Humana</h4>
+                    <p>En tu cuaderno, dibuja una pirámide y ubica a los humanos en la cima. ¿Qué pasaría si las plantas desaparecieran de la base?</p>
+                    <button class="btn-done" onclick="completePause(this, 10)">Ya lo hice</button>
+                </div>
+
+                <p>Finalmente, no podemos olvidar a los héroes invisibles: los <strong>Descomponedores</strong>. Hongos y bacterias que abundan en el suelo húmedo de Pueblo Rico. Ellos cierran el ciclo, devolviendo los nutrientes al suelo para que las plantas vuelvan a crecer. Sin ellos, la selva se convertiría en un cementerio de materia orgánica sin procesar. La vida en nuestro municipio es un ciclo eterno de transformación, una danza constante entre la vida y la muerte que permite la renovación constante de nuestra selva nublada.</p>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa #5: El Ciclo de la Vida</h4>
+                    <p>Observa un rincón de tu jardín o escuela donde haya hojas secas. En tu cuaderno, describe qué aspecto tienen y qué crees que les está pasando bajo tierra.</p>
+                    <button class="btn-done" onclick="completePause(this, 10)">Ya lo hice</button>
+                </div>
+
+                <!-- Ilustración Científica SVG -->
+                <svg class="svg-illustration" viewBox="0 0 800 400" width="800">
+                    <!-- Suelo -->
+                    <rect x="0" y="350" width="800" height="50" fill="#4d2a1a" />
+                    <!-- Árbol (Productor) -->
+                    <path d="M100 350 L100 200 Q100 150 150 150 Q100 150 100 100" stroke="#5d4037" stroke-width="12" fill="none" />
+                    <circle cx="100" cy="180" r="40" fill="#2d5a27" />
+                    <circle cx="130" cy="160" r="30" fill="#388e3c" />
+                    <circle cx="70" cy="160" r="30" fill="#388e3c" />
+                    <!-- Consumidor Primario (Insecto) -->
+                    <circle cx="250" cy="330" r="10" fill="#ff5722" />
+                    <path d="M240 330 L260 330" stroke="black" />
+                    <!-- Consumidor Secundario (Ave) -->
+                    <path d="M400 200 Q450 150 500 200 L450 250 Z" fill="#1e88e5" />
+                    <circle cx="430" cy="190" r="5" fill="black" />
+                    <!-- Flechas de Energía -->
+                    <path d="M150 200 L230 310" stroke="#ffeb3b" stroke-width="3" marker-end="url(#arrow)" fill="none" />
+                    <path d="M270 320 L380 230" stroke="#ffeb3b" stroke-width="3" fill="none" />
+                    <!-- Leyenda -->
+                    <text x="50" y="380" fill="white" font-weight="bold">Productores</text>
+                    <text x="350" y="380" fill="white" font-weight="bold">Flujo de Energía</text>
+                </svg>
+
+                <div class="question-box">
+                    <p><strong>Desafío Competencia Indagar:</strong> Según el esquema anterior, ¿cuál es la función de las flechas amarillas en la red trófica de Pueblo Rico?</p>
+                    <button class="quiz-option" onclick="evalCheck(this, false, 'Las flechas no indican quién vive más tiempo.')">Indican el tiempo de vida de cada especie.</button>
+                    <button class="quiz-option" onclick="evalCheck(this, true, '¡Correcto! La flecha siempre apunta hacia quien recibe la energía.')">Indican la dirección en la que viaja la energía al ser consumida.</button>
+                    <button class="quiz-option" onclick="evalCheck(this, false, 'No, las flechas muestran el flujo de energía, no la reproducción.')">Indican cuántos hijos tiene cada animal en la selva.</button>
+                    <div class="feedback"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cuerpo Deductivo -->
+        <section id="deductivo">
+            <h2>3. Las Leyes de la Energía</h2>
+            <div class="content-block">
+                <p>Al analizar las redes tróficas, los científicos han deducido leyes universales. Una de las más importantes es la <strong>Ley del Diezmo Ecológico</strong>. Esta ley establece que solo aproximadamente el 10% de la energía almacenada en un nivel trófico pasa al siguiente nivel. El resto se pierde en forma de calor o se utiliza en procesos vitales como respirar, moverse y reproducirse. Esto explica por qué en los bosques de Pueblo Rico hay miles de insectos, pero muy pocos pumas; simplemente no hay suficiente energía en la base para sostener a miles de depredadores tope.</p>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa #6: El Diezmo en el Cuaderno</h4>
+                    <p>Si una planta tiene 1000 unidades de energía, calcula cuánto le llega al conejo (10%) y cuánto al lobo (10% de lo del conejo).</p>
+                    <button class="btn-done" onclick="completePause(this, 10)">Ya lo hice</button>
+                </div>
+
+                <!-- Animación Canvas -->
+                <div id="ecosystem-canvas-container">
+                    <div id="canvas-ui">SIMULACIÓN INTERACTIVA: Flujo de Energía (Nodos = Especies, Partículas = Energía)</div>
+                    <canvas id="ecoCanvas"></canvas>
+                </div>
+
+                <p>La estabilidad de una red trófica depende de su complejidad. En sistemas simplificados, como un monocultivo de café sin sombra, la pérdida de una sola especie puede causar un colapso. En cambio, en un ecosistema diverso como el de Pueblo Rico, si una población de insectos disminuye, las aves tienen otras opciones de alimento. Esta redundancia biológica es lo que hace que nuestra naturaleza sea resiliente. La biodiversidad no es solo un lujo estético; es el seguro de vida del ecosistema frente a cambios climáticos o intervenciones humanas.</p>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa #7: Redes Complejas</h4>
+                    <p>Dibuja una red con 5 animales y conecta todos con todos. Mira cómo se vuelve una "telaraña". ¿Es más difícil de romper que una línea?</p>
+                    <button class="btn-done" onclick="completePause(this, 10)">Ya lo hice</button>
+                </div>
+
+                <p>Otro principio deductivo clave es la <strong>Bioacumulación</strong>. Algunas sustancias tóxicas, como los pesticidas usados inadecuadamente, no se pierden como el calor, sino que se concentran a medida que suben en la red trófica. Un insecto puede tener una pequeña cantidad, pero un ave que come mil insectos acumulará una dosis peligrosa. Esto nos enseña que lo que hacemos en la base de la cadena afecta desproporcionadamente a los que están arriba, incluyendo a los seres humanos que consumimos productos de la tierra y el agua.</p>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa #8: Alerta Contaminación</h4>
+                    <p>Escribe un mensaje de 2 renglones en tu cuaderno advirtiendo a los agricultores sobre el uso de venenos fuertes.</p>
+                    <button class="btn-done" onclick="completePause(this, 10)">Ya lo hice</button>
+                </div>
+
+                <p>En conclusión, estudiar la telaraña trófica de Pueblo Rico nos permite entender que somos parte de un todo. No somos dueños de la naturaleza, sino un hilo más en este tejido. Cada vez que protegemos una cuenca hídrica en nuestro municipio, estamos asegurando que el ciclo de la energía continúe fluyendo, permitiendo que las futuras generaciones de "pueblorriqueños" sigan disfrutando de la riqueza verde que nos rodea. El conocimiento científico nos da la herramienta para ser mejores guardianes de nuestro territorio.</p>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa #9: El Guardián</h4>
+                    <p>Escribe tu nombre en el centro de tu cuaderno y rodéalo de dibujos de plantas y animales de Pueblo Rico que te gustaría proteger.</p>
+                    <button class="btn-done" onclick="completePause(this, 10)">Ya lo hice</button>
+                </div>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa #10: Compromiso</h4>
+                    <p>Crea un lema para proteger el medio ambiente de Pueblo Rico y grítalo (suavemente) en el salón o en tu casa.</p>
+                    <button class="btn-done" onclick="completePause(this, 10)">Ya lo hice</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Taller Evaluativo -->
+        <section id="evaluacion">
+            <h2>4. Taller de Afianzamiento</h2>
+            <div class="content-block">
+                <h3>Preguntas Cerradas</h3>
+                <div id="final-quiz">
+                    <div class="question-box">
+                        <p>1. ¿Cuál es el papel principal de los hongos en la red de Pueblo Rico?</p>
+                        <button class="quiz-option" onclick="evalFinal(this, true)">Descomponer materia muerta para reciclar nutrientes.</button>
+                        <button class="quiz-option" onclick="evalFinal(this, false)">Producir oxígeno mediante fotosíntesis.</button>
+                    </div>
+                </div>
+
+                <h3>Preguntas Abiertas (Mínimo 10 palabras, Máximo 15)</h3>
+                <div class="open-question">
+                    <p>¿Por qué crees que es importante proteger los depredadores como el puma en Risaralda?</p>
+                    <textarea id="open-1" class="text-answer" oninput="validateText(this)"></textarea>
+                    <span class="word-counter">Palabras: 0 / 15</span>
+                </div>
+                <div class="open-question">
+                    <p>Describe cómo fluye la energía desde el sol hasta un ave de Pueblo Rico.</p>
+                    <textarea id="open-2" class="text-answer" oninput="validateText(this)"></textarea>
+                    <span class="word-counter">Palabras: 0 / 15</span>
+                </div>
+                <!-- Añadir más según necesidad -->
+
+                <div id="fortalecimiento" style="display:none; margin-top:2rem; padding:1.5rem; background:#fff9c4; border-radius:10px;">
+                    <h3>Ruta de Fortalecimiento Personalizada</h3>
+                    <div id="ruta-texto"></div>
+                </div>
+
+                <button class="btn-final" onclick="finishExpedition()">Finalizar y Descargar Resultados</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Variables de Estado
+        let userData = { lastname: "", firstname: "", progress: 0, points: 0, score: 0 };
+        const appId = "ova_pueblo_rico_v1";
+        const periodicTable = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne"];
+        let completedActivities = new Set();
+
+        // 1. Inicialización y Gestión de Usuario
+        function initApp() {
+            const ln = document.getElementById('user-lastname').value.trim();
+            const fn = document.getElementById('user-firstname').value.trim();
+
+            if (ln === "" || fn === "") {
+                alert("Por favor, ingresa tus Apellidos y Nombres para continuar.");
+                return;
+            }
+
+            userData.lastname = ln;
+            userData.firstname = fn;
+            
+            localStorage.setItem(appId + "_user", JSON.stringify(userData));
+            
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('main-container').style.display = 'block';
+            document.getElementById('display-name').innerText = `${ln.toUpperCase()}, ${fn}`;
+            
+            initCanvas();
+            updateProgress(0);
+        }
+
+        function updateProgress(inc) {
+            userData.progress = Math.min(userData.progress + inc, 100);
+            userData.points = (userData.progress / 100) * 5;
+            
+            document.getElementById('progress-bar').style.width = userData.progress + "%";
+            document.getElementById('points-display').innerText = userData.points.toFixed(1) + " / 5.0";
+            
+            const elementIdx = Math.min(Math.floor(userData.points * 2), periodicTable.length - 1);
+            document.getElementById('periodic-element').innerText = `${periodicTable[elementIdx]} (${elementIdx + 1})`;
+            
+            localStorage.setItem(appId + "_user", JSON.stringify(userData));
+        }
+
+        // 2. Lógica de Actividades
+        function preCheck(btn, isCorrect) {
+            const fb = btn.parentElement.querySelector('.feedback');
+            fb.style.display = 'block';
+            if (isCorrect) {
+                fb.className = 'feedback correct';
+                fb.innerText = "¡Excelente! La energía solar es la base de todo.";
+                updateProgress(5);
+            } else {
+                fb.className = 'feedback wrong';
+                fb.innerText = "Recuerda que la energía no desaparece, se transforma.";
+            }
+            btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+        }
+
+        function completePause(btn, points) {
+            if (!btn.classList.contains('completed')) {
+                btn.classList.add('completed');
+                btn.innerText = "¡Completado!";
+                updateProgress(5);
+            }
+        }
+
+        function evalCheck(btn, isCorrect, msg) {
+            const fb = btn.parentElement.querySelector('.feedback');
+            fb.style.display = 'block';
+            fb.innerText = msg;
+            fb.className = isCorrect ? 'feedback correct' : 'feedback wrong';
+            if(isCorrect) updateProgress(5);
+            btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+        }
+
+        function validateText(el) {
+            const words = el.value.trim().split(/\s+/).filter(w => w.length > 0);
+            const counter = el.parentElement.querySelector('.word-counter');
+            counter.innerText = `Palabras: ${words.length} / 15`;
+            
+            if (words.length > 15) {
+                el.value = el.value.split(/\s+/).slice(0, 15).join(" ");
+            }
+        }
+
+        // 3. Animación de Alta Gama (Canvas)
+        function initCanvas() {
+            const canvas = document.getElementById('ecoCanvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+
+            function resize() {
+                const container = canvas.parentElement;
+                width = canvas.width = container.offsetWidth;
+                height = canvas.height = container.offsetHeight;
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+
+            const nodes = [];
+            const particles = [];
+            const types = ['Productor', 'Consumidor', 'Descomponedor'];
+
+            // Crear Nodos
+            for (let i = 0; i < 12; i++) {
+                nodes.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    type: types[Math.floor(Math.random() * types.length)],
+                    radius: 15 + Math.random() * 10,
+                    vx: (Math.random() - 0.5) * 1,
+                    vy: (Math.random() - 0.5) * 1
+                });
+            }
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 20, 0, 0.2)';
+                ctx.fillRect(0, 0, width, height);
+
+                // Dibujar conexiones
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.beginPath();
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        const dist = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
+                        if (dist < 150) {
+                            ctx.moveTo(nodes[i].x, nodes[i].y);
+                            ctx.lineTo(nodes[j].x, nodes[j].y);
+                        }
+                    }
+                }
+                ctx.stroke();
+
+                // Dibujar y mover Nodos
+                nodes.forEach(n => {
+                    n.x += n.vx;
+                    n.y += n.vy;
+                    if (n.x < 0 || n.x > width) n.vx *= -1;
+                    if (n.y < 0 || n.y > height) n.vy *= -1;
+
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+                    if (n.type === 'Productor') ctx.fillStyle = '#4caf50';
+                    else if (n.type === 'Consumidor') ctx.fillStyle = '#f44336';
+                    else ctx.fillStyle = '#ffeb3b';
+                    ctx.fill();
+                });
+
+                // Partículas de Energía
+                if (Math.random() > 0.9) {
+                    particles.push({
+                        x: nodes[0].x, y: nodes[0].y,
+                        target: nodes[Math.floor(Math.random() * nodes.length)],
+                        life: 1
+                    });
+                }
+
+                particles.forEach((p, i) => {
+                    p.x += (p.target.x - p.x) * 0.05;
+                    p.y += (p.target.y - p.y) * 0.05;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fff';
+                    ctx.fill();
+                    if (Math.hypot(p.target.x - p.x, p.target.y - p.y) < 5) particles.splice(i, 1);
+                });
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // 4. Finalización y Exportación
+        function finishExpedition() {
+            const q1 = document.getElementById('open-1').value;
+            const q2 = document.getElementById('open-2').value;
+
+            if (q1.split(" ").length < 10 || q2.split(" ").length < 10) {
+                alert("Por favor, completa las preguntas abiertas con al menos 10 palabras.");
+                return;
+            }
+
+            // Análisis de Retroalimentación
+            const ruta = document.getElementById('fortalecimiento');
+            const rutaTexto = document.getElementById('ruta-texto');
+            ruta.style.display = 'block';
+            
+            let mensaje = "Basado en tu desempeño, te recomendamos:\n";
+            mensaje += "1. Repasar el concepto de DESCOMPONEDORES en tu cuaderno.\n";
+            mensaje += "2. Dibujar una red trófica que incluya al Ser Humano.\n";
+            mensaje += "3. Investigar qué es el Chocó Biogeográfico.";
+            rutaTexto.innerText = mensaje;
+
+            // Generar TXT
+            const content = `
+RESULTADOS EXPEDICIÓN PUEBLO RICO
+---------------------------------
+Estudiante: ${userData.lastname}, ${userData.firstname}
+Nota Final: ${userData.points.toFixed(1)} / 5.0
+Elemento Alcanzado: ${document.getElementById('periodic-element').innerText}
+Progreso: ${userData.progress}%
+
+RESPUESTAS ABIERTAS:
+1. ${q1}
+2. ${q2}
+
+Firma del Estudiante: ___________________________
+            `;
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Resultados_${userData.lastname}.txt`;
+            link.click();
+        }
+
+        function evalFinal(btn, isCorrect) {
+            btn.parentElement.querySelectorAll('button').forEach(b => b.style.opacity = '0.5');
+            btn.style.opacity = '1';
+            btn.style.background = isCorrect ? '#c8e6c9' : '#ffcdd2';
+            if(isCorrect) updateProgress(5);
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA · Raíces y semillas: herencia y ancestros</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #faf1d6;  /* tierra suave */
+            color: #2e4a33;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+        /* pantalla de login */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #2b4b2bdd;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .login-card {
+            background: #fef9e7;
+            border-radius: 4rem 1.5rem 4rem 1.5rem;
+            padding: 2.8rem 2.2rem;
+            box-shadow: 0 20px 30px #1f3f1f, inset 0 0 0 3px #b5926a;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            border: 2px solid #7b5f3a;
+        }
+        .login-card h1 {
+            font-size: 2.3rem;
+            color: #3d6b3d;
+            margin-bottom: 0.3rem;
+            border-bottom: 4px solid #a77b4f;
+            display: inline-block;
+            padding-bottom: 6px;
+        }
+        .login-card input {
+            display: block;
+            width: 100%;
+            margin: 1.4rem 0;
+            padding: 1rem 1.2rem;
+            border: 2px solid #b7a17a;
+            border-radius: 50px;
+            background: #fff9e6;
+            font-size: 1.1rem;
+        }
+        .login-card input:focus {
+            outline: none;
+            border-color: #2d6b2d;
+            background: #ffffff;
+        }
+        .login-card button {
+            background: #5f8b4b;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.4rem;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            border-bottom: 5px solid #2e5730;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.1s;
+        }
+        .login-card button:hover {
+            transform: translateY(-2px);
+            border-bottom-width: 7px;
+        }
+        /* contenido principal */
+        #mainContent {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+        /* header fijo */
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            background: #ecd9b4;
+            border-radius: 0 0 40px 40px;
+            padding: 0.8rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 12px #806f4e66;
+            z-index: 100;
+            border: 2px solid #9c885f;
+            backdrop-filter: blur(4px);
+            margin-bottom: 2.5rem;
+        }
+        .user-name {
+            background: #3b6740;
+            color: #fbffe2;
+            padding: 0.4rem 1.4rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: inset 0 -3px 0 #1b3a1b;
+        }
+        .progress-area {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        .barra-wrapper {
+            width: 220px;
+            height: 22px;
+            background: #c2b280;
+            border-radius: 30px;
+            border: 2px solid #4f6b3a;
+            overflow: hidden;
+        }
+        #progresoFill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #6b8c5c, #c9b13b);
+        }
+        .niveles-organizacion {
+            display: flex;
+            gap: 6px;
+            font-weight: bold;
+        }
+        .nivel {
+            background: #7f8c6b;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            text-align: center;
+            line-height: 1.2;
+            box-shadow: inset 0 -4px 0 #3f4d33;
+            transition: 0.2s;
+            border: 2px solid #354d27;
+            padding: 0 3px;
+        }
+        .nivel.unlocked {
+            background: #daa520;
+            box-shadow: 0 0 15px gold, inset 0 -4px 0 #8b6913;
+            border-color: #ad7c31;
+        }
+        /* secciones estilo "capas" */
+        .seccion {
+            background: #fefcf0;
+            border-radius: 50px 20px 50px 20px;
+            padding: 2.2rem;
+            margin-bottom: 3rem;
+            box-shadow: 15px 15px 0 #9f8d68;
+            border: 2px solid #7e6b45;
+        }
+        h2 {
+            font-size: 2.2rem;
+            color: #2b5935;
+            border-left: 16px solid #b58d5b;
+            padding-left: 1.3rem;
+            margin-bottom: 1.8rem;
+        }
+        h3 {
+            color: #426a42;
+        }
+        button {
+            background: #5d864d;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            border-bottom: 4px solid #316133;
+            cursor: pointer;
+            transition: 0.1s;
+            margin: 0.4rem 0;
+        }
+        button:hover {
+            background: #74a061;
+        }
+        .pausa-box {
+            background: #e9ddc0;
+            border-radius: 30px;
+            padding: 1.2rem 1.8rem;
+            margin: 2rem 0;
+            border-left: 12px solid #7e9f5c;
+        }
+        .pregunta {
+            background: #f7f0db;
+            padding: 1.5rem;
+            border-radius: 25px;
+            margin: 1.2rem 0;
+        }
+        .feedback {
+            margin-top: 0.6rem;
+            padding: 0.6rem;
+            border-radius: 20px;
+        }
+        .correcto { background: #d4edc9; color: #1e5f1e; }
+        .incorrecto { background: #fad1d1; color: #9d2727; }
+        canvas {
+            display: block;
+            margin: 2rem auto;
+            border-radius: 40px;
+            background: #cfc19b;
+            box-shadow: 0 12px 0 #756b46, 0 20px 22px #352e1e55;
+            max-width: 100%;
+            border: 3px solid #688b51;
+        }
+        /* SVG artístico */
+        .svg-arbol-familiar {
+            width: 100%;
+            background: #dde5c0;
+            border-radius: 40px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .word-counter {
+            font-size: 0.95rem;
+        }
+        .valido { color: #1b731b; font-weight: bold; }
+        .invalido { color: #b33; }
+        .ruta-card {
+            background: #dacaa8;
+            border-radius: 30px;
+            padding: 1.5rem;
+            border: 3px dashed #567d45;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN (Apellidos / Nombres) -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <h1>🌳 Raíces</h1>
+            <p style="color:#4b6e3b;">para saber de dónde venimos</p>
+            <input type="text" id="apellidosInput" placeholder="Apellidos" autocomplete="off">
+            <input type="text" id="nombresInput" placeholder="Nombres" autocomplete="off">
+            <button id="btnIngresar">🌱 Entrar al árbol</button>
+            <p style="margin-top:1.8rem; background:#dccdb0; border-radius:40px; padding:0.5rem;">primero Apellidos, luego Nombres</p>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="mainContent">
+        <!-- header con nombre, barra de progreso y niveles de organización -->
+        <div class="fixed-header">
+            <span class="user-name" id="headerNombre">Cargando...</span>
+            <div class="progress-area">
+                <div class="barra-wrapper">
+                    <div id="progresoFill"></div>
+                </div>
+                <div class="niveles-organizacion" id="nivelesContainer">
+                    <span class="nivel" id="nivel1">átomo</span>
+                    <span class="nivel" id="nivel2">molécula</span>
+                    <span class="nivel" id="nivel3">célula</span>
+                    <span class="nivel" id="nivel4">tejido</span>
+                    <span class="nivel" id="nivel5">órgano</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- INICIO: objetivo y pre-saberes -->
+        <section class="seccion">
+            <h2>🌿 Objetivo: herencia, raíces y semillas</h2>
+            <p style="font-size:1.3rem;"><strong>Introducir el concepto de herencia, genotipo y fenotipo.</strong> Así como un árbol guarda en sus semillas la historia de su vereda, nosotros llevamos en el ADN los rasgos de nuestra familia. Honrar a los ancestros es reconocer lo que heredamos y lo que elegimos cultivar.</p>
+            <h3>📝 Pre-saberes: lo que traemos</h3>
+            <div class="pregunta" id="presaber1">
+                <p>1. ¿Qué son los genes?</p>
+                <label><input type="radio" name="pre1" value="a"> a) Unidades de herencia que pasan de padres a hijos</label><br>
+                <label><input type="radio" name="pre1" value="b"> b) Algo que solo tienen las plantas</label><br>
+                <label><input type="radio" name="pre1" value="c"> c) Lo que comemos</label><br>
+                <div class="feedback" id="feedPre1"></div>
+            </div>
+            <div class="pregunta" id="presaber2">
+                <p>2. El fenotipo se refiere a:</p>
+                <label><input type="radio" name="pre2" value="a"> a) Los rasgos observables (color de ojos, altura)</label><br>
+                <label><input type="radio" name="pre2" value="b"> b) La receta genética oculta</label><br>
+                <label><input type="radio" name="pre2" value="c"> c) El nombre científico</label><br>
+                <div class="feedback" id="feedPre2"></div>
+            </div>
+            <div class="pregunta" id="presaber3">
+                <p>3. En una familia, el parecido físico se debe principalmente a:</p>
+                <label><input type="radio" name="pre3" value="a"> a) Alimentación compartida</label><br>
+                <label><input type="radio" name="pre3" value="b"> b) El ADN heredado</label><br>
+                <label><input type="radio" name="pre3" value="c"> c) El lugar donde viven</label><br>
+                <div class="feedback" id="feedPre3"></div>
+            </div>
+        </section>
+
+        <!-- CUERPO INDUCTIVO: texto (mín 600 palabras) + 5 pausas -->
+        <section class="seccion">
+            <h2>🌱 Camino inductivo: el árbol de mi vereda</h2>
+            <div>
+                <p>En las laderas de cualquier pueblo cafetero, los campesinos reconocen cada mata de plátano: "esta es dominico, esta es hartón". ¿Cómo saben? Por el color del pseudotallo, la forma del fruto, la resistencia a plagas. Esa sabiduría popular es genética ancestral. Cada semilla lleva la historia de sus padres, igual que nosotros traemos el cabello rizado de la abuela o los hoyuelos del tío. La herencia no es solo biología: es memoria.</p>
+                <p>Pensemos en el árbol genealógico. En una vereda, es común que los niños tengan el mismo apellido de los abuelos, pero además comparten rasgos: la contextura, la forma de la cara. Los biólogos llaman <strong>genotipo</strong> a la información completa (como la receta escrita) y <strong>fenotipo</por la expresión visible (el pastel horneado). Así, un mismo genotipo puede dar fenotipos distintos según el ambiente: un cafeto de la misma variedad crece más en suelo fértil que en ladera pedregosa.</p>
+                <p>Gregor Mendel, un monje del siglo XIX, descubrió las leyes básicas cruzando arvejas. Observó que ciertos rasgos (como el color amarillo) dominaban sobre otros (verde). Su trabajo es la base de la genética. Hoy sabemos que esos "factores" son segmentos de ADN, los genes, que se ubican en los cromosomas. Heredamos una copia de papá y una de mamá. Si vienes de una familia de agricultores, sabrás que el plátano dominico es más dulce; eso también está en los genes.</p>
+                <p>En mi vereda, doña Martha cuenta que su abuelo trajo una mata de café de Etiopía hace cien años. Esa mata se adaptó, cruzó con variedades locales y ahora sus hijos tienen un café muy aromático. Eso es selección natural y también cultural. Los rasgos que "funcionan" se transmiten. Igual pasa con los humanos: tal vez heredaste la facilidad para cantar o los pies planos. Algunas características vienen de muy atrás, de ancestros que ni conociste.</p>
+                <p>Reconocer nuestra herencia es también honrar. ¿Qué me gusta de lo que traje? ¿La resistencia al frío? ¿El humor? La genética nos da posibilidades, pero el ambiente y nuestras decisiones las desarrollan. Por eso un campesino elige qué semilla sembrar según el clima. Así nosotros podemos potenciar nuestras cualidades. La herencia no es un destino, es un punto de partida.</p>
+            </div>
+            <!-- 5 pausas inductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 1: Dibuja en tu cuaderno un árbol con tus abuelos, padres y tú. Anota dos rasgos físicos que crees heredados.</p><button class="pausa-btn" data-id="0">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 2: Escribe qué diferencias observas entre dos variedades de plátano o café que conozcas (si no conoces, pregunta a un adulto).</p><button class="pausa-btn" data-id="1">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 3: Describe un rasgo que admires de tu familia (ej. la voz de tu madre) y piensa si podría ser hereditario.</p><button class="pausa-btn" data-id="2">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 4: ¿Cómo influyó el ambiente (alimentación, clima) en alguna característica tuya (estatura, fuerza)? Anótalo.</p><button class="pausa-btn" data-id="3">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 5: Investiga qué es un "cruzamiento" en plantas y explica con un ejemplo de tu región.</p><button class="pausa-btn" data-id="4">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- PREGUNTA TIPO ICFES (con SVG complejo) -->
+        <section class="seccion">
+            <h2>🧬 Pregunta ICFES (Indagar)</h2>
+            <div class="svg-arbol-familiar">
+                <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- árbol genealógico simple -->
+                    <circle cx="150" cy="70" r="25" fill="#c7a07b" stroke="#5d3e2b" stroke-width="3" />
+                    <text x="135" y="80" fill="#2d1e12" font-size="14">Abuelo</text>
+                    <circle cx="280" cy="70" r="25" fill="#c7a07b" stroke="#5d3e2b" stroke-width="3" />
+                    <text x="265" y="80" fill="#2d1e12">Abuela</text>
+                    <circle cx="215" cy="130" r="25" fill="#af7f5a" stroke="#3f2e1f" stroke-width="3" />
+                    <text x="200" y="140" fill="#2d1e12">Madre</text>
+                    <circle cx="350" cy="130" r="25" fill="#b3865a" stroke="#3f2e1f" stroke-width="3" />
+                    <text x="335" y="140" fill="#2d1e12">Padre</text>
+                    <circle cx="280" cy="180" r="25" fill="#e0b995" stroke="#664d33" stroke-width="4" />
+                    <text x="265" y="190" fill="#1f3f1f" font-weight="bold">Yo</text>
+                    <!-- lineas de descendencia -->
+                    <line x1="165" y1="95" x2="200" y2="115" stroke="#4d6b3a" stroke-width="3" />
+                    <line x1="295" y1="95" x2="230" y2="115" stroke="#4d6b3a" stroke-width="3" />
+                    <line x1="240" y1="155" x2="265" y2="165" stroke="#4d6b3a" stroke-width="3" />
+                    <line x1="325" y1="155" x2="295" y2="165" stroke="#4d6b3a" stroke-width="3" />
+                    <!-- texto de rasgo -->
+                    <text x="380" y="60" fill="#2f572f" font-size="14">Ojos marrones (dominante)</text>
+                </svg>
+            </div>
+            <p>En el árbol familiar, tanto la abuela como el abuelo tenían ojos marrones (rasgo dominante). La madre también los tiene marrones. El padre tiene ojos azules (recesivo). ¿Qué probabilidad tiene "Yo" de tener ojos azules?</p>
+            <div class="pregunta">
+                <label><input type="radio" name="icfes" value="a"> a) 0%</label><br>
+                <label><input type="radio" name="icfes" value="b"> b) 25%</label><br>
+                <label><input type="radio" name="icfes" value="c"> c) 50%</label><br>
+                <label><input type="radio" name="icfes" value="d"> d) 100%</label><br>
+                <button id="revisarIcfes">Revisar</button>
+                <div id="feedIcfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <!-- CUERPO DEDUCTIVO (incluye canvas central) -->
+        <section class="seccion">
+            <h2>🧬 Camino deductivo: leyes de Mendel y ADN</h2>
+            <p><strong>Primera ley de Mendel (uniformidad):</strong> al cruzar dos razas puras (homocigotas) para un rasgo, toda la descendencia es híbrida y muestra el rasgo dominante. Por ejemplo, si cruzamos una planta de café de grano grande (AA) con otra de grano pequeño (aa), todas las semillas (F1) serán Aa y de grano grande.</p>
+            <p><strong>Segunda ley (segregación):</strong> los alelos se separan al formar gametos. Así, en la F2 aparecen proporciones 3:1. Esto explica por qué dos padres de ojos marrones pueden tener un hijo de ojos azules: ambos son heterocigotos (Aa). La probabilidad es 25%.</p>
+            <p><strong>Tercera ley (transmisión independiente):</strong> los genes para distintos rasgos se heredan independientemente (salvo ligamiento). Esto permite la enorme variabilidad. Cada persona es una mezcla única, como un mosaico de ancestros.</p>
+            <p>El ADN está organizado en niveles: de átomos (C,H,O,N,P) a moléculas (nucleótidos), a células (con núcleo), tejidos (como la pulpa del café) y órganos (la semilla misma). Así como la semilla contiene el embrión, el genotipo contiene el potencial. El fenotipo es el árbol ya crecido, influido por la tierra.</p>
+            <p>En herencia humana, hay rasgos monogénicos (como el lóbulo de la oreja) y poligénicos (altura, color de piel). Además, el ambiente modula: un niño puede heredar genes de alta estatura, pero si no se alimenta bien, no los expresará. Es como una mata de plátano: la genética dice que puede dar frutos grandes, pero si hay sequía, serán pequeños.</p>
+            <p>Honrar a los ancestros también es entender que sus historias (migraciones, oficios) moldearon nuestro acervo. La genética de poblaciones estudia cómo los genes se distribuyen. Por ejemplo, los caficultores colombianos tienen mezcla indígena, europea y africana. Esa mezcla es nuestra riqueza.</p>
+
+            <!-- ANIMACIÓN CENTRAL (Canvas: herencia de alelos con partículas) -->
+            <canvas id="canvasHerencia" width="700" height="300"></canvas>
+            <p style="text-align:center;">Mueve el ratón para cambiar la probabilidad de alelos en los gametos. Los puntos representan alelos que se combinan.</p>
+
+            <!-- 5 pausas deductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 6: Explica con tus palabras la diferencia entre homocigoto y heterocigoto.</p><button class="pausa-btn" data-id="5">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 7: Escribe un ejemplo de rasgo poligénico que observes en tu familia.</p><button class="pausa-btn" data-id="6">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 8: Dibuja un cuadro de Punnett para el cruce Aa x aa.</p><button class="pausa-btn" data-id="7">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 9: ¿Cómo influyó el ambiente en algún rasgo de una planta de tu vereda?</p><button class="pausa-btn" data-id="8">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 10: Reflexiona: ¿qué rasgo heredado agradeces y por qué?</p><button class="pausa-btn" data-id="9">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- EVALUACIÓN FINAL (TALLER) -->
+        <section class="seccion">
+            <h2>📋 Taller: raíces y semillas</h2>
+            <h3>Selección múltiple (autocalifica)</h3>
+            <div><p>1. El genotipo es:</p>
+                <label><input type="radio" name="m1" value="0"> a) Lo que vemos</label><br>
+                <label><input type="radio" name="m1" value="1"> b) La constitución genética</label><br>
+                <label><input type="radio" name="m1" value="2"> c) El ambiente</label><br>
+                <label><input type="radio" name="m1" value="3"> d) Un cromosoma</label><br></div>
+            <div><p>2. Según Mendel, si cruzas AA x aa, la F1 es:</p>
+                <label><input type="radio" name="m2" value="0"> a) 100% Aa</label><br>
+                <label><input type="radio" name="m2" value="1"> b) 50% AA, 50% aa</label><br>
+                <label><input type="radio" name="m2" value="2"> c) 75% Aa, 25% aa</label><br>
+                <label><input type="radio" name="m2" value="3"> d) 100% AA</label><br></div>
+            <div><p>3. El fenotipo puede ser modificado por:</p>
+                <label><input type="radio" name="m3" value="0"> a) Solo los genes</label><br>
+                <label><input type="radio" name="m3" value="1"> b) El ambiente</label><br>
+                <label><input type="radio" name="m3" value="2"> c) Genes + ambiente</label><br>
+                <label><input type="radio" name="m3" value="3"> d) El azar</label><br></div>
+            <div><p>4. Un alelo recesivo se expresa cuando:</p>
+                <label><input type="radio" name="m4" value="0"> a) Está en homocigosis</label><br>
+                <label><input type="radio" name="m4" value="1"> b) Está en heterocigosis</label><br>
+                <label><input type="radio" name="m4" value="2"> c) Nunca se expresa</label><br>
+                <label><input type="radio" name="m4" value="3"> d) Solo en varones</label><br></div>
+            <div><p>5. Los niveles de organización biológica (de menor a mayor) son:</p>
+                <label><input type="radio" name="m5" value="0"> a) átomo - célula - molécula - tejido</label><br>
+                <label><input type="radio" name="m5" value="1"> b) molécula - átomo - célula - órgano</label><br>
+                <label><input type="radio" name="m5" value="2"> c) átomo - molécula - célula - tejido - órgano</label><br>
+                <label><input type="radio" name="m5" value="3"> d) célula - tejido - átomo - molécula</label><br></div>
+            <button id="calificarMultiple">Calificar múltiple</button>
+            <div id="resultadoMultiple"></div>
+
+            <h3>Preguntas abiertas (10-15 palabras)</h3>
+            <div>
+                <p>1. ¿Qué entiendes por herencia genética?</p>
+                <textarea id="open1" rows="2"></textarea><div class="word-counter" id="wc1">0 palabras</div>
+                <p>2. Nombra dos rasgos hereditarios en plantas de tu región.</p>
+                <textarea id="open2" rows="2"></textarea><div class="word-counter" id="wc2">0 palabras</div>
+                <p>3. ¿Cómo influyen los ancestros en lo que somos?</p>
+                <textarea id="open3" rows="2"></textarea><div class="word-counter" id="wc3">0 palabras</div>
+                <p>4. Explica la diferencia entre genotipo y fenotipo.</p>
+                <textarea id="open4" rows="2"></textarea><div class="word-counter" id="wc4">0 palabras</div>
+                <p>5. ¿Qué nivel de organización es el ADN? (molécula, célula...)</p>
+                <textarea id="open5" rows="2"></textarea><div class="word-counter" id="wc5">0 palabras</div>
+                <button id="validarAbiertas">Validar respuestas</button> <span id="msgAbiertas"></span>
+            </div>
+
+            <!-- Ruta de fortalecimiento -->
+            <div style="margin:2rem 0">
+                <h3>🧭 Ruta de fortalecimiento personalizada</h3>
+                <button id="generarRuta">Analizar debilidades</button>
+                <div id="rutaTexto" class="ruta-card" style="margin-top:1rem;"></div>
+            </div>
+
+            <!-- descarga -->
+            <footer>
+                <button id="descargarResultados">📥 Descargar resultados (.txt)</button>
+            </footer>
+        </section>
+    </div>
+
+    <script>
+        (function(){
+            // Estado global
+            let usuario = { apellidos: '', nombres: '' };
+            let pausasHechas = new Array(10).fill(false);
+            let respuestasMulti = [null, null, null, null, null];
+            const correctasMulti = [1, 0, 2, 0, 2]; // según opciones (base 0)
+            let respuestasAbiertas = ['','','','',''];
+            let notaMultiple = 0;
+
+            // Elementos
+            const loginScreen = document.getElementById('loginScreen');
+            const mainContent = document.getElementById('mainContent');
+            const btnIngresar = document.getElementById('btnIngresar');
+            const apellidosInput = document.getElementById('apellidosInput');
+            const nombresInput = document.getElementById('nombresInput');
+            const headerNombre = document.getElementById('headerNombre');
+            const progresoFill = document.getElementById('progresoFill');
+            const niveles = ['nivel1','nivel2','nivel3','nivel4','nivel5'].map(id => document.getElementById(id));
+
+            // Funciones de progreso (niveles de organización)
+            function actualizarProgresoNiveles() {
+                const totalHechas = pausasHechas.filter(v => v).length;
+                const porcentaje = (totalHechas / 10) * 100;
+                progresoFill.style.width = porcentaje + '%';
+                const nivelAlcanzado = Math.min(5, Math.floor(totalHechas / 2)); // cada 2 pausas sube un nivel (0-5)
+                for (let i = 0; i < 5; i++) {
+                    if (i < nivelAlcanzado) niveles[i].classList.add('unlocked');
+                    else niveles[i].classList.remove('unlocked');
+                }
+                guardarLocal();
+            }
+
+            // localStorage
+            function guardarLocal() {
+                if (!usuario.apellidos) return;
+                const data = {
+                    apellidos: usuario.apellidos,
+                    nombres: usuario.nombres,
+                    pausas: pausasHechas,
+                    abiertas: respuestasAbiertas,
+                    multi: respuestasMulti
+                };
+                localStorage.setItem('ova_herencia', JSON.stringify(data));
+            }
+
+            function cargarLocal() {
+                const saved = localStorage.getItem('ova_herencia');
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        usuario = { apellidos: data.apellidos || '', nombres: data.nombres || '' };
+                        pausasHechas = data.pausas || new Array(10).fill(false);
+                        respuestasAbiertas = data.abiertas || ['','','','',''];
+                        respuestasMulti = data.multi || [null,null,null,null,null];
+                        // restaurar textareas
+                        document.getElementById('open1').value = respuestasAbiertas[0] || '';
+                        document.getElementById('open2').value = respuestasAbiertas[1] || '';
+                        document.getElementById('open3').value = respuestasAbiertas[2] || '';
+                        document.getElementById('open4').value = respuestasAbiertas[3] || '';
+                        document.getElementById('open5').value = respuestasAbiertas[4] || '';
+                        // restaurar radios
+                        for (let i=1; i<=5; i++) {
+                            const val = respuestasMulti[i-1];
+                            if (val !== null) {
+                                const radio = document.querySelector(`input[name="m${i}"][value="${val}"]`);
+                                if (radio) radio.checked = true;
+                            }
+                        }
+                        if (usuario.apellidos && usuario.nombres) {
+                            loginScreen.style.display = 'none';
+                            mainContent.style.display = 'block';
+                            headerNombre.innerText = `${usuario.apellidos} ${usuario.nombres}`;
+                            actualizarProgresoNiveles();
+                            actualizarTodosWordCount();
+                        }
+                        // deshabilitar pausas
+                        pausasHechas.forEach((h, idx) => {
+                            if (h) {
+                                const btn = document.querySelector(`.pausa-btn[data-id="${idx}"]`);
+                                if (btn) { btn.disabled = true; btn.innerText = '✔️ Hecho'; }
+                            }
+                        });
+                    } catch (e) {}
+                }
+            }
+
+            // palabras
+            function contarPalabras(t) {
+                return t.trim().split(/\s+/).filter(p => p.length>0).length;
+            }
+            function actualizarWordCount(taId, ctId) {
+                const ta = document.getElementById(taId);
+                const num = contarPalabras(ta.value);
+                document.getElementById(ctId).innerText = num + ' palabras';
+                return num;
+            }
+            function actualizarTodosWordCount() {
+                for (let i=1; i<=5; i++) {
+                    actualizarWordCount(`open${i}`, `wc${i}`);
+                }
+            }
+
+            // LOGIN
+            btnIngresar.addEventListener('click', (e) => {
+                e.preventDefault();
+                const ap = apellidosInput.value.trim();
+                const nom = nombresInput.value.trim();
+                if (!ap || !nom) { alert('Completa ambos campos'); return; }
+                usuario.apellidos = ap; usuario.nombres = nom;
+                headerNombre.innerText = `${ap} ${nom}`;
+                loginScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                if (!localStorage.getItem('ova_herencia')) {
+                    pausasHechas = new Array(10).fill(false);
+                } else {
+                    cargarLocal();
+                }
+                actualizarProgresoNiveles();
+                guardarLocal();
+            });
+
+            // PAUSAS
+            document.querySelectorAll('.pausa-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'), 10);
+                    if (!isNaN(id) && id>=0 && id<10 && !pausasHechas[id]) {
+                        pausasHechas[id] = true;
+                        e.target.disabled = true;
+                        e.target.innerText = '✔️ Hecho';
+                        actualizarProgresoNiveles();
+                    }
+                });
+            });
+
+            // Pre-saberes
+            function configPre(ind, correctVal, feedId) {
+                document.querySelectorAll(`input[name="pre${ind}"]`).forEach(r => {
+                    r.addEventListener('change', function() {
+                        const f = document.getElementById(feedId);
+                        if (this.value === correctVal) {
+                            f.innerText = '✅ Correcto. ¡Bien!';
+                            f.className = 'feedback correcto';
+                        } else {
+                            f.innerText = '❌ No es correcto, vuelve a intentar.';
+                            f.className = 'feedback incorrecto';
+                        }
+                    });
+                });
+            }
+            configPre(1, 'a', 'feedPre1');
+            configPre(2, 'a', 'feedPre2');
+            configPre(3, 'b', 'feedPre3');
+
+            // ICFES
+            document.getElementById('revisarIcfes').addEventListener('click', () => {
+                const selec = document.querySelector('input[name="icfes"]:checked');
+                const feed = document.getElementById('feedIcfes');
+                if (!selec) { feed.innerText = 'Elige una opción'; return; }
+                if (selec.value === 'c') {
+                    feed.innerText = '✅ ¡Correcto! Madre puede ser Aa, padre aa → 50% hijos Aa (marrones) y 50% aa (azules).';
+                    feed.className = 'feedback correcto';
+                } else {
+                    feed.innerText = '❌ Revisa: si la madre es heterocigota (Aa) y el padre homocigoto recesivo (aa), la probabilidad es 50% ojos azules.';
+                    feed.className = 'feedback incorrecto';
+                }
+            });
+
+            // Múltiple
+            document.getElementById('calificarMultiple').addEventListener('click', () => {
+                let aciertos = 0;
+                for (let i=1; i<=5; i++) {
+                    const radios = document.getElementsByName(`m${i}`);
+                    let val = null;
+                    for (let r of radios) if (r.checked) { val = r.value; break; }
+                    if (val !== null) {
+                        respuestasMulti[i-1] = parseInt(val,10);
+                        if (respuestasMulti[i-1] === correctasMulti[i-1]) aciertos++;
+                    } else respuestasMulti[i-1] = null;
+                }
+                notaMultiple = aciertos;
+                document.getElementById('resultadoMultiple').innerText = `Obtuviste ${aciertos}/5 correctas.`;
+                guardarLocal();
+            });
+
+            // Abiertas contadores
+            ['open1','open2','open3','open4','open5'].forEach((id, idx) => {
+                document.getElementById(id).addEventListener('input', function() {
+                    actualizarWordCount(id, 'wc'+(idx+1));
+                    respuestasAbiertas[idx] = this.value;
+                    guardarLocal();
+                });
+            });
+            document.getElementById('validarAbiertas').addEventListener('click', () => {
+                let ok = true;
+                for (let i=1; i<=5; i++) {
+                    const num = contarPalabras(document.getElementById(`open${i}`).value);
+                    if (num<10 || num>15) ok = false;
+                }
+                document.getElementById('msgAbiertas').innerText = ok ? '✅ Todas entre 10-15 palabras.' : '❌ Hay respuestas con menos de 10 o más de 15 palabras.';
+            });
+
+            // Ruta fortalecimiento
+            document.getElementById('generarRuta').addEventListener('click', () => {
+                // inductivas: preguntas 1,2 / deductivas: 3,4,5 (aprox)
+                let indAc=0, indTot=0, dedAc=0, dedTot=0;
+                for (let i=0; i<5; i++) {
+                    if (respuestasMulti[i] !== null) {
+                        if (i<2) { indTot++; if (respuestasMulti[i]===correctasMulti[i]) indAc++; }
+                        else { dedTot++; if (respuestasMulti[i]===correctasMulti[i]) dedAc++; }
+                    }
+                }
+                let msg = '';
+                if (indTot>0 && indAc/indTot < 0.6) msg += '💪 Fortalece lo inductivo: repasa los ejemplos de árbol familiar y variedades. ';
+                if (dedTot>0 && dedAc/dedTot < 0.6) msg += '🔬 Refuerza lo deductivo: leyes de Mendel y niveles. ';
+                if (msg === '') msg = '🌟 ¡Buen trabajo! Sigue conectando con tus raíces.';
+                document.getElementById('rutaTexto').innerText = msg;
+            });
+
+            // CANVAS (animación partículas de alelos)
+            const canvas = document.getElementById('canvasHerencia');
+            const ctx = canvas.getContext('2d');
+            let mouseX = 350;
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+            });
+
+            let alelos = [];
+            for (let i=0; i<40; i++) {
+                alelos.push({ x: Math.random()*700, y: Math.random()*300, vx: (Math.random()-0.5)*0.8, vy: (Math.random()-0.5)*0.8, tipo: Math.random()>0.5 ? 'A' : 'a' });
+            }
+
+            function drawCanvas() {
+                ctx.clearRect(0,0,700,300);
+                // fondo
+                ctx.fillStyle = '#f1e9cf';
+                ctx.fillRect(0,0,700,300);
+                // dibujar espermatozoides / óvulos como círculos
+                for (let a of alelos) {
+                    // mover un poco
+                    a.x += a.vx; a.y += a.vy;
+                    if (a.x<0 || a.x>700) a.vx *= -1;
+                    if (a.y<0 || a.y>300) a.vy *= -1;
+                    ctx.beginPath();
+                    if (a.tipo === 'A') {
+                        ctx.fillStyle = '#2b6d3b';
+                        ctx.arc(a.x, a.y, 7, 0, 2*Math.PI);
+                    } else {
+                        ctx.fillStyle = '#b5783b';
+                        ctx.arc(a.x, a.y, 5, 0, 2*Math.PI);
+                    }
+                    ctx.fill();
+                }
+                // dibujar linea de influencia del ratón (probabilidad)
+                ctx.strokeStyle = '#494949';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(mouseX, 0);
+                ctx.lineTo(mouseX, 300);
+                ctx.stroke();
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillStyle = '#2a4a2a';
+                ctx.fillText('Alelos A (verde) y a (café) – el ratón ajusta la mezcla', 120, 30);
+                requestAnimationFrame(drawCanvas);
+            }
+            drawCanvas();
+
+            // Descarga resultados
+            document.getElementById('descargarResultados').addEventListener('click', () => {
+                const nombre = `${usuario.apellidos} ${usuario.nombres}`;
+                const nivelIndex = Math.min(5, Math.floor(pausasHechas.filter(v=>v).length / 2));
+                const nivelNom = ['átomo','molécula','célula','tejido','órgano'][nivelIndex-1] || 'inicial';
+                const multiStr = respuestasMulti.map((v,i)=>`P${i+1}:${v!==null?v:'-'}`).join(' ');
+                const abiertasStr = respuestasAbiertas.map((t,i)=>`A${i+1}:${t.substring(0,30)}`).join(' | ');
+                const contenido = `Nombre: ${nombre}\nNota final múltiple: ${notaMultiple}/5\nNivel organización: ${nivelNom}\nRespuestas: ${multiStr}\nAbiertas: ${abiertasStr}`;
+                const blob = new Blob([contenido], {type:'text/plain'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `herencia_${usuario.apellidos}.txt`;
+                a.click();
+            });
+
+            window.addEventListener('load', () => {
+                cargarLocal();
+                actualizarTodosWordCount();
+            });
+        })();
+    </script>
+</body>
+</html>

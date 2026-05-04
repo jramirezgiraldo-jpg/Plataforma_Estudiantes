@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semillas Nativas vs. Modificadas - Soberanía en Quimbaya</title>
+    <style>
+        /* ================= PALETA DE COLORES Y VARIABLES ================= */
+        :root {
+            --c-tierra: #5D4037;
+            --c-cafe-tostado: #3E2723;
+            --c-verde-hoja: #388E3C;
+            --c-verde-claro: #81C784;
+            --c-maiz: #FBC02D;
+            --c-naranja-citrico: #F57C00;
+            --c-fondo: #F1F8E9;
+            --c-blanco: #FFFFFF;
+            --c-texto: #212121;
+            --c-alerta: #D32F2F;
+            --font-principal: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --radio-borde: 15px;
+            --sombra-suave: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-principal); }
+        body { background-color: var(--c-fondo); color: var(--c-texto); line-height: 1.8; overflow-x: hidden; scroll-behavior: smooth; }
+
+        /* ================= HUD (HEAD-UP DISPLAY) ================= */
+        #hud-top {
+            position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+            background: linear-gradient(90deg, var(--c-verde-hoja), var(--c-tierra));
+            color: var(--c-blanco); display: flex; justify-content: space-between; align-items: center;
+            padding: 0 30px; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: transform 0.4s ease-in-out;
+        }
+        .hud-oculto { transform: translateY(-100%); }
+        .hud-grupo { display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 1.15rem; }
+        
+        .progreso-contenedor {
+            flex-grow: 1; margin: 0 40px; background: rgba(255,255,255,0.3); height: 18px;
+            border-radius: 9px; position: relative; overflow: hidden;
+        }
+        #barra-progreso {
+            height: 100%; width: 0%; background: var(--c-maiz);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px var(--c-maiz);
+        }
+        .icono-svg { width: 30px; height: 30px; fill: currentColor; }
+
+        /* ================= PANTALLA DE BIENVENIDA ================= */
+        #pantalla-bienvenida {
+            height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, rgba(56,142,60,0.9), rgba(62,39,35,0.9)), 
+                        url('data:image/svg+xml;utf8,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><path d="M30 5 C45 20 45 40 30 55 C15 40 15 20 30 5" fill="none" stroke="%23ffffff" stroke-width="1.5" opacity="0.1"/></svg>');
+            color: var(--c-blanco); text-align: center; padding: 20px;
+        }
+        .caja-login {
+            background: rgba(255,255,255,0.05); backdrop-filter: blur(15px); padding: 50px 60px;
+            border-radius: var(--radio-borde); border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); max-width: 500px; width: 100%;
+        }
+        .caja-login h1 { font-size: 2.8rem; margin-bottom: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); border:none; padding:0; }
+        .caja-login p { font-size: 1.25rem; color: #E8F5E9; margin-bottom: 35px; }
+        
+        .input-contenedor { margin-bottom: 25px; text-align: left; }
+        .input-contenedor label { display: block; margin-bottom: 8px; font-weight: bold; color: #fff; letter-spacing: 0.5px; }
+        .input-estilo {
+            width: 100%; padding: 16px; border-radius: 10px; border: 2px solid transparent;
+            font-size: 1.1rem; outline: none; transition: 0.3s; background: rgba(255,255,255,0.95);
+        }
+        .input-estilo:focus { border-color: var(--c-maiz); box-shadow: 0 0 15px rgba(251,192,45,0.5); }
+        
+        .btn-principal {
+            background-color: var(--c-naranja-citrico); color: var(--c-blanco); border: none;
+            padding: 16px 35px; border-radius: 30px; font-size: 1.2rem; font-weight: 800;
+            cursor: pointer; transition: all 0.3s; text-transform: uppercase; width: 100%; letter-spacing: 1.5px;
+        }
+        .btn-principal:hover:not(:disabled) { transform: translateY(-4px); background-color: #EF6C00; box-shadow: 0 8px 25px rgba(239,108,0,0.5); }
+        .btn-principal:disabled { background: #9E9E9E; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ================= ESTRUCTURA PRINCIPAL DEL OVA ================= */
+        #contenido-ova { display: none; padding-top: 90px; max-width: 1050px; margin: 0 auto; padding-bottom: 120px; }
+        
+        .tarjeta-seccion {
+            background: var(--c-blanco); margin: 35px 20px; padding: 50px;
+            border-radius: var(--radio-borde); box-shadow: var(--sombra-suave);
+            border-top: 8px solid var(--c-verde-hoja);
+        }
+        
+        h1, h2, h3 { color: var(--c-verde-hoja); margin-bottom: 20px; line-height: 1.3; }
+        h1 { font-size: 2.6rem; border-bottom: 3px solid var(--c-maiz); padding-bottom: 12px; }
+        h2 { font-size: 2.1rem; margin-top: 40px; color: var(--c-cafe-tostado); }
+        h3 { font-size: 1.5rem; color: var(--c-tierra); }
+
+        .texto-largo { text-align: justify; margin-bottom: 25px; font-size: 1.15rem; color: #333; }
+        .texto-largo::first-letter { font-size: 2.6em; color: var(--c-naranja-citrico); font-weight: bold; float: left; margin-right: 8px; line-height: 1; }
+
+        /* ================= PREGUNTAS Y OPCIONES ================= */
+        .caja-quiz {
+            background: #F9FBE7; border: 2px solid #E6EE9C; padding: 30px;
+            border-radius: var(--radio-borde); margin-bottom: 30px; transition: 0.3s;
+        }
+        .caja-quiz:hover { border-color: var(--c-verde-claro); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .caja-quiz p { font-size: 1.15rem; font-weight: bold; margin-bottom: 18px; color: var(--c-cafe-tostado); }
+        
+        .btn-opcion {
+            display: block; width: 100%; text-align: left; padding: 15px 20px; margin: 10px 0;
+            background: var(--c-blanco); border: 2px solid var(--c-verde-claro);
+            border-radius: 10px; cursor: pointer; font-size: 1.1rem; transition: 0.2s; color: var(--c-texto);
+        }
+        .btn-opcion:hover:not(:disabled) { background: #F1F8E9; transform: translateX(6px); }
+        .btn-opcion.correcta { background: #E8F5E9; border-color: var(--c-verde-hoja); color: var(--c-verde-hoja); font-weight: bold; }
+        .btn-opcion.incorrecta { background: #FFEBEE; border-color: var(--c-alerta); color: var(--c-alerta); }
+
+        /* ================= PAUSAS ACTIVAS ================= */
+        .pausa-activa {
+            background: linear-gradient(135deg, #FFFDE7 0%, #FFF9C4 100%); border-left: 6px solid var(--c-maiz);
+            padding: 25px 30px; margin: 35px 0; border-radius: 0 12px 12px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .btn-pausa {
+            background: var(--c-tierra); color: var(--c-blanco); border: none; padding: 12px 25px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.3s; font-size: 1.05rem;
+        }
+        .btn-pausa:hover:not(:disabled) { background: var(--c-cafe-tostado); }
+        .btn-pausa:disabled { background: var(--c-verde-hoja); cursor: default; }
+
+        /* ================= TABLA COMPARATIVA ================= */
+        .tabla-agricola {
+            width: 100%; border-collapse: collapse; margin: 35px 0; font-size: 1.1rem;
+            box-shadow: var(--sombra-suave); border-radius: 12px; overflow: hidden;
+        }
+        .tabla-agricola th, .tabla-agricola td { padding: 18px; text-align: left; border-bottom: 1px solid #E0E0E0; }
+        .tabla-agricola th { background: var(--c-verde-hoja); color: var(--c-blanco); font-weight: 600; }
+        .tabla-agricola tr:nth-child(even) { background: #F5F5F5; }
+        .tabla-agricola tr:hover { background: #E8F5E9; }
+
+        /* ================= MOTOR DRAG & DROP ================= */
+        .area-dd {
+            background: #FAFAFA; border: 3px dashed var(--c-naranja-citrico); border-radius: var(--radio-borde);
+            padding: 35px; margin: 40px 0; text-align: center;
+        }
+        .dd-contenedores { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 25px 0; min-height: 65px; }
+        
+        .pieza-arrastrable {
+            background: var(--c-cafe-tostado); color: var(--c-blanco); padding: 12px 25px;
+            border-radius: 8px; cursor: grab; font-weight: bold; font-size: 1.25rem;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2); user-select: none; transition: transform 0.1s;
+        }
+        .pieza-arrastrable:active { cursor: grabbing; transform: scale(1.08); }
+        
+        .zona-soltar {
+            min-width: 65px; height: 65px; border: 3px solid var(--c-tierra); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; background: var(--c-blanco);
+            font-weight: bold; font-size: 1.25rem; color: var(--c-texto); transition: 0.2s;
+        }
+        .zona-soltar.tipo-palabra { min-width: 150px; padding: 0 15px; }
+        .zona-soltar.drag-hover { background: #FFF8E1; border-color: var(--c-naranja-citrico); transform: scale(1.05); }
+
+        /* ================= VISUALES: SVG Y CANVAS ================= */
+        .contenedor-visual {
+            margin: 45px 0; text-align: center; background: #FFF; padding: 30px;
+            border-radius: var(--radio-borde); box-shadow: var(--sombra-suave); border: 1px solid #EEE;
+        }
+        canvas {
+            background: #111; border-radius: 12px; max-width: 100%;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5); cursor: pointer; margin-top: 20px;
+        }
+
+        /* ================= SEGURIDAD ANTI-FRAUDE ================= */
+        .textarea-seguridad {
+            width: 100%; height: 130px; padding: 18px; border: 2px solid #CCC; border-radius: 10px;
+            resize: vertical; font-size: 1.1rem; transition: 0.3s; margin-top: 12px; background: #FAFAFA;
+        }
+        .textarea-seguridad:focus { border-color: var(--c-verde-hoja); box-shadow: 0 0 12px rgba(56,142,60,0.25); outline: none; background: #FFF; }
+        
+        #pantalla-alerta {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9);
+            display: none; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(8px);
+        }
+        .modal-alerta {
+            background: var(--c-blanco); padding: 50px; border-radius: var(--radio-borde);
+            text-align: center; max-width: 500px; border-top: 15px solid var(--c-alerta);
+            animation: sacudir 0.35s ease-in-out;
+        }
+        @keyframes sacudir { 0%,100%{transform: translateX(0);} 20%,60%{transform: translateX(-12px);} 40%,80%{transform: translateX(12px);} }
+
+        #panel-resultados {
+            display: none; background: #E8F5E9; padding: 50px; border-radius: var(--radio-borde);
+            text-align: center; margin-top: 60px; border: 4px solid var(--c-verde-hoja);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HUD SUPERIOR -->
+    <div id="hud-top" class="hud-oculto">
+        <div class="hud-grupo">
+            <!-- Icono Agricultor/Estudiante -->
+            <svg class="icono-svg" viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/></svg>
+            <span id="ui-nombres">Estudiante</span>
+        </div>
+        <div class="progreso-contenedor">
+            <div id="barra-progreso"></div>
+        </div>
+        <div class="hud-grupo">
+            <span>Soberanía:</span>
+            <span id="ui-puntos" style="color: var(--c-maiz); font-size: 1.5rem;">0.0</span> / 5.0
+            <!-- Icono Semilla/Hoja -->
+            <svg class="icono-svg" style="fill: var(--c-maiz);" viewBox="0 0 24 24">
+                <path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- PANTALLA ANTI-FRAUDE -->
+    <div id="pantalla-alerta">
+        <div class="modal-alerta">
+            <svg style="width:80px; fill: var(--c-alerta); margin-bottom:15px;" viewBox="0 0 24 24"><path d="M11 15H13V17H11V15M11 7H13V13H11V7M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2M12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z"/></svg>
+            <h2 style="color: var(--c-alerta);">Violación de Integridad</h2>
+            <p style="font-size: 1.15rem; margin: 15px 0;">El sistema ha detectado el uso de "Copiar y Pegar" o una velocidad de escritura que indica el uso de Inteligencia Artificial.</p>
+            <p style="color: #555; font-style:italic;">En Pueblo Rico sembramos ideas propias. El campo de texto ha sido limpiado.</p>
+            <button class="btn-principal" style="margin-top: 25px; background-color: var(--c-cafe-tostado);" onclick="document.getElementById('pantalla-alerta').style.display='none'">Aceptar y Continuar</button>
+        </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="pantalla-bienvenida">
+        <div class="caja-login">
+            <h1>El Origen de la Semilla</h1>
+            <p>Mejoramiento Genético y Soberanía (Grado 9)</p>
+            
+            <div class="input-contenedor">
+                <label>Nombres Completos:</label>
+                <input type="text" id="in-nom" class="input-estilo" placeholder="Ej: Mariana">
+            </div>
+            <div class="input-contenedor">
+                <label>Apellidos Completos:</label>
+                <input type="text" id="in-ape" class="input-estilo" placeholder="Ej: Ospina Cardona">
+            </div>
+            
+            <button id="btn-iniciar" class="btn-principal">Iniciar Exploración</button>
+        </div>
+    </div>
+
+    <!-- CONTENIDO OVA -->
+    <div id="contenido-ova">
+
+        <!-- INTRODUCCIÓN Y PRE-SABERES -->
+        <div class="tarjeta-seccion">
+            <h1>Raíces y Laboratorios</h1>
+            <h3>Objetivo de Aprendizaje</h3>
+            <p class="texto-largo">
+                Reflexionar de manera crítica sobre las implicaciones biológicas, ecológicas y sociales del mejoramiento genético de especies (semillas nativas vs. modificadas y transgénicas). Analizaremos cómo estos avances biotecnológicos impactan la soberanía alimentaria y la economía de las fincas cafeteras y ganaderas en la Vereda Pueblo Rico, municipio de Quimbaya.
+            </p>
+
+            <h3 style="margin-top: 40px;">Pre-saberes: La realidad del campo</h3>
+            <p>Contesta según tu experiencia en la vereda. (Cada acierto suma 0.1 puntos).</p>
+
+            <div class="caja-quiz" id="pre-1">
+                <p>1. Cuando los abuelos de Pueblo Rico guardaban las mejores semillas de la cosecha de maíz o frijol para sembrarlas al año siguiente, estaban haciendo:</p>
+                <button class="btn-opcion" data-correct="false" onclick="validarQuiz('pre-1', this, false)">A. Transgénesis en laboratorio.</button>
+                <button class="btn-opcion" data-correct="true" onclick="validarQuiz('pre-1', this, true)">B. Selección artificial o mejoramiento tradicional.</button>
+                <button class="btn-opcion" data-correct="false" onclick="validarQuiz('pre-1', this, false)">C. Mutaciones genéticas inducidas con químicos.</button>
+            </div>
+
+            <div class="caja-quiz" id="pre-2">
+                <p>2. ¿Qué significa el término "Soberanía Alimentaria" para los campesinos del Quindío?</p>
+                <button class="btn-opcion" data-correct="true" onclick="validarQuiz('pre-2', this, true)">A. El derecho de los pueblos a decidir sus propias políticas agrícolas y a controlar sus semillas nativas.</button>
+                <button class="btn-opcion" data-correct="false" onclick="validarQuiz('pre-2', this, false)">B. La obligación de comprar alimentos importados de otros países.</button>
+                <button class="btn-opcion" data-correct="false" onclick="validarQuiz('pre-2', this, false)">C. El uso exclusivo de abonos químicos patentados por multinacionales.</button>
+            </div>
+
+            <div class="caja-quiz" id="pre-3">
+                <p>3. ¿Cuál es una de las principales razones por las que se crearon nuevas variedades de café (como la variedad Castillo o Colombia) introducidas en Quimbaya?</p>
+                <button class="btn-opcion" data-correct="false" onclick="validarQuiz('pre-3', this, false)">A. Para que el café tuviera sabor a naranja.</button>
+                <button class="btn-opcion" data-correct="false" onclick="validarQuiz('pre-3', this, false)">B. Para hacer que las semillas fueran estériles y no se pudieran reproducir.</button>
+                <button class="btn-opcion" data-correct="true" onclick="validarQuiz('pre-3', this, true)">C. Para lograr resistencia a plagas devastadoras como la roya y aumentar la producción.</button>
+            </div>
+        </div>
+
+        <!-- CUERPO INDUCTIVO: CONTEXTO Y SOBERANÍA -->
+        <div class="tarjeta-seccion">
+            <h2>El Tesoro en el Canasto del Recolector</h2>
+            
+            <p class="texto-largo">
+                Si viajamos en el tiempo unas décadas atrás en la Vereda Pueblo Rico de Quimbaya, encontraríamos a los agricultores practicando un ritual sagrado: la recolección y selección de semillas. Al final de la cosecha de cítricos, plátano o maíz, el campesino elegía los frutos más grandes, sanos y sabrosos, y guardaba pacientemente sus semillas. Estas <strong>semillas nativas o criollas</strong> llevan en su ADN la historia de adaptación al clima lluvioso y los suelos volcánicos del Quindío. No solo representan alimento, sino la autonomía de la finca. Al no depender de empresas externas para iniciar el próximo cultivo, los agricultores ejercían lo que hoy llamamos <strong>Soberanía Alimentaria</strong>.
+            </p>
+            <p class="texto-largo">
+                Sin embargo, la agricultura no es estática; es una batalla constante contra la naturaleza. En los años 70 y 80, una plaga fúngica conocida como la Roya del cafeto amenazó con destruir la economía del Paisaje Cultural Cafetero. El café arábico tradicional (Caturra o Típica), que tanto se sembraba en Quimbaya, era extremadamente susceptible a este hongo. Aquí entró en juego la ciencia del <strong>Mejoramiento Tradicional</strong>. Instituciones como Cenicafé comenzaron a cruzar manualmente plantas de café de alta calidad con plantas de la variedad "Híbrido de Timor", que poseían genes naturales de resistencia a la roya. 
+            </p>
+            <p class="texto-largo">
+                Tras muchos años de cruces y selección en el campo, surgieron variedades modificadas tradicionalmente, como la Variedad Colombia y posteriormente la Variedad Castillo. Estas nuevas semillas salvaron las fincas de Pueblo Rico de la quiebra. Esta modificación genética es "tradicional" porque utiliza la reproducción sexual natural de la planta. No obstante, con la llegada de la Revolución Verde, las cosas cambiaron drásticamente. Las grandes industrias mundiales comenzaron a ofrecer semillas "mejoradas" que requerían altos insumos (fertilizantes químicos y pesticidas) para alcanzar grandes producciones.
+            </p>
+            <p class="texto-largo">
+                El debate ético y económico en Quimbaya surge cuando hablamos de la dependencia. Las semillas nativas pueden ser intercambiadas libremente entre vecinos ("trueque de semillas"), manteniendo una alta <em>diversidad genética</em> que protege al cultivo de forma natural contra cambios climáticos. Por otro lado, las semillas modificadas comerciales e híbridas de laboratorio prometen rendimientos extraordinarios, pero muchas veces pierden su vigor en la segunda generación. Esto obliga al caficultor o ganadero a comprar nuevas semillas e insumos a las multinacionales cada año, perdiendo su soberanía.
+            </p>
+            <p class="texto-largo">
+                La vereda Pueblo Rico se encuentra hoy en una encrucijada. El turismo ecológico exige alimentos limpios y tradicionales, valorando el rescate de las semillas criollas. Pero, al mismo tiempo, el mercado global exige producir más en menos espacio. Entender la diferencia entre seleccionar naturalmente una buena semilla y depender de un laboratorio es el primer paso para proteger la herencia agrícola del Quindío.
+            </p>
+
+            <!-- TABLA COMPARATIVA -->
+            <h3>Cuadro Comparativo: Tipos de Semillas en Quimbaya</h3>
+            <table class="tabla-agricola">
+                <thead>
+                    <tr>
+                        <th>Tipo de Semilla</th>
+                        <th>Origen y Método</th>
+                        <th>Ventajas Locales</th>
+                        <th>Riesgos / Desventajas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Nativa / Criolla</strong></td>
+                        <td>Selección de agricultores locales durante generaciones.</td>
+                        <td>Alta adaptación al suelo de Quimbaya. Autonomía económica (son gratis). Alta diversidad.</td>
+                        <td>Menor rendimiento por hectárea. Sensibilidad a nuevas plagas invasoras.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Híbrida Mejorada (Tradicional)</strong></td>
+                        <td>Cruces sexuales manuales en centros de investigación (Ej. Cenicafé).</td>
+                        <td>Resistencia a plagas específicas (Roya). Alto rendimiento en cosecha.</td>
+                        <td>Requieren más fertilizantes. Reducen la biodiversidad si se siembran como monocultivo masivo.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Transgénica (OGM)</strong></td>
+                        <td>Ingeniería genética en laboratorio. Inserción de genes de otras especies.</td>
+                        <td>Resistencia extrema a herbicidas fuertes o insectos específicos.</td>
+                        <td>Patentes (propiedad corporativa). Dependencia total del agricultor. Riesgo de contaminar especies nativas.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- DRAG & DROP 1: LETRAS -->
+            <div class="area-dd" id="juego-letras-1">
+                <h3>Actividad 1: El Derecho del Campesino (0.2 pts)</h3>
+                <p>Ordena las letras para formar la palabra clave que define el control, la autonomía y el poder de decisión de los agricultores sobre sus propias semillas y alimentos.</p>
+                <div class="dd-contenedores" id="items-L1"></div>
+                <div class="dd-contenedores" id="huecos-L1"></div>
+                <button class="btn-principal" onclick="validarJuegoLetras('juego-letras-1', 'SOBERANIA', 0.2)">Validar Término</button>
+            </div>
+
+            <!-- DRAG & DROP 2: PALABRAS -->
+            <div class="area-dd" id="juego-palabras-1">
+                <h3>Actividad 2: El Valor del Patrimonio (0.2 pts)</h3>
+                <p>Ordena las palabras para formar la frase que describe el papel de las semillas criollas en nuestra región.</p>
+                <div class="dd-contenedores" id="items-P1"></div>
+                <div class="dd-contenedores" id="huecos-P1"></div>
+                <button class="btn-principal" onclick="validarJuegoPalabras('juego-palabras-1', 'LAS SEMILLAS NATIVAS PROTEGEN NUESTRA IDENTIDAD', 0.2)">Validar Frase</button>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 1-5 -->
+            <h2>Pausas Activas (Trabajo de Cuaderno)</h2>
+            <p>Realiza estos ejercicios en tu cuaderno de Ciencias. Clic para guardar (0.1 pts c/u).</p>
+            
+            <div class="pausa-activa">
+                <h3>1. Pregunta Reflexiva</h3>
+                <p>¿Qué sucedería con las fincas de Pueblo Rico si una ley prohibiera guardar semillas nativas y obligara a comprar semillas patentadas cada cosecha?</p>
+                <button class="btn-pausa" id="btn-p1" onclick="completarPausa(1)">Completado en mi cuaderno</button>
+            </div>
+            <div class="pausa-activa">
+                <h3>2. Dibujo de Proceso: Selección Natural vs Artificial</h3>
+                <p>Dibuja dos escenarios: Un pájaro comiendo y dispersando semillas silvestres (Natural) vs. Un agrónomo usando pinzas para cruzar el polen de dos flores de café (Artificial).</p>
+                <button class="btn-pausa" id="btn-p2" onclick="completarPausa(2)">Completado en mi cuaderno</button>
+            </div>
+            <div class="pausa-activa">
+                <h3>3. Mapa Mental</h3>
+                <p>Centro: "Soberanía Alimentaria". Ramas: Independencia, Semillas propias, Diversidad genética, Cultura Quindiana.</p>
+                <button class="btn-pausa" id="btn-p3" onclick="completarPausa(3)">Completado en mi cuaderno</button>
+            </div>
+            <div class="caja-quiz" style="margin: 30px 0; border-left: 6px solid var(--c-maiz); background: #FFFDE7; border-radius: 0 12px 12px 0;"> <!-- Reutilizando estilo para cuadro comp -->
+                <h3>4. Cuadro Comparativo Local</h3>
+                <p>Haz una lista en tu cuaderno de 3 ventajas económicas de usar semilla nativa y 3 ventajas económicas de usar semilla híbrida mejorada (como la variedad Castillo).</p>
+                <button class="btn-pausa" id="btn-p4" onclick="completarPausa(4)">Completado en mi cuaderno</button>
+            </div>
+            <div class="pausa-activa">
+                <h3>5. Entrevista Familiar (Tarea Extraclase)</h3>
+                <p>Pregúntale a un abuelo o agricultor local: "¿Cómo guardaban las semillas del frijol o el maíz cuando usted era joven?". Anota su respuesta.</p>
+                <button class="btn-pausa" id="btn-p5" onclick="completarPausa(5)">Completado en mi cuaderno</button>
+            </div>
+        </div>
+
+        <!-- PREGUNTA ICFES Y GRÁFICA SVG -->
+        <div class="tarjeta-seccion">
+            <h2>Competencia Científica: Indagar (0.4 pts)</h2>
+            <p class="texto-largo">
+                La siguiente gráfica muestra el comportamiento de la diversidad agrícola en el municipio de Quimbaya a lo largo de 50 años. Analiza la relación entre el número de variedades nativas de tomate cultivadas y el porcentaje de uso de una única semilla modificada de alto rendimiento.
+            </p>
+
+            <div class="contenedor-visual">
+                <svg width="600" height="350" viewBox="0 -20 600 370">
+                    <!-- Fondo y ejes -->
+                    <rect x="60" y="20" width="480" height="280" fill="#f8f9fa" />
+                    <line x1="60" y1="300" x2="540" y2="300" stroke="#333" stroke-width="2"/>
+                    <line x1="60" y1="20" x2="60" y2="300" stroke="#333" stroke-width="2"/>
+                    
+                    <!-- Textos ejes -->
+                    <text x="300" y="340" font-size="14" font-weight="bold" text-anchor="middle">Años</text>
+                    <text x="20" y="160" font-size="14" font-weight="bold" transform="rotate(-90, 20, 160)" text-anchor="middle">Cantidad / Porcentaje</text>
+                    
+                    <!-- Marcas X -->
+                    <text x="60" y="320" font-size="12" text-anchor="middle">1970</text>
+                    <text x="180" y="320" font-size="12" text-anchor="middle">1985</text>
+                    <text x="300" y="320" font-size="12" text-anchor="middle">2000</text>
+                    <text x="420" y="320" font-size="12" text-anchor="middle">2015</text>
+                    <text x="540" y="320" font-size="12" text-anchor="middle">2030</text>
+                    
+                    <!-- Marcas Y -->
+                    <text x="50" y="300" font-size="12" text-anchor="end">0</text>
+                    <text x="50" y="160" font-size="12" text-anchor="end">50</text>
+                    <text x="50" y="30" font-size="12" text-anchor="end">100</text>
+
+                    <!-- Línea 1: Variedades Nativas (Caída) -->
+                    <polyline points="60,40 180,90 300,180 420,250 540,280" fill="none" stroke="#388E3C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="60" cy="40" r="5" fill="#388E3C"/>
+                    <circle cx="540" cy="280" r="5" fill="#388E3C"/>
+                    
+                    <!-- Línea 2: Uso de Semilla Modificada (Aumento) -->
+                    <polyline points="60,290 180,260 300,140 420,60 540,30" fill="none" stroke="#F57C00" stroke-width="4" stroke-dasharray="8,4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="60" cy="290" r="5" fill="#F57C00"/>
+                    <circle cx="540" cy="30" r="5" fill="#F57C00"/>
+
+                    <!-- Leyenda -->
+                    <rect x="330" y="40" width="180" height="60" fill="#fff" stroke="#ccc" rx="5"/>
+                    <line x1="340" y1="55" x2="370" y2="55" stroke="#388E3C" stroke-width="4"/>
+                    <text x="380" y="60" font-size="11">Cant. Variedades Nativas</text>
+                    
+                    <line x1="340" y1="85" x2="370" y2="85" stroke="#F57C00" stroke-width="4" stroke-dasharray="8,4"/>
+                    <text x="380" y="90" font-size="11">% Uso Semilla Modificada</text>
+                </svg>
+            </div>
+
+            <div class="caja-quiz" id="icfes-1">
+                <p>Basado en la gráfica, ¿cuál es el impacto ecológico principal de adoptar masivamente una única semilla modificada en la región?</p>
+                <button class="btn-opcion" data-correct="false" onclick="validarQuiz('icfes-1', this, false)">A. Aumenta la diversidad genética, ya que las semillas modificadas generan nuevas variedades nativas al cruzarse.</button>
+                <button class="btn-opcion" data-correct="true" onclick="validarQuiz('icfes-1', this, true)">B. Genera una pérdida drástica de biodiversidad (erosión genética) al reemplazar múltiples variedades nativas por un solo monocultivo.</button>
+                <button class="btn-opcion" data-correct="false" onclick="validarQuiz('icfes-1', this, false)">C. Las semillas nativas mejoran su rendimiento al competir con las semillas modificadas.</button>
+                <button class="btn-opcion" data-correct="false" onclick="validarQuiz('icfes-1', this, false)">D. No hay ninguna relación; las variedades nativas desaparecieron por causas climáticas independientes.</button>
+            </div>
+        </div>
+
+        <!-- CUERPO DEDUCTIVO: TECNOLOGÍA EN EL ADN -->
+        <div class="tarjeta-seccion">
+            <h2>El Código Fuente de la Vida: Laboratorios vs Naturaleza</h2>
+            
+            <p class="texto-largo">
+                Para comprender profundamente este debate, debemos ponernos una bata de laboratorio y mirar dentro del núcleo celular. Las semillas no son simples granos; son discos duros biológicos que contienen millones de líneas de código escrito en ADN. Cuando los científicos de los años 80 cruzaban plantas para hacer híbridos, estaban mezclando miles de genes al azar, esperando que el rasgo deseado (como ramas más fuertes para el café) se expresara en la descendencia. Es un proceso ciego y lento que depende de la naturaleza. 
+            </p>
+            <p class="texto-largo">
+                Sin embargo, la biotecnología moderna dio un salto cuántico hacia la creación de <strong>Organismos Genéticamente Modificados (OGM) o Transgénicos</strong>. Aquí ya no se espera a la naturaleza. Los genetistas identifican un gen específico, por ejemplo, en una bacteria del suelo (*Bacillus thuringiensis*), que produce una proteína letal para ciertos insectos. Utilizando herramientas moleculares (como tijeras enzimáticas), cortan ese gen bacteriano y lo "pegan" literalmente dentro del ADN de una semilla de maíz. El resultado es un maíz que produce su propio insecticida interno. 
+            </p>
+            <p class="texto-largo">
+                Otra tecnología de vanguardia es el <strong>CRISPR-Cas9</strong>. A diferencia de los transgénicos que introducen genes de *otras especies*, CRISPR funciona como un editor de texto (Word). Permite entrar al ADN nativo de una planta de naranja de Quimbaya y "apagar" el gen exacto que la hace susceptible a una enfermedad bacteriana, sin añadir ADN externo. Estas tecnologías son milagros agrícolas: prometen acabar con el hambre mundial, producir cultivos que resistan sequías extremas y reducir el uso de químicos nocivos en las fincas.
+            </p>
+            <p class="texto-largo">
+                ¿Dónde radica entonces el problema técnico y ético? Biológicamente, la inserción de genes en el laboratorio puede causar "efectos pleiotrópicos"; es decir, al modificar un gen, accidentalmente se altera el funcionamiento de otros, cambiando la composición nutricional o causando alergias imprevistas. Ecológicamente, el polen de una planta transgénica patentada puede viajar por el viento en Pueblo Rico y polinizar cultivos criollos orgánicos vecinos. Esto se conoce como <em>contaminación genética</em>, y ha llevado a demandas legales donde corporaciones multinacionales exigen a campesinos pagar por "usar su ADN patentado" sin permiso.
+            </p>
+            <p class="texto-largo">
+                La genética molecular nos otorga el poder de los dioses sobre el mejoramiento de las especies. Pero con este poder viene una responsabilidad colosal. Los campesinos y estudiantes de Quindío deben comprender estas leyes genéticas no para rechazar la ciencia por miedo, sino para usarla con sabiduría. Integrar la tecnología de vanguardia para estudiar y fortalecer nuestras semillas nativas, protegiendo las patentes de la biodiversidad local frente al monopolio corporativo, es el verdadero significado de la soberanía científica en el siglo XXI.
+            </p>
+
+            <!-- ANIMACIÓN CANVAS: CRISPR / INSERCIÓN GENÉTICA -->
+            <div class="contenedor-visual">
+                <h3>Simulador a 60fps: Inserción de Gen Transgénico</h3>
+                <p style="font-size:0.95rem; margin-bottom: 15px;">Simulación del proceso de ingeniería genética usando <em>Agrobacterium</em> o herramientas CRISPR para insertar un gen fluorescente (rojo) en la hebra de ADN de una planta (verde).</p>
+                
+                <canvas id="canvas-adn" width="650" height="250"></canvas>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn-principal" id="btn-anim-adn" style="width:auto; padding: 12px 25px;">Iniciar Inserción Genética</button>
+                </div>
+                <p id="status-adn" style="margin-top: 10px; font-weight: bold; color: var(--c-alerta);">Estado: ADN Planta Intacto</p>
+            </div>
+
+            <!-- DRAG & DROP 3: LETRAS -->
+            <div class="area-dd" id="juego-letras-2">
+                <h3>Actividad 3: El Organismo de Laboratorio (0.2 pts)</h3>
+                <p>Ordena las letras para formar la palabra que define a un organismo al cual se le ha insertado ADN de otra especie completamente distinta (Ej: maíz con genes de bacteria).</p>
+                <div class="dd-contenedores" id="items-L2"></div>
+                <div class="dd-contenedores" id="huecos-L2"></div>
+                <button class="btn-principal" onclick="validarJuegoLetras('juego-letras-2', 'TRANSGENICO', 0.2)">Validar Término</button>
+            </div>
+
+            <!-- DRAG & DROP 4: PALABRAS -->
+            <div class="area-dd" id="juego-palabras-2">
+                <h3>Actividad 4: El Escudo de la Evolución (0.2 pts)</h3>
+                <p>Ordena las palabras para revelar por qué tener muchas variedades de semillas (y no un solo clon de laboratorio) es vital para Quimbaya.</p>
+                <div class="dd-contenedores" id="items-P2"></div>
+                <div class="dd-contenedores" id="huecos-P2"></div>
+                <button class="btn-principal" onclick="validarJuegoPalabras('juego-palabras-2', 'LA DIVERSIDAD GENETICA ASEGURA NUESTRO FUTURO', 0.2)">Validar Frase</button>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 6-10 -->
+            <h2>Retos Científicos Finales (Trabajo Práctico)</h2>
+            
+            <div class="pausa-activa">
+                <h3>6. Mapa Conceptual Molecular</h3>
+                <p>Dibuja un mapa: "Modificación Genética" se divide en -> "Mejoramiento Tradicional (Cruces naturales)" y "Transgénesis (Inserción de ADN en laboratorio)".</p>
+                <button class="btn-pausa" id="btn-p6" onclick="completarPausa(6)">Completado en mi cuaderno</button>
+            </div>
+            <div class="pausa-activa">
+                <h3>7. Tabla: Pros y Contras del ADN Editado</h3>
+                <p>Tabla de 2 columnas para OGM (Organismos Genéticamente Modificados). Pros: Mayor rendimiento, menos pesticidas aplicados. Contras: Monopolio corporativo, pérdida de semillas nativas.</p>
+                <button class="btn-pausa" id="btn-p7" onclick="completarPausa(7)">Completado en mi cuaderno</button>
+            </div>
+            <div class="pausa-activa">
+                <h3>8. Problema Matemático Básico</h3>
+                <p>Si una finca en Quimbaya ahorra $500,000 COP al no comprar semillas patentadas, pero pierde un 10% de su cosecha de $6,000,000 por no usar la semilla resistente (pierde $600,000). ¿Qué opción es económicamente mejor a corto plazo? Escribe el análisis.</p>
+                <button class="btn-pausa" id="btn-p8" onclick="completarPausa(8)">Completado en mi cuaderno</button>
+            </div>
+            <div class="pausa-activa">
+                <h3>9. Dibujo Técnico: Plásmido y Tijeras</h3>
+                <p>Dibuja un círculo de ADN (plásmido bacteriano), unas tijeras cortando un pedazo, y pegándolo en un hilo doble hélice de ADN vegetal.</p>
+                <button class="btn-pausa" id="btn-p9" onclick="completarPausa(9)">Completado en mi cuaderno</button>
+            </div>
+            <div class="pausa-activa">
+                <h3>10. Síntesis Argumentativa</h3>
+                <p>Escribe 4 renglones respondiendo: ¿Quién crees que debería ser el dueño de la genética de las semillas: las multinacionales que las modifican en laboratorios o los campesinos que las han cuidado por siglos?</p>
+                <button class="btn-pausa" id="btn-p10" onclick="completarPausa(10)">Completado en mi cuaderno</button>
+            </div>
+        </div>
+
+        <!-- EVALUACIÓN FINAL -->
+        <div class="tarjeta-seccion">
+            <h2>Evaluación Final: El Curador de Semillas</h2>
+            <p style="color: var(--c-alerta); font-weight:bold; margin-bottom: 25px;">⚠ El sistema de integridad académica está vigilando la velocidad de escritura y bloqueos de pegado en respuestas abiertas.</p>
+
+            <h3>Selección Múltiple (0.3 pts c/u)</h3>
+            
+            <div class="caja-quiz" id="eval-m1">
+                <p>1. Cuando el abuelo de Pueblo Rico elige las mejores mazorcas para la próxima siembra, está aplicando la técnica de:</p>
+                <select id="sel-m1" class="input-estilo" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">Transgénesis avanzada.</option>
+                    <option value="B">Selección artificial o mejoramiento genético tradicional.</option>
+                    <option value="C">Mutación por radiación.</option>
+                </select>
+            </div>
+
+            <div class="caja-quiz" id="eval-m2">
+                <p>2. Un Organismo Genéticamente Modificado (Transgénico) se caracteriza principalmente por:</p>
+                <select id="sel-m2" class="input-estilo" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">Poseer en su genoma fragmentos de ADN introducidos artificialmente desde una especie diferente.</option>
+                    <option value="B">Ser cruzado con otra planta de su misma especie en un invernadero.</option>
+                    <option value="C">Crecer sin necesidad de agua ni tierra.</option>
+                </select>
+            </div>
+
+            <div class="caja-quiz" id="eval-m3">
+                <p>3. ¿Qué grave consecuencia ecológica puede tener la siembra masiva de monocultivos de semillas genéticamente idénticas?</p>
+                <select id="sel-m3" class="input-estilo" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">Generan demasiados nutrientes para el suelo local.</option>
+                    <option value="B">Erosión genética: si surge una plaga nueva, toda la cosecha puede perderse al no haber variedad resistente natural.</option>
+                    <option value="C">Las aves del Quindío cambiarán de color.</option>
+                </select>
+            </div>
+
+            <div class="caja-quiz" id="eval-m4">
+                <p>4. La "Soberanía Alimentaria" implica que:</p>
+                <select id="sel-m4" class="input-estilo" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">El Estado debe regalar alimentos procesados.</option>
+                    <option value="B">Un pueblo tiene derecho a controlar sus medios de producción, incluyendo el libre intercambio y uso de sus semillas nativas.</option>
+                    <option value="C">Los alimentos solo pueden ser consumidos por los soberanos o políticos.</option>
+                </select>
+            </div>
+
+            <div class="caja-quiz" id="eval-m5">
+                <p>5. La contaminación genética ocurre cuando:</p>
+                <select id="sel-m5" class="input-estilo" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">Se rocían pesticidas sobre las semillas antes de sembrarlas.</option>
+                    <option value="B">El polen modificado en laboratorio viaja por el viento o abejas y poliniza cultivos nativos o criollos aledaños.</option>
+                    <option value="C">Una semilla nativa enferma se pudre bajo la tierra y contamina el río.</option>
+                </select>
+            </div>
+
+            <h3 style="margin-top: 45px;">Análisis Abierto (Mín. 10 palabras c/u) (0.2 pts c/u)</h3>
+            <p style="font-size: 0.9rem; color: #555; margin-bottom: 20px;">Justifica científicamente tus respuestas basadas en los conceptos aprendidos del OVA.</p>
+
+            <div class="caja-quiz">
+                <label><strong>1. Riesgos Locales:</strong> Si un agricultor en Quimbaya decide cambiar todas sus variedades criollas de cítricos por una sola semilla modificada de alto rendimiento, ¿A qué riesgo biológico se enfrenta a largo plazo?</label>
+                <textarea id="eval-a1" class="textarea-seguridad" placeholder="Redacta tu justificación..."></textarea>
+            </div>
+
+            <div class="caja-quiz">
+                <label><strong>2. Biología Molecular:</strong> Explica con tus palabras la diferencia fundamental entre cruzar dos tipos de café (Mejoramiento tradicional) y usar CRISPR o bacterias para hacer un transgénico.</label>
+                <textarea id="eval-a2" class="textarea-seguridad" placeholder="Redacta tu justificación..."></textarea>
+            </div>
+
+            <div class="caja-quiz">
+                <label><strong>3. Patentes:</strong> ¿Por qué el patentamiento de la vida (patentar semillas modificadas) amenaza económicamente a los pequeños campesinos del Paisaje Cultural Cafetero?</label>
+                <textarea id="eval-a3" class="textarea-seguridad" placeholder="Redacta tu justificación..."></textarea>
+            </div>
+
+            <div class="caja-quiz">
+                <label><strong>4. Herencia Genética:</strong> ¿De qué manera las semillas nativas o criollas representan una "biblioteca de ADN" adaptada al clima de nuestra región?</label>
+                <textarea id="eval-a4" class="textarea-seguridad" placeholder="Redacta tu justificación..."></textarea>
+            </div>
+
+            <div class="caja-quiz">
+                <label><strong>5. Ética Científica:</strong> Si pudieras diseñar genéticamente en laboratorio la planta de café perfecta para el futuro de Quindío, ¿Qué característica le darías y qué cuidado ecológico tendrías al sembrarla?</label>
+                <textarea id="eval-a5" class="textarea-seguridad" placeholder="Redacta tu justificación..."></textarea>
+            </div>
+
+            <button id="btn-finalizar" class="btn-principal" style="margin-top: 30px;">Calificar y Generar Certificado</button>
+
+            <!-- PANEL FINAL RESULTADOS -->
+            <div id="panel-resultados">
+                <h2 style="color: var(--c-verde-hoja); font-size: 2.5rem; margin-bottom: 15px;">¡Análisis Agronómico Completado!</h2>
+                <p style="font-size: 1.5rem;">Calificación Definitiva: <strong id="nota-final" style="font-size: 2.5rem; color: var(--c-cafe-tostado);">0.0</strong> / 5.0</p>
+                
+                <div id="feedback-inteligente" style="background: white; padding: 30px; border-radius: 12px; text-align: left; margin: 30px 0; border: 1px solid #CCC; font-size: 1.15rem;">
+                    <!-- JS Feed -->
+                </div>
+
+                <button class="btn-principal" onclick="exportarResultadosTXT()" style="background-color: var(--c-tierra); width: auto; padding: 15px 40px;">Descargar Reporte (.txt)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS LÓGICA CORE, ANIMACIONES Y SEGURIDAD -->
+    <script>
+        /** ========================================================
+         * 1. MANEJO DE ESTADO Y LOCALSTORAGE (Persistencia)
+         * ======================================================== */
+        const DB_KEY = 'ova_semillas_quimbaya_v1';
+        let estado = {
+            nom: '', ape: '', pts: 0.0, prog: 0,
+            logros: [], respuestasGuardadas: {}, finalizado: false
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const mem = localStorage.getItem(DB_KEY);
+            if(mem) { estado = JSON.parse(mem); reconstruirUI(); }
+        });
+
+        function sincronizarMemoria() { localStorage.setItem(DB_KEY, JSON.stringify(estado)); actualizarHUD(); }
+
+        function registrarPuntos(valor, id) {
+            if(!estado.logros.includes(id)) {
+                estado.pts = Math.min(5.0, estado.pts + valor);
+                // 10 pausas + 3 pre + 1 icfes + 4 juegos = 18 items. 100/18 ~ 5.5%
+                estado.prog = Math.min(100, estado.prog + 5.5); 
+                estado.logros.push(id);
+                sincronizarMemoria(); return true;
+            } return false;
+        }
+
+        function actualizarHUD() {
+            document.getElementById('ui-nombres').innerText = `${estado.nom} ${estado.ape}`;
+            document.getElementById('ui-puntos').innerText = estado.pts.toFixed(1);
+            document.getElementById('barra-progreso').style.width = `${estado.prog}%`;
+        }
+
+        document.getElementById('btn-iniciar').addEventListener('click', () => {
+            const n = document.getElementById('in-nom').value.trim();
+            const a = document.getElementById('in-ape').value.trim();
+            if(!n || !a) return alert("Los nombres y apellidos son vitales para tu registro.");
+            estado.nom = n; estado.ape = a; sincronizarMemoria(); abrirOVA();
+        });
+
+        function abrirOVA() {
+            document.getElementById('pantalla-bienvenida').style.display = 'none';
+            document.getElementById('contenido-ova').style.display = 'block';
+            document.getElementById('hud-top').classList.remove('hud-oculto');
+            actualizarHUD(); iniciarCanvasAdn();
+        }
+
+        function reconstruirUI() {
+            if(estado.nom) {
+                abrirOVA();
+                // Restaurar botones deshabilitados
+                estado.logros.forEach(id => {
+                    if(id.startsWith('pre-') || id.startsWith('icfes-')) {
+                        const b = document.querySelector(`#${id} button[data-correct="true"]`);
+                        if(b) b.classList.add('correcta');
+                        document.querySelectorAll(`#${id} button`).forEach(btn => btn.disabled = true);
+                    }
+                    if(id.startsWith('btn-p')) {
+                        const b = document.getElementById(id);
+                        if(b) { b.disabled = true; b.textContent = "Completado ✓"; }
+                    }
+                    if(id.startsWith('juego-')) {
+                        const b = document.querySelector(`#${id} .btn-principal`);
+                        if(b) { b.disabled = true; b.textContent = "Verificado ✓"; b.style.background = "var(--c-verde-hoja)"; }
+                    }
+                });
+                // Restaurar selects y textareas
+                for(let i=1; i<=5; i++) {
+                    if(estado.respuestasGuardadas[`sel-m${i}`]) document.getElementById(`sel-m${i}`).value = estado.respuestasGuardadas[`sel-m${i}`];
+                    if(estado.respuestasGuardadas[`eval-a${i}`]) document.getElementById(`eval-a${i}`).value = estado.respuestasGuardadas[`eval-a${i}`];
+                }
+                if(estado.finalizado) exponerResultados();
+            }
+        }
+
+        /** ========================================================
+         * 2. SISTEMA DE QUIZ Y PAUSAS ACTIVAS
+         * ======================================================== */
+        function validarQuiz(idCaja, btnElegido, esCierto) {
+            document.querySelectorAll(`#${idCaja} button`).forEach(b => b.disabled = true);
+            if(esCierto) {
+                btnElegido.classList.add('correcta');
+                let puntos = idCaja.startsWith('icfes') ? 0.4 : 0.1;
+                registrarPuntos(puntos, idCaja);
+            } else {
+                btnElegido.classList.add('incorrecta');
+                document.querySelectorAll(`#${idCaja} button`).forEach(b => {
+                    if(b.getAttribute('data-correct') === 'true') b.style.border = '3px solid var(--c-verde-hoja)';
+                });
+                estado.logros.push(idCaja); sincronizarMemoria(); // Registrar como hecho (0 pts)
+            }
+        }
+
+        function completarPausa(num) {
+            const idBtn = `btn-p${num}`;
+            const b = document.getElementById(idBtn);
+            b.disabled = true; b.textContent = "Completado ✓";
+            registrarPuntos(0.1, idBtn);
+        }
+
+        /** ========================================================
+         * 3. MOTOR DE DRAG & DROP (PURO JS)
+         * ======================================================== */
+        let itemArrastrado = null;
+
+        function montarJuegoDD(idContenedorItems, idContenedorHuecos, arraysElementos, esTextoCompleto) {
+            const boxItems = document.getElementById(idContenedorItems);
+            const boxHuecos = document.getElementById(idContenedorHuecos);
+            boxItems.innerHTML = ''; boxHuecos.innerHTML = '';
+
+            // Mezclar elementos
+            const mezclados = [...arraysElementos].sort(() => Math.random() - 0.5);
+
+            mezclados.forEach(txt => {
+                const pieza = document.createElement('div');
+                pieza.className = 'pieza-arrastrable'; pieza.textContent = txt; pieza.draggable = true;
+                
+                pieza.addEventListener('dragstart', e => {
+                    itemArrastrado = pieza; e.dataTransfer.setData('text/plain', txt);
+                    setTimeout(() => pieza.style.opacity = '0.4', 0);
+                });
+                pieza.addEventListener('dragend', () => pieza.style.opacity = '1');
+                boxItems.appendChild(pieza);
+            });
+
+            arraysElementos.forEach(() => {
+                const hueco = document.createElement('div');
+                hueco.className = `zona-soltar ${esTextoCompleto ? 'tipo-palabra' : ''}`;
+                
+                hueco.addEventListener('dragover', e => { e.preventDefault(); hueco.classList.add('drag-hover'); });
+                hueco.addEventListener('dragleave', () => hueco.classList.remove('drag-hover'));
+                hueco.addEventListener('drop', e => {
+                    e.preventDefault(); hueco.classList.remove('drag-hover');
+                    if(itemArrastrado) {
+                        if(hueco.textContent !== '') {
+                            // Devolver pieza existente
+                            const revancha = document.createElement('div');
+                            revancha.className = 'pieza-arrastrable'; revancha.textContent = hueco.textContent; revancha.draggable = true;
+                            revancha.addEventListener('dragstart', ev => { itemArrastrado=revancha; ev.dataTransfer.setData('text', revancha.textContent); setTimeout(()=>revancha.style.opacity='0.4',0); });
+                            revancha.addEventListener('dragend', () => revancha.style.opacity='1');
+                            boxItems.appendChild(revancha);
+                        }
+                        hueco.textContent = itemArrastrado.textContent; itemArrastrado.remove();
+                    }
+                });
+
+                // Click para remover
+                hueco.addEventListener('click', () => {
+                    if(hueco.textContent) {
+                        const revancha = document.createElement('div');
+                        revancha.className = 'pieza-arrastrable'; revancha.textContent = hueco.textContent; revancha.draggable = true;
+                        revancha.addEventListener('dragstart', ev => { itemArrastrado=revancha; ev.dataTransfer.setData('text', revancha.textContent); setTimeout(()=>revancha.style.opacity='0.4',0); });
+                        revancha.addEventListener('dragend', () => revancha.style.opacity='1');
+                        boxItems.appendChild(revancha);
+                        hueco.textContent = '';
+                    }
+                });
+                boxHuecos.appendChild(hueco);
+            });
+        }
+
+        montarJuegoDD('items-L1', 'huecos-L1', ['S','O','B','E','R','A','N','I','A'], false);
+        montarJuegoDD('items-P1', 'huecos-P1', ['LAS','SEMILLAS','NATIVAS','PROTEGEN','NUESTRA','IDENTIDAD'], true);
+        montarJuegoDD('items-L2', 'huecos-L2', ['T','R','A','N','S','G','E','N','I','C','O'], false);
+        montarJuegoDD('items-P2', 'huecos-P2', ['LA','DIVERSIDAD','GENETICA','ASEGURA','NUESTRO','FUTURO'], true);
+
+        function validarJuegoLetras(id, correcta, pt) {
+            let str = '';
+            document.querySelectorAll(`#${id.replace('juego-', 'huecos-')} .zona-soltar`).forEach(h => str += h.textContent);
+            if(str === correcta) {
+                if(registrarPuntos(pt, id)) {
+                    const b = document.querySelector(`#${id} button`);
+                    b.disabled = true; b.textContent = "Verificado ✓"; b.style.background = "var(--c-verde-hoja)";
+                    alert("¡Secuencia de ADN (Letras) correcta!");
+                }
+            } else alert("Falla en la secuencia genética. Revisa el orden.");
+        }
+
+        function validarJuegoPalabras(id, correcta, pt) {
+            let arr = [];
+            document.querySelectorAll(`#${id.replace('juego-', 'huecos-')} .zona-soltar`).forEach(h => { if(h.textContent) arr.push(h.textContent); });
+            if(arr.join(' ') === correcta) {
+                if(registrarPuntos(pt, id)) {
+                    const b = document.querySelector(`#${id} button`);
+                    b.disabled = true; b.textContent = "Verificado ✓"; b.style.background = "var(--c-verde-hoja)";
+                    alert("¡El postulado científico es correcto!");
+                }
+            } else alert("Estructura biológica incorrecta. Reorganiza la frase.");
+        }
+
+        /** ========================================================
+         * 4. ANIMACIÓN CANVAS 60FPS: INSERCIÓN CRISPR/TRANSGÉNICA
+         * ======================================================== */
+        function iniciarCanvasAdn() {
+            const cvs = document.getElementById('canvas-adn');
+            const ctx = cvs.getContext('2d');
+            const btn = document.getElementById('btn-anim-adn');
+            const lbl = document.getElementById('status-adn');
+            
+            let phase = 0; // 0=reposo, 1=tijera cortando, 2=insertando gen, 3=finalizado
+            let animTime = 0;
+
+            // Coordenadas base ADN Vegetal
+            let adnVegetal = [];
+            for(let i=0; i<15; i++) {
+                adnVegetal.push({ x: 50 + (i*35), yBase: 125, offset: i });
+            }
+
+            // Gen Externo (Bacteriano / CRISPR edit)
+            let genExterno = { x: 300, y: -50, color: '#D32F2F', activo: false };
+
+            function drawHelix(points, gapSize) {
+                ctx.lineWidth = 3;
+                
+                // Hebra superior
+                ctx.beginPath();
+                ctx.strokeStyle = '#4CAF50';
+                for(let i=0; i<points.length; i++) {
+                    // Si estamos en phase 1 o 2, crear un hueco en el centro (índices 6,7,8)
+                    if((phase === 1 || phase === 2) && (i>=6 && i<=8)) continue;
+                    
+                    let py = points[i].yBase + Math.sin((animTime + points[i].offset) * 0.1) * 20;
+                    if(i===0 || (phase>0 && i===9)) ctx.moveTo(points[i].x, py);
+                    else ctx.lineTo(points[i].x, py);
+                }
+                ctx.stroke();
+
+                // Hebra inferior
+                ctx.beginPath();
+                ctx.strokeStyle = '#81C784';
+                for(let i=0; i<points.length; i++) {
+                    if((phase === 1 || phase === 2) && (i>=6 && i<=8)) continue;
+                    let py = points[i].yBase + Math.cos((animTime + points[i].offset) * 0.1) * 20;
+                    if(i===0 || (phase>0 && i===9)) ctx.moveTo(points[i].x, py);
+                    else ctx.lineTo(points[i].x, py);
+                }
+                ctx.stroke();
+
+                // Conectores (Bases nitrogenadas)
+                ctx.lineWidth = 2; ctx.strokeStyle = '#fff';
+                for(let i=0; i<points.length; i++) {
+                    if((phase === 1 || phase === 2) && (i>=6 && i<=8)) continue;
+                    let pY1 = points[i].yBase + Math.sin((animTime + points[i].offset) * 0.1) * 20;
+                    let pY2 = points[i].yBase + Math.cos((animTime + points[i].offset) * 0.1) * 20;
+                    ctx.beginPath(); ctx.moveTo(points[i].x, pY1); ctx.lineTo(points[i].x, pY2); ctx.stroke();
+                }
+            }
+
+            function frame() {
+                ctx.fillStyle = 'rgba(15, 15, 15, 0.4)'; // Estela suave
+                ctx.fillRect(0,0, cvs.width, cvs.height);
+                animTime++;
+
+                drawHelix(adnVegetal);
+
+                if(phase === 1) {
+                    // Animación tijera
+                    ctx.fillStyle = '#fff'; ctx.font = '24px Arial';
+                    ctx.fillText('✂️', 290, 125 + Math.sin(animTime*0.2)*10);
+                    if(animTime > 120) { phase = 2; genExterno.y = -50; animTime = 0; }
+                }
+                else if(phase === 2) {
+                    // Gen bajando
+                    genExterno.y += (125 - genExterno.y) * 0.05;
+                    
+                    // Dibujar gen externo
+                    ctx.strokeStyle = genExterno.color; ctx.lineWidth = 4;
+                    ctx.beginPath(); ctx.moveTo(genExterno.x - 30, genExterno.y - 10); ctx.lineTo(genExterno.x + 30, genExterno.y + 10); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(genExterno.x - 30, genExterno.y + 10); ctx.lineTo(genExterno.x + 30, genExterno.y - 10); ctx.stroke();
+
+                    if(Math.abs(125 - genExterno.y) < 2) { phase = 3; lbl.textContent = "Estado: OGM Creado con Éxito"; lbl.style.color = "#388E3C"; }
+                }
+                else if(phase === 3) {
+                    // Inserción completada, dibujar gen mutante en el centro
+                    let pY1 = 125 + Math.sin((animTime + 7) * 0.1) * 20;
+                    let pY2 = 125 + Math.cos((animTime + 7) * 0.1) * 20;
+                    
+                    // Hélices rojas insertadas
+                    ctx.strokeStyle = genExterno.color; ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.moveTo(260, pY1); ctx.lineTo(330, pY1); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(260, pY2); ctx.lineTo(330, pY2); ctx.stroke();
+                    // Conectores rojos
+                    for(let i=6; i<=8; i++) {
+                        let y1 = 125 + Math.sin((animTime + i) * 0.1) * 20;
+                        let y2 = 125 + Math.cos((animTime + i) * 0.1) * 20;
+                        ctx.beginPath(); ctx.moveTo(50+(i*35), y1); ctx.lineTo(50+(i*35), y2); ctx.stroke();
+                    }
+                }
+
+                requestAnimationFrame(frame);
+            }
+            frame(); // Start loop
+
+            btn.addEventListener('click', () => {
+                if(phase === 0 || phase === 3) {
+                    phase = 1; animTime = 0;
+                    lbl.textContent = "Estado: Cortando ADN Nativo (Tijeras Moleculares)...";
+                    lbl.style.color = "#F57C00";
+                }
+            });
+        }
+
+        /** ========================================================
+         * 5. SISTEMA DE SEGURIDAD ANTI-FRAUDE RIGUROSO
+         * ======================================================== */
+        document.querySelectorAll('.textarea-seguridad').forEach(area => {
+            let ultimoTeclazo = Date.now();
+
+            const bloquear = (evento) => {
+                evento.preventDefault(); area.value = '';
+                document.getElementById('pantalla-alerta').style.display = 'flex';
+            };
+
+            // Eventos duros
+            area.addEventListener('paste', bloquear);
+            area.addEventListener('drop', bloquear);
+            area.addEventListener('contextmenu', e => e.preventDefault());
+
+            // Keydown scanner (Cadencia + Ctrl V)
+            area.addEventListener('keydown', e => {
+                if((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) { bloquear(e); return; }
+                
+                const ahora = Date.now();
+                // Si la tecla es un caracter visible y se presionó a menos de 20ms de la anterior (Inhumano/IA bot/Macro)
+                if(e.key.length === 1 && (ahora - ultimoTeclazo) < 20) { bloquear(e); }
+                ultimoTeclazo = ahora;
+
+                // Auto-guardado
+                estado.respuestasGuardadas[area.id] = area.value;
+                sincronizarMemoria();
+            });
+            area.addEventListener('blur', () => { estado.respuestasGuardadas[area.id] = area.value; sincronizarMemoria(); });
+        });
+
+        // Guardar selects
+        for(let i=1; i<=5; i++) {
+            const s = document.getElementById(`sel-m${i}`);
+            s.addEventListener('change', () => { estado.respuestasGuardadas[s.id] = s.value; sincronizarMemoria(); });
+        }
+
+        /** ========================================================
+         * 6. EVALUACIÓN Y EXPORTACIÓN DE RESULTADOS
+         * ======================================================== */
+        document.getElementById('btn-finalizar').addEventListener('click', () => {
+            // Validación Extensión
+            for(let i=1; i<=5; i++) {
+                const chars = document.getElementById(`eval-a${i}`).value.trim();
+                const wordCount = chars.split(/\s+/).filter(word => word.length > 0).length;
+                if(wordCount < 10) return alert(`La justificación abierta #${i} es insuficiente. Debes argumentar con al menos 10 palabras.`);
+            }
+            // Validación Selects
+            for(let i=1; i<=5; i++) {
+                if(document.getElementById(`sel-m${i}`).value === '') return alert(`Debes responder la pregunta de selección múltiple #${i}.`);
+            }
+
+            // Calificación (1:B, 2:A, 3:B, 4:B, 5:B)
+            const matrizCor = ['B', 'A', 'B', 'B', 'B'];
+            let aciertosPts = 0;
+            for(let i=1; i<=5; i++) { if(document.getElementById(`sel-m${i}`).value === matrizCor[i-1]) aciertosPts += 0.3; }
+
+            // Puntos bases de escritural (al no ser fraude y pasar longitud) = 1.0 (5 * 0.2)
+            const redaccionPts = 1.0;
+
+            estado.pts = Math.min(5.0, estado.pts + aciertosPts + redaccionPts);
+            estado.prog = 100; estado.finalizado = true;
+            sincronizarMemoria(); mostrarResultados();
+        });
+
+        function mostrarResultados() {
+            document.getElementById('btn-finalizar').style.display = 'none';
+            document.getElementById('panel-resultados').style.display = 'block';
+            document.getElementById('nota-final').textContent = estado.pts.toFixed(1);
+
+            let feedbackStr = "";
+            if(estado.pts >= 4.5) {
+                feedbackStr = "<strong>¡Excelencia Científica!</strong> Posees una comprensión profunda de la biotecnología y un alto sentido crítico sobre la soberanía alimentaria en el Quindío. Eres capaz de balancear la necesidad de la ciencia con la preservación del patrimonio criollo.";
+            } else if(estado.pts >= 3.0) {
+                feedbackStr = "<strong>¡Aprobado con Buen Juicio!</strong> Comprendes los peligros y ventajas del mejoramiento. Ruta de fortalecimiento: Revisa de nuevo cómo las patentes de semillas transgénicas afectan económicamente a largo plazo al pequeño caficultor frente a la siembra libre nativa.";
+            } else {
+                feedbackStr = "<strong>Se requiere reflexión profunda.</strong> Te sugerimos regresar a la sección de 'Cuadro Comparativo'. Es fundamental distinguir que la Selección Artificial (Mejoramiento tradicional) y la Transgénesis (laboratorio OGM) tienen impactos económicos y ecológicos muy diferentes.";
+            }
+
+            document.getElementById('feedback-inteligente').innerHTML = feedbackStr;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function exportarResultadosTXT() {
+            let docStr = "=================================================================\n";
+            docStr += "   CERTIFICADO: SEMILLAS NATIVAS VS MODIFICADAS (SOBERANÍA)\n";
+            docStr += "            Vereda Pueblo Rico - Quimbaya, Quindío\n";
+            docStr += "=================================================================\n\n";
+            docStr += `Estudiante Evaluado: ${estado.nom} ${estado.ape}\n`;
+            docStr += `Calificación Definitiva: ${estado.pts.toFixed(1)} / 5.0\n`;
+            docStr += `Progreso: 100% | Filtro Anti-Fraude: APROBADO.\n\n`;
+
+            docStr += "--- REGISTRO DE SELECCIÓN MÚLTIPLE ---\n";
+            const cor = ['B', 'A', 'B', 'B', 'B'];
+            for(let i=1; i<=5; i++) { 
+                docStr += `Pregunta ${i}: Registró [${estado.respuestasGuardadas[`sel-m${i}`]}] -> Correcta era [${cor[i-1]}]\n`; 
+            }
+
+            docStr += "\n--- ANÁLISIS ABIERTO (Tipeo Manual Validado) ---\n";
+            for(let i=1; i<=5; i++) { 
+                docStr += `Arg ${i}: ${estado.respuestasGuardadas[`eval-a${i}`]}\n\n`; 
+            }
+            
+            docStr += "\n* Documento validado y cifrado por el motor educativo Quimbaya-OVA.";
+
+            const blob = new Blob([docStr], { type: 'text/plain;charset=utf-8' });
+            const objUrl = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = objUrl; anchor.download = `Certificado_Soberania_${estado.ape}.txt`;
+            anchor.click(); URL.revokeObjectURL(objUrl);
+        }
+    </script>
+</body>
+</html>

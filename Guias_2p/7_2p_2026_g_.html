@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Ciclo Perfecto - Vereda Pueblo Rico</title>
+    <style>
+        :root {
+            --pcc-green-dark: #1b5e20;
+            --pcc-green-light: #4caf50;
+            --pcc-coffee: #4e342e;
+            --pcc-orange: #e65100;
+            --pcc-yellow: #fbc02d;
+            --pcc-cream: #fdfdf5;
+            --pcc-sky: #e1f5fe;
+            --shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--pcc-cream);
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Pantalla de Bienvenida */
+        #welcome-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, var(--pcc-green-dark), var(--pcc-coffee));
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .login-card h1 { color: var(--pcc-green-dark); margin-bottom: 10px; font-size: 1.8rem; }
+        .login-card p { color: #666; margin-bottom: 25px; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus { border-color: var(--pcc-green-light); outline: none; }
+
+        .btn-start {
+            background: var(--pcc-green-dark);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .btn-start:hover { transform: scale(1.02); background: var(--pcc-green-light); }
+
+        /* Navegación y Progreso */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: white;
+            padding: 10px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .user-info { font-weight: bold; color: var(--pcc-coffee); }
+        .stats-bar { display: flex; align-items: center; gap: 20px; }
+        .progress-box { width: 200px; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; }
+        #progress-fill { width: 0%; height: 100%; background: var(--pcc-green-light); transition: width 0.5s; }
+
+        /* Contenedor Principal */
+        .main-container {
+            max-width: 1100px;
+            margin: 100px auto 50px;
+            padding: 0 20px;
+            display: none;
+        }
+
+        section {
+            background: white;
+            padding: 50px;
+            border-radius: 25px;
+            margin-bottom: 60px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        h2 { color: var(--pcc-green-dark); margin-bottom: 25px; font-size: 2rem; border-left: 5px solid var(--pcc-orange); padding-left: 15px; }
+
+        /* Estilos de Texto e Ilustraciones */
+        .text-block { text-align: justify; margin-bottom: 30px; font-size: 1.1rem; }
+        .highlight { color: var(--pcc-green-dark); font-weight: bold; }
+
+        .svg-art { display: block; margin: 30px auto; max-width: 100%; height: auto; border-radius: 15px; }
+
+        /* Pausas Activas */
+        .pause-active {
+            background: #f1f8e9;
+            border: 2px dashed var(--pcc-green-light);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .pause-icon { font-size: 2rem; background: white; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn-check { background: var(--pcc-orange); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap; }
+        .btn-check.done { background: #9e9e9e; cursor: default; }
+
+        /* Tablas y Gráficas */
+        .table-container { overflow-x: auto; margin: 30px 0; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: var(--pcc-green-dark); color: white; padding: 15px; text-align: left; }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f9f9f9; }
+
+        /* Animación Canvas */
+        #canvas-container {
+            width: 100%;
+            height: 500px;
+            background: #001a00;
+            border-radius: 20px;
+            margin: 30px 0;
+            position: relative;
+        }
+        canvas { width: 100%; height: 100%; border-radius: 20px; }
+        .canvas-ui { position: absolute; bottom: 20px; left: 20px; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 10px; display: flex; gap: 10px; }
+
+        /* Evaluación */
+        .quiz-item { margin-bottom: 30px; padding: 20px; border: 1px solid #eee; border-radius: 15px; }
+        .option { display: block; padding: 12px 20px; margin: 8px 0; background: #f5f5f5; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        .option:hover { background: #e0e0e0; }
+        .option.correct { background: #c8e6c9 !important; border: 1px solid #4caf50; }
+        .option.wrong { background: #ffcdd2 !important; border: 1px solid #f44336; }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #eee;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            margin-top: 10px;
+        }
+
+        .alert-fraud { color: #f44336; font-size: 0.9rem; font-weight: bold; margin-top: 5px; display: none; }
+
+        footer { text-align: center; padding: 40px; color: #888; border-top: 1px solid #eee; }
+
+        @media (max-width: 768px) {
+            section { padding: 25px; }
+            .stats-bar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Pantalla de Bienvenida -->
+<div id="welcome-screen">
+    <div class="login-card">
+        <h1>🌱 El Ciclo Perfecto</h1>
+        <p>Vereda Pueblo Rico - Quimbaya, Quindío</p>
+        <input type="text" id="user-lastnames" placeholder="Apellidos">
+        <input type="text" id="user-names" placeholder="Nombres">
+        <button class="btn-start" id="start-btn">Comenzar Aventura</button>
+    </div>
+</div>
+
+<!-- Barra de Navegación -->
+<nav>
+    <div class="user-info" id="nav-user-display">Explorador: </div>
+    <div class="stats-bar">
+        <div id="score-display">Puntos: 0.0</div>
+        <div class="progress-box"><div id="progress-fill"></div></div>
+    </div>
+</nav>
+
+<!-- Contenido Principal -->
+<div class="main-container" id="main-content">
+    
+    <!-- SECCIÓN 1: INICIO -->
+    <section id="intro">
+        <h2>Objetivo de Aprendizaje</h2>
+        <div class="text-block">
+            Al finalizar este recorrido por nuestra <span class="highlight">Vereda Pueblo Rico</span>, serás capaz de comparar los reactivos y productos de la fotosíntesis y la respiración celular, entendiendo cómo el equilibrio entre las plantas de café y los animales de nuestras fincas sostiene la vida en Quimbaya.
+        </div>
+
+        <h3>Evaluación de Pre-saberes</h3>
+        <div id="pre-quiz">
+            <div class="quiz-item" data-id="q1">
+                <p>1. ¿Qué gas necesitan las plantas de cítricos de la vereda para fabricar su propio alimento?</p>
+                <div class="option" onclick="checkAnswer(this, true, 0.2)">Dióxido de Carbono (CO<sub>2</sub>)</div>
+                <div class="option" onclick="checkAnswer(this, false, 0)">Oxígeno (O<sub>2</sub>)</div>
+                <div class="option" onclick="checkAnswer(this, false, 0)">Nitrógeno</div>
+            </div>
+            <div class="quiz-item" data-id="q2">
+                <p>2. En el proceso de respiración de una vaca de la finca, ¿qué gas es liberado al ambiente?</p>
+                <div class="option" onclick="checkAnswer(this, false, 0)">Oxígeno</div>
+                <div class="option" onclick="checkAnswer(this, true, 0.2)">Dióxido de Carbono</div>
+                <div class="option" onclick="checkAnswer(this, false, 0)">Metano puro</div>
+            </div>
+            <div class="quiz-item" data-id="q3">
+                <p>3. ¿Qué parte de la planta de café capta la energía solar?</p>
+                <div class="option" onclick="checkAnswer(this, false, 0)">La raíz</div>
+                <div class="option" onclick="checkAnswer(this, true, 0.2)">La hoja (cloroplastos)</div>
+                <div class="option" onclick="checkAnswer(this, false, 0)">El grano</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 2: CUERPO INDUCTIVO -->
+    <section id="inductive">
+        <h2>Inducción: El Respiro de Pueblo Rico</h2>
+        <div class="text-block">
+            <p>Imagina una mañana soleada en la parte alta de la <span class="highlight">Vereda Pueblo Rico</span>. Mientras los cafetales se bañan con la luz del sol, los trabajadores de la finca "La Esperanza" comienzan su jornada. En este momento exacto, ocurre un milagro invisible pero vital. Las hojas verdes del café, cargadas de clorofila, están absorbiendo la luz solar y el CO<sub>2</sub> que exhalan los recolectores y el ganado que pasta en los potreros cercanos. Este proceso es la <strong>Fotosíntesis</strong>, una fábrica química natural que toma agua de nuestras quebradas y minerales del suelo volcánico del Quindío para crear glucosa (energía) y, como regalo, liberar Oxígeno puro.</p>
+            
+            <p>Pero el ciclo no termina ahí. Ese Oxígeno que el café "desecha" es el aliento de vida para el campesino que sube la ladera. Al inhalar, sus células inician la <strong>Respiración Celular</strong>, quemando la glucosa de la arepa de maíz que desayunó para obtener la fuerza necesaria para cargar los bultos. Como resultado de este "quemado" interno, el trabajador exhala nuevamente CO<sub>2</sub>, devolviéndole a las plantas el insumo que ellas necesitan para seguir produciendo. Es un "juego de espejos" donde lo que uno libera, el otro lo necesita con urgencia.</p>
+            
+            <p>En nuestra vereda, este equilibrio es fundamental para los sectores productivos. Por ejemplo, en los cultivos de cítricos (mandarinas y naranjas), la tasa de fotosíntesis determina qué tan dulce será la fruta; cuanta más energía solar y CO<sub>2</sub> capturen, más azúcares acumularán. Paralelamente, en la ganadería, las vacas transforman el pasto (energía solar almacenada) en carne y leche mediante una respiración celular constante que mantiene su temperatura corporal y su crecimiento. El turismo de naturaleza en Quimbaya existe precisamente gracias a la frescura de este aire puro reciclado permanentemente.</p>
+            
+            <p>Entender este ciclo es entender que una planta de café no es un objeto aislado, sino un socio químico del habitante de Quimbaya. Sin la fotosíntesis, no habría comida ni oxígeno; sin la respiración, no habría energía para trabajar la tierra ni CO<sub>2</sub> para las plantas. Esta interdependencia es lo que llamamos el "Ciclo Perfecto", una danza de moléculas que ocurre en cada metro cuadrado de Pueblo Rico, desde el suelo húmedo hasta la punta de los yarumos.</p>
+            
+            <p>Finalmente, debemos notar que el clima de nuestra zona influye en este ciclo. Las lluvias frecuentes aseguran el agua (reactivo de la fotosíntesis), mientras que las temperaturas moderadas permiten que la respiración celular en los seres vivos ocurra a un ritmo óptimo. Somos privilegiados al vivir en un laboratorio vivo donde la ciencia se manifiesta en el aroma del café recién florecido y en el aliento fresco de nuestras mañanas quindianas.</p>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th>Fotosíntesis (Planta de Café)</th>
+                        <th>Respiración (Recopilador/Vaca)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Objetivo</strong></td>
+                        <td>Fabricar alimento (Glucosa)</td>
+                        <td>Liberar energía (ATP)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lugar Celular</strong></td>
+                        <td>Cloroplastos</td>
+                        <td>Mitocondrias</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Reactivos</strong></td>
+                        <td>Agua, CO<sub>2</sub>, Luz</td>
+                        <td>Glucosa, Oxígeno</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Productos</strong></td>
+                        <td>Glucosa, Oxígeno</td>
+                        <td>CO<sub>2</sub>, Agua, Energía</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAUSAS ACTIVAS 1-5 -->
+        <div class="pause-active">
+            <div class="pause-icon">📝</div>
+            <div><strong>Actividad 1:</strong> Responde en tu cuaderno: ¿Qué pasaría con los cafetales si de repente no hubiera animales ni humanos en la vereda?</div>
+            <button class="btn-check" onclick="markTask(1, this)">Ya lo hice</button>
+        </div>
+        <div class="pause-active">
+            <div class="pause-icon">🎨</div>
+            <div><strong>Actividad 2:</strong> Dibuja detalladamente una hoja de café y muestra con flechas la entrada y salida de gases.</div>
+            <button class="btn-check" onclick="markTask(2, this)">Ya lo hice</button>
+        </div>
+        <div class="pause-active">
+            <div class="pause-icon">🧠</div>
+            <div><strong>Actividad 3:</strong> Crea un mapa mental conectando el Sol, la Arepa, el Cafetal y el Recolector.</div>
+            <button class="btn-check" onclick="markTask(3, this)">Ya lo hice</button>
+        </div>
+        <div class="pause-active">
+            <div class="pause-icon">📊</div>
+            <div><strong>Actividad 4:</strong> Elabora un cuadro comparativo entre lo que "come" una planta y lo que "come" un animal.</div>
+            <button class="btn-check" onclick="markTask(4, this)">Ya lo hice</button>
+        </div>
+        <div class="pause-active">
+            <div class="pause-icon">⛓️</div>
+            <div><strong>Actividad 5:</strong> Diseña un diagrama de flujo del camino de un átomo de Carbono en la vereda.</div>
+            <button class="btn-check" onclick="markTask(5, this)">Ya lo hice</button>
+        </div>
+
+        <!-- PREGUNTA ICFES -->
+        <div class="quiz-item" style="margin-top:40px; border: 2px solid var(--pcc-orange);">
+            <p><strong>Competencia Indagar:</strong> Un estudiante de Pueblo Rico midió la producción de Oxígeno en un cafetal durante 24 horas y obtuvo la siguiente gráfica:</p>
+            <svg viewBox="0 0 400 200" class="svg-art" style="background: #fafafa; border:1px solid #ddd;">
+                <path d="M 50 150 Q 125 50 200 50 T 350 150" fill="none" stroke="var(--pcc-green-dark)" stroke-width="3" />
+                <line x1="50" y1="150" x2="350" y2="150" stroke="#333" />
+                <line x1="50" y1="150" x2="50" y2="50" stroke="#333" />
+                <text x="200" y="180" text-anchor="middle" font-size="12">6am --- 12m --- 6pm</text>
+                <text x="30" y="100" text-anchor="middle" font-size="12" transform="rotate(-90, 30, 100)">Nivel O2</text>
+                <circle cx="200" cy="50" r="5" fill="var(--pcc-orange)" />
+            </svg>
+            <p>¿Por qué el nivel de Oxígeno es máximo a mediodía?</p>
+            <div class="option" onclick="checkAnswer(this, true, 0.4)">Porque hay mayor intensidad de luz solar para la fotosíntesis.</div>
+            <div class="option" onclick="checkAnswer(this, false, 0)">Porque a esa hora las plantas están respirando más rápido.</div>
+            <div class="option" onclick="checkAnswer(this, false, 0)">Porque los trabajadores están almorzando y no consumen oxígeno.</div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 3: CUERPO DEDUCTIVO -->
+    <section id="deductive">
+        <h2>Deducción: Las Leyes del Intercambio</h2>
+        <div class="text-block">
+            <p>Desde una perspectiva técnica, las reacciones químicas de la fotosíntesis y la respiración son inversas. La fotosíntesis es un proceso <span class="highlight">endergónico</span> (requiere energía solar), mientras que la respiración es <span class="highlight">exergónica</span> (libera energía química). La ecuación general de la fotosíntesis en los cítricos de Quimbaya es: 6CO<sub>2</sub> + 6H<sub>2</sub>O + Energía solar → C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> + 6O<sub>2</sub>. Aquí vemos cómo sustancias simples se convierten en materia orgánica compleja, la base de toda la cadena alimenticia de la vereda.</p>
+            
+            <p>Por otro lado, la respiración celular sigue la ruta contraria: C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> + 6O<sub>2</sub> → 6CO<sub>2</sub> + 6H<sub>2</sub>O + ATP (Energía). Esta ley de la termodinámica aplicada a la biología nos dice que la materia se recicla permanentemente en Pueblo Rico. Cuando una vaca consume el pasto, está liberando la energía solar que la planta almacenó semanas atrás. No se pierde nada; simplemente se transforma de una forma de energía a otra, permitiendo que la finca sea un sistema sostenible.</p>
+            
+            <p>En el contexto del turismo de nuestra vereda, esta pureza del aire es un activo técnico. Los bosques de galería que bordean las fincas actúan como sumideros de carbono gigantes, atrapando el exceso de CO<sub>2</sub> y manteniendo el microclima fresco que los visitantes tanto aprecian. Sin este equilibrio químico, el calentamiento local afectaría la floración del café y la salud del ganado, rompiendo la economía de la zona. La biología celular es, en última instancia, el motor financiero de Quimbaya.</p>
+            
+            <p>Es fundamental comprender que estos procesos ocurren en organelos especializados. Mientras el cloroplasto capta fotones, la mitocondria realiza la fosforilación oxidativa. Cada vez que ves un grano de café rojo y maduro, estás viendo meses de fotones capturados y almacenados. Y cada vez que sientes calor en tu cuerpo tras una caminata por Pueblo Rico, estás sintiendo las mitocondrias de tus músculos liberando esa misma energía almacenada. Somos, literalmente, seres de luz transformada.</p>
+            
+            <p>Para concluir, el "Ciclo Perfecto" es una ley universal que en nuestra Vereda Pueblo Rico toma la forma de un paisaje verde y productivo. El respeto por la vegetación y la calidad del aire no es solo ecología, es química fundamental para nuestra supervivencia. La próxima vez que respires profundamente frente a un cafetal, recuerda: estás recibiendo un regalo molecular directo de la planta, y tú le estás entregando el aliento que ella usará para crear el café del futuro.</p>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="cycleCanvas"></canvas>
+            <div class="canvas-ui">
+                <button class="btn-check" onclick="setCanvasMode('day')">Día (Fotosíntesis)</button>
+                <button class="btn-check" onclick="setCanvasMode('night')">Noche (Solo Respiración)</button>
+            </div>
+        </div>
+
+        <!-- PAUSAS ACTIVAS 6-10 -->
+        <div class="pause-active">
+            <div class="pause-icon">⛓️</div>
+            <div><strong>Actividad 6:</strong> Construye un mapa conceptual sobre los organelos: Cloroplasto vs Mitocondria.</div>
+            <button class="btn-check" onclick="markTask(6, this)">Ya lo hice</button>
+        </div>
+        <div class="pause-active">
+            <div class="pause-icon">🐄</div>
+            <div><strong>Actividad 7:</strong> Elabora una tabla de datos observando un animal de la vereda: ¿Cuántas veces inhala en un minuto?</div>
+            <button class="btn-check" onclick="markTask(7, this)">Ya lo hice</button>
+        </div>
+        <div class="pause-active">
+            <div class="pause-icon">📐</div>
+            <div><strong>Actividad 8:</strong> Dibuja un esquema técnico de una mitocondria y señala dónde ocurre la liberación de energía.</div>
+            <button class="btn-check" onclick="markTask(8, this)">Ya lo hice</button>
+        </div>
+        <div class="pause-active">
+            <div class="pause-icon">🖋️</div>
+            <div><strong>Actividad 9:</strong> Escribe una síntesis de 10 líneas sobre la importancia del agua para que el cafetal respire.</div>
+            <button class="btn-check" onclick="markTask(9, this)">Ya lo hice</button>
+        </div>
+        <div class="pause-active">
+            <div class="pause-icon">➗</div>
+            <div><strong>Actividad 10:</strong> Problema: Si una planta produce 10 moléculas de Oxígeno y un animal consume 8, ¿cuántas quedan disponibles en el aire?</div>
+            <button class="btn-check" onclick="markTask(10, this)">Ya lo hice</button>
+        </div>
+    </section>
+
+    <!-- EVALUACIÓN FINAL -->
+    <section id="final-eval">
+        <h2>Evaluación Final: Maestro del Ciclo</h2>
+        
+        <h3>Taller de Selección Múltiple</h3>
+        <div class="quiz-item">
+            <p>1. ¿Cuál es el producto principal de la fotosíntesis que sirve como combustible para los animales?</p>
+            <div class="option" onclick="checkAnswer(this, true, 0.3)">Glucosa</div>
+            <div class="option" onclick="checkAnswer(this, false, 0)">Agua</div>
+            <div class="option" onclick="checkAnswer(this, false, 0)">Luz solar</div>
+        </div>
+
+        <h3 style="margin-top:40px;">Preguntas Abiertas (Validación Anti-Fraude)</h3>
+        <div class="quiz-item">
+            <p>1. Explica la relación entre el desayuno que consumes y la energía que usas para caminar por la vereda.</p>
+            <textarea id="open1" onkeyup="checkTypingSpeed(this)" placeholder="Escribe tu análisis aquí..."></textarea>
+            <div class="alert-fraud" id="alert-open1">⚠️ Detectada entrada de texto no humana o pegado. Escribe con tu teclado.</div>
+        </div>
+        <div class="quiz-item">
+            <p>2. ¿Por qué se dice que el ciclo entre plantas y animales en Pueblo Rico es un "Juego de Espejos"?</p>
+            <textarea id="open2" onkeyup="checkTypingSpeed(this)" placeholder="Escribe tu análisis aquí..."></textarea>
+            <div class="alert-fraud" id="alert-open2">⚠️ Detectada entrada de texto no humana o pegado. Escribe con tu teclado.</div>
+        </div>
+
+        <div style="text-align:center;">
+            <button class="btn-start" onclick="generateReport()">Descargar Resultados Finales</button>
+        </div>
+    </section>
+
+    <footer>
+        <p>Vereda Pueblo Rico, Quimbaya - Quindío | © 2024 OVA Autocontenido</p>
+    </footer>
+</div>
+
+<script>
+    // ESTADO GLOBAL
+    const state = {
+        names: '',
+        lastnames: '',
+        score: 0,
+        progress: 0,
+        tasksDone: new Set(),
+        startTime: Date.now(),
+        typingData: {},
+        canvasMode: 'day'
+    };
+
+    // GESTIÓN DE USUARIO
+    document.getElementById('start-btn').onclick = () => {
+        const n = document.getElementById('user-names').value.trim();
+        const l = document.getElementById('user-lastnames').value.trim();
+        if(!n || !l) {
+            alert("Por favor ingresa nombres y apellidos para comenzar.");
+            return;
+        }
+        state.names = n;
+        state.lastnames = l;
+        document.getElementById('nav-user-display').innerText = `Explorador: ${n} ${l}`;
+        document.getElementById('welcome-screen').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        
+        // Inicialización del canvas después de mostrar el contenido
+        setTimeout(initCanvas, 100);
+    };
+
+    // SISTEMA PEDAGÓGICO
+    function checkAnswer(element, isCorrect, points) {
+        if(element.parentElement.classList.contains('answered')) return;
+        
+        element.parentElement.classList.add('answered');
+        if(isCorrect) {
+            element.classList.add('correct');
+            state.score += points;
+        } else {
+            element.classList.add('wrong');
+            const correct = element.parentElement.querySelector('[onclick*="true"]');
+            if(correct) correct.classList.add('correct');
+        }
+        updateStats();
+    }
+
+    function markTask(num, btn) {
+        if(state.tasksDone.has(num)) return;
+        state.tasksDone.add(num);
+        btn.innerText = "✓ Completado";
+        btn.classList.add('done');
+        state.progress += 7; 
+        state.score += 0.2;
+        updateStats();
+    }
+
+    function updateStats() {
+        const score = Math.min(state.score, 5).toFixed(1);
+        document.getElementById('score-display').innerText = `Puntos: ${score}`;
+        document.getElementById('progress-fill').style.width = `${Math.min(state.progress, 100)}%`;
+    }
+
+    // ANTI-FRAUDE
+    function checkTypingSpeed(el) {
+        const now = Date.now();
+        const id = el.id;
+        if(!state.typingData[id]) state.typingData[id] = { last: now, counts: 0, suspect: false };
+        
+        const diff = now - state.typingData[id].last;
+        if(diff < 20 && diff > 0) { 
+            state.typingData[id].counts++;
+        }
+        
+        if(state.typingData[id].counts > 3) {
+            document.getElementById(`alert-${id}`).style.display = 'block';
+            state.typingData[id].suspect = true;
+        }
+        
+        state.typingData[id].last = now;
+    }
+
+    // Bloqueos de eventos
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(ta => {
+        ta.onpaste = e => { e.preventDefault(); alert("El pegado de texto está bloqueado por seguridad pedagógica."); };
+        ta.ondrop = e => e.preventDefault();
+        ta.oncontextmenu = e => e.preventDefault();
+    });
+
+    // ANIMACIÓN CANVAS (Simulación de gases)
+    let canvas, ctx, particles = [];
+    let animationId;
+
+    function initCanvas() {
+        canvas = document.getElementById('cycleCanvas');
+        if (!canvas) return;
+        
+        ctx = canvas.getContext('2d');
+        resizeCanvas();
+        
+        particles = [];
+        for(let i=0; i<60; i++) particles.push(new Particle());
+        
+        if (animationId) cancelAnimationFrame(animationId);
+        animate();
+    }
+
+    function resizeCanvas() {
+        if (!canvas || !canvas.parentElement) return;
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = 500;
+    }
+
+    class Particle {
+        constructor() {
+            this.init();
+        }
+        init() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.vx = (Math.random() - 0.5) * 2;
+            this.vy = (Math.random() - 0.5) * 2;
+            this.type = Math.random() > 0.5 ? 'O2' : 'CO2';
+            this.size = 4;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
+            if(this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+            const centerPlant = { x: canvas.width/3, y: canvas.height/2 };
+            const centerAnimal = { x: 2*canvas.width/3, y: canvas.height/2 };
+
+            if(state.canvasMode === 'day') {
+                if(this.type === 'CO2') { 
+                    this.vx += (centerPlant.x - this.x) * 0.0001;
+                    this.vy += (centerPlant.y - this.y) * 0.0001;
+                } else { 
+                    this.vx += (centerAnimal.x - this.x) * 0.0001;
+                    this.vy += (centerAnimal.y - this.y) * 0.0001;
+                }
+            }
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+            ctx.fillStyle = this.type === 'O2' ? '#81d4fa' : '#ffab91';
+            ctx.fill();
+            ctx.font = "10px Arial";
+            ctx.fillText(this.type, this.x + 6, this.y + 4);
+        }
+    }
+
+    function setCanvasMode(mode) {
+        state.canvasMode = mode;
+    }
+
+    function animate() {
+        if (!ctx) return;
+        
+        ctx.fillStyle = state.canvasMode === 'day' ? '#e1f5fe' : '#001a00';
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+
+        // Planta
+        ctx.fillStyle = '#2e7d32';
+        ctx.fillRect(canvas.width/3 - 20, canvas.height/2 - 40, 40, 80);
+        ctx.fillStyle = '#3e2723';
+        ctx.fillRect(canvas.width/3 - 5, canvas.height/2 + 40, 10, 30);
+
+        // Animal/Humano
+        ctx.fillStyle = '#d84315';
+        ctx.beginPath();
+        ctx.arc(2*canvas.width/3, canvas.height/2, 30, 0, Math.PI*2);
+        ctx.fill();
+
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+        animationId = requestAnimationFrame(animate);
+    }
+
+    // EXPORTACIÓN DE RESULTADOS
+    function generateReport() {
+        const finalScore = Math.min(state.score, 5).toFixed(2);
+        const report = `
+RESULTADOS OVA: EL CICLO PERFECTO
+Vereda Pueblo Rico - Quimbaya, Quindío
+-------------------------------------------
+Usuario: ${state.lastnames}, ${state.names}
+Nota Final: ${finalScore} / 5.0
+Tiempo en plataforma: ${Math.floor((Date.now() - state.startTime)/60000)} minutos
+-------------------------------------------
+ANALISIS ABIERTO 1:
+${document.getElementById('open1').value}
+
+ANALISIS ABIERTO 2:
+${document.getElementById('open2').value}
+
+VALIDACION DE INTEGRIDAD:
+Sospecha de Fraude 1: ${state.typingData['open1']?.suspect ? "SI" : "NO"}
+Sospecha de Fraude 2: ${state.typingData['open2']?.suspect ? "SI" : "NO"}
+
+RUTA DE FORTALECIMIENTO:
+${finalScore >= 4 ? "Excelente desempeño. Eres un guardián del equilibrio químico en Quimbaya." : "Se recomienda reforzar la diferencia entre reactivos y productos metabólicos."}
+-------------------------------------------
+        `;
+        
+        const blob = new Blob([report], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Resultados_${state.lastnames}.txt`;
+        a.click();
+        alert("¡Felicidades! Se ha generado tu reporte final.");
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+</script>
+
+</body>
+</html>

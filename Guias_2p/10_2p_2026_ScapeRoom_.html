@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: AgroTech Quindío</title>
+    <style>
+        /* Estética: Bio-digital rústico (Dark mode, neon verde/azul, madera oscura) */
+        :root {
+            --bg-color: #0b130b; /* Verde muy oscuro casi negro */
+            --text-main: #e0e0e0;
+            --neon-green: #39ff14;
+            --neon-blue: #0ff;
+            --rustic-wood: #5c4033; /* Marrón oscuro */
+            --error-red: #ff3333;
+            --font-narrative: 'Georgia', serif;
+            --font-code: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-narrative);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-image: 
+                linear-gradient(rgba(11, 19, 11, 0.8), rgba(11, 19, 11, 0.9)),
+                repeating-linear-gradient(45deg, #111 0px, #111 2px, transparent 2px, transparent 4px);
+        }
+
+        #game-interface {
+            width: 95%;
+            max-width: 900px;
+            height: 90vh;
+            background-color: rgba(20, 30, 20, 0.95);
+            border: 3px solid var(--rustic-wood);
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.2), inset 0 0 10px rgba(92, 64, 51, 0.8);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--neon-green);
+            font-family: var(--font-code);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid var(--rustic-wood);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        h2 { color: var(--neon-blue); font-size: 1.3rem; margin-bottom: 5px; }
+
+        .room-panel { display: none; }
+        .active-room { display: block; }
+
+        .story-box {
+            background-color: rgba(92, 64, 51, 0.2); /* Fondo madera semitransparente */
+            border-left: 4px solid var(--neon-green);
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .code-snippet {
+            font-family: var(--font-code);
+            background-color: #000;
+            color: var(--neon-green);
+            padding: 8px;
+            border: 1px dashed var(--neon-blue);
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        .puzzle-container {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background: rgba(0,0,0,0.4);
+        }
+
+        .puzzle-title {
+            color: #aaa;
+            font-family: var(--font-code);
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background-color: transparent;
+            border: 2px solid var(--rustic-wood);
+            color: var(--neon-blue);
+            font-family: var(--font-code);
+            font-size: 1.2rem;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        input:focus { outline: none; border-color: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
+
+        button {
+            width: 100%;
+            background-color: var(--rustic-wood);
+            color: #e0e0e0;
+            font-family: var(--font-code);
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 12px;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:hover { background-color: var(--neon-green); color: #000; }
+        button:disabled { background-color: #333; color: #666; cursor: not-allowed; }
+
+        .lockout-alert {
+            color: var(--error-red);
+            font-family: var(--font-code);
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .pista-imagen {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid var(--neon-blue);
+            margin: 10px auto;
+            display: block;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+
+        #inventory-bar {
+            border-top: 2px dashed var(--rustic-wood);
+            padding-top: 15px;
+            margin-top: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .inventory-slot {
+            background-color: rgba(57, 255, 20, 0.1);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            font-family: var(--font-code);
+            padding: 5px 15px;
+            font-size: 0.9rem;
+            border-radius: 4px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--rustic-wood); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-green); }
+    </style>
+</head>
+<body>
+
+<div id="game-interface">
+    <h1>Laboratorio AgroTech: Cocina Molecular</h1>
+    
+    <div id="room-1" class="room-panel active-room">
+        <h2>Sector 1: Área de Preparación Ancestral</h2>
+        <div class="story-box">
+            Voz del Sistema (Doña Biotech): "Jóvenes del Quindío, la cocina molecular está en bloqueo. Antes de manipular genes, deben entender el origen. Aquí preparaba las arepas mi abuela en Quimbaya."
+        </div>
+
+        <div class="puzzle-container">
+            <span class="puzzle-title">Acertijo 1/13: Diario de Doña Biotech (César +3)</span>
+            <p>Lee el diario digital. El último proceso clave está cifrado con un desplazamiento de +3 letras en el abecedario. Descifra: <span class="code-snippet">IHUPHQWDFLyQ DQFHVWUDO</span> (Nota: ignora acentos al responder).</p>
+            <input type="text" id="ans-1" placeholder="Concepto descifrado...">
+            <button onclick="checkAnswer(1, 'FERMENTACIONANCESTRAL', 'Muestra de Fermento Criollo')">Desbloquear Ingrediente</button>
+            <div id="lock-1" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-container" id="p-group-2" style="display:none;">
+            <span class="puzzle-title">Acertijo 2/13: Flujo de la Semilla</span>
+            <p>Clasifica la semilla según el diagrama. Camino 1 (Criolla) o Camino 2 (Laboratorio). Secuencia: 1. Origen local, 2. Semilla estéril, 3. Reutilizable, 4. Requiere pesticida específico. Escribe la letra 'A' si es Criolla o 'B' si es Laboratorio para los 4 pasos, sin espacios.</p>
+            <input type="text" id="ans-2" placeholder="Ej: AABB...">
+            <button onclick="checkAnswer(2, 'ABAB')">Validar Flujo</button>
+            <div id="lock-2" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-container" id="p-group-3" style="display:none;">
+            <span class="puzzle-title">Acertijo 3/13: Análisis de Etiqueta (Visual)</span>
+            <p>Revisa la <span class="code-snippet">pista_1.png</span>. Analiza los símbolos extraños incrustados en las letras de la etiqueta del Súper-Café. ¿Qué acrónimo de 3 letras en inglés advierte sobre este tipo de alimento?</p>
+            <img src="pista_1.png" alt="Pista 1: Etiqueta GMO" class="pista-imagen" onerror="this.style.display='none'">
+            <input type="text" id="ans-3" placeholder="Acrónimo...">
+            <button onclick="checkAnswer(3, 'GMO')">Abrir Puerta al Laboratorio</button>
+            <div id="lock-3" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-2" class="room-panel">
+        <h2>Sector 2: Laboratorio de Impacto Ecológico</h2>
+        <div class="story-box">
+            Han entrado a la zona de Transgénesis. Aquí evaluamos qué pasa cuando alteramos el ADN insertando genes ajenos. Toda acción en el agro tiene una reacción en nuestro ecosistema cafetero.
+        </div>
+
+        <div class="puzzle-container">
+            <span class="puzzle-title">Acertijo 4/13: Árbol de Consecuencias</span>
+            <p>Sigue la lógica: Si plantamos café resistente a pesticida 'X', la consecuencia es uso intensivo de 'X' (E), lo que causa muerte de polinizadores (S), resistencia de malezas (D), y pérdida de diversidad (B). Ingresa la secuencia de letras correcta.</p>
+            <input type="text" id="ans-4" placeholder="4 Letras...">
+            <button onclick="checkAnswer(4, 'ESDB')">Analizar Impacto</button>
+            <div id="lock-4" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-container" id="p-group-5" style="display:none;">
+            <span class="puzzle-title">Acertijo 5/13: Informe de Biodiversidad (>200 palabras)</span>
+            <div class="story-box" style="font-size: 0.9rem; background: #111;">
+                "El estudio longitudinal en las fincas de Montenegro revela datos alarmantes. La toxina Cry1Ab, insertada en el genoma del maíz para combatir el gusano cogollero, está lixiviándose. <strong>El</strong> análisis muestra que no solo afecta a la plaga objetivo, sino a coleópteros benéficos. <strong>Suelo</strong> abajo, los nematodos y microorganismos responsables de la fijación de nitrógeno están reduciendo su población en un 40%. La estructura misma de la tierra, que ha sostenido nuestras cosechas por generaciones, pierde sus nutrientes vitales. Esta degradación invisible obliga a usar más fertilizantes químicos, creando un ciclo de dependencia. <strong>Sufre</strong> el ecosistema, sufre el caficultor y sufre la economía local a largo plazo. La conclusión es clara si unes la primera palabra de las tres oraciones resaltadas."
+            </div>
+            <p>Ingresa las 3 palabras clave del informe (sin espacios).</p>
+            <input type="text" id="ans-5" placeholder="Respuesta...">
+            <button onclick="checkAnswer(5, 'ELSUELOSUFRE')">Registrar Conclusión</button>
+            <div id="lock-5" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-container" id="p-group-6" style="display:none;">
+            <span class="puzzle-title">Acertijo 6/13: Prueba de Resiliencia (Inventario)</span>
+            <p>Para encender el escáner del siguiente cuarto, debes usar la <strong>Muestra de Fermento Criollo</strong> de tu inventario. Al aplicarla, la IA confirma que las bacterias locales tienen inmunidad natural a ciertas plagas. La palabra clave para avanzar es lo que demuestra esta semilla criolla frente al cambio: (11 letras).</p>
+            <input type="text" id="ans-6" placeholder="Palabra clave...">
+            <button onclick="checkAnswer(6, 'RESISTENCIA')">Acceder a Base de Datos</button>
+            <div id="lock-6" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-3" class="room-panel">
+        <h2>Sector 3: Archivo Genético de Quindío</h2>
+        <div class="story-box">
+            Esta terminal contiene el mapa biológico del departamento y los datos de rendimiento de cultivos modificados. Cruza los datos con cuidado.
+        </div>
+
+        <div class="puzzle-container">
+            <span class="puzzle-title">Acertijo 7/13: Mapa de Quindío (Visual)</span>
+            <p>Analiza la <span class="code-snippet">pista_2.png</span>. Observa las bases nitrogenadas en los municipios resaltados. Sigue la leyenda para formar la secuencia de 8 bases (ADN).</p>
+            <img src="pista_2.png" alt="Pista 2: Mapa Quindío" class="pista-imagen" onerror="this.style.display='none'">
+            <input type="text" id="ans-7" placeholder="Ej: AATTCCGG...">
+            <button onclick="checkAnswer(7, 'ATCGTTCA')">Desencriptar Mapa</button>
+            <div id="lock-7" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-container" id="p-group-8" style="display:none;">
+            <span class="puzzle-title">Acertijo 8/13: Cruce de Datos OMG</span>
+            <p>Tienes 4 cultivos: A(Baja tox, bajo rinde), B(Resistente plaga, baja tox abejas), C(Tolerante herbicida, alta tox), D(Alto rinde, contamina agua). Según el archivo: 1. ¿Cuál salva abejas? 2. ¿Cuál daña ríos? 3. ¿Cuál es peor globalmente (combina alta tox y herbicida)? Ingresa las 3 letras juntas.</p>
+            <input type="text" id="ans-8" placeholder="3 Letras...">
+            <button onclick="checkAnswer(8, 'BDA')">Acceder a Cámara de Clonación</button>
+            <div id="lock-8" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-4" class="room-panel">
+        <h2>Sector 4: Área de Multiplicación</h2>
+        <div class="story-box">
+            La clonación no es solo ciencia ficción con ovejas. Los campesinos de Quimbaya clonan plátano naturalmente todo el tiempo sacando 'colinos'. Diferenciar lo natural de la ingeniería de laboratorio es vital.
+        </div>
+
+        <div class="puzzle-container">
+            <span class="puzzle-title">Acertijo 9/13: Multiplicación de la vida (Visual)</span>
+            <p>Observa la <span class="code-snippet">pista_3.png</span> comparando el plátano y la tortuga. Extrae la palabra oculta en los símbolos cruzados entre la clonación natural y la transferencia nuclear.</p>
+            <img src="pista_3.png" alt="Pista 3: Esquema Clonación" class="pista-imagen" onerror="this.style.display='none'">
+            <input type="text" id="ans-9" placeholder="Palabra inglesa (5 letras)...">
+            <button onclick="checkAnswer(9, 'CLONE')">Estabilizar Incubadora</button>
+            <div id="lock-9" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-container" id="p-group-10" style="display:none;">
+            <span class="puzzle-title">Acertijo 10/13: Ética Biotecnológica</span>
+            <p>Responde al dilema ético con 'A' (Sí) o 'B' (No): 1. ¿Clonar flora nativa en extinción para repoblar? 2. ¿Mantener clones en reservas cerradas para evitar cruces accidentales? 3. ¿Permitir patentes corporativas sobre genes de semillas ancestrales campesinas?</p>
+            <input type="text" id="ans-10" placeholder="3 Letras (A o B)...">
+            <button onclick="checkAnswer(10, 'AAB')">Acceder a Consola Principal</button>
+            <div id="lock-10" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-5" class="room-panel">
+        <h2>Sector 5: Consola Principal AgroTech</h2>
+        <div class="story-box">
+            Has llegado al núcleo. Para evitar que el laboratorio se congele, debes demostrar que comprendes el balance entre la biotecnología moderna y la sabiduría ancestral.
+        </div>
+
+        <div class="puzzle-container">
+            <span class="puzzle-title">Acertijo 11/13: Matriz de Síntesis (Visual)</span>
+            <p>Analiza la <span class="code-snippet">pista_4.png</span>. Cruza Ancestral, Transgénico y Clon para encontrar la palabra que define el estado perfecto del ecosistema que buscamos.</p>
+            <img src="pista_4.png" alt="Pista 4: Matriz Estabilización" class="pista-imagen" onerror="this.style.display='none'">
+            <input type="text" id="ans-11" placeholder="Palabra clave...">
+            <button onclick="checkAnswer(11, 'EQUILIBRIO')">Aceptar Síntesis</button>
+            <div id="lock-11" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-container" id="p-group-12" style="display:none;">
+            <span class="puzzle-title">Acertijo 12/13: Tesis de Doña Biotech</span>
+            <p>En el último registro, Doña Biotech afirma que la tecnología no debe desplazar al campesino, sino darle herramientas. La meta no es el monopolio de las semillas, sino la soberanía alimentaria. Sintetiza su visión en 3 palabras: (B... P... T...). Escríbelo junto.</p>
+            <input type="text" id="ans-12" placeholder="Respuesta...">
+            <button onclick="checkAnswer(12, 'BIOTECNOLOGIAPARATODOS')">Cargar Protocolo</button>
+            <div id="lock-12" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+
+        <div class="puzzle-container" id="p-group-13" style="display:none;">
+            <span class="puzzle-title">Acertijo 13/13: Código Maestro</span>
+            <p>Genera el código final: 1. Primera letra del Acertijo 11. 2. Última letra de la tesis (Acertijo 12). 3. El número '1' representando el objetivo de una sola tierra.</p>
+            <input type="text" id="ans-13" placeholder="3 Caracteres...">
+            <button onclick="checkAnswer(13, 'EA1')">ESTABILIZAR LABORATORIO</button>
+            <div id="lock-13" class="lockout-alert">Bloqueo: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-success" class="room-panel">
+        <h2 style="color: var(--neon-green); text-align: center; font-size: 2rem;">¡LABORATORIO ESTABILIZADO!</h2>
+        <div class="story-box" style="border-color: var(--neon-green);">
+            ¡Felicidades! Has evitado el protocolo criogénico. Has demostrado que un futuro agrícola brillante en el Quindío no requiere borrar el pasado. La biotecnología real es aquella que comprende la transgenia y la clonación, pero respeta, protege y mejora las semillas ancestrales de nuestros campesinos.
+        </div>
+        <button onclick="restartGame()">Reiniciar Simulación</button>
+    </div>
+
+    <div id="inventory-bar">
+        <span style="color: var(--text-main); font-family: var(--font-code);">Cinturón de Laboratorio: </span>
+        </div>
+
+</div>
+
+<script>
+    // --- ESTADO DEL JUEGO ---
+    let currentPuzzle = 1;
+    let inventory = [];
+    let isLocked = false;
+
+    // --- CARGA INICIAL DESDE LOCALSTORAGE ---
+    window.onload = function() {
+        const savedData = localStorage.getItem('agroTech10_Save');
+        if (savedData) {
+            const state = JSON.parse(savedData);
+            currentPuzzle = state.puzzle || 1;
+            inventory = state.inventory || [];
+            updateInventoryUI();
+            restoreGameView();
+        }
+    };
+
+    // --- LÓGICA DE VALIDACIÓN PRINCIPAL ---
+    function checkAnswer(puzzleId, correctAnswer, itemReward = null) {
+        if (isLocked) return;
+
+        const inputEl = document.getElementById('ans-' + puzzleId);
+        const btnEl = inputEl.nextElementSibling;
+        const lockEl = document.getElementById('lock-' + puzzleId);
+        
+        // Limpiar respuesta del usuario: sin espacios, todo mayúsculas, sin tildes (normalización simple)
+        let playerAns = inputEl.value.replace(/\s+/g, '').toUpperCase();
+        playerAns = playerAns.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Quita tildes
+        
+        // El correctAnswer ya viene limpio desde la llamada en el HTML
+        if (playerAns === correctAnswer) {
+            // ÉXITO
+            if (itemReward && !inventory.includes(itemReward)) {
+                inventory.push(itemReward);
+                updateInventoryUI();
+            }
+            
+            currentPuzzle++;
+            saveGameState();
+            
+            // UI Update del acertijo completado
+            btnEl.style.backgroundColor = "var(--neon-green)";
+            btnEl.style.color = "#000";
+            btnEl.innerText = "✓ ACCESO CONCEDIDO";
+            inputEl.disabled = true;
+            btnEl.disabled = true;
+
+            setTimeout(() => {
+                transitionToNext(puzzleId);
+            }, 800);
+
+        } else {
+            // FRACASO: Penalización
+            triggerLockout(inputEl, btnEl, lockEl);
+        }
+    }
+
+    // --- PENALIZACIÓN (7 SEGUNDOS) ---
+    function triggerLockout(input, btn, lockMsg) {
+        isLocked = true;
+        input.disabled = true;
+        btn.disabled = true;
+        input.style.borderColor = "var(--error-red)";
+        lockMsg.style.display = "block";
+        
+        let timeLeft = 7;
+        lockMsg.innerText = `ALERTA DE SEGURIDAD. Bloqueo: ${timeLeft}s`;
+
+        const countdown = setInterval(() => {
+            timeLeft--;
+            lockMsg.innerText = `ALERTA DE SEGURIDAD. Bloqueo: ${timeLeft}s`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                isLocked = false;
+                input.disabled = false;
+                btn.disabled = false;
+                input.style.borderColor = "var(--rustic-wood)";
+                input.value = "";
+                lockMsg.style.display = "none";
+                input.focus();
+            }
+        }, 1000);
+    }
+
+    // --- MANEJO DE TRANSICIONES Y PANTALLAS ---
+    function transitionToNext(completedPuzzle) {
+        // Mapeo de transiciones a nuevas habitaciones
+        const roomTransitions = {
+            3: 2, // Tras el 3, ir al room-2
+            6: 3, // Tras el 6, ir al room-3
+            8: 4, // Tras el 8, ir al room-4
+            10: 5, // Tras el 10, ir al room-5
+            13: 'success'
+        };
+
+        if (roomTransitions[completedPuzzle]) {
+            // Cambiar de cuarto
+            document.querySelectorAll('.room-panel').forEach(panel => panel.classList.remove('active-room'));
+            document.getElementById('room-' + roomTransitions[completedPuzzle]).classList.add('active-room');
+        } else {
+            // Mostrar siguiente acertijo en el mismo cuarto
+            const nextGroup = document.getElementById('p-group-' + (completedPuzzle + 1));
+            if (nextGroup) {
+                nextGroup.style.display = "block";
+                // Auto scroll suave
+                nextGroup.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+        }
+    }
+
+    function restoreGameView() {
+        document.querySelectorAll('.room-panel').forEach(panel => panel.classList.remove('active-room'));
+        
+        // Determinar en qué cuarto debería estar basado en currentPuzzle
+        let activeRoomId = 1;
+        if(currentPuzzle > 13) activeRoomId = 'success';
+        else if (currentPuzzle > 10) activeRoomId = 5;
+        else if (currentPuzzle > 8) activeRoomId = 4;
+        else if (currentPuzzle > 6) activeRoomId = 3;
+        else if (currentPuzzle > 3) activeRoomId = 2;
+
+        document.getElementById('room-' + activeRoomId).classList.add('active-room');
+
+        // Restaurar el estado visual de los acertijos pasados y el actual
+        for(let i = 1; i <= currentPuzzle; i++) {
+            let group = document.getElementById('p-group-' + i);
+            if(group) group.style.display = "block";
+            
+            // Si es un acertijo que ya pasó, marcarlo como completado
+            if (i < currentPuzzle) {
+                let input = document.getElementById('ans-' + i);
+                let btn = input ? input.nextElementSibling : null;
+                if(input && btn) {
+                    input.disabled = true;
+                    btn.disabled = true;
+                    btn.style.backgroundColor = "var(--neon-green)";
+                    btn.style.color = "#000";
+                    btn.innerText = "✓ ACCESO CONCEDIDO";
+                }
+            }
+        }
+    }
+
+    // --- INVENTARIO ---
+    function updateInventoryUI() {
+        const invBar = document.getElementById('inventory-bar');
+        invBar.innerHTML = '<span style="color: var(--text-main); font-family: var(--font-code);">Cinturón de Laboratorio: </span>';
+        
+        inventory.forEach(item => {
+            let slot = document.createElement('span');
+            slot.className = 'inventory-slot';
+            slot.innerText = item;
+            invBar.appendChild(slot);
+        });
+    }
+
+    // --- PERSISTENCIA ---
+    function saveGameState() {
+        const state = { puzzle: currentPuzzle, inventory: inventory };
+        localStorage.setItem('agroTech10_Save', JSON.stringify(state));
+    }
+
+    function restartGame() {
+        localStorage.removeItem('agroTech10_Save');
+        location.reload();
+    }
+</script>
+
+</body>
+</html>

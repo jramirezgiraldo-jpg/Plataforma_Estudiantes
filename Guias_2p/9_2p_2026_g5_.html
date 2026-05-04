@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Genética en la Vereda Pueblo Rico</title>
+    <style>
+        :root {
+            --pcc-verde-finca: #1b5e20;
+            --pcc-cafe-grano: #3e2723;
+            --pcc-naranja-citrico: #e65100;
+            --pcc-amarillo-flor: #fbc02d;
+            --pcc-crema-papel: #fffde7;
+            --pcc-rojo-cereza: #d32f2f;
+            --pcc-gris-suelo: #455a64;
+        }
+
+        * { box-sizing: border-box; scroll-behavior: smooth; }
+        body { 
+            margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--pcc-crema-papel); color: var(--pcc-cafe-grano);
+            line-height: 1.7; user-select: none;
+        }
+
+        /* --- Pantalla de Bienvenida --- */
+        #welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--pcc-verde-finca), var(--pcc-cafe-grano));
+            z-index: 5000; display: flex; justify-content: center; align-items: center; color: white;
+        }
+        .login-card {
+            background: white; padding: 40px; border-radius: 25px; color: var(--pcc-cafe-grano);
+            width: 90%; max-width: 500px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+        .login-card input {
+            width: 100%; padding: 12px; margin: 10px 0; border: 2px solid var(--pcc-verde-finca);
+            border-radius: 8px; font-size: 1rem; outline: none;
+        }
+
+        /* --- Barra de Navegación --- */
+        nav {
+            position: sticky; top: 0; background: var(--pcc-verde-finca); color: white;
+            padding: 10px 5%; display: flex; justify-content: space-between; align-items: center;
+            z-index: 4000; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .prog-box { display: flex; align-items: center; gap: 15px; }
+        .bar-bg { width: 150px; height: 12px; background: rgba(255,255,255,0.2); border-radius: 6px; overflow: hidden; }
+        #bar-fill { width: 0%; height: 100%; background: var(--pcc-amarillo-maracuya); background: #ffee58; transition: 0.6s; }
+
+        /* --- Estructura Contenido --- */
+        .container { max-width: 1000px; margin: 20px auto; padding: 20px; }
+        section { 
+            background: white; padding: 40px; margin-bottom: 40px; border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05); border-top: 8px solid var(--pcc-naranja-citrico);
+        }
+
+        h1, h2 { color: var(--pcc-verde-finca); }
+        .text-inductivo, .text-deductivo { text-align: justify; margin-bottom: 25px; }
+
+        /* --- Cuadro de Punnett y Tablas --- */
+        .punnett {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
+            max-width: 300px; margin: 20px auto; text-align: center;
+        }
+        .punnett div { padding: 20px; border: 1px solid var(--pcc-gris-suelo); font-weight: bold; }
+        .punnett .head { background: #f5f5f5; }
+        .punnett .cell { background: #e8f5e9; }
+
+        .data-table {
+            width: 100%; border-collapse: collapse; margin: 25px 0;
+        }
+        .data-table th { background: var(--pcc-cafe-grano); color: white; padding: 12px; }
+        .data-table td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+
+        /* --- Pausas Activas --- */
+        .pause-active {
+            background: #e3f2fd; border: 2px dashed var(--pcc-verde-finca);
+            padding: 25px; margin: 30px 0; border-radius: 15px; position: relative;
+        }
+        .pause-active::before {
+            content: "📍 TALLER DE CAMPO"; position: absolute; top: -12px; left: 20px;
+            background: var(--pcc-verde-finca); color: white; padding: 2px 10px; font-size: 0.75rem; border-radius: 5px;
+        }
+
+        /* --- Canvas y Gráficas --- */
+        .viz-container { text-align: center; background: #fafafa; border-radius: 15px; padding: 20px; margin: 30px 0; }
+        #genetic-canvas { background: #263238; border-radius: 10px; width: 100%; height: 400px; }
+
+        /* --- Interactividad --- */
+        .btn {
+            background: var(--pcc-verde-finca); color: white; border: none; padding: 12px 24px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .btn:hover { background: var(--pcc-naranja-citrico); }
+        .btn:disabled { background: #ccc; }
+
+        .feedback { font-weight: bold; margin-top: 10px; display: none; }
+        textarea { width: 100%; height: 100px; padding: 12px; border: 2px solid #ddd; border-radius: 10px; resize: none; margin-top: 10px; }
+        .ia-alert { color: var(--pcc-rojo-cereza); font-size: 0.8rem; display: none; }
+
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <!-- Pantalla de Login -->
+    <div id="welcome-screen">
+        <div class="login-card">
+            <h2>Genética en Pueblo Rico</h2>
+            <p>Aprende la 2da Ley de Mendel en el corazón de Quimbaya</p>
+            <input type="text" id="user-last" placeholder="Apellidos">
+            <input type="text" id="user-first" placeholder="Nombres">
+            <button class="btn" id="btn-start" style="width: 100%; margin-top: 15px;">INICIAR EXPEDICIÓN</button>
+        </div>
+    </div>
+
+    <!-- Barra de Navegación -->
+    <nav>
+        <div><span id="display-name">Usuario</span> | Quimbaya, Quindío</div>
+        <div class="prog-box">
+            <span id="badge">🌱</span>
+            <div class="bar-bg"><div id="bar-fill"></div></div>
+            <span id="pts-display">Puntos: 0.0</span>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- INICIO -->
+        <section id="inicio">
+            <h1>1. Sembrando Probabilidades</h1>
+            <p><strong>Objetivo:</strong> Comprender la segregación de alelos según la Segunda Ley de Mendel a través de la probabilidad y su aplicación en la mejora de cultivos de café en la Vereda Pueblo Rico.</p>
+            
+            <h3>Pre-saberes: La Herencia de la Finca</h3>
+            <div class="quiz-item">
+                <p>1. Si cruzamos dos plantas de café híbridas (Aa), ¿qué probabilidad hay de que una semilla sea recesiva (aa)?</p>
+                <button class="btn" onclick="checkPre(1, 'c', this)">A. 100%</button>
+                <button class="btn" onclick="checkPre(1, 'b', this)">B. 50%</button>
+                <button class="btn" onclick="checkPre(1, 'a', this)">C. 25%</button>
+            </div>
+            <div class="quiz-item" style="margin-top: 20px;">
+                <p>2. En genética, ¿qué significa que un alelo se "segregue"?</p>
+                <button class="btn" onclick="checkPre(2, 'a', this)">A. Que los alelos se separan al azar durante la formación de gametos.</button>
+                <button class="btn" onclick="checkPre(2, 'b', this)">B. Que los alelos siempre se quedan juntos.</button>
+            </div>
+            <div class="quiz-item" style="margin-top: 20px;">
+                <p>3. ¿Para qué sirve el Cuadro de Punnett en la ganadería de Pueblo Rico?</p>
+                <button class="btn" onclick="checkPre(3, 'a', this)">A. Para predecir las características de las crías de ganado.</button>
+                <button class="btn" onclick="checkPre(3, 'b', this)">B. Para pesar el café en la báscula.</button>
+            </div>
+        </section>
+
+        <!-- CUERPO INDUCTIVO -->
+        <section id="inductivo">
+            <h2>2. Inducción: El Azar en el Cafetal</h2>
+            <div class="text-inductivo">
+                <p>Caminar por los senderos de la <strong>Vereda Pueblo Rico</strong> es observar la genética en acción. Al mirar un lote de café variedad Castillo, notamos que no todas las plantas son idénticas, a pesar de venir de un mismo origen. La Segunda Ley de Mendel, o Ley de la Segregación, nos explica que los alelos (variantes de un gen) se separan durante la formación de las células sexuales, permitiendo que caracteres que estaban "ocultos" en la generación anterior vuelvan a aparecer. Imaginemos un caficultor que cruza dos plantas con semillas amarillas híbridas; de repente, en la siguiente cosecha, aparecen algunas semillas rojas que no se veían hace tiempo.</p>
+                
+                <p>Este fenómeno inductivo nos muestra que la herencia no es una mezcla líquida, sino un juego de unidades discretas. En las fincas de cítricos de Quimbaya, la resistencia a una plaga puede depender de un solo gen recesivo. Si los agricultores no entienden esta probabilidad, podrían perder una variedad valiosa por simple azar. La inducción científica nos permite ver el patrón: de cada cuatro semillas, estadísticamente una mostrará el carácter recesivo, mientras que tres mostrarán el dominante. Es la matemática de la naturaleza dictando el futuro de nuestra producción agrícola.</p>
+                
+                <p>Al aplicar este conocimiento a la ganadería de la zona, los productores de Pueblo Rico seleccionan ejemplares para el cruce analizando la probabilidad de heredar una mayor producción de leche. No es una decisión al "tino", sino una aplicación rigurosa de la probabilidad mendeliana. Observamos que al separar los alelos, la diversidad genética aumenta, lo cual es vital para el sector turismo, que busca conservar paisajes con flora y fauna diversa y saludable, resiliente a los cambios climáticos del Quindío.</p>
+                
+                <p>La segregación es como el mercado campesino de los sábados en Quimbaya: cada bulto de café representa una posibilidad de intercambio. Los alelos se distribuyen de manera independiente, permitiendo combinaciones únicas. Esta variabilidad es lo que permite que el café de nuestra vereda tenga perfiles de taza tan diferenciados, desde notas cítricas hasta sabores achocolatados, todos dictados por la combinación azarosa de alelos durante la polinización.</p>
+
+                <p>Finalmente, entendemos que la Segunda Ley es el arte de dar y recibir información genética. Al estudiar el comportamiento de las semillas en Pueblo Rico, deducimos que el azar está organizado bajo leyes precisas. La probabilidad del 25% para el fenotipo recesivo en un cruce monohíbrido es una constante que desafía la apariencia y nos invita a mirar dentro del genotipo de cada planta de nuestra montaña.</p>
+            </div>
+
+            <table class="data-table">
+                <caption>Tabla 1: Comparativa de Caracteres en Cultivos de Pueblo Rico</caption>
+                <thead>
+                    <tr>
+                        <th>Carácter</th>
+                        <th>Dominante (A)</th>
+                        <th>Recesivo (a)</th>
+                        <th>Importancia en Quimbaya</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Color de Grano</td>
+                        <td>Rojo Cereza</td>
+                        <td>Amarillo (Híbrido)</td>
+                        <td>Calidad de exportación</td>
+                    </tr>
+                    <tr>
+                        <td>Resistencia Plaga</td>
+                        <td>Resistente</td>
+                        <td>Vulnerable</td>
+                        <td>Seguridad alimentaria</td>
+                    </tr>
+                    <tr>
+                        <td>Tamaño Fruto</td>
+                        <td>Grande</td>
+                        <td>Pequeño</td>
+                        <td>Rendimiento por hectárea</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- PAUSAS ACTIVAS 1-5 -->
+            <div class="pause-active">
+                <p><strong>RETO 1:</strong> Responde en tu cuaderno: ¿Por qué crees que a veces nacen terneros de un color que sus padres no tienen?</p>
+                <button class="btn" onclick="addProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-active">
+                <p><strong>RETO 2:</strong> Dibuja en tu cuaderno una planta de café con semillas de dos colores y explica cómo se separan los alelos según Mendel.</p>
+                <button class="btn" onclick="addProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-active">
+                <p><strong>RETO 3:</strong> Crea un mapa mental sobre los conceptos: Alelo, Homocigoto, Heterocigoto y Fenotipo.</p>
+                <button class="btn" onclick="addProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-active">
+                <p><strong>RETO 4:</strong> Elabora un cuadro comparativo entre Genotipo y Fenotipo basado en los cítricos de la vereda.</p>
+                <button class="btn" onclick="addProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-active">
+                <p><strong>RETO 5:</strong> Diseña un diagrama de flujo que muestre el cruce de dos plantas F<sub>1</sub> hasta llegar a la F<sub>2</sub>.</p>
+                <button class="btn" onclick="addProg(5)">Ya lo hice (+5%)</button>
+            </div>
+
+            <!-- PREGUNTA ICFES (SVG) -->
+            <div class="viz-container">
+                <h3>Análisis de Datos: Gráfica de Segregación en Café</h3>
+                <svg width="400" height="250" viewBox="0 0 400 250" style="background:white; border: 1px solid #ccc;">
+                    <!-- Ejes -->
+                    <line x1="50" y1="200" x2="350" y2="200" stroke="black" stroke-width="2"/>
+                    <line x1="50" y1="200" x2="50" y2="50" stroke="black" stroke-width="2"/>
+                    <!-- Barras -->
+                    <rect x="80" y="87" width="60" height="113" fill="#1b5e20"/> <!-- 75% -->
+                    <rect x="220" y="162" width="60" height="38" fill="#d32f2f"/> <!-- 25% -->
+                    <!-- Etiquetas -->
+                    <text x="75" y="80" font-size="12">Dominantes (75%)</text>
+                    <text x="215" y="155" font-size="12">Recesivos (25%)</text>
+                    <text x="180" y="230" font-size="14" font-weight="bold">Resultados F2 - Pueblo Rico</text>
+                </svg>
+                <p><strong>Pregunta de Indagación:</strong> Si en una parcela de Pueblo Rico se sembraron 100 semillas de un cruce Aa x Aa, y la gráfica muestra los resultados esperados, ¿cuántas plantas se espera que muestren el carácter recesivo?</p>
+                <button class="btn" onclick="checkIcfes(25, this)">A. 50 plantas</button>
+                <button class="btn" onclick="checkIcfes(25, this)">B. 25 plantas</button>
+                <button class="btn" onclick="checkIcfes(25, this)">C. 75 plantas</button>
+            </div>
+        </section>
+
+        <!-- CUERPO DEDUCTIVO -->
+        <section id="deductivo">
+            <h2>3. Deducción: La Ley de la Probabilidad</h2>
+            <div class="text-deductivo">
+                <p>La Segunda Ley de Mendel nos permite deducir que la herencia es un fenómeno estadístico. La segregación de alelos ocurre con una precisión matemática tal que podemos predecir el futuro de una cosecha. Al analizar el Cuadro de Punnett, deducimos que en un cruce entre dos heterocigotos (Aa), se generan tres tipos de genotipos: AA (homocigoto dominante), Aa (heterocigoto) y aa (homocigoto recesivo). La proporción genotípica 1:2:1 es la ley universal que rige la variabilidad en los cultivos de Pueblo Rico.</p>
+                
+                <p>Desde la física de la probabilidad, cada grano de polen que fertiliza un óvulo de café es un evento independiente. Al igual que lanzar una moneda en el parque de Quimbaya, el resultado anterior no afecta al siguiente. Sin embargo, al observar grandes poblaciones de plantas en nuestra vereda, la ley de los grandes números hace que las proporciones mendeleanas se cumplan casi a la perfección. Esto es fundamental para los técnicos agropecuarios que deben asesorar a las fincas sobre qué semillas guardar para la próxima siembra.</p>
+                
+                <p>Deducimos también que los caracteres recesivos no desaparecen, simplemente "saltan" generaciones. En el sector ganadero, un rasgo de debilidad ósea puede estar latente y aparecer inesperadamente si se cruzan dos ejemplares portadores. La deducción nos enseña a valorar la diversidad: el alelo recesivo es una reserva genética que puede ser útil en el futuro si las condiciones ambientales de Quimbaya cambian drásticamente.</p>
+                
+                <p>Para el sector turismo, entender la genética permite explicar a los visitantes por qué las orquídeas de nuestras fincas tienen colores tan variados. La deducción científica transforma una simple flor en un libro de historia genética. Cada pétalo y cada aroma es el resultado de la segregación y recombinación de alelos que ha ocurrido durante siglos en las montañas del Quindío.</p>
+
+                <p>Finalmente, la ley de segregación es la base del mejoramiento genético moderno. En los laboratorios de suelos y semillas cercanos a Quimbaya, se utiliza la deducción mendeliana para crear variedades más resistentes y productivas. Comprender que los alelos son independientes nos da el poder de seleccionar lo mejor de nuestra tierra para garantizar que Pueblo Rico siga siendo un referente de calidad cafetera a nivel mundial.</p>
+            </div>
+
+            <!-- ANIMACIÓN CANVAS -->
+            <div class="viz-container">
+                <h3>Simulador: Probabilidad de Fecundación</h3>
+                <p>Haz clic para lanzar granos de polen y observa cómo se forman las semillas en el cuadro de Punnett.</p>
+                <canvas id="genetic-canvas"></canvas>
+                <div id="stats-canvas" style="margin-top: 10px; font-weight: bold;">Semillas formadas: 0</div>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 6-10 -->
+            <div class="pause-active">
+                <p><strong>RETO 6:</strong> Construye un mapa conceptual que explique la diferencia entre la 1ra y la 2da Ley de Mendel.</p>
+                <button class="btn" onclick="addProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-active">
+                <p><strong>RETO 7:</strong> Elabora una tabla de datos registrando el color de 20 granos de café que encuentres (o imagina 20 granos de una planta híbrida).</p>
+                <button class="btn" onclick="addProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-active">
+                <p><strong>RETO 8:</strong> Dibuja un esquema técnico de un Cuadro de Punnett gigante y explica cómo calcularías el porcentaje de cada cuadro.</p>
+                <button class="btn" onclick="addProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-active">
+                <p><strong>RETO 9:</strong> Escribe una síntesis de 10 líneas sobre cómo la genética ayuda a que el turismo en Quimbaya sea más sostenible.</p>
+                <button class="btn" onclick="addProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-active">
+                <p><strong>RETO 10:</strong> Problema: Si en Pueblo Rico cruzamos una vaca Aa con un toro Aa, y tienen 8 crías a lo largo del tiempo, ¿cuántas se espera estadísticamente que sean homocigotas dominantes (AA)?</p>
+                <button class="btn" onclick="addProg(5)">Ya lo hice (+5%)</button>
+            </div>
+        </section>
+
+        <!-- EVALUACIÓN FINAL -->
+        <section id="evaluacion">
+            <h2>4. Taller de Certificación Genética</h2>
+            
+            <h3>Selección Múltiple</h3>
+            <p>1. ¿Cuál es la proporción fenotípica clásica de la 2da Ley de Mendel para un cruce monohíbrido?</p>
+            <select id="q1" class="btn" style="background: white; color: black; border: 1px solid #ccc; width: 100%;">
+                <option value="none">Selecciona una respuesta...</option>
+                <option value="a">1:1</option>
+                <option value="b">3:1 (Dominante vs Recesivo)</option>
+                <option value="c">9:3:3:1</option>
+            </select>
+
+            <p style="margin-top: 20px;">2. Un organismo con genotipo "Aa" se denomina:</p>
+            <select id="q2" class="btn" style="background: white; color: black; border: 1px solid #ccc; width: 100%;">
+                <option value="none">Selecciona una respuesta...</option>
+                <option value="a">Homocigoto recesivo</option>
+                <option value="b">Heterocigoto</option>
+                <option value="c">Puro dominante</option>
+            </select>
+
+            <p style="margin-top: 20px;">3. La Segunda Ley de Mendel se conoce como la Ley de:</p>
+            <select id="q3" class="btn" style="background: white; color: black; border: 1px solid #ccc; width: 100%;">
+                <option value="none">Selecciona una respuesta...</option>
+                <option value="a">La Segregación Independiente</option>
+                <option value="b">La Uniformidad</option>
+                <option value="c">La Mezcla de Sangre</option>
+            </select>
+
+            <p style="margin-top: 20px;">4. Si una planta de cítrico es "aa", su fenotipo mostrará:</p>
+            <select id="q4" class="btn" style="background: white; color: black; border: 1px solid #ccc; width: 100%;">
+                <option value="none">Selecciona una respuesta...</option>
+                <option value="a">El carácter dominante</option>
+                <option value="b">El carácter recesivo</option>
+                <option value="c">Ambos caracteres</option>
+            </select>
+
+            <p style="margin-top: 20px;">5. El Cuadro de Punnett fue diseñado para representar:</p>
+            <select id="q5" class="btn" style="background: white; color: black; border: 1px solid #ccc; width: 100%;">
+                <option value="none">Selecciona una respuesta...</option>
+                <option value="a">La historia de la vereda</option>
+                <option value="b">Las probabilidades de combinaciones genéticas</option>
+                <option value="c">El mapa de Quimbaya</option>
+            </select>
+
+            <h3 style="margin-top: 40px;">Análisis Abierto (Anti-Fraude Activo)</h3>
+            <p style="font-size: 0.85rem; color: #666;">* Responde entre 10 y 15 palabras por pregunta. Evita copiar y pegar.</p>
+            
+            <p>1. Explica por qué es importante para un caficultor de Pueblo Rico conocer la Segunda Ley de Mendel:</p>
+            <textarea id="open1" onkeydown="trackTyping(event, 'open1')" placeholder="Escribe aquí..."></textarea>
+            <span id="ia1" class="ia-alert">⚠️ Alerta: Velocidad de escritura sospechosa o acción bloqueada.</span>
+
+            <p>2. ¿Qué ocurre con los alelos durante la meiosis según lo aprendido en la vereda?</p>
+            <textarea id="open2" onkeydown="trackTyping(event, 'open2')" placeholder="Escribe aquí..."></textarea>
+            <span id="ia2" class="ia-alert">⚠️ Alerta: Velocidad de escritura sospechosa o acción bloqueada.</span>
+
+            <p>3. Describe el resultado fenotípico de cruzar dos plantas heterocigotas de naranja:</p>
+            <textarea id="open3" onkeydown="trackTyping(event, 'open3')" placeholder="Escribe aquí..."></textarea>
+            <span id="ia3" class="ia-alert">⚠️ Alerta: Velocidad de escritura sospechosa o acción bloqueada.</span>
+
+            <p>4. ¿Cómo influye el azar en la calidad del café que se produce en Quimbaya?</p>
+            <textarea id="open4" onkeydown="trackTyping(event, 'open4')" placeholder="Escribe aquí..."></textarea>
+            <span id="ia4" class="ia-alert">⚠️ Alerta: Velocidad de escritura sospechosa o acción bloqueada.</span>
+
+            <p>5. ¿Por qué el Cuadro de Punnett es una herramienta de predicción matemática?</p>
+            <textarea id="open5" onkeydown="trackTyping(event, 'open5')" placeholder="Escribe aquí..."></textarea>
+            <span id="ia5" class="ia-alert">⚠️ Alerta: Velocidad de escritura sospechosa o acción bloqueada.</span>
+
+            <button class="btn" style="width:100%; margin-top: 30px;" onclick="finalizeExam()">FINALIZAR EVALUACIÓN</button>
+        </section>
+
+        <!-- RESULTADOS -->
+        <section id="results" style="display: none;">
+            <h2>Reporte Final de Aprendizaje</h2>
+            <div id="report-box" style="background: #f1f8e9; padding: 25px; border-radius: 15px; border: 1px solid #c8e6c9;">
+                <!-- Cargado por JS -->
+            </div>
+            <button class="btn" style="margin-top: 20px;" onclick="exportResults()">DESCARGAR RESULTADOS (.TXT)</button>
+        </section>
+
+    </div>
+
+    <script>
+        // --- Variables de Estado ---
+        let state = {
+            user: { first: '', last: '' },
+            prog: 0,
+            pts: 0,
+            cheated: { open1: false, open2: false, open3: false, open4: false, open5: false },
+            typingLog: { open1: [], open2: [], open3: [], open4: [], open5: [] },
+            startTime: Date.now()
+        };
+
+        // --- Gestión de Usuario ---
+        document.getElementById('btn-start').addEventListener('click', () => {
+            const f = document.getElementById('user-first').value.trim();
+            const l = document.getElementById('user-last').value.trim();
+            if(f && l) {
+                state.user = { first: f, last: l };
+                document.getElementById('display-name').innerText = `${f} ${l}`;
+                document.getElementById('welcome-screen').style.display = 'none';
+                initCanvas();
+            } else {
+                alert("Por favor ingresa tus nombres y apellidos.");
+            }
+        });
+
+        // --- Gamificación ---
+        function addProg(val) {
+            state.prog = Math.min(state.prog + val, 100);
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('bar-fill').style.width = state.prog + "%";
+            state.pts = (state.prog / 100) * 2.0; // Puntos base por interacción
+            document.getElementById('pts-display').innerText = `Puntos: ${state.pts.toFixed(1)}`;
+            
+            const badge = document.getElementById('badge');
+            if(state.prog > 25) badge.innerText = "☕";
+            if(state.prog > 50) badge.innerText = "🍊";
+            if(state.prog > 75) badge.innerText = "🐄";
+            if(state.prog === 100) badge.innerText = "🏆";
+        }
+
+        // --- Interactividad ---
+        function checkPre(q, ans, btn) {
+            if((q===1 && ans==='a') || (q===2 && ans==='a') || (q===3 && ans==='a')) {
+                btn.style.background = "#4caf50";
+                addProg(5);
+            } else {
+                btn.style.background = "#d32f2f";
+            }
+            btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+        }
+
+        function checkIcfes(correct, btn) {
+            if(correct === 25) {
+                btn.style.background = "#4caf50";
+                addProg(10);
+            } else {
+                btn.style.background = "#d32f2f";
+            }
+            btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+        }
+
+        // --- Anti-Fraude ---
+        ['copy', 'paste', 'drop'].forEach(evt => {
+            document.addEventListener(evt, e => {
+                if(e.target.tagName === 'TEXTAREA') {
+                    e.preventDefault();
+                    const id = e.target.id;
+                    state.cheated[id] = true;
+                    document.getElementById('ia' + id.slice(-1)).style.display = 'block';
+                }
+            });
+        });
+
+        function trackTyping(e, id) {
+            const log = state.typingLog[id];
+            log.push(Date.now());
+            if(log.length > 5) {
+                const diffs = [];
+                for(let i=1; i<log.length; i++) diffs.push(log[i] - log[i-1]);
+                const avg = diffs.reduce((a,b)=>a+b)/diffs.length;
+                if(avg < 40) { // Velocidad inhumana (<40ms por tecla)
+                    state.cheated[id] = true;
+                    document.getElementById('ia' + id.slice(-1)).style.display = 'block';
+                }
+            }
+        }
+
+        // --- Canvas: Probabilidad ---
+        const canvas = document.getElementById('genetic-canvas');
+        const ctx = canvas.getContext('2d');
+        let seeds = [];
+        let count = 0;
+
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            canvas.addEventListener('click', spawnPollen);
+            animate();
+        }
+
+        function spawnPollen(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Determinar alelos al azar
+            const alelo1 = Math.random() > 0.5 ? 'A' : 'a';
+            const alelo2 = Math.random() > 0.5 ? 'A' : 'a';
+            const combo = (alelo1 + alelo2).split('').sort().join(''); // Ordenar para AA, Aa, aa
+            
+            let color = "#1b5e20"; // AA o Aa
+            if(combo === "aa") color = "#d32f2f"; // aa
+            
+            seeds.push({ x, y: 0, targetY: y, color, label: combo, vy: 2 + Math.random()*2 });
+            count++;
+            document.getElementById('stats-canvas').innerText = `Semillas formadas: ${count}`;
+            addProg(1);
+        }
+
+        function animate() {
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            
+            // Dibujar "Plantas"
+            ctx.fillStyle = "#4caf50";
+            ctx.fillRect(50, canvas.height-50, 100, 50);
+            ctx.fillRect(canvas.width-150, canvas.height-50, 100, 50);
+
+            seeds.forEach(s => {
+                if(s.y < s.targetY) s.y += s.vy;
+                ctx.fillStyle = s.color;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, 10, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = "white";
+                ctx.font = "bold 10px Arial";
+                ctx.fillText(s.label, s.x-8, s.y+4);
+            });
+            requestAnimationFrame(animate);
+        }
+
+        // --- Finalización ---
+        function finalizeExam() {
+            let evalScore = 0;
+            // Selección múltiple
+            if(document.getElementById('q1').value === 'b') evalScore += 0.4;
+            if(document.getElementById('q2').value === 'b') evalScore += 0.4;
+            if(document.getElementById('q3').value === 'a') evalScore += 0.4;
+            if(document.getElementById('q4').value === 'b') evalScore += 0.4;
+            if(document.getElementById('q5').value === 'b') evalScore += 0.4;
+
+            // Abiertas
+            let openScore = 0;
+            for(let i=1; i<=5; i++){
+                const val = document.getElementById('open'+i).value.trim();
+                const words = val.split(/\s+/).filter(w => w.length > 0).length;
+                if(words >= 10 && words <= 15 && !state.cheated['open'+i]) openScore += 0.2;
+            }
+
+            const total = (state.pts + evalScore + openScore).toFixed(1);
+            const final = Math.min(total, 5.0);
+
+            document.getElementById('results').style.display = 'block';
+            const report = `
+                <h3>Reporte de Desempeño: ${state.user.first} ${state.user.last}</h3>
+                <p><strong>Ubicación:</strong> Vereda Pueblo Rico, Quimbaya</p>
+                <p><strong>Calificación Final:</strong> ${final} / 5.0</p>
+                <p><strong>Progreso en Actividades:</strong> ${state.prog}%</p>
+                <p><strong>Análisis de Integridad:</strong> ${Object.values(state.cheated).includes(true) ? 'ALERTA DE FRAUDE' : 'SISTEMA LIMPIO'}</p>
+                <hr>
+                <h4>Ruta de Fortalecimiento Personalizada:</h4>
+                <p>${final >= 4.0 ? '¡Excelente Maestro Genético! Dominas las leyes de Mendel aplicadas al campo.' : 'Se recomienda repasar la construcción de Cuadros de Punnett y la probabilidad de alelos recesivos.'}</p>
+            `;
+            document.getElementById('report-box').innerHTML = report;
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function exportResults() {
+            const data = `
+REPORTA DE OVA - GENÉTICA PUEBLO RICO
+Usuario: ${state.user.first} ${state.user.last}
+Fecha: ${new Date().toLocaleString()}
+Nota Final: ${document.getElementById('pts-display').innerText}
+Integridad: ${Object.values(state.cheated).includes(true) ? 'Sospecha de Fraude' : 'Correcto'}
+            `;
+            const blob = new Blob([data], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Resultado_${state.user.last}.txt`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

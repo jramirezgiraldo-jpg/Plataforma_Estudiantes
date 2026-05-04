@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: La Mitocondria - El Fogón de la Vida</title>
+    <style>
+        :root {
+            --cafe-oscuro: #3e2723;
+            --cafe-medio: #6d4c41;
+            --verde-quindio: #2e7d32;
+            --amarillo-citrico: #fbc02d;
+            --tierra: #efebe9;
+            --blanco: #ffffff;
+            --rojo-alerta: #c62828;
+            --acento: #ff6f00;
+        }
+
+        * {
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--tierra);
+            color: var(--cafe-oscuro);
+            line-height: 1.6;
+        }
+
+        /* --- Pantalla de Bienvenida --- */
+        #welcome-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--cafe-oscuro), var(--verde-quindio));
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+        }
+
+        button.primary {
+            background-color: var(--amarillo-citrico);
+            color: var(--cafe-oscuro);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+
+        button.primary:hover {
+            transform: scale(1.05);
+        }
+
+        /* --- Layout --- */
+        #main-content {
+            display: none;
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            background-color: var(--cafe-oscuro);
+            color: var(--blanco);
+            padding: 10px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 900;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .progress-container {
+            width: 200px;
+            height: 10px;
+            background: #444;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-left: 20px;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--amarillo-citrico);
+            transition: width 0.3s;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* --- Elementos Visuales --- */
+        .section-card {
+            background: var(--blanco);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-left: 8px solid var(--verde-quindio);
+        }
+
+        .svg-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        canvas {
+            display: block;
+            margin: 20px auto;
+            background: #000;
+            border-radius: 12px;
+            max-width: 100%;
+        }
+
+        /* --- Tablas --- */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table th {
+            background-color: var(--cafe-medio);
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .comparison-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* --- Pausas Activas --- */
+        .pause-active {
+            background: #fff8e1;
+            border: 2px dashed var(--acento);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 25px 0;
+        }
+
+        .pause-active h4 {
+            color: var(--acento);
+            margin-top: 0;
+        }
+
+        /* --- Gamificación e Iconos --- */
+        .unlockable-icon {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            filter: grayscale(1);
+            transition: 0.5s;
+        }
+
+        .unlocked {
+            filter: grayscale(0) drop-shadow(0 0 5px var(--amarillo-citrico));
+        }
+
+        /* --- Alertas y Feedback --- */
+        .feedback {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .correct { background: #c8e6c9; color: #2e7d32; }
+        .incorrect { background: #ffcdd2; color: #c62828; }
+
+        /* --- Bloqueo de Trampa --- */
+        .anti-copy {
+            user-select: none;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--cafe-medio);
+            resize: none;
+        }
+
+        .warning-text {
+            color: var(--rojo-alerta);
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: none;
+        }
+
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <!-- Pantalla de Bienvenida -->
+    <div id="welcome-screen">
+        <div class="login-card">
+            <svg width="80" height="80" viewBox="0 0 100 100">
+                <ellipse cx="50" cy="50" rx="40" ry="25" fill="#fbc02d" />
+                <path d="M30 50 Q 50 30 70 50 Q 50 70 30 50" fill="#fdd835" stroke="#3e2723" />
+                <circle cx="40" cy="50" r="3" fill="#3e2723" />
+                <circle cx="50" cy="52" r="3" fill="#3e2723" />
+                <circle cx="60" cy="48" r="3" fill="#3e2723" />
+            </svg>
+            <h2>El Fogón de Pueblo Rico</h2>
+            <p>Objeto Virtual de Aprendizaje sobre la Mitocondria</p>
+            <input type="text" id="user-lastname" placeholder="Tus Apellidos" required>
+            <input type="text" id="user-name" placeholder="Tus Nombres" required>
+            <button class="primary" id="start-btn">Comenzar Aventura</button>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div id="main-content">
+        <nav>
+            <div>
+                <span id="display-user">Usuario</span> | 
+                <span id="score-display">Puntos: 0.0/5.0</span>
+            </div>
+            <div style="display: flex; align-items: center;">
+                <div id="badge-container">
+                    <!-- Iconos desbloqueables -->
+                    <span id="icon-1" class="unlockable-icon">☕</span>
+                    <span id="icon-2" class="unlockable-icon">🍊</span>
+                    <span id="icon-3" class="unlockable-icon">🤠</span>
+                </div>
+                <div class="progress-container">
+                    <div id="progress-bar"></div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- Introducción -->
+            <section class="section-card">
+                <h1>Objetivo de Aprendizaje</h1>
+                <p>Identificar la función crucial de la mitocondria en la respiración celular, comprendiendo la transformación de nutrientes en energía química (ATP) mediante una analogía con el fogón de leña tradicional de las fincas de la Vereda Pueblo Rico.</p>
+                
+                <div class="svg-container">
+                    <!-- Ilustración Científica Mitocondria -->
+                    <svg width="300" height="200" viewBox="0 0 300 200">
+                        <defs>
+                            <linearGradient id="mitograd" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#ff7043" />
+                                <stop offset="100%" style="stop-color:#d84315" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Membrana Externa -->
+                        <ellipse cx="150" cy="100" rx="120" ry="70" fill="url(#mitograd)" stroke="#3e2723" stroke-width="3" />
+                        <!-- Membrana Interna (Crestas) -->
+                        <path d="M60 100 Q 80 50 100 100 T 140 100 T 180 100 T 220 100 Q 240 150 200 150 T 160 150 T 120 150 T 80 150 Z" 
+                              fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="5,2" />
+                        <text x="90" y="185" fill="#3e2723" font-weight="bold">La Mitocondria: Nuestra Central Energética</text>
+                    </svg>
+                </div>
+            </section>
+
+            <!-- Pre-saberes -->
+            <section class="section-card">
+                <h3>Pre-saberes: ¿Qué sabemos del campo?</h3>
+                <div class="quiz-item">
+                    <p>1. En las fincas de Pueblo Rico, para que el fogón caliente el almuerzo, ¿qué elemento es indispensable quemar?</p>
+                    <button onclick="checkPre(1, 'a', this)">A. Piedras del río</button>
+                    <button onclick="checkPre(1, 'b', this)">B. Leña seca (biomasa)</button>
+                    <button onclick="checkPre(1, 'c', this)">C. Agua fría</button>
+                    <div id="pre-1-fb" class="feedback"></div>
+                </div>
+                <div class="quiz-item">
+                    <p>2. Después de una larga jornada recogiendo café, ¿qué siente tu cuerpo para pedir comida?</p>
+                    <button onclick="checkPre(2, 'a', this)">A. Falta de energía</button>
+                    <button onclick="checkPre(2, 'b', this)">B. Exceso de sueño</button>
+                    <button onclick="checkPre(2, 'c', this)">C. Ganas de cantar</button>
+                    <div id="pre-2-fb" class="feedback"></div>
+                </div>
+                <div class="quiz-item">
+                    <p>3. ¿En qué parte de la planta de café crees que se produce la energía para crecer?</p>
+                    <button onclick="checkPre(3, 'a', this)">A. Solo en las raíces</button>
+                    <button onclick="checkPre(3, 'b', this)">B. En todas sus células</button>
+                    <button onclick="checkPre(3, 'c', this)">C. En el aire alrededor</button>
+                    <div id="pre-3-fb" class="feedback"></div>
+                </div>
+            </section>
+
+            <!-- Cuerpo Inductivo -->
+            <section class="section-card">
+                <h2>Cuerpo Inductivo: El Fogón de la Vereda</h2>
+                <div class="inductive-text">
+                    <p>Imagina que caminas por los senderos de la Vereda Pueblo Rico en Quimbaya. Al pasar cerca de la cocina de una de nuestras fincas cafeteras, percibes ese aroma inconfundible a leña ardiendo. Ese fogón, corazón de la casa, es el encargado de transformar troncos secos de café o cítricos en el calor necesario para cocinar los alimentos. En el mundo microscópico de nuestras células y de las plantas que cultivamos, ocurre un proceso asombrosamente similar. Las células no tienen leña física, pero tienen glucosa<sub>6</sub>H<sub>12</sub>O<sub>6</sub>, que es el combustible que obtienen de los nutrientes.</p>
+                    
+                    <p>La mitocondria actúa exactamente como ese fogón de piedra. Es un organelo especializado que recibe "la leña" (nutrientes) y, mediante el uso de oxígeno (el aire que aviva el fuego), libera energía. En Pueblo Rico, el turismo rural nos enseña que nada se desperdicia; así mismo, la mitocondria aprovecha cada molécula para generar ATP (Adenosín Trifosfato), que es como la moneda con la que la célula paga todas sus actividades: desde abrir un estoma en una hoja de naranja hasta permitir que un recolector suba la pendiente con su canasto lleno.</p>
+
+                    <p>Este proceso se llama respiración celular. No es simplemente inhalar y exhalar aire, sino un complejo baile químico donde los electrones saltan de una proteína a otra dentro de las crestas mitocondriales. En nuestra vereda, vemos cómo la ganadería requiere que el pasto sea transformado en músculo y leche; esa transformación ocurre gracias a miles de millones de mitocondrias trabajando sin descanso en el interior de las vacas. Sin este "fogón", la vida en el Quindío se detendría por completo.</p>
+
+                    <p>Observemos la importancia de la eficiencia. Un fogón con leña húmeda produce mucho humo (desperdicio) y poco calor. Una mitocondria sana, en cambio, es altamente eficiente. Produce energía, libera dióxido de carbono CO<sub>2</sub> y vapor de agua H<sub>2</sub>O. Este equilibrio es vital para el Paisaje Cultural Cafetero. Si entendemos cómo funciona este motor diminuto, entenderemos por qué es tan importante nutrir bien nuestros suelos y cuidar el aire puro que baja de la cordillera.</p>
+
+                    <p>Finalmente, debemos reconocer que la mitocondria tiene su propio ADN. Esto nos sugiere que, hace millones de años, fueron organismos independientes que decidieron unirse a otras células para trabajar en equipo, tal como nos unimos en las juntas de acción comunal de nuestra vereda para mejorar los caminos. Esa cooperación es la base de la complejidad biológica que hoy nos permite disfrutar de la biodiversidad quindiana.</p>
+                </div>
+
+                <h3>Cuadro Comparativo Técnico: Fogón vs Mitocondria</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Característica</th>
+                            <th>Fogón de Leña (Finca)</th>
+                            <th>Mitocondria (Célula)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Combustible</td>
+                            <td>Leña de Café / Cítricos</td>
+                            <td>Glucosa (Nutrientes)</td>
+                        </tr>
+                        <tr>
+                            <td>Activador</td>
+                            <td>Oxígeno (Soplar el fuego)</td>
+                            <td>Oxígeno O<sub>2</sub></td>
+                        </tr>
+                        <tr>
+                            <td>Producto Útil</td>
+                            <td>Calor para cocinar</td>
+                            <td>Energía Química (ATP)</td>
+                        </tr>
+                        <tr>
+                            <td>Desechos</td>
+                            <td>Humo y Ceniza</td>
+                            <td>CO<sub>2</sub> y Agua H<sub>2</sub>O</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Pausas Activas 1-5 -->
+            <div class="pause-active">
+                <h4>Pausa Activa 1-5 (Retos de Campo)</h4>
+                <p>Realiza las siguientes actividades en tu cuaderno físico:</p>
+                <ol>
+                    <li>Reflexiona: ¿Qué pasaría con la producción de café si las células de la planta no tuvieran mitocondrias?</li>
+                    <li>Dibuja un fogón de leña y al lado una mitocondria, señalando sus similitudes.</li>
+                    <li>Mapa mental sobre los insumos y productos de la respiración celular.</li>
+                    <li>Crea un cuadro comparativo entre una mitocondria y un motor de tractor.</li>
+                    <li>Diseña un diagrama de flujo de cómo el sol llega a ser energía en tu cuerpo (Sol -> Planta -> Alimento -> Mitocondria).</li>
+                </ol>
+                <button class="primary" onclick="markActivityDone(1)">¡Ya lo hice en mi cuaderno!</button>
+            </div>
+
+            <!-- Pregunta ICFES con Gráfica -->
+            <section class="section-card">
+                <h3>Interpretación de Datos: Producción de ATP</h3>
+                <div class="svg-container">
+                    <!-- Gráfica de Barras SVG -->
+                    <svg width="400" height="250" viewBox="0 0 400 250">
+                        <line x1="50" y1="200" x2="350" y2="200" stroke="#000" stroke-width="2"/>
+                        <line x1="50" y1="200" x2="50" y2="20" stroke="#000" stroke-width="2"/>
+                        <!-- Barras -->
+                        <rect x="80" y="100" width="40" height="100" fill="#2e7d32">
+                             <title>Hoja de Café</title>
+                        </rect>
+                        <rect x="160" y="60" width="40" height="140" fill="#fbc02d">
+                            <title>Músculo de Ganado</title>
+                        </rect>
+                        <rect x="240" y="140" width="40" height="60" fill="#6d4c41">
+                            <title>Raíz de Cítrico</title>
+                        </rect>
+                        <text x="20" y="110" transform="rotate(-90 20,110)" font-size="12">Cantidad de Mitocondrias</text>
+                        <text x="75" y="220" font-size="10">Hoja Café</text>
+                        <text x="155" y="220" font-size="10">Músculo Vaca</text>
+                        <text x="235" y="220" font-size="10">Raíz Cítrico</text>
+                    </svg>
+                </div>
+                <p><strong>Pregunta tipo ICFES:</strong> Teniendo en cuenta la gráfica que representa la densidad mitocondrial en diferentes tejidos de Pueblo Rico, ¿cuál de las siguientes conclusiones es correcta?</p>
+                <div class="quiz-item">
+                    <button onclick="checkIcfes('a', this)">A. Las raíces necesitan más energía que los músculos porque absorben agua.</button>
+                    <button onclick="checkIcfes('b', this)">B. Los tejidos con mayor actividad física (como los músculos del ganado) poseen más mitocondrias para suplir su alta demanda energética.</button>
+                    <button onclick="checkIcfes('c', this)">C. Todas las partes de los seres vivos de la vereda tienen la misma cantidad de mitocondrias.</button>
+                    <div id="icfes-fb" class="feedback"></div>
+                </div>
+            </section>
+
+            <!-- Cuerpo Deductivo y Animación -->
+            <section class="section-card">
+                <h2>Cuerpo Deductivo: Las Leyes de la Bioenergética</h2>
+                <div class="deductive-text">
+                    <p>Entrar en la profundidad de la mitocondria es como estudiar la ingeniería de una central eléctrica. Este organelo posee una estructura de doble membrana. La membrana externa es lisa y actúa como un tamiz, pero la membrana interna está plegada en crestas. ¿Por qué plegada? Porque en la Vereda Pueblo Rico sabemos que para sembrar más café en el mismo terreno, a veces usamos laderas; los pliegues aumentan la superficie de trabajo sin ocupar más espacio. En estos pliegues reside la ATP sintasa, la proteína encargada de "ensamblar" la energía.</p>
+                    
+                    <p>El principio técnico fundamental es la quimiosmosis. Es un proceso donde se crea un gradiente de protones, similar a cuando acumulamos agua en un tanque en la parte alta de la finca para que baje con fuerza por la manguera. Los electrones que vienen de la glucosa se mueven por la membrana, bombeando protones hacia afuera. Cuando estos protones regresan al interior de la matriz mitocondrial a través de un canal especial, hacen girar una "turbina" molecular que produce ATP.</p>
+
+                    <p>Es fascinante observar que este proceso es termodinámico. Nada se crea de la nada; la energía química almacenada en los enlaces de los carbohidratos producidos por el sol y el suelo de Quimbaya simplemente cambia de forma. Si la mitocondria fallara, la célula entraría en un estado de apoptosis o muerte celular programada. En términos de nuestra vereda, es como si la finca se quedara sin trabajadores y sin herramientas: eventualmente, la producción se detiene y la finca "muere".</p>
+
+                    <p>En el sector citrícola de nuestra región, la producción de vitamina C y azúcares depende directamente de la eficiencia mitocondrial durante las noches, cuando la planta no hace fotosíntesis pero sigue respirando. Una temperatura nocturna adecuada en Pueblo Rico permite que este proceso sea óptimo. Si hace demasiado calor, la planta respira demasiado rápido y "quema" sus ahorros de azúcar, afectando el sabor de la naranja y el limón.</p>
+
+                    <p>Por último, debemos considerar el papel del oxígeno como aceptor final de electrones. Sin oxígeno, la cadena se detiene, el "fogón" se apaga y se produce ácido láctico (fermentación), que en los seres humanos causa dolor muscular después de una caminata por los cafetales. La respiración aeróbica, mediada por la mitocondria, es 18 veces más eficiente que la anaeróbica. Por eso, el aire puro de nuestras montañas es el mejor aliado de la vida.</p>
+                </div>
+
+                <h3>Simulación: Cadena de Transporte de Electrones</h3>
+                <p>Interactúa con la simulación. Observa cómo los electrones (puntos amarillos) generan energía (chispas blancas) al contacto con el oxígeno.</p>
+                <canvas id="energyCanvas" width="600" height="300"></canvas>
+            </section>
+
+            <!-- Pausas Activas 6-10 -->
+            <div class="pause-active">
+                <h4>Pausa Activa 6-10 (Retos de Profundización)</h4>
+                <p>Realiza en tu cuaderno:</p>
+                <ol>
+                    <li>Construye un mapa conceptual sobre la estructura interna de la mitocondria (Matriz, Crestas, Membranas).</li>
+                    <li>Observa una vaca o una planta en tu entorno y escribe una tabla de datos de qué "combustible" crees que está usando hoy.</li>
+                    <li>Dibuja un esquema técnico de la ATP Sintasa como si fuera una turbina de agua.</li>
+                    <li>Escribe una síntesis de 10 renglones sobre por qué la mitocondria es vital para el turismo en Quimbaya.</li>
+                    <li>Problema: Si una mitocondria produce 36 ATP por cada molécula de glucosa, ¿cuántos ATP se producen con 10 moléculas?</li>
+                </ol>
+                <button class="primary" onclick="markActivityDone(2)">¡Ya lo hice en mi cuaderno!</button>
+            </div>
+
+            <!-- Evaluación Final -->
+            <section class="section-card">
+                <h2>Evaluación Final: Taller de Expertos de Pueblo Rico</h2>
+                
+                <div id="final-test">
+                    <!-- Selección Múltiple -->
+                    <div class="test-block">
+                        <p><strong>1. ¿Cuál es la función principal de la mitocondria?</strong></p>
+                        <select id="q1">
+                            <option value="">Selecciona...</option>
+                            <option value="a">Almacenar agua de lluvia</option>
+                            <option value="b">Respiración celular y producción de ATP</option>
+                            <option value="c">Dar color verde a las hojas de café</option>
+                        </select>
+                    </div>
+
+                    <div class="test-block">
+                        <p><strong>2. ¿Qué gas necesitan las mitocondrias de la vaca para funcionar?</strong></p>
+                        <select id="q2">
+                            <option value="">Selecciona...</option>
+                            <option value="a">Dióxido de carbono</option>
+                            <option value="b">Oxígeno</option>
+                            <option value="c">Nitrógeno</option>
+                        </select>
+                    </div>
+
+                    <hr>
+
+                    <!-- Respuestas Abiertas Anti-Fraude -->
+                    <div class="test-block">
+                        <p><strong>3. Explica con tus palabras la analogía entre el fogón de leña de una finca y la mitocondria:</strong></p>
+                        <p class="warning-text" id="warn-3">¡Detección de copia o velocidad inhumana! Escribe con naturalidad.</p>
+                        <textarea id="open-1" class="anti-copy" placeholder="Mínimo 10 palabras..."></textarea>
+                    </div>
+
+                    <div class="test-block">
+                        <p><strong>4. ¿Por qué se dice que la mitocondria es la central energética de la célula?</strong></p>
+                        <p class="warning-text" id="warn-4">¡Detección de copia o velocidad inhumana! Escribe con naturalidad.</p>
+                        <textarea id="open-2" class="anti-copy" placeholder="Mínimo 10 palabras..."></textarea>
+                    </div>
+                </div>
+
+                <button class="primary" onclick="submitFinal()">Finalizar y Evaluar</button>
+            </section>
+
+            <!-- Resultados -->
+            <section id="result-section" class="section-card" style="display:none;">
+                <h2>Resultados de tu Aprendizaje</h2>
+                <div id="final-feedback-text"></div>
+                <button class="primary" onclick="downloadResults()">Descargar Resultados (.txt)</button>
+            </section>
+
+        </div>
+    </div>
+
+    <script>
+        // --- Estado Global ---
+        let userData = {
+            name: "",
+            lastname: "",
+            score: 0,
+            progress: 0,
+            activitiesDone: 0,
+            keystrokes: []
+        };
+
+        const APP_ID = "mitocondria_pueblo_rico_v1";
+
+        // --- Manejo de Usuario ---
+        document.getElementById('start-btn').addEventListener('click', () => {
+            const n = document.getElementById('user-name').value.trim();
+            const l = document.getElementById('user-lastname').value.trim();
+            
+            if(n && l) {
+                userData.name = n;
+                userData.lastname = l;
+                document.getElementById('display-user').innerText = `${n} ${l}`;
+                document.getElementById('welcome-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                initCanvas();
+            } else {
+                alert("Por favor ingresa tus nombres y apellidos.");
+            }
+        });
+
+        // --- Gamificación ---
+        function updateProgress(inc) {
+            userData.progress = Math.min(userData.progress + inc, 100);
+            document.getElementById('progress-bar').style.width = userData.progress + "%";
+            
+            if(userData.progress >= 30) document.getElementById('icon-1').classList.add('unlocked');
+            if(userData.progress >= 60) document.getElementById('icon-2').classList.add('unlocked');
+            if(userData.progress >= 90) document.getElementById('icon-3').classList.add('unlocked');
+            
+            updateScoreDisplay();
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('score-display').innerText = `Puntos: ${(userData.score).toFixed(1)}/5.0`;
+        }
+
+        // --- Actividades ---
+        function markActivityDone(type) {
+            updateProgress(15);
+            userData.score += 0.5;
+            alert("¡Excelente! Actividad registrada en tu progreso.");
+        }
+
+        function checkPre(q, ans, btn) {
+            const fb = document.getElementById(`pre-${q}-fb`);
+            fb.style.display = "block";
+            const correctOnes = {1: 'b', 2: 'a', 3: 'b'};
+            
+            if(ans === correctOnes[q]) {
+                fb.innerText = "¡Correcto! Entiendes muy bien tu entorno.";
+                fb.className = "feedback correct";
+                userData.score += 0.2;
+                updateProgress(5);
+            } else {
+                fb.innerText = "Casi, pero piensa en cómo funciona el campo realmente.";
+                fb.className = "feedback incorrect";
+            }
+            btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+        }
+
+        function checkIcfes(ans, btn) {
+            const fb = document.getElementById('icfes-fb');
+            fb.style.display = "block";
+            if(ans === 'b') {
+                fb.innerText = "¡Excelente análisis! La demanda de energía define la cantidad de mitocondrias.";
+                fb.className = "feedback correct";
+                userData.score += 0.5;
+                updateProgress(10);
+            } else {
+                fb.innerText = "Incorrecto. Observa la altura de las barras y piensa en el movimiento.";
+                fb.className = "feedback incorrect";
+            }
+            btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+        }
+
+        // --- Anti-Fraude ---
+        const textAreas = document.querySelectorAll('textarea');
+        textAreas.forEach(ta => {
+            ta.addEventListener('paste', e => e.preventDefault());
+            ta.addEventListener('drop', e => e.preventDefault());
+            ta.addEventListener('keydown', e => {
+                if((e.ctrlKey || e.metaKey) && e.key === 'v') e.preventDefault();
+                
+                // Registro de cadencia
+                userData.keystrokes.push({time: Date.now(), id: ta.id});
+            });
+        });
+
+        function validateHuman(text, id) {
+            const strokes = userData.keystrokes.filter(s => s.id === id);
+            if(strokes.length < 5) return true; // Muy corto para evaluar
+            
+            let totalTime = strokes[strokes.length-1].time - strokes[0].time;
+            let avgSpeed = totalTime / text.length;
+
+            if(avgSpeed < 30) { // Menos de 30ms por caracter es inhumano (pegar oculto o bot)
+                document.getElementById('warn-' + id.split('-')[1]).style.display = 'block';
+                return false;
+            }
+            return true;
+        }
+
+        // --- Animación Canvas ---
+        function initCanvas() {
+            const canvas = document.getElementById('energyCanvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = (Math.random() - 0.5) * 2;
+                    this.color = `hsl(${Math.random()*40 + 20}, 100%, 50%)`;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if(this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 3, 0, Math.PI*2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    // Efecto brillo
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.color;
+                }
+            }
+
+            for(let i=0; i<50; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Dibujar "Membrana"
+                ctx.strokeStyle = '#2e7d32';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.moveTo(0, 150);
+                for(let i=0; i<canvas.width; i+=20) {
+                    ctx.lineTo(i, 150 + Math.sin(i*0.05)*30);
+                }
+                ctx.stroke();
+
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // --- Finalización ---
+        function submitFinal() {
+            let finalPoints = 0;
+            if(document.getElementById('q1').value === 'b') finalPoints += 1;
+            if(document.getElementById('q2').value === 'b') finalPoints += 1;
+
+            const t1 = document.getElementById('open-1').value;
+            const t2 = document.getElementById('open-2').value;
+
+            const v1 = validateHuman(t1, 'open-1');
+            const v2 = validateHuman(t2, 'open-2');
+
+            if(v1 && t1.split(' ').length >= 10) finalPoints += 1.5;
+            if(v2 && t2.split(' ').length >= 10) finalPoints += 1.5;
+
+            userData.score = Math.min(userData.score + finalPoints, 5.0);
+            updateScoreDisplay();
+
+            const resSection = document.getElementById('result-section');
+            resSection.style.display = 'block';
+            
+            let feedback = `<h3>¡Buen trabajo, ${userData.name}!</h3>`;
+            if(userData.score < 3) {
+                feedback += "<p>Ruta de Fortalecimiento: Te sugerimos repasar la analogía del fogón y volver a leer sobre los productos de la respiración celular.</p>";
+            } else {
+                feedback += "<p>Ruta de Fortalecimiento: ¡Eres un experto en bioenergética rural! Puedes investigar sobre cómo el cambio climático afecta las mitocondrias de los cafetales.</p>";
+            }
+            document.getElementById('final-feedback-text').innerHTML = feedback;
+            resSection.scrollIntoView();
+        }
+
+        function downloadResults() {
+            const content = `
+REPORTES DE APRENDIZAJE - OVA MITOCONDRIA
+------------------------------------------
+Estudiante: ${userData.lastname}, ${userData.name}
+Vereda: Pueblo Rico, Quimbaya
+Nota Final: ${userData.score.toFixed(1)} / 5.0
+Progreso: ${userData.progress}%
+
+RESPUESTAS ABIERTAS:
+1. Analogía: ${document.getElementById('open-1').value}
+2. Central Energética: ${document.getElementById('open-2').value}
+
+VALIDACIÓN TÉCNICA:
+Cadencia de tecleo registrada: OK
+Intento de fraude: No detectado
+------------------------------------------
+Generado automáticamente por el OVA v1.0
+            `;
+            const blob = new Blob([content], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Resultados_${userData.lastname}.txt`;
+            a.click();
+        }
+
+    </script>
+</body>
+</html>

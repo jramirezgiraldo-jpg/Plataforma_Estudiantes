@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión Vital: Rescate en la Selva de Plátano</title>
+    <style>
+        :root {
+            --bg-space: #020617;
+            --panel-jungle: #064e3b;
+            --panel-inner: #1e293b;
+            --primary: #3b82f6; /* Color Moto / Espacio */
+            --success: #10b981; /* Color Selva / Salud */
+            --warning: #f59e0b; /* Color Energía */
+            --danger: #ef4444;
+            --text-bright: #f8fafc;
+            --text-dim: #94a3b8;
+            --gold: #fbbf24;
+            --silver: #cbd5e1;
+            --iron: #b45309;
+            --copper: #d97706;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+
+        body {
+            background-color: var(--bg-space);
+            color: var(--text-bright);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(90deg, #0f172a, #064e3b);
+            padding: 1.2rem;
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .container {
+            flex: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            width: 100%;
+        }
+
+        .progress-container {
+            width: 100%;
+            background: #334155;
+            height: 12px;
+            border-radius: 6px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .mission-panel {
+            display: none;
+            background: var(--panel-inner);
+            border-radius: 24px;
+            padding: 2.5rem;
+            border: 2px solid #334155;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .mission-panel.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { color: var(--primary); text-transform: uppercase; margin-bottom: 1rem; font-size: 1.8rem; border-left: 5px solid var(--success); padding-left: 15px; }
+        p { line-height: 1.6; font-size: 1.2rem; margin-bottom: 1rem; }
+        .badge { background: #0f172a; color: var(--success); padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; border: 1px solid var(--success); margin-bottom: 1rem; display: inline-block; }
+        .highlight { color: var(--warning); font-weight: bold; }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1.2rem 2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 0px #1d4ed8;
+            margin: 10px 0;
+        }
+
+        button:hover { transform: translateY(-2px); box-shadow: 0 7px 0px #1d4ed8; }
+        button:active { transform: translateY(2px); box-shadow: 0 2px 0px #1d4ed8; }
+        button:disabled { background: #475569; box-shadow: none; cursor: not-allowed; opacity: 0.6; }
+
+        .checklist-item {
+            background: rgba(15, 23, 42, 0.5);
+            border: 2px solid #334155;
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .checklist-item.checked { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        .check-box { 
+            min-width: 35px; height: 35px; 
+            border: 3px solid #64748b; border-radius: 8px; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+        .checked .check-box { background: var(--success); border-color: var(--success); color: white; }
+        .checked .check-box::after { content: "✓"; }
+
+        .timer-box {
+            background: #020617;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid var(--warning);
+            margin: 1rem 0;
+        }
+        .timer-val { font-family: monospace; font-size: 3.5rem; color: var(--warning); font-weight: bold; }
+
+        .analogia-card {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-top: 4px solid var(--primary);
+        }
+
+        /* Modal Persistencia */
+        #modalRestore {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.95); z-index: 100;
+            display: none; align-items: center; justify-content: center;
+        }
+
+        .quiz-option {
+            background: #0f172a;
+            border: 2px solid #334155;
+            padding: 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        .quiz-option:hover { border-color: var(--primary); }
+        .quiz-option.correct { border-color: var(--success); background: rgba(16, 185, 129, 0.2); }
+        .quiz-option.incorrect { border-color: var(--danger); background: rgba(239, 68, 68, 0.2); }
+
+        .element-card {
+            width: 200px; height: 260px;
+            border: 6px solid;
+            margin: 2rem auto;
+            border-radius: 16px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: #020617;
+        }
+        .card-au { border-color: var(--gold); color: var(--gold); }
+        .card-ag { border-color: var(--silver); color: var(--silver); }
+        .card-fe { border-color: var(--iron); color: var(--iron); }
+
+        .breathe-circle {
+            width: 150px; height: 150px;
+            background: radial-gradient(circle, var(--primary), transparent);
+            border-radius: 50%;
+            margin: 2rem auto;
+            animation: breathe 6s infinite ease-in-out;
+            border: 4px solid var(--primary);
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>PROYECTO: SISTEMA VITAL 1.0</h1>
+    <div class="progress-container" id="progCont">
+        <div class="progress-bar" id="progBar"></div>
+    </div>
+</header>
+
+<div id="modalRestore">
+    <div style="background: var(--panel-inner); padding: 3rem; border-radius: 20px; text-align: center; border: 3px solid var(--primary); max-width: 450px;">
+        <h2>SISTEMA RECUPERADO</h2>
+        <p>Hola <span id="resName" class="highlight"></span>, los registros indican que estás en la <span id="resMission" class="highlight"></span>.</p>
+        <button onclick="app.resume()" style="width:100%; background:var(--success); box-shadow: 0 5px 0 #065f46;">Continuar Operación</button>
+        <button onclick="app.reset()" style="width:100%; background:var(--danger); box-shadow: 0 5px 0 #991b1b; margin-top:10px;">Reiniciar Todo</button>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- LOGIN -->
+    <section id="mission-0" class="mission-panel active">
+        <div class="badge">Autenticación de Ingeniero</div>
+        <h2>Inicio de Sesión</h2>
+        <p>Santiago, ingresa tu nombre para activar los protocolos de la selva y el espacio.</p>
+        <input type="text" id="userName" style="width:100%; padding:1rem; border-radius:10px; border:none; margin-bottom:1.5rem; font-size:1.2rem;" placeholder="Escribe tu nombre...">
+        <button onclick="app.start()" style="width:100%">Activar Motores Vitales</button>
+    </section>
+
+    <!-- MISION 1: INTRO (20 min) -->
+    <section id="mission-1" class="mission-panel">
+        <div class="badge">Misión 1: El Despegue Digital</div>
+        <h2>El Equipo Celular</h2>
+        <p>Hola <span class="uName highlight"></span>. Hoy eres el líder de un equipo de rescate microscópico.</p>
+        
+        <div class="analogia-card">
+            <p><strong>Analogía Espacial:</strong> Una célula es como una <strong>Nave Espacial</strong>. El núcleo es el Capitán, y las mitocondrias son el combustible de alto octanaje (como el de una <strong>Moto de 1000cc</strong>).</p>
+        </div>
+
+        <p>Tu misión: Ayudar a una planta de plátano enferma en la selva. Para sanarla, las células deben transportar energía, procesar nutrientes y finalmente <strong>dividirse (Mitosis)</strong> para crear tejido nuevo y sano.</p>
+        
+        <button onclick="app.goTo(2)" style="width:100%">Ir al Taller del Experto →</button>
+    </section>
+
+    <!-- MISION 2: CUADERNO (75 min) -->
+    <section id="mission-2" class="mission-panel">
+        <div class="badge">Misión 2: El Taller del Experto (Físico)</div>
+        <h2>Reto de Alta Intensidad: Historieta Vital</h2>
+        <p><span class="uName"></span>, abre tu cuaderno. Debes completar estos 3 sub-retos físicos para desbloquear el simulador final.</p>
+        
+        <div class="timer-box">
+            <div class="timer-val" id="timerM2">75:00</div>
+            <p style="color:var(--text-dim);">TIEMPO DE TRABAJO EN CUADERNO</p>
+        </div>
+
+        <div id="checklist">
+            <div class="checklist-item" id="c0" onclick="app.toggleCheck(0)">
+                <div class="check-box"></div>
+                <div>
+                    <strong>Sub-Reto A: El Manifiesto (Escritura)</strong>
+                    <p style="font-size:0.9rem; margin:0; color:var(--text-dim);">Escribe el título: "Rescate en la Selva de Plátano". Resume en 5 líneas cómo la energía de la Mitocondria permite que la célula se divida.</p>
+                </div>
+            </div>
+
+            <div class="checklist-item locked" id="c1" onclick="app.toggleCheck(1)">
+                <div class="check-box"></div>
+                <div>
+                    <strong>Sub-Reto B: Planos de Acción (Dibujo)</strong>
+                    <p style="font-size:0.9rem; margin:0; color:var(--text-dim);">Crea una historieta de 4 viñetas donde las organelas (Núcleo, Mitocondria, Ribosoma) viajan en motos para llevar nutrientes a la planta enferma.</p>
+                </div>
+            </div>
+
+            <div class="checklist-item locked" id="c2" onclick="app.toggleCheck(2)">
+                <div class="check-box"></div>
+                <div>
+                    <strong>Sub-Reto C: La Gran División (Maqueta/Esquema)</strong>
+                    <p style="font-size:0.9rem; margin:0; color:var(--text-dim);">Dibuja un diagrama de flujo que muestre: 1. Nutrientes Entrando -> 2. Energía Generada -> 3. Mitosis (División celular).</p>
+                </div>
+            </div>
+        </div>
+
+        <button id="btnM2" onclick="app.goTo(3)" disabled style="width:100%">Validar Trabajo Físico ✓</button>
+    </section>
+
+    <!-- MISION 3: PAUSA (15 min) -->
+    <section id="mission-3" class="mission-panel">
+        <div class="badge">Misión 3: Pit Stop (Pausa)</div>
+        <h2>Modo Hibernación: Enfriando el Motor</h2>
+        <p style="text-align:center;">Has completado el taller más duro. Tu "motor" necesita enfriarse para la prueba final.</p>
+        
+        <div class="timer-box" style="border-color:var(--success)">
+            <div class="timer-val" id="timerM3" style="color:var(--success)">15:00</div>
+        </div>
+
+        <div class="breathe-circle"></div>
+        <p style="text-align:center; font-weight:bold;" id="breatheText">INHALA PROFUNDO...</p>
+
+        <button onclick="app.goTo(4)" style="width:100%; background:none; border:2px solid var(--primary);">Motor Listo. Ir a Prueba de Pista →</button>
+    </section>
+
+    <!-- MISION 4: QUIZ (45 min) -->
+    <section id="mission-4" class="mission-panel">
+        <div class="badge">Misión 4: Prueba de Pista Digital</div>
+        <h2>Simulador de Diagnóstico Celular</h2>
+        <div id="quizContainer"></div>
+        <button id="btnM4" onclick="app.goTo(5)" disabled style="display:none; width:100%;">Finalizar Misión y Ver Resultados</button>
+    </section>
+
+    <!-- MISION 5: PODIO -->
+    <section id="mission-5" class="mission-panel">
+        <div class="badge">Misión 5: El Podio</div>
+        <h2>Resultados de la Operación</h2>
+        <div style="text-align:center;">
+            <p>Nota Final:</p>
+            <h1 style="font-size:5rem; color:var(--warning);" id="finalScore">0.0</h1>
+        </div>
+
+        <div id="elementDisplay" class="element-card">
+            <h1 id="elSym" style="font-size:4rem;">?</h1>
+            <p id="elName" style="font-weight:bold;"></p>
+        </div>
+
+        <p id="finalFeedback" style="text-align:center; font-style:italic; padding:1rem;"></p>
+        
+        <button onclick="app.export()" style="width:100%; background:var(--success);">📥 Descargar Informe de Misión</button>
+    </section>
+
+</div>
+
+<script>
+    const app = {
+        state: {
+            name: "",
+            mission: 0,
+            checks: [false, false, false],
+            m2Time: 75 * 60,
+            m3Time: 15 * 60,
+            quizResults: [null, null, null, null],
+            score: 0
+        },
+
+        questions: [
+            { q: "¿Qué organela proporciona la 'gasolina' (energía) para que la planta de plátano se recupere?", a: ["Vacuola", "Mitocondria", "Pared Celular"], c: 1 },
+            { q: "Si la célula fuera un Dinosaurio T-Rex, el Núcleo sería:", a: ["Los dientes", "El Cerebro (Capitán)", "La cola"], c: 1 },
+            { q: "Para que la planta crezca y reemplace hojas enfermas, ¿qué proceso debe ocurrir?", a: ["Mitosis (División)", "Hibernación", "Evaporación"], c: 0 },
+            { q: "¿En qué lugar de la célula se fabrican las proteínas (materiales de construcción)?", a: ["Membrana", "Ribosomas", "Espacio Exterior"], c: 1 }
+        ],
+
+        init() {
+            const saved = localStorage.getItem('santiago_vital_v1');
+            if (saved) {
+                this.state = JSON.parse(saved);
+                document.getElementById('resName').innerText = this.state.name;
+                document.getElementById('resMission').innerText = "Misión " + this.state.mission;
+                document.getElementById('modalRestore').style.display = 'flex';
+            }
+            setInterval(() => this.updateBreathe(), 3000);
+        },
+
+        start() {
+            const n = document.getElementById('userName').value.trim();
+            if (!n) return;
+            this.state.name = n;
+            this.state.mission = 1;
+            this.save();
+            this.render();
+        },
+
+        resume() {
+            document.getElementById('modalRestore').style.display = 'none';
+            this.render();
+        },
+
+        reset() {
+            localStorage.removeItem('santiago_vital_v1');
+            location.reload();
+        },
+
+        save() {
+            localStorage.setItem('santiago_vital_v1', JSON.stringify(this.state));
+        },
+
+        goTo(m) {
+            this.state.mission = m;
+            this.save();
+            this.render();
+            window.scrollTo(0,0);
+        },
+
+        render() {
+            document.querySelectorAll('.mission-panel').forEach(p => p.classList.remove('active'));
+            const current = document.getElementById('mission-' + this.state.mission);
+            if(current) current.classList.add('active');
+
+            document.querySelectorAll('.uName').forEach(el => el.innerText = this.state.name);
+            
+            // UI Progress
+            const pc = document.getElementById('progCont');
+            const pb = document.getElementById('progBar');
+            pc.style.display = this.state.mission > 0 ? 'block' : 'none';
+            pb.style.width = (this.state.mission / 5 * 100) + '%';
+
+            if(this.state.mission === 2) this.runTimer('m2', 'timerM2');
+            if(this.state.mission === 3) this.runTimer('m3', 'timerM3');
+            if(this.state.mission === 4) this.renderQuiz();
+            if(this.state.mission === 5) this.calculateFinal();
+
+            this.updateCheckUI();
+        },
+
+        runTimer(key, displayId) {
+            if(this.interval) clearInterval(this.interval);
+            this.interval = setInterval(() => {
+                if(this.state[key+'Time'] > 0) {
+                    this.state[key+'Time']--;
+                    this.save();
+                    const m = Math.floor(this.state[key+'Time'] / 60);
+                    const s = this.state[key+'Time'] % 60;
+                    const el = document.getElementById(displayId);
+                    if(el) el.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+                }
+            }, 1000);
+        },
+
+        toggleCheck(i) {
+            // Lógica de liberación secuencial
+            if(i > 0 && !this.state.checks[i-1]) return;
+            
+            this.state.checks[i] = !this.state.checks[i];
+            this.save();
+            this.updateCheckUI();
+        },
+
+        updateCheckUI() {
+            this.state.checks.forEach((c, i) => {
+                const el = document.getElementById('c' + i);
+                if(el) {
+                    c ? el.classList.add('checked') : el.classList.remove('checked');
+                    // Desbloquear el siguiente
+                    if(i < 2) {
+                        const next = document.getElementById('c' + (i+1));
+                        if(c) next.classList.remove('locked');
+                    }
+                }
+            });
+            const btn = document.getElementById('btnM2');
+            if(btn) btn.disabled = !this.state.checks.every(v => v === true);
+        },
+
+        updateBreathe() {
+            const t = document.getElementById('breatheText');
+            if(t) t.innerText = t.innerText.includes("INHALA") ? "EXHALA LENTAMENTE..." : "INHALA PROFUNDO...";
+        },
+
+        renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            const currentIdx = this.state.quizResults.findIndex(r => r === null);
+            
+            if(currentIdx === -1) {
+                container.innerHTML = "<h2 style='text-align:center;'>SIMULACIÓN TERMINADA</h2><p style='text-align:center;'>Sistemas analizados correctamente.</p>";
+                document.getElementById('btnM4').style.display = 'block';
+                document.getElementById('btnM4').disabled = false;
+                return;
+            }
+
+            const q = this.questions[currentIdx];
+            let html = `<h3>Pregunta ${currentIdx + 1}:</h3><p>${q.q}</p>`;
+            q.a.forEach((opt, i) => {
+                html += `<div class="quiz-option" onclick="app.answerQuiz(${currentIdx}, ${i})">${opt}</div>`;
+            });
+            container.innerHTML = html;
+        },
+
+        answerQuiz(qIdx, aIdx) {
+            const correct = this.questions[qIdx].c === aIdx;
+            this.state.quizResults[qIdx] = correct;
+            this.save();
+            
+            const options = document.querySelectorAll('.quiz-option');
+            options[aIdx].classList.add(correct ? 'correct' : 'incorrect');
+            
+            setTimeout(() => this.renderQuiz(), 800);
+        },
+
+        calculateFinal() {
+            const checkPoints = (this.state.checks.filter(c => c).length / 3) * 2.5;
+            const quizPoints = (this.state.quizResults.filter(r => r).length / 4) * 2.5;
+            const total = (checkPoints + quizPoints).toFixed(1);
+            this.state.score = total;
+
+            document.getElementById('finalScore').innerText = total;
+            const sym = document.getElementById('elSym');
+            const name = document.getElementById('elName');
+            const card = document.getElementById('elementDisplay');
+            const feed = document.getElementById('finalFeedback');
+
+            card.className = "element-card";
+            if(total >= 4.6) {
+                card.classList.add('card-au'); sym.innerText = "Au"; name.innerText = "ORO (Excelente)";
+                feed.innerText = "¡Líder Supremo! Has salvado la selva de plátano. Tu cerebro es tan potente como un T-Rex y tu trabajo tan brillante como el oro.";
+            } else if(total >= 3.6) {
+                card.classList.add('card-ag'); sym.innerText = "Ag"; name.innerText = "PLATA (Muy Bien)";
+                feed.innerText = "¡Gran trabajo, Santiago! La planta está sanando gracias a tus planos. Eres veloz y eficiente como una moto de carreras.";
+            } else {
+                card.classList.add('card-fe'); sym.innerText = "Fe"; name.innerText = "HIERRO (Buen Esfuerzo)";
+                feed.innerText = "Has demostrado resistencia. Como el hierro, tu conocimiento es sólido. ¡Sigue practicando para alcanzar el oro!";
+            }
+        },
+
+        export() {
+            const resultText = `
+INFORME DE MISIÓN VITAL
+-----------------------
+ESTUDIANTE: ${this.state.name}
+FECHA: ${new Date().toLocaleDateString()}
+TEMA: Sistemas Vitales y División Celular
+
+DESEMPEÑO FÍSICO (Cuaderno):
+- Escritura: ${this.state.checks[0] ? 'SÍ' : 'NO'}
+- Historieta: ${this.state.checks[1] ? 'SÍ' : 'NO'}
+- Diagrama Mitosis: ${this.state.checks[2] ? 'SÍ' : 'NO'}
+
+DESEMPEÑO DIGITAL:
+- Aciertos Quiz: ${this.state.quizResults.filter(r => r).length} / 4
+
+RESULTADO FINAL:
+- NOTA: ${this.state.score}
+- RANGO: ${this.state.score >= 4.6 ? 'Oro' : this.state.score >= 3.6 ? 'Plata' : 'Hierro'}
+
+COMENTARIO: Misión completada satisfactoriamente.
+-----------------------
+Validado por: Sistema de Neuro-Aprendizaje
+            `;
+            const blob = new Blob([resultText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Informe_Mision_Vital_${this.state.name}.txt`;
+            a.click();
+        }
+    };
+
+    window.onload = () => app.init();
+</script>
+</body>
+</html>

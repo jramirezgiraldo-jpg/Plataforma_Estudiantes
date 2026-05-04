@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Ósmosis en la Cocina</title>
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #10b981;
+            --secondary-dark: #059669;
+            --accent: #f59e0b;
+            --bg-light: #f0f9ff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        /* Utilidades */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 1rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .p-2 { padding: 1rem; }
+        
+        /* Pantalla de Login */
+        #login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 3rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .login-card h1 {
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .login-card p {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            width: 100%;
+        }
+
+        .btn:hover { background-color: var(--primary-dark); }
+        .btn:active { transform: scale(0.98); }
+        .btn-success { background-color: var(--secondary); }
+        .btn-success:hover { background-color: var(--secondary-dark); }
+        .btn-disabled { background-color: var(--text-light); cursor: not-allowed; }
+
+        /* Contenedor Principal */
+        #app-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-top: 80px; /* Espacio para el navbar fijo */
+            padding-bottom: 40px;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .nav-user {
+            font-weight: bold;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-progress {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-grow: 1;
+            margin: 0 2rem;
+        }
+
+        .progress-bar-bg {
+            background: var(--border);
+            height: 12px;
+            border-radius: 6px;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, var(--secondary), #34d399);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease-out;
+        }
+
+        /* Gamificación: Elemento Químico */
+        .element-badge {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            background: #fffbeb;
+            font-weight: bold;
+            line-height: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .element-badge .symbol { font-size: 1.2rem; color: var(--accent); }
+        .element-badge .number { font-size: 0.6rem; color: var(--text-light); }
+
+        /* Secciones */
+        section {
+            background: var(--white);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        h2 { color: var(--primary-dark); margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+        h3 { color: var(--secondary-dark); margin: 1.5rem 0 1rem 0; }
+        p { margin-bottom: 1.2rem; text-align: justify; font-size: 1.05rem; }
+
+        /* Pausas Activas */
+        .pausa-activa {
+            background: #f8fafc;
+            border-left: 5px solid var(--accent);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        .pausa-activa h4 { color: var(--accent); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;}
+        .pausa-activa button { margin-top: 1rem; width: auto; }
+
+        /* Canvas Animation Container */
+        .canvas-container {
+            width: 100%;
+            background: #0f172a;
+            border-radius: 1rem;
+            overflow: hidden;
+            position: relative;
+            margin: 2rem 0;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        canvas { display: block; width: 100%; height: 400px; cursor: pointer; }
+        .canvas-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .canvas-btn {
+            pointer-events: auto;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            transition: background 0.3s;
+        }
+        .canvas-btn:hover { background: rgba(255,255,255,0.4); }
+        .canvas-overlay-text {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        /* SVG Art Container */
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 1rem;
+        }
+
+        /* Preguntas Interactivas */
+        .question-card {
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        .option-btn {
+            background: var(--white);
+            border: 2px solid var(--border);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        .option-btn:hover:not(:disabled) { border-color: var(--primary); background: var(--bg-light); }
+        .option-btn.correct { background: #dcfce7; border-color: var(--secondary); color: var(--secondary-dark); }
+        .option-btn.incorrect { background: #fee2e2; border-color: var(--danger); color: #b91c1c; }
+        .feedback { margin-top: 1rem; padding: 1rem; border-radius: 0.5rem; display: none; font-weight: 500; }
+        .feedback.success { background: #dcfce7; color: var(--secondary-dark); display: block; }
+        .feedback.error { background: #fee2e2; color: #b91c1c; display: block; }
+
+        /* Preguntas Abiertas */
+        .open-question { margin-bottom: 2rem; }
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            resize: vertical;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+        textarea:focus { outline: none; border-color: var(--primary); }
+        .word-count { font-size: 0.85rem; color: var(--text-light); text-align: right; margin-top: 0.25rem; }
+        .word-count.valid { color: var(--secondary); font-weight: bold; }
+        .word-count.invalid { color: var(--danger); font-weight: bold; }
+
+        /* Resultados */
+        .results-card {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid var(--secondary);
+            text-align: center;
+        }
+        .final-score { font-size: 3rem; font-weight: bold; color: var(--secondary-dark); margin: 1rem 0; }
+
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen">
+        <div class="login-card">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <h1>Laboratorio Virtual</h1>
+            <p>Módulo: Transporte Celular y Ósmosis</p>
+            
+            <div class="input-group">
+                <label for="apellidos">Apellidos:</label>
+                <input type="text" id="apellidos" placeholder="Ej. Pérez Gómez" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="nombres">Nombres:</label>
+                <input type="text" id="nombres" placeholder="Ej. Juan David" autocomplete="off">
+            </div>
+            
+            <button type="button" class="btn" id="btn-ingresar">Ingresar al Laboratorio</button>
+            <p id="login-error" class="hidden" style="color: var(--danger); margin-top: 1rem; margin-bottom: 0; font-size: 0.9rem;">Por favor, completa ambos campos correctamente.</p>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL DEL OVA -->
+    <div id="app-container" class="hidden">
+        
+        <!-- NAVBAR FIJO -->
+        <nav class="navbar">
+            <div class="nav-user">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span id="display-name">Estudiante</span>
+            </div>
+            <div class="nav-progress">
+                <span style="font-size: 0.85rem; font-weight: 600;">Progreso</span>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progress-bar"></div>
+                </div>
+                <span id="progress-text" style="font-size: 0.85rem; font-weight: 600; width: 40px;">0%</span>
+            </div>
+            <div class="element-badge" id="gamification-badge" title="Puntos Acumulados">
+                <span class="number">1</span>
+                <span class="symbol">H</span>
+            </div>
+        </nav>
+
+        <!-- SECCIÓN 1: INICIO -->
+        <section id="sec-inicio">
+            <h2>1. Inicio: El Misterio de la Cocina</h2>
+            <p><strong>Objetivo de Aprendizaje:</strong> Comprender el mecanismo de la ósmosis reconociendo cómo interactúa el agua con las partículas disueltas, a través de la observación de fenómenos cotidianos y la simulación científica.</p>
+            
+            <h3>¿Qué tanto sabes? (Pre-saberes)</h3>
+            <p>Antes de sumergirnos en la ciencia, responde estas tres preguntas basadas en cosas que quizás hayas visto en casa. ¡No te preocupes si te equivocas, estamos aquí para aprender!</p>
+            
+            <div class="question-card" id="pre-q1">
+                <p><strong>1. Si dejas una rodaja de pepino fresco en un plato cubierto con mucha sal por media hora, ¿qué le sucederá?</strong></p>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="checkPre(1, false, this)">A) Se inflará y se pondrá más dura.</button>
+                    <button class="option-btn" onclick="checkPre(1, true, this)">B) Se encogerá y soltará mucha agua en el plato.</button>
+                    <button class="option-btn" onclick="checkPre(1, false, this)">C) Cambiará de color pero mantendrá su forma exacta.</button>
+                </div>
+                <div class="feedback" id="fb-pre-1"></div>
+            </div>
+
+            <div class="question-card" id="pre-q2">
+                <p><strong>2. Cuando haces una sopa de sobre, agregas polvo al agua caliente. En esta mezcla, ¿qué papel juega el agua?</strong></p>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="checkPre(2, true, this)">A) Es el solvente (lo que disuelve).</button>
+                    <button class="option-btn" onclick="checkPre(2, false, this)">B) Es el soluto (lo que es disuelto).</button>
+                    <button class="option-btn" onclick="checkPre(2, false, this)">C) Es una barrera sólida.</button>
+                </div>
+                <div class="feedback" id="fb-pre-2"></div>
+            </div>
+
+            <div class="question-card" id="pre-q3">
+                <p><strong>3. ¿Por qué crees que las plantas se marchitan si no las riegas, pero reviven cuando les pones agua?</strong></p>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="checkPre(3, false, this)">A) Porque el agua empuja a las hojas desde afuera.</button>
+                    <button class="option-btn" onclick="checkPre(3, false, this)">B) Porque las plantas beben agua masticándola.</button>
+                    <button class="option-btn" onclick="checkPre(3, true, this)">C) Porque el agua entra a sus células llenándolas como pequeños globos.</button>
+                </div>
+                <div class="feedback" id="fb-pre-3"></div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: CUERPO INDUCTIVO -->
+        <section id="sec-inductivo">
+            <h2>2. Exploración: Descubriendo el viaje del agua</h2>
+            
+            <p>Imagina que tu cocina es un laboratorio de biología avanzado. Cada vez que preparas una ensalada, haces sopa o cortas vegetales, estás presenciando fuerzas invisibles en acción. La naturaleza tiene una regla de oro: busca siempre el equilibrio. Cuando hablamos de líquidos, esta búsqueda de equilibrio crea movimientos fascinantes que ocurren a nivel microscópico, tan pequeños que no podemos verlos a simple vista, pero cuyos efectos son enormes. Pensemos en una situación común: has preparado una ensalada deliciosa de lechuga y tomate. Se ve crujiente y fresca. Pero cometes el error de ponerle la sal y el aderezo una hora antes de comerla. Cuando regresas, la lechuga está marchita, aguada y hay un charco de líquido en el fondo de la taza. ¿De dónde salió esa agua? Nadie se la echó. La respuesta está dentro de las mismas células de la lechuga.</p>
+
+            <div class="pausa-activa">
+                <h4>✍️ Pausa Activa 1</h4>
+                <p>En tu cuaderno, dibuja dos tazones de ensalada: uno fresco (sin sal) y uno marchito (después de agregar sal). Escribe al lado de dónde crees que salió el agua del segundo tazón.</p>
+                <button type="button" class="btn btn-success" id="btn-pausa-1" onclick="completarPausa(1)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Para entender este misterio, debemos viajar en el tiempo hasta 1748. Un científico francés llamado Jean-Antoine Nollet estaba realizando experimentos curiosos. Tomó una vejiga de cerdo (que es como una bolsa de piel natural), la llenó con vino, la selló bien y la sumergió en un barril lleno de agua pura. Para su sorpresa, después de unas horas, la vejiga empezó a hincharse como un globo a punto de estallar. Nollet descubrió algo increíble: el agua pura de afuera estaba atravesando la piel de la vejiga para entrar a donde estaba el vino. La piel de la vejiga no dejaba salir el vino, pero sí dejaba entrar el agua. A este tipo de barreras selectivas las llamó "membranas semipermeables".</p>
+
+            <div class="pausa-activa">
+                <h4>✍️ Pausa Activa 2</h4>
+                <p>Busca en tu cocina (o dibuja en tu cuaderno) tres objetos que funcionen como "membranas semipermeables" o coladores (ej. un filtro de café). Escribe qué dejan pasar y qué no.</p>
+                <button type="button" class="btn btn-success" id="btn-pausa-2" onclick="completarPausa(2)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Volvamos a nuestra ensalada. Las células de las plantas, como la lechuga o el tomate, están recubiertas por una membrana celular que funciona exactamente igual que la vejiga de cerdo del experimento de Nollet. Dentro de la célula hay agua, proteínas y un poco de sal natural. Afuera de la célula, cuando tú le echas sal de cocina, creas un ambiente extremadamente salado. Aquí entra en juego la regla del equilibrio de la naturaleza: el agua siempre "quiere" ir hacia donde hay más cosas disueltas (más sal) para intentar aguarla y lograr que tanto adentro como afuera haya la misma proporción. Como la sal no puede entrar fácilmente a la célula, es el agua la que debe salir.</p>
+
+            <div class="pausa-activa">
+                <h4>✍️ Pausa Activa 3</h4>
+                <p>Escribe en tu cuaderno la siguiente regla con letras grandes: "EL AGUA SIEMPRE VIAJA HACIA DONDE HAY MÁS SOLUTO (SAL/AZÚCAR) PARA INTENTAR DILUIRLO".</p>
+                <button type="button" class="btn btn-success" id="btn-pausa-3" onclick="completarPausa(3)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Al salir desesperadamente de las células de la lechuga para intentar diluir la montaña de sal que le echaste encima, las células se desinflan. Pierden su presión interna, como un globo al que se le escapa el aire. Por eso la hoja de lechuga pierde su textura crujiente y se vuelve blanda y mustia. Y ese charco de agua en el fondo del plato no es más que el agua pura que vivía dentro de los vegetales. Este viaje del agua a través de una barrera para equilibrar las cosas es lo que los científicos llaman ÓSMOSIS.</p>
+
+            <div class="pausa-activa">
+                <h4>✍️ Pausa Activa 4</h4>
+                <p>Si la ósmosis desinfla vegetales con sal, ¿qué pasaría si ponemos una zanahoria vieja y arrugada en un vaso con agua pura durante la noche? Escribe tu hipótesis en el cuaderno.</p>
+                <button type="button" class="btn btn-success" id="btn-pausa-4" onclick="completarPausa(4)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>La ósmosis no solo arruina ensaladas. Es el mecanismo vital que permite a las raíces de los árboles absorber agua de la tierra. Es la razón por la que nuestros dedos se arrugan cuando estamos mucho tiempo en la piscina, y es el principio detrás de cómo se conservan alimentos como las carnes saladas o las mermeladas muy azucaradas (las bacterias se deshidratan y mueren por ósmosis al intentar sobrevivir en tanta sal o azúcar). Comprender la ósmosis es entender cómo el agua, la molécula de la vida, viaja y da forma al mundo biológico que nos rodea.</p>
+
+            <div class="pausa-activa">
+                <h4>✍️ Pausa Activa 5</h4>
+                <p>Imagina que eres un glóbulo rojo (una célula de tu sangre) flotando en agua pura. Dibuja en tu cuaderno qué te pasaría debido a la ósmosis (Pista: piénsalo como un globo de agua).</p>
+                <button type="button" class="btn btn-success" id="btn-pausa-5" onclick="completarPausa(5)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <hr class="mt-2 mb-2">
+            
+            <h3>Desafío ICFES: Competencia Indagar</h3>
+            <p>Observa detenidamente la siguiente ilustración microscópica creada mediante vectores. Representa dos células vegetales sometidas a ambientes diferentes.</p>
+            
+            <!-- SVG Art: Plasmolisis vs Turgencia -->
+            <div class="svg-container">
+                <svg width="500" height="250" viewBox="0 0 500 250" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Medio Isotónico / Célula Normal (Izquierda) -->
+                    <rect x="50" y="50" width="150" height="150" fill="#e2e8f0" stroke="#64748b" stroke-width="4" rx="10"/>
+                    <rect x="58" y="58" width="134" height="134" fill="#86efac" stroke="#16a34a" stroke-width="2" rx="8"/>
+                    <ellipse cx="125" cy="125" rx="40" ry="30" fill="#14b8a6" opacity="0.6"/> <!-- Vacuola -->
+                    <circle cx="80" cy="80" r="10" fill="#fcd34d"/> <!-- Núcleo -->
+                    <!-- Flechas de agua entrando y saliendo igual -->
+                    <path d="M 125 30 L 125 50" stroke="#0ea5e9" stroke-width="3" marker-end="url(#arrow)"/>
+                    <path d="M 140 50 L 140 30" stroke="#0ea5e9" stroke-width="3" marker-end="url(#arrow)"/>
+                    <text x="125" y="220" font-family="sans-serif" font-size="14" text-anchor="middle" fill="#334155">Célula A (Turgente)</text>
+
+                    <!-- Medio Hipertónico / Célula Plasmolizada (Derecha) -->
+                    <rect x="300" y="50" width="150" height="150" fill="#e2e8f0" stroke="#64748b" stroke-width="4" rx="10"/>
+                    <path d="M 330 80 Q 375 70, 420 80 Q 430 125, 420 170 Q 375 180, 330 170 Q 320 125, 330 80 Z" fill="#86efac" stroke="#16a34a" stroke-width="2"/>
+                    <ellipse cx="375" cy="125" rx="20" ry="15" fill="#14b8a6" opacity="0.6"/> <!-- Vacuola encogida -->
+                    <circle cx="345" cy="100" r="10" fill="#fcd34d"/> <!-- Núcleo -->
+                    <!-- Flechas de agua saliendo -->
+                    <path d="M 375 80 L 375 40" stroke="#0ea5e9" stroke-width="4" marker-end="url(#arrow)"/>
+                    <path d="M 420 125 L 460 125" stroke="#0ea5e9" stroke-width="4" marker-end="url(#arrow)"/>
+                    <path d="M 330 125 L 290 125" stroke="#0ea5e9" stroke-width="4" marker-end="url(#arrow)"/>
+                    
+                    <!-- Sal afuera -->
+                    <circle cx="280" cy="40" r="3" fill="#f43f5e"/><circle cx="290" cy="50" r="3" fill="#f43f5e"/>
+                    <circle cx="470" cy="40" r="3" fill="#f43f5e"/><circle cx="460" cy="50" r="3" fill="#f43f5e"/>
+                    <circle cx="480" cy="180" r="3" fill="#f43f5e"/><circle cx="280" cy="190" r="3" fill="#f43f5e"/>
+                    <circle cx="400" cy="30" r="3" fill="#f43f5e"/><circle cx="350" cy="30" r="3" fill="#f43f5e"/>
+                    
+                    <text x="375" y="220" font-family="sans-serif" font-size="14" text-anchor="middle" fill="#334155">Célula B (Plasmolizada)</text>
+
+                    <!-- Definición de flecha -->
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#0ea5e9" />
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+
+            <div class="question-card" id="icfes-q">
+                <p><strong>De acuerdo con el esquema anterior y lo leído, la Célula B se ha encogido separándose de su pared celular (cuadro gris). ¿Qué se puede inferir sobre el líquido en el que fue sumergida la Célula B?</strong></p>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="checkIcfes('A', this)">A) El líquido era agua pura destilada, forzando a la célula a expulsar sus nutrientes para ensuciarla.</button>
+                    <button class="option-btn" onclick="checkIcfes('B', this)">B) El líquido tenía una altísima concentración de solutos (como sal), obligando al agua a salir de la célula por ósmosis.</button>
+                    <button class="option-btn" onclick="checkIcfes('C', this)">C) El líquido estaba hirviendo, derritiendo la membrana celular desde adentro hacia afuera.</button>
+                    <button class="option-btn" onclick="checkIcfes('D', this)">D) El líquido carecía de oxígeno, haciendo que la célula se asfixiara y perdiera su color verde.</button>
+                </div>
+                <div class="feedback" id="fb-icfes"></div>
+            </div>
+
+        </section>
+
+        <!-- SECCIÓN 3: CUERPO DEDUCTIVO -->
+        <section id="sec-deductivo">
+            <h2>3. Formalización: La Física de las Soluciones</h2>
+            
+            <p>Ahora que entendemos cómo ocurre la ósmosis en situaciones reales, vamos a formalizar estos conceptos con el lenguaje de la ciencia. Para hablar de ósmosis, primero debemos entender qué es una <strong>solución</strong>. Una solución es una mezcla homogénea de dos o más sustancias. En biología, la solución más común es el agua salada o el agua azucarada. En esta mezcla, identificamos dos actores principales: el <strong>Solvente</strong> y el <strong>Soluto</strong>. El solvente es el líquido que disuelve, que en la Tierra casi siempre es el agua (H<sub>2</sub>O). El soluto es la sustancia sólida que se disuelve en el agua, como las partículas de sal (NaCl) o de azúcar.</p>
+
+            <div class="pausa-activa">
+                <h4>✍️ Pausa Activa 6</h4>
+                <p>En tu cuaderno, haz un glosario con tus propias palabras definiendo: Solución, Solvente y Soluto.</p>
+                <button type="button" class="btn btn-success" id="btn-pausa-6" onclick="completarPausa(6)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>El segundo elemento clave es la <strong>Membrana Semipermeable</strong>. La palabra "permeable" significa que deja pasar cosas. "Semi" significa a medias. Entonces, una membrana semipermeable es una pared con poros microscópicos que funciona como un portero de discoteca muy estricto: deja pasar moléculas pequeñitas como las del agua (H<sub>2</sub>O), pero bloquea el paso de moléculas grandes como las sales o las proteínas. Debido a que el soluto no puede cruzar la pared, pero el agua sí, es el agua la que debe moverse para intentar que ambos lados de la pared tengan el mismo "sabor" o concentración.</p>
+
+            <!-- SIMULADOR CANVAS -->
+            <h3>Simulador Interactivo de Ósmosis</h3>
+            <p>Observa el siguiente simulador físico. Las esferas azules pequeñas son moléculas de agua (solvente). Las esferas rojas grandes son moléculas de sal (soluto). La línea punteada central es la membrana semipermeable. <strong>Instrucciones: Haz clic en el lado izquierdo o derecho para agregar más sal (soluto) y observa cómo reacciona el agua para equilibrar la concentración.</strong></p>
+            
+            <div class="canvas-container">
+                <canvas id="osmosisCanvas"></canvas>
+                <div class="canvas-overlay-text">Simulación a nivel molecular de H<sub>2</sub>O y solutos</div>
+                <div class="canvas-controls">
+                    <button class="canvas-btn" onclick="addSolute('left')">+ Añadir Sal Izquierda</button>
+                    <button class="canvas-btn" onclick="addSolute('right')">+ Añadir Sal Derecha</button>
+                    <button class="canvas-btn" onclick="resetSimulation()" style="background: rgba(239, 68, 68, 0.4);">Reiniciar</button>
+                </div>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>✍️ Pausa Activa 7</h4>
+                <p>Después de jugar con el simulador, escribe en tu cuaderno: ¿Qué pasa con las bolitas azules cuando pones muchas bolitas rojas en el lado derecho? ¿Logran pasar las bolitas rojas la barrera del medio?</p>
+                <button type="button" class="btn btn-success" id="btn-pausa-7" onclick="completarPausa(7)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Dependiendo de la cantidad de soluto (sal) que haya fuera de la célula en comparación con su interior, los científicos clasifican los ambientes en tres tipos (recuerda usar el prefijo griego correcto). Primero, el ambiente <strong>Hipertónico</strong> ("hiper" = mucho): aquí hay más sal afuera que adentro. Como vimos en la ensalada, el agua sale de la célula para diluir el exterior, y la célula se seca o "plasmoliza". Segundo, el ambiente <strong>Hipotónico</strong> ("hipo" = poco): hay muy poca sal afuera y mucha adentro. El agua entra a la célula intentando diluir el interior, haciéndola hincharse hasta ponerse "turgente" (dura) o incluso explotar si es una célula animal.</p>
+
+            <div class="pausa-activa">
+                <h4>✍️ Pausa Activa 8</h4>
+                <p>Crea una tabla en tu cuaderno comparando Medio Hipertónico y Medio Hipotónico. ¿Hacia dónde se mueve el agua en cada uno?</p>
+                <button type="button" class="btn btn-success" id="btn-pausa-8" onclick="completarPausa(8)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Por último, está el ambiente ideal, el <strong>Isotónico</strong> ("iso" = igual). En este estado, la cantidad de sal afuera es exactamente la misma que la cantidad de sal adentro. ¿Significa que el agua deja de moverse? ¡No! Las moléculas siempre están en movimiento (como viste en el simulador). Lo que sucede es que por cada molécula de agua que entra a la célula, otra molécula de agua sale. Hay un equilibrio dinámico perfecto y la célula mantiene su forma normal y saludable. Los sueros que te ponen en el hospital cuando estás deshidratado son soluciones isotónicas, diseñadas para no dañar tus glóbulos rojos.</p>
+
+            <div class="pausa-activa">
+                <h4>✍️ Pausa Activa 9</h4>
+                <p>Escribe en tu cuaderno por qué crees que a un paciente en el hospital se le inyecta suero fisiológico (agua con un poquito de sal) en la vena y NO agua pura de la llave.</p>
+                <button type="button" class="btn btn-success" id="btn-pausa-9" onclick="completarPausa(9)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>En resumen, la Ley Fundamental de la Ósmosis establece que el flujo neto de solvente (agua) a través de una membrana semipermeable ocurre siempre desde la región de menor concentración de soluto (hipotónica) hacia la región de mayor concentración de soluto (hipertónica), hasta que las concentraciones se igualen y se alcance un estado isotónico, generando en el proceso una fuerza conocida como Presión Osmótica.</p>
+
+            <div class="pausa-activa">
+                <h4>✍️ Pausa Activa 10</h4>
+                <p>Copia el párrafo anterior (La Ley Fundamental de la Ósmosis) en tu cuaderno y subraya con rojo las palabras claves: solvente, membrana, hipotónica, hipertónica.</p>
+                <button type="button" class="btn btn-success" id="btn-pausa-10" onclick="completarPausa(10)">Ya lo completé todo</button>
+            </div>
+
+        </section>
+
+        <!-- SECCIÓN 4: EVALUACIÓN FINAL (TALLER) -->
+        <section id="sec-evaluacion">
+            <h2>4. Evaluación Final: Taller de Conocimiento</h2>
+            <p>Ha llegado el momento de poner a prueba lo aprendido. Completa el siguiente taller. Ten en cuenta que las preguntas abiertas exigen respuestas <strong>exactamente entre 10 y 15 palabras</strong>.</p>
+            
+            <h3>I. Selección Múltiple (Autocalificable)</h3>
+            
+            <div class="question-card" id="eval-mc-1">
+                <p><strong>1. En el proceso de la ósmosis, ¿qué es lo único que cruza la membrana celular?</strong></p>
+                <select id="sel-mc-1" style="width:100%; padding:0.5rem; font-size:1rem; border-radius:0.5rem;">
+                    <option value="">Selecciona una respuesta...</option>
+                    <option value="A">La sal y el azúcar</option>
+                    <option value="B">El agua (solvente)</option>
+                    <option value="C">Ambos, agua y sal</option>
+                </select>
+            </div>
+
+            <div class="question-card" id="eval-mc-2">
+                <p><strong>2. Si una célula se hincha como un globo al ponerla en un vaso, el líquido del vaso es:</strong></p>
+                <select id="sel-mc-2" style="width:100%; padding:0.5rem; font-size:1rem; border-radius:0.5rem;">
+                    <option value="">Selecciona una respuesta...</option>
+                    <option value="A">Hipertónico</option>
+                    <option value="B">Isotónico</option>
+                    <option value="C">Hipotónico</option>
+                </select>
+            </div>
+
+            <div class="question-card" id="eval-mc-3">
+                <p><strong>3. Un ambiente Isotónico significa que:</strong></p>
+                <select id="sel-mc-3" style="width:100%; padding:0.5rem; font-size:1rem; border-radius:0.5rem;">
+                    <option value="">Selecciona una respuesta...</option>
+                    <option value="A">La concentración de soluto es igual adentro y afuera.</option>
+                    <option value="B">No hay agua adentro de la célula.</option>
+                    <option value="C">Hay demasiada sal afuera.</option>
+                </select>
+            </div>
+
+            <div class="question-card" id="eval-mc-4">
+                <p><strong>4. ¿Qué función cumple la membrana celular en la ósmosis?</strong></p>
+                <select id="sel-mc-4" style="width:100%; padding:0.5rem; font-size:1rem; border-radius:0.5rem;">
+                    <option value="">Selecciona una respuesta...</option>
+                    <option value="A">Darle color verde a la planta.</option>
+                    <option value="B">Ser una barrera selectiva (semipermeable).</option>
+                    <option value="C">Producir energía para la célula.</option>
+                </select>
+            </div>
+
+            <div class="question-card" id="eval-mc-5">
+                <p><strong>5. Conservar carne echándole mucha sal (cecina) funciona porque:</strong></p>
+                <select id="sel-mc-5" style="width:100%; padding:0.5rem; font-size:1rem; border-radius:0.5rem;">
+                    <option value="">Selecciona una respuesta...</option>
+                    <option value="A">Las bacterias se mueren por el frío de la sal.</option>
+                    <option value="B">Las bacterias mueren deshidratadas al perder agua por ósmosis.</option>
+                    <option value="C">La sal nutre a las células de la carne y las hace crecer.</option>
+                </select>
+            </div>
+
+            <h3>II. Preguntas Abiertas (Validación: 10 a 15 palabras)</h3>
+            <p style="color:var(--danger); font-size:0.9rem;">Escribe respuestas concretas. El sistema bloqueará el envío si tienes menos de 10 o más de 15 palabras.</p>
+
+            <div class="open-question">
+                <p><strong>6. Explica brevemente qué es el SOLUTO usando un ejemplo de la cocina.</strong></p>
+                <textarea id="open-q1" onkeyup="countWords(this, 'wc-1')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div id="wc-1" class="word-count invalid">Palabras: 0 (Debe ser entre 10 y 15)</div>
+            </div>
+
+            <div class="open-question">
+                <p><strong>7. ¿Por qué el agua pura viaja hacia donde hay mayor concentración de sal?</strong></p>
+                <textarea id="open-q2" onkeyup="countWords(this, 'wc-2')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div id="wc-2" class="word-count invalid">Palabras: 0 (Debe ser entre 10 y 15)</div>
+            </div>
+
+            <div class="open-question">
+                <p><strong>8. Define qué es una membrana semipermeable con tus propias palabras.</strong></p>
+                <textarea id="open-q3" onkeyup="countWords(this, 'wc-3')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div id="wc-3" class="word-count invalid">Palabras: 0 (Debe ser entre 10 y 15)</div>
+            </div>
+
+            <div class="open-question">
+                <p><strong>9. ¿Qué le ocurre a una célula vegetal si la sumerges en agua destilada (sin sal)?</strong></p>
+                <textarea id="open-q4" onkeyup="countWords(this, 'wc-4')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div id="wc-4" class="word-count invalid">Palabras: 0 (Debe ser entre 10 y 15)</div>
+            </div>
+
+            <div class="open-question">
+                <p><strong>10. Resume la regla principal de la ósmosis que subrayaste en tu cuaderno.</strong></p>
+                <textarea id="open-q5" onkeyup="countWords(this, 'wc-5')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div id="wc-5" class="word-count invalid">Palabras: 0 (Debe ser entre 10 y 15)</div>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button type="button" class="btn btn-disabled" id="btn-evaluar" onclick="evaluarTaller()" disabled>Evaluar y Ver Resultados</button>
+            </div>
+
+        </section>
+
+        <!-- SECCIÓN 5: RESULTADOS Y RETROALIMENTACIÓN -->
+        <section id="sec-resultados" class="hidden results-card">
+            <h2>Resultados de tu Laboratorio</h2>
+            <div class="final-score" id="score-display">0.0 / 5.0</div>
+            <p style="font-size: 1.2rem; margin-bottom: 2rem;">Has alcanzado el elemento: <strong id="element-display" style="color:var(--accent)">Hidrógeno (H)</strong></p>
+            
+            <div style="background: var(--white); padding: 1.5rem; border-radius: 0.5rem; text-align: left; margin-bottom: 2rem;">
+                <h3 style="margin-top:0;">Ruta de Fortalecimiento Personalizada</h3>
+                <p id="feedback-text">Calculando análisis cognitivo...</p>
+                <p><strong>📝 Tarea para el cuaderno:</strong> Copia la ruta de fortalecimiento de arriba en tu cuaderno para discutirla en la próxima clase.</p>
+            </div>
+
+            <button type="button" class="btn btn-success" style="width: auto;" onclick="descargarResultados()">Descargar Resultados (.txt)</button>
+        </section>
+
+    </div>
+
+    <!-- SCRIPT PRINCIPAL: LÓGICA, ANIMACIÓN Y GESTIÓN DE DATOS -->
+    <script>
+        // --- 1. GESTIÓN DE USUARIO Y ESTADO ---
+        let state = {
+            nombres: '',
+            apellidos: '',
+            progreso: 0,
+            pausas: [false, false, false, false, false, false, false, false, false, false],
+            puntos: 0,
+            icfesCorrecto: false,
+            respuestasEval: {}
+        };
+
+        const elements = [
+            { pts: 0, sym: 'H', num: 1, name: 'Hidrógeno' },
+            { pts: 1, sym: 'He', num: 2, name: 'Helio' },
+            { pts: 2, sym: 'Li', num: 3, name: 'Litio' },
+            { pts: 3, sym: 'Be', num: 4, name: 'Berilio' },
+            { pts: 4, sym: 'B', num: 5, name: 'Boro' },
+            { pts: 5, sym: 'C', num: 6, name: 'Carbono' }
+        ];
+
+        // Inicialización y carga de LocalStorage
+        window.onload = () => {
+            const saved = localStorage.getItem('ova_osmosis_state');
+            if (saved) {
+                state = JSON.parse(saved);
+                if (state.nombres && state.apellidos) {
+                    iniciarOVA(true); // Entrar directo si ya está logueado
+                }
+            }
+            initCanvas(); // Iniciar animación (se pausará si no es visible, pero configuramos el contexto)
+        };
+
+        // Evento de Login sin <form>
+        document.getElementById('btn-ingresar').addEventListener('click', () => {
+            const ape = document.getElementById('apellidos').value.trim();
+            const nom = document.getElementById('nombres').value.trim();
+            const errorMsg = document.getElementById('login-error');
+
+            if (ape === '' || nom === '') {
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            errorMsg.classList.add('hidden');
+            state.apellidos = ape;
+            state.nombres = nom;
+            guardarEstado();
+            iniciarOVA(false);
+        });
+
+        function iniciarOVA(isRestored) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('display-name').innerText = `${state.apellidos} ${state.nombres}`;
+            
+            if(isRestored){
+                actualizarProgreso();
+                restaurarBotonesPausas();
+            }
+            // Forzar render de canvas ahora que es visible
+            resizeCanvas();
+            animateCanvas();
+        }
+
+        function guardarEstado() {
+            localStorage.setItem('ova_osmosis_state', JSON.stringify(state));
+            actualizarProgreso();
+        }
+
+        // --- 2. SISTEMA DE GAMIFICACIÓN Y PROGRESO ---
+        function completarPausa(num) {
+            if(!state.pausas[num-1]){
+                state.pausas[num-1] = true;
+                const btn = document.getElementById(`btn-pausa-${num}`);
+                btn.innerText = "✓ Completado";
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-disabled');
+                btn.disabled = true;
+                guardarEstado();
+            }
+        }
+
+        function restaurarBotonesPausas() {
+            for(let i=0; i<10; i++){
+                if(state.pausas[i]){
+                    const btn = document.getElementById(`btn-pausa-${i+1}`);
+                    if(btn){
+                        btn.innerText = "✓ Completado";
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-disabled');
+                        btn.disabled = true;
+                    }
+                }
+            }
+        }
+
+        function actualizarProgreso() {
+            // Calcular % progreso basado en pausas (10 pausas = 100% de la lectura)
+            const pausasHechas = state.pausas.filter(Boolean).length;
+            state.progreso = pausasHechas * 10;
+            
+            document.getElementById('progress-bar').style.width = `${state.progreso}%`;
+            document.getElementById('progress-text').innerText = `${state.progreso}%`;
+
+            // Calcular puntos basados en avance + icfes + notas (hasta 5)
+            // Lógica base: 1 punto por completar induccion(5 pausas), 1 por deduccion(5 pausas)
+            let pts = 0;
+            if (pausasHechas >= 5) pts += 1;
+            if (pausasHechas == 10) pts += 1;
+            if (state.icfesCorrecto) pts += 1;
+            // Se suman hasta 2 pts en evaluación final. Por ahora tope visual interactivo 3.
+            
+            actualizarInsignia(pts);
+        }
+
+        function actualizarInsignia(pts) {
+            // Asegurar máximo actual (sin contar evaluación final que sobreescribe)
+            const safePts = Math.min(Math.floor(pts), 5);
+            const el = elements[safePts];
+            const badge = document.getElementById('gamification-badge');
+            badge.innerHTML = `<span class="number">${el.num}</span><span class="symbol">${el.sym}</span>`;
+        }
+
+        // --- 3. LÓGICA DE PREGUNTAS (PRE-SABERES E ICFES) ---
+        function checkPre(q, isCorrect, btnElement) {
+            const container = btnElement.parentElement;
+            const buttons = container.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true); // Bloquear
+            
+            if(isCorrect) {
+                btnElement.classList.add('correct');
+            } else {
+                btnElement.classList.add('incorrect');
+                // Encontrar correcta
+                if(q===1) buttons[1].classList.add('correct');
+                if(q===2) buttons[0].classList.add('correct');
+                if(q===3) buttons[2].classList.add('correct');
+            }
+
+            const fb = document.getElementById(`fb-pre-${q}`);
+            fb.classList.add(isCorrect ? 'success' : 'error');
+            
+            let txt = '';
+            if(q===1) txt = isCorrect ? "¡Exacto! El agua sale del pepino por la sal." : "Piénsalo bien. La sal 'roba' el agua del pepino, por eso se arruga.";
+            if(q===2) txt = isCorrect ? "¡Muy bien! El agua es el solvente universal." : "Recuerda: Solvente es el líquido (agua) y soluto es el polvo de la sopa.";
+            if(q===3) txt = isCorrect ? "¡Correcto! Las células vegetales se llenan de agua y se ponen firmes (turgencia)." : "En realidad, el agua ingresa a las células microscópicas de la planta inflando su interior.";
+            
+            fb.innerText = txt;
+        }
+
+        function checkIcfes(ans, btnElement) {
+            const container = btnElement.parentElement;
+            const buttons = container.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+            
+            const fb = document.getElementById('fb-icfes');
+            
+            if(ans === 'B') {
+                btnElement.classList.add('correct');
+                fb.classList.add('success');
+                fb.innerText = "¡Excelente inferencia! (Competencia Indagar lograda). La Célula B se plasmolisó (encogió) porque el agua tuvo que salir al medio externo, lo que nos indica que afuera había una altísima concentración de soluto (Medio Hipertónico).";
+                state.icfesCorrecto = true;
+            } else {
+                btnElement.classList.add('incorrect');
+                buttons[1].classList.add('correct');
+                fb.classList.add('error');
+                fb.innerText = "Incorrecto. Recuerda que si la célula se encoge (Célula B), es porque perdió su agua. El agua siempre viaja hacia donde hay MÁS soluto. Por tanto, el líquido exterior debía estar lleno de sal (Medio Hipertónico).";
+            }
+            guardarEstado();
+        }
+
+        // --- 4. VALIDACIÓN DE TEXTO Y EVALUACIÓN FINAL ---
+        function countWords(textarea, counterId) {
+            const text = textarea.value.trim();
+            // Regex para separar por espacios múltiples y contar palabras reales
+            const wordsArray = text.split(/\s+/).filter(w => w.length > 0);
+            const count = wordsArray.length;
+            
+            const counterDiv = document.getElementById(counterId);
+            counterDiv.innerText = `Palabras: ${count} (Debe ser entre 10 y 15)`;
+            
+            if (count >= 10 && count <= 15) {
+                counterDiv.classList.remove('invalid');
+                counterDiv.classList.add('valid');
+                textarea.dataset.valid = "true";
+            } else {
+                counterDiv.classList.remove('valid');
+                counterDiv.classList.add('invalid');
+                textarea.dataset.valid = "false";
+            }
+            
+            checkEvalForm();
+        }
+
+        function checkEvalForm() {
+            // Verificar que los 5 select tengan valor y los 5 textareas sean validos
+            let selectsOk = true;
+            for(let i=1; i<=5; i++){
+                if(document.getElementById(`sel-mc-${i}`).value === "") selectsOk = false;
+            }
+            
+            let textsOk = true;
+            for(let i=1; i<=5; i++){
+                if(document.getElementById(`open-q${i}`).dataset.valid !== "true") textsOk = false;
+            }
+
+            const btn = document.getElementById('btn-evaluar');
+            if(selectsOk && textsOk) {
+                btn.disabled = false;
+                btn.classList.remove('btn-disabled');
+                btn.classList.add('btn');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('btn-disabled');
+                btn.classList.remove('btn');
+            }
+        }
+
+        function evaluarTaller() {
+            // Calificación MCQs (Aciertos: 1=B, 2=C, 3=A, 4=B, 5=B)
+            const ansObj = {
+                1: document.getElementById('sel-mc-1').value,
+                2: document.getElementById('sel-mc-2').value,
+                3: document.getElementById('sel-mc-3').value,
+                4: document.getElementById('sel-mc-4').value,
+                5: document.getElementById('sel-mc-5').value
+            };
+            const correctas = {1:'B', 2:'C', 3:'A', 4:'B', 5:'B'};
+            
+            let ptsCerradas = 0;
+            let erroresInductivos = 0; // Preguntas 1, 5
+            let erroresDeductivos = 0; // Preguntas 2, 3, 4
+
+            for(let i=1; i<=5; i++){
+                if(ansObj[i] === correctas[i]) {
+                    ptsCerradas += 0.5; // 0.5 por cada correcta = max 2.5
+                } else {
+                    if(i===1 || i===5) erroresInductivos++;
+                    if(i===2 || i===3 || i===4) erroresDeductivos++;
+                }
+            }
+
+            // Las preguntas abiertas se asumen correctas si cumplen estructura (Evaluación formativa automática)
+            // Cada abierta vale 0.5 = max 2.5
+            let ptsAbiertas = 2.5; 
+
+            let notaFinal = ptsCerradas + ptsAbiertas;
+            
+            // Guardar respuestas para exportar
+            state.respuestasEval = {
+                mcq: ansObj,
+                open: {
+                    6: document.getElementById('open-q1').value,
+                    7: document.getElementById('open-q2').value,
+                    8: document.getElementById('open-q3').value,
+                    9: document.getElementById('open-q4').value,
+                    10: document.getElementById('open-q5').value,
+                },
+                nota: notaFinal
+            };
+
+            // Mostrar Resultados
+            document.getElementById('sec-resultados').classList.remove('hidden');
+            document.getElementById('score-display').innerText = `${notaFinal.toFixed(1)} / 5.0`;
+            
+            // Elemento final
+            let elementIndex = Math.floor(notaFinal);
+            const finalElement = elements[elementIndex];
+            document.getElementById('element-display').innerText = `${finalElement.name} (${finalElement.sym})`;
+            actualizarInsignia(elementIndex);
+
+            // Retroalimentación Inteligente
+            let fbText = "";
+            if(notaFinal >= 4.5) {
+                fbText = "¡Excelente trabajo! Has dominado tanto la observación de fenómenos como la teoría deductiva. <strong>Ruta:</strong> Investiga sobre la ósmosis inversa usada para purificar agua.";
+            } else if (erroresInductivos > erroresDeductivos) {
+                fbText = "Tus fortalezas están en las definiciones teóricas, pero presentas debilidades en la aplicación a la vida real (fase Inductiva). <strong>Ruta:</strong> Repasa la sección de los experimentos con lechuga y carne salada. Identifica siempre en tu casa dónde hay más soluto.";
+            } else if (erroresDeductivos > erroresInductivos) {
+                fbText = "Entiendes los ejemplos de la cocina maravillosamente, pero debes afianzar los conceptos formales (fase Deductiva). <strong>Ruta:</strong> Vuelve a escribir en tu cuaderno las definiciones exactas de Hipertónico, Hipotónico e Isotónico.";
+            } else {
+                fbText = "Tienes un conocimiento balanceado pero con oportunidades de mejora. <strong>Ruta:</strong> Revisa detenidamente el simulador de partículas y asegúrate de comprender por qué el agua se mueve hacia donde hay más puntos rojos.";
+            }
+            document.getElementById('feedback-text').innerHTML = fbText;
+
+            // Scroll a resultados
+            document.getElementById('sec-resultados').scrollIntoView({behavior: 'smooth'});
+            guardarEstado();
+        }
+
+        // --- 5. EXPORTACIÓN A .TXT ---
+        function descargarResultados() {
+            const e = elements[Math.floor(state.respuestasEval.nota)];
+            const txtContent = `===========================================
+RESULTADOS OVA: ÓSMOSIS EN LA COCINA
+===========================================
+Estudiante: ${state.apellidos} ${state.nombres}
+Nota Final: ${state.respuestasEval.nota.toFixed(1)} / 5.0
+Nivel Químico Alcanzado: ${e.name} (${e.sym})
+
+--- RESPUESTAS DE SELECCIÓN MÚLTIPLE ---
+1. Respuesta: ${state.respuestasEval.mcq[1]} (Correcta: B)
+2. Respuesta: ${state.respuestasEval.mcq[2]} (Correcta: C)
+3. Respuesta: ${state.respuestasEval.mcq[3]} (Correcta: A)
+4. Respuesta: ${state.respuestasEval.mcq[4]} (Correcta: B)
+5. Respuesta: ${state.respuestasEval.mcq[5]} (Correcta: B)
+
+--- RESPUESTAS ABIERTAS ---
+6. Soluto: ${state.respuestasEval.open[6]}
+7. Viaje del agua: ${state.respuestasEval.open[7]}
+8. Membrana: ${state.respuestasEval.open[8]}
+9. Célula vegetal en agua: ${state.respuestasEval.open[9]}
+10. Regla de ósmosis: ${state.respuestasEval.open[10]}
+
+Fecha de realización: ${new Date().toLocaleString()}
+===========================================`;
+
+            const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            a.href = url;
+            a.download = `Resultados_Osmosis_${state.apellidos.replace(/\s+/g,'')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- 6. ANIMACIÓN HTML5 CANVAS: MOTOR FÍSICO (60FPS) ---
+        const canvas = document.getElementById('osmosisCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let canvasW, canvasH;
+        let animationId;
+
+        class Particle {
+            constructor(x, y, isWater) {
+                this.x = x;
+                this.y = y;
+                this.isWater = isWater;
+                this.radius = isWater ? 4 : 10;
+                this.mass = isWater ? 1 : 5;
+                // Velocidad aleatoria
+                let angle = Math.random() * Math.PI * 2;
+                let speed = isWater ? (Math.random() * 1.5 + 0.5) : (Math.random() * 0.5 + 0.2);
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.color = isWater ? '#38bdf8' : '#ef4444'; // Azul o Rojo
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Colisión bordes exteriores
+                if (this.x - this.radius < 0) { this.x = this.radius; this.vx *= -1; }
+                if (this.x + this.radius > canvasW) { this.x = canvasW - this.radius; this.vx *= -1; }
+                if (this.y - this.radius < 0) { this.y = this.radius; this.vy *= -1; }
+                if (this.y + this.radius > canvasH) { this.y = canvasH - this.radius; this.vy *= -1; }
+
+                // Colisión membrana central (x = canvasW/2)
+                const membraneX = canvasW / 2;
+                const membraneThickness = 4;
+                
+                // Si la partícula cruza el centro
+                if (Math.abs(this.x - membraneX) < this.radius + membraneThickness/2) {
+                    if (this.isWater) {
+                        // El agua pasa si encuentra un "poro" (simulado con probabilidad)
+                        // Para evitar que el agua se quede atorada rebotando infinitamente en el borde, 
+                        // dejamos que fluya libremente, asumiendo poros en todos lados para la simulación
+                        // pero con una ligera resistencia ocasional
+                        if(Math.random() < 0.05) {
+                            this.vx *= -1;
+                        }
+                    } else {
+                        // El soluto rebota SIEMPRE
+                        if (this.x < membraneX) {
+                            this.x = membraneX - this.radius - membraneThickness/2;
+                        } else {
+                            this.x = membraneX + this.radius + membraneThickness/2;
+                        }
+                        this.vx *= -1;
+                    }
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                if(!this.isWater){
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function initCanvas() {
+            resizeCanvas();
+            resetSimulation();
+        }
+
+        function resizeCanvas() {
+            // El canvas escala con CSS, pero establecemos resolución interna real
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth || 800;
+            canvas.height = 400;
+            canvasW = canvas.width;
+            canvasH = canvas.height;
+        }
+
+        function resetSimulation() {
+            particles = [];
+            // Llenar ambos lados con igual agua (Isotónico inicial sin soluto)
+            for(let i=0; i<300; i++){
+                // 150 izq, 150 der
+                let x = i < 150 ? (Math.random() * (canvasW/2 - 20) + 10) : (canvasW/2 + 10 + Math.random() * (canvasW/2 - 20));
+                let y = Math.random() * (canvasH - 20) + 10;
+                particles.push(new Particle(x, y, true));
+            }
+        }
+
+        function addSolute(side) {
+            // side: 'left' or 'right'
+            for(let i=0; i<10; i++){
+                let x = side === 'left' ? (Math.random() * (canvasW/2 - 30) + 15) : (canvasW/2 + 15 + Math.random() * (canvasW/2 - 30));
+                let y = Math.random() * (canvasH - 30) + 15;
+                particles.push(new Particle(x, y, false));
+            }
+        }
+
+        // Interacción con mouse en Canvas para atraer agua simulando ósmosis (Presión)
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            
+            // Determinar lado clickeado y añadir soluto
+            if (mouseX < canvasW / 2) {
+                addSolute('left');
+            } else {
+                addSolute('right');
+            }
+        });
+
+        // La física detrás de la simulación de Ósmosis:
+        // En lugar de calcular gradientes complejos (pesado), simulamos presión osmótica
+        // empujando sutilmente moléculas de agua hacia el lado con más soluto.
+        function applyOsmoticPressure() {
+            let leftSolute = 0;
+            let rightSolute = 0;
+            
+            particles.forEach(p => {
+                if(!p.isWater) {
+                    if(p.x < canvasW/2) leftSolute++;
+                    else rightSolute++;
+                }
+            });
+
+            // Diferencia de concentración
+            const diff = rightSolute - leftSolute; 
+            // Si diff > 0, hay más sal a la derecha, el agua debe ir a la derecha. (Fuerza hacia la derecha)
+            // Si diff < 0, hay más sal a la izq, el agua va izq.
+            const force = (diff * 0.002); 
+
+            particles.forEach(p => {
+                if(p.isWater) {
+                    // Aplicar una pequeñísima aceleración constante horizontal
+                    p.vx += force;
+                    // Limitar velocidad máxima del agua
+                    if(p.vx > 2) p.vx = 2;
+                    if(p.vx < -2) p.vx = -2;
+                }
+            });
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvasW, canvasH);
+            
+            // Dibujar Membrana Semipermeable
+            ctx.beginPath();
+            ctx.setLineDash([10, 15]);
+            ctx.moveTo(canvasW / 2, 0);
+            ctx.lineTo(canvasW / 2, canvasH);
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset dash
+
+            // Aplicar física macro (Ósmosis)
+            applyOsmoticPressure();
+
+            // Actualizar y dibujar partículas
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // Contadores visuales de agua (simulando altura/volumen)
+            let waterLeft = particles.filter(p => p.isWater && p.x < canvasW/2).length;
+            let waterRight = particles.filter(p => p.isWater && p.x > canvasW/2).length;
+            
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.font = '14px Arial';
+            ctx.fillText(`H2O Izquierda: ${waterLeft}`, 20, 30);
+            ctx.fillText(`H2O Derecha: ${waterRight}`, canvasW - 140, 30);
+
+            animationId = requestAnimationFrame(animateCanvas);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+    </script>
+</body>
+</html>

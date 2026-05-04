@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Huella en la Tierra: Agricultura y Ganadería</title>
+    <style>
+        :root {
+            --primary: #2d5a27;
+            --secondary: #8c6239;
+            --accent: #d4a373;
+            --bg: #fefae0;
+            --text: #283618;
+            --danger: #bc6c25;
+            --white: #ffffff;
+            --shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- Pantalla de Logueo --- */
+        #login-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, var(--primary), var(--text));
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 450px;
+        }
+
+        .login-card h1 { margin-bottom: 2rem; font-size: 1.8rem; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .btn-main {
+            background-color: var(--accent);
+            color: var(--text);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-main:hover { transform: scale(1.05); background-color: #e9edc9; }
+
+        /* --- Layout Principal --- */
+        #main-content { display: none; }
+
+        nav {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 5%;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+
+        .progress-container { width: 200px; height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; overflow: hidden; }
+        #progress-bar { height: 100%; width: 0%; background: var(--accent); transition: 0.5s; }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+
+        section {
+            background: var(--white);
+            margin-bottom: 3rem;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        h2 { color: var(--primary); border-left: 5px solid var(--accent); padding-left: 1rem; margin-bottom: 1.5rem; }
+
+        p { margin-bottom: 1.2rem; text-align: justify; }
+
+        /* --- Componentes Visuales --- */
+        .svg-container {
+            text-align: center;
+            margin: 2rem 0;
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+        }
+
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .comparison-table th { background-color: var(--primary); color: white; }
+        .comparison-table tr:hover { background-color: #f1f1f1; }
+
+        /* --- Pausas Activas --- */
+        .pause-box {
+            background: #e9edc9;
+            border: 2px dashed var(--primary);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-done {
+            background: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* --- Canvas --- */
+        #canvas-wrap {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+        canvas { width: 100%; height: 100%; }
+
+        /* --- Quiz y Validaciones --- */
+        .quiz-item { margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #eee; border-radius: 8px; }
+        .feedback { margin-top: 10px; font-weight: bold; font-size: 0.9rem; }
+        .correct { color: green; }
+        .incorrect { color: red; }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            resize: none;
+        }
+
+        .warning-text { color: var(--danger); font-size: 0.8rem; margin-top: 5px; }
+
+        #results-card {
+            background: var(--text);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            display: none;
+        }
+
+        sub { vertical-align: sub; font-size: smaller; }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Bienvenida -->
+    <div id="login-screen">
+        <div class="login-card">
+            <svg width="80" height="80" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="white" stroke-width="2"/>
+                <path d="M30 70 Q 50 20 70 70" stroke="#d4a373" stroke-width="5" fill="none"/>
+                <path d="M40 70 Q 50 40 60 70" stroke="white" stroke-width="3" fill="none"/>
+            </svg>
+            <h1>Acceso al OVA</h1>
+            <input type="text" id="user-lastname" placeholder="Apellidos">
+            <input type="text" id="user-firstname" placeholder="Nombres">
+            <button class="btn-main" id="start-btn">Ingresar al Módulo</button>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div id="main-content">
+        <nav>
+            <div id="nav-user">Estudiante: </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span>Progreso:</span>
+                <div class="progress-container">
+                    <div id="progress-bar"></div>
+                </div>
+                <div id="score-display">Puntos: 0.0</div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- Introducción -->
+            <section id="sec-intro">
+                <h2>Objetivo de Aprendizaje</h2>
+                <p>Al finalizar este OVA, el estudiante de grado 11 será capaz de <strong>argumentar los efectos ambientales, sociales y biológicos</strong> derivados de la expansión de la ganadería extensiva y los monocultivos, integrando datos estadísticos y modelos de simulación de impacto en la biosfera.</p>
+                
+                <div class="quiz-item">
+                    <p><strong>Pre-saberes 1:</strong> ¿Cuál es el principal gas de efecto invernadero asociado directamente a la digestión de rumiantes?</p>
+                    <label><input type="radio" name="pre1" value="a"> CO<sub>2</sub></label><br>
+                    <label><input type="radio" name="pre1" value="b"> CH<sub>4</sub> (Metano)</label><br>
+                    <label><input type="radio" name="pre1" value="c"> N<sub>2</sub>O</label>
+                    <div id="fb-pre1" class="feedback"></div>
+                </div>
+
+                <div class="quiz-item">
+                    <p><strong>Pre-saberes 2:</strong> ¿Qué término describe el cultivo de una sola especie en grandes extensiones?</p>
+                    <label><input type="radio" name="pre2" value="a"> Policultivo</label><br>
+                    <label><input type="radio" name="pre2" value="b"> Monocultivo</label><br>
+                    <label><input type="radio" name="pre2" value="c"> Permacultura</label>
+                    <div id="fb-pre2" class="feedback"></div>
+                </div>
+
+                <div class="quiz-item">
+                    <p><strong>Pre-saberes 3:</strong> ¿Cuál es el efecto principal de la ganadería extensiva en los bosques tropicales?</p>
+                    <label><input type="radio" name="pre3" value="a"> Reforestación</label><br>
+                    <label><input type="radio" name="pre3" value="b"> Fragmentación de hábitat</label><br>
+                    <label><input type="radio" name="pre3" value="c"> Aumento de biodiversidad</label>
+                    <div id="fb-pre3" class="feedback"></div>
+                </div>
+            </section>
+
+            <!-- Cuerpo Inductivo -->
+            <section id="sec-inductivo">
+                <h2>Cuerpo Inductivo: El Paisaje Transformado</h2>
+                <p>
+                    La historia de la civilización humana está intrínsecamente ligada a la domesticación de la tierra. Sin embargo, en el siglo XXI, esta relación ha alcanzado un punto de inflexión crítico. La agricultura industrial, caracterizada por la implementación de monocultivos a gran escala, ha transformado ecosistemas complejos en desiertos verdes. En estos espacios, la diversidad biológica se reduce a una sola variable económica, lo que genera una vulnerabilidad sistémica ante plagas y cambios climáticos. La lógica de la producción masiva ignora los ciclos de regeneración del suelo, agotando los nutrientes que tardaron milenios en acumularse.
+                </p>
+                <p>
+                    Desde una perspectiva ecológica, el monocultivo actúa como un bloqueador de la sucesión natural. Al eliminar la variedad de raíces y estratos vegetales, el suelo pierde su capacidad de retener agua y carbono. El uso intensivo de fertilizantes sintéticos, necesarios para mantener el rendimiento en suelos degradados, deriva en la eutrofización de cuerpos de agua cercanos, creando "zonas muertas" donde la vida acuática es imposible debido a la falta de oxígeno. Este ciclo destructivo no solo afecta al medio ambiente, sino que pone en riesgo la seguridad alimentaria a largo plazo al depender de un puñado de especies genéticamente uniformes.
+                </p>
+                <p>
+                    Por otro lado, la ganadería extensiva representa la mayor causa de deforestación a nivel global. En regiones como la Amazonía, vastas hectáreas de selva son taladas y quemadas para dar paso a pastizales que sostienen una densidad mínima de ganado. Este proceso libera cantidades masivas de CO<sub>2</sub> almacenado en la biomasa forestal, contribuyendo doblemente al calentamiento global: primero por la pérdida del sumidero de carbono y segundo por las emisiones directas del ganado. La compactación del suelo por el pisoteo de los animales impide la infiltración del agua, aumentando la erosión y disminuyendo la recarga de acuíferos.
+                </p>
+                <p>
+                    Es fundamental entender que estos modelos no son solo problemas técnicos, sino estructurales. La demanda global de carne y materias primas (como la soja o la palma de aceite) impulsa una frontera agropecuaria que despoja a comunidades locales y altera climas regionales. La pérdida de cobertura vegetal reduce la evapotranspiración, lo que a su vez altera los ciclos de lluvia, afectando incluso a las mismas zonas productivas. Es una paradoja donde el modelo de desarrollo actual erosiona las bases biofísicas que lo sostienen, creando una espiral de degradación difícil de revertir sin cambios drásticos en el consumo y la regulación.
+                </p>
+                <p>
+                    Finalmente, el análisis inductivo nos permite observar cómo pequeñas unidades de cambio (una hectárea de bosque talada, un litro de pesticida aplicado) se acumulan hasta generar crisis de magnitud continental. La fragmentación de los bosques impide el flujo génico de las especies, condenando a muchas a la extinción local. La transformación del paisaje no es solo estética; es una alteración química y física profunda que redefine la capacidad de la Tierra para albergar vida diversa. La transición hacia sistemas agroforestales y ganadería regenerativa surge como la única vía para reconciliar la producción con la supervivencia planetaria.
+                </p>
+
+                <h3>Análisis Técnico Comparativo</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Característica</th>
+                            <th>Monocultivo Intensivo</th>
+                            <th>Ganadería Extensiva</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Impacto en Suelo</td>
+                            <td>Agotamiento de nutrientes específicos</td>
+                            <td>Compactación y erosión mecánica</td>
+                        </tr>
+                        <tr>
+                            <td>Principal Emisión</td>
+                            <td>Óxido nitroso (Fertilizantes)</td>
+                            <td>Metano (Digestión entérica)</td>
+                        </tr>
+                        <tr>
+                            <td>Uso de Agua</td>
+                            <td>Altísimo (Riego por aspersión)</td>
+                            <td>Medio (Bebederos y mantenimiento)</td>
+                        </tr>
+                        <tr>
+                            <td>Biodiversidad</td>
+                            <td>Nula (Uniformidad genética)</td>
+                            <td>Muy baja (Pastos predominantes)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pause-box">
+                    <span><strong>Pausa Activa 1:</strong> En tu cuaderno, dibuja un esquema de cómo un pesticida llega de un monocultivo a un río.</span>
+                    <button class="btn-done" onclick="completePause(this)">Ya lo hice</button>
+                </div>
+                <div class="pause-box">
+                    <span><strong>Pausa Activa 2:</strong> Reflexiona: ¿Cuánta carne consumes a la semana? Escribe un párrafo en tu cuaderno sobre el origen de esa carne.</span>
+                    <button class="btn-done" onclick="completePause(this)">Ya lo hice</button>
+                </div>
+
+                <h3>Gráfica de Análisis: Emisiones de Gases</h3>
+                <div class="svg-container">
+                    <svg width="500" height="300" viewBox="0 0 500 300" id="analisis-grafica">
+                        <!-- Ejes -->
+                        <line x1="50" y1="250" x2="450" y2="250" stroke="black" stroke-width="2"/>
+                        <line x1="50" y1="250" x2="50" y2="50" stroke="black" stroke-width="2"/>
+                        
+                        <!-- Barras (Datos ficticios: Agr vs Gan) -->
+                        <rect x="100" y="100" width="80" height="150" fill="var(--primary)" opacity="0.8">
+                            <title>Agr. Monocultivo (CO2 eq)</title>
+                        </rect>
+                        <rect x="250" y="60" width="80" height="190" fill="var(--danger)" opacity="0.8">
+                            <title>Ganadería (CH4 + CO2)</title>
+                        </rect>
+                        
+                        <!-- Etiquetas -->
+                        <text x="100" y="270" font-size="12">Monocultivos</text>
+                        <text x="250" y="270" font-size="12">Ganadería</text>
+                        <text x="10" y="150" transform="rotate(-90 10,150)" font-size="12">Toneladas CO<sub>2</sub>e/Ha</text>
+                        <text x="200" y="30" font-weight="bold">Emisión por Actividad</text>
+                    </svg>
+                </div>
+
+                <div class="quiz-item">
+                    <p><strong>Competencia Indagar:</strong> Según la gráfica anterior, si una región decide sustituir 1000 hectáreas de ganadería por monocultivos, ¿cuál sería el efecto neto inmediato en las emisiones de gases de efecto invernadero?</p>
+                    <label><input type="radio" name="icfes1" value="a"> Aumentarían drásticamente.</label><br>
+                    <label><input type="radio" name="icfes1" value="b"> Disminuirían proporcionalmente, aunque el impacto ambiental cambiaría de tipo.</label><br>
+                    <label><input type="radio" name="icfes1" value="c"> Se mantendrían iguales porque ambos contaminan.</label>
+                    <div id="fb-icfes1" class="feedback"></div>
+                </div>
+
+                <div class="pause-box">
+                    <span><strong>Pausa Activa 3:</strong> Busca en tu casa un producto que contenga aceite de palma y lee sus ingredientes.</span>
+                    <button class="btn-done" onclick="completePause(this)">Ya lo hice</button>
+                </div>
+            </section>
+
+            <!-- Cuerpo Deductivo -->
+            <section id="sec-deductivo">
+                <h2>Cuerpo Deductivo: El Sistema Global y la Simulación</h2>
+                <p>
+                    Al analizar el sistema desde una lógica deductiva, podemos establecer principios generales que rigen la termodinámica y la ecología de la producción de alimentos. La ley de la eficiencia energética nos indica que cada escalón trófico que subimos implica una pérdida masiva de energía (cerca del 90%). Por lo tanto, producir una caloría de carne bovina requiere hasta diez veces más superficie y recursos hídricos que producir una caloría vegetal. Esta ineficiencia es el motor que impulsa la expansión constante de la frontera agrícola sobre ecosistemas prístinos. No es solo un problema de qué comemos, sino de cómo la física de la energía dicta la inviabilidad de ciertos modelos a escala global.
+                </p>
+                <p>
+                    El impacto se deduce también a través de la química de la atmósfera. El metano (CH<sub>4</sub>), aunque tiene una vida media más corta que el dióxido de carbono, posee un potencial de calentamiento global 28 veces superior en un horizonte de 100 años. La ganadería, a través de la fermentación entérica, es una de las fuentes antropogénicas más significativas de este gas. Al deducir el comportamiento climático futuro, los modelos científicos advierten que sin una reducción en la cabaña ganadera, será imposible cumplir con los acuerdos de limitación de temperatura global, independientemente de la transición energética en el transporte.
+                </p>
+                <p>
+                    Otro principio fundamental es el ciclo del nitrógeno. La síntesis industrial de amoníaco (proceso Haber-Bosch) para fertilizantes ha alterado este ciclo más que cualquier otra actividad humana. Al aplicar nitrógeno de forma masiva en monocultivos, deducimos una cascada de efectos: acidificación del suelo, emisión de óxido nitroso (un gas 300 veces más potente que el CO<sub>2</sub>) y la destrucción de la microbiota edáfica. El suelo deja de ser una entidad viva y se convierte en un sustrato inerte que solo responde a inputs químicos, lo que genera una dependencia total del petróleo, base de la industria agroquímica.
+                </p>
+                <p>
+                    La deducción social es igualmente alarmante. El modelo de latifundio, inherente a la ganadería extensiva y los monocultivos de exportación, tiende a la concentración de la tierra y al desplazamiento de la agricultura familiar. Al priorizar el mercado global sobre la soberanía local, los territorios pierden resiliencia. Deducimos que un sistema alimentario tan centralizado y uniforme es extremadamente frágil ante crisis geopolíticas o biológicas (como una pandemia vegetal). La pérdida de conocimiento ancestral sobre el manejo diverso de la tierra es un daño colateral que debilita la capacidad de adaptación de la especie humana.
+                </p>
+                <p>
+                    En conclusión, la aplicación de leyes biológicas y físicas a la producción agropecuaria actual nos lleva a una verdad ineludible: el modelo actual es entrópico. Consume más orden y energía del que genera, dejando un rastro de desorden ambiental. Para revertir esto, debemos deducir soluciones basadas en la naturaleza: la integración de árboles en pastizales (sistemas silvopastoriles) y la rotación de cultivos diversos. Solo imitando la complejidad de los ecosistemas naturales podremos diseñar sistemas productivos que, en lugar de minar la salud de la tierra, contribuyan a su restauración activa.
+                </p>
+
+                <h3>Simulación: Equilibrio de la Biosfera</h3>
+                <p>Observa cómo la interacción entre agentes de producción (partículas rojas - emisiones) y sumideros (partículas verdes - vegetación) afecta la temperatura del sistema. Haz clic para sembrar "bosques" (partículas verdes).</p>
+                <div id="canvas-wrap">
+                    <canvas id="bio-sim"></canvas>
+                </div>
+
+                <div class="pause-box">
+                    <span><strong>Pausa Activa 4:</strong> Observa la simulación por 1 minuto. ¿Qué ocurre si dejas de hacer clic? Escríbelo en tu cuaderno.</span>
+                    <button class="btn-done" onclick="completePause(this)">Ya lo hice</button>
+                </div>
+                <div class="pause-box">
+                    <span><strong>Pausa Activa 5:</strong> Estira tus manos y cuello. Mira por la ventana y busca el color verde más cercano.</span>
+                    <button class="btn-done" onclick="completePause(this)">Ya lo hice</button>
+                </div>
+            </section>
+
+            <!-- Evaluación Final -->
+            <section id="sec-eval">
+                <h2>Evaluación Final: Taller de Argumentación</h2>
+                
+                <div id="quiz-final">
+                    <!-- Dinámico con JS -->
+                </div>
+
+                <h3>Preguntas Abiertas (Análisis Crítico)</h3>
+                <div id="open-questions">
+                    <!-- Preguntas abiertas dinámicas -->
+                </div>
+
+                <button class="btn-main" onclick="finishExam()">Finalizar y Evaluar</button>
+            </section>
+
+            <!-- Resultados -->
+            <section id="results-card">
+                <h2>Resultados de Aprendizaje</h2>
+                <div id="results-summary"></div>
+                <div id="route-recom"></div>
+                <button class="btn-main" style="background: white;" onclick="downloadResults()">Descargar Resultados (.txt)</button>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // --- Estado Global ---
+        let userData = { name: '', lastname: '', score: 0, progress: 0 };
+        const questionsFinal = [
+            { q: "¿Cuál es la ineficiencia trófica de la carne bovina según el texto?", a: "90% de pérdida de energía", b: "10% de pérdida de energía", c: "Es 100% eficiente", correct: "a" },
+            { q: "¿Qué gas emitido por fertilizantes es 300 veces más potente que el CO2?", a: "Metano", b: "Óxido Nitroso", c: "Ozono", correct: "b" },
+            { q: "El proceso Haber-Bosch permite la síntesis de:", a: "Metano", b: "Amoníaco para fertilizantes", c: "Agua destilada", correct: "b" },
+            { q: "En la simulación, las partículas rojas representan:", a: "Oxígeno", b: "Emisiones de GEI", c: "Agua", correct: "b" },
+            { q: "¿Qué sistema propone el cierre como solución?", a: "Monocultivo de palma", b: "Sistemas agroforestales", c: "Ganadería más extensiva", correct: "b" }
+        ];
+
+        const openQuestions = [
+            "Explica por qué la ganadería extensiva causa erosión en el suelo.",
+            "¿Cómo afecta el monocultivo a la seguridad alimentaria local?",
+            "¿Qué relación hay entre el proceso Haber-Bosch y el cambio climático?",
+            "Describe una ventaja de los sistemas silvopastoriles.",
+            "Argumenta por qué el modelo actual es considerado 'entrópico'."
+        ];
+
+        // --- Logueo ---
+        document.getElementById('start-btn').addEventListener('click', () => {
+            const ln = document.getElementById('user-lastname').value;
+            const fn = document.getElementById('user-firstname').value;
+            if(ln && fn) {
+                userData.name = fn;
+                userData.lastname = ln;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                document.getElementById('nav-user').innerText = `Estudiante: ${ln}, ${fn}`;
+                initCanvas();
+                loadFinalQuiz();
+                updateProgress();
+            } else {
+                alert("Por favor ingrese sus datos completos.");
+            }
+        });
+
+        // --- Progreso y Puntos ---
+        function updateProgress() {
+            const pb = document.getElementById('progress-bar');
+            pb.style.width = `${userData.progress}%`;
+            document.getElementById('score-display').innerText = `Puntos: ${userData.score.toFixed(1)}`;
+        }
+
+        function completePause(btn) {
+            btn.innerText = "Completado";
+            btn.disabled = true;
+            btn.style.background = "#aaa";
+            userData.score += 0.1;
+            userData.progress += 5;
+            updateProgress();
+        }
+
+        // --- Simulación Canvas ---
+        let particles = [];
+        function initCanvas() {
+            const canvas = document.getElementById('bio-sim');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            class Particle {
+                constructor(type) {
+                    this.type = type; // 'red' (emision) o 'green' (bosque)
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = (Math.random() - 0.5) * 2;
+                    this.size = type === 'red' ? 3 : 6;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if(this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.type === 'red' ? '#ff4d4d' : '#2ecc71';
+                    ctx.fill();
+                }
+            }
+
+            for(let i=0; i<50; i++) particles.push(new Particle('red'));
+
+            canvas.addEventListener('mousedown', (e) => {
+                for(let i=0; i<5; i++) particles.push(new Particle('green'));
+                userData.score += 0.01;
+                updateProgress();
+            });
+
+            function animate() {
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.fillRect(0,0,canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // --- Carga de Evaluación ---
+        function loadFinalQuiz() {
+            const container = document.getElementById('quiz-final');
+            questionsFinal.forEach((q, i) => {
+                const div = document.createElement('div');
+                div.className = 'quiz-item';
+                div.innerHTML = `
+                    <p><strong>${i+1}. ${q.q}</strong></p>
+                    <label><input type="radio" name="f${i}" value="a"> ${q.a}</label><br>
+                    <label><input type="radio" name="f${i}" value="b"> ${q.b}</label><br>
+                    <label><input type="radio" name="f${i}" value="c"> ${q.c}</label>
+                `;
+                container.appendChild(div);
+            });
+
+            const openContainer = document.getElementById('open-questions');
+            openQuestions.forEach((q, i) => {
+                const div = document.createElement('div');
+                div.className = 'quiz-item';
+                div.innerHTML = `
+                    <p><strong>${i+1}. ${q}</strong></p>
+                    <textarea id="open-ans-${i}" placeholder="Escribe tu argumento aquí..."></textarea>
+                    <div id="warn-${i}" class="warning-text"></div>
+                `;
+                openContainer.appendChild(div);
+                setupSecurity(document.getElementById(`open-ans-${i}`), i);
+            });
+        }
+
+        // --- Seguridad Anti-Fraude ---
+        function setupSecurity(textarea, index) {
+            let lastKeyTime = Date.now();
+            textarea.addEventListener('paste', e => e.preventDefault());
+            textarea.addEventListener('drop', e => e.preventDefault());
+            textarea.addEventListener('contextmenu', e => e.preventDefault());
+            
+            textarea.addEventListener('input', (e) => {
+                const now = Date.now();
+                const diff = now - lastKeyTime;
+                const words = textarea.value.trim().split(/\s+/).length;
+                
+                // Si se escriben muchas palabras muy rápido (detectar pegado oculto)
+                if(textarea.value.length > 10 && diff < 10) {
+                    document.getElementById(`warn-${index}`).innerText = "⚠️ Detección de entrada no manual (Copy-Paste bloqueado)";
+                    textarea.value = "";
+                }
+                lastKeyTime = now;
+            });
+        }
+
+        // --- Evaluación ---
+        function finishExam() {
+            let correctCount = 0;
+            questionsFinal.forEach((q, i) => {
+                const sel = document.querySelector(`input[name="f${i}"]:checked`);
+                if(sel && sel.value === q.correct) correctCount++;
+            });
+
+            let openScore = 0;
+            openQuestions.forEach((_, i) => {
+                const val = document.getElementById(`open-ans-${i}`).value.trim();
+                const wordCount = val.split(/\s+/).filter(w => w.length > 0).length;
+                if(wordCount >= 10 && wordCount <= 25) openScore += 0.5;
+            });
+
+            const finalNote = Math.min(5, (correctCount * 0.5) + openScore);
+            userData.score = finalNote;
+
+            displayResults(finalNote);
+        }
+
+        function displayResults(note) {
+            const card = document.getElementById('results-card');
+            card.style.display = 'block';
+            window.scrollTo(0, document.body.scrollHeight);
+
+            let ruta = "";
+            if(note < 3) ruta = "Ruta: Refuerzo nivel 1. Debes releer la sección deductiva y enfocarte en los ciclos del nitrógeno.";
+            else if(note < 4.5) ruta = "Ruta: Consolidación. Buen manejo conceptual, profundiza en bioética ambiental.";
+            else ruta = "Ruta: Excelencia. Estás listo para liderar proyectos de sostenibilidad.";
+
+            document.getElementById('results-summary').innerHTML = `
+                <p>Nota Final: <strong>${note.toFixed(1)} / 5.0</strong></p>
+                <p>Estado: ${note >= 3 ? 'Aprobado' : 'Reprobado'}</p>
+            `;
+            document.getElementById('route-recom').innerText = ruta;
+        }
+
+        function downloadResults() {
+            let content = `RESULTADOS OVA: LA HUELLA EN LA TIERRA\n`;
+            content += `Estudiante: ${userData.lastname}, ${userData.name}\n`;
+            content += `Nota: ${userData.score.toFixed(1)}\n`;
+            content += `-------------------------------------------\n`;
+            openQuestions.forEach((q, i) => {
+                content += `Q: ${q}\nA: ${document.getElementById(`open-ans-${i}`).value}\n\n`;
+            });
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Resultados_${userData.lastname}.txt`;
+            a.click();
+        }
+
+        // Feedback inmediato pre-saberes
+        document.querySelectorAll('input[name^="pre"], input[name^="icfes"]').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const fb = document.getElementById(`fb-${e.target.name}`);
+                const isCorrect = (e.target.name === 'pre1' && e.target.value === 'b') || 
+                                  (e.target.name === 'pre2' && e.target.value === 'b') ||
+                                  (e.target.name === 'pre3' && e.target.value === 'b') ||
+                                  (e.target.name === 'icfes1' && e.target.value === 'b');
+                
+                fb.innerText = isCorrect ? "✓ Correcto" : "✗ Inténtalo de nuevo";
+                fb.className = "feedback " + (isCorrect ? "correct" : "incorrect");
+                if(isCorrect) {
+                    userData.score += 0.05;
+                    updateProgress();
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>

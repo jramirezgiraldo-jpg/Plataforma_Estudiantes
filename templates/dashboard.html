@@ -31,28 +31,33 @@
     </div>
 </div>
 
-<div class="materials-grid">
+<div class="materials-container">
+    {% set ns = namespace(current_period='') %}
     {% if files %}
         {% for file in files %}
-        <div class="material-card">
-            <div class="material-icon">
-                {% if 'ScapeRoom' in file['display_name'] %}
-                    🔐
-                {% elif 'gamif' in file['display_name'] or 'jue' in file['display_name'] %}
-                    🎮
-                {% elif 'ppt' in file['display_name'] or 'SL' in file['display_name'] %}
-                    📊
-                {% elif 'concentrece' in file['display_name'] or 'cru' in file['display_name'] %}
-                    🧩
-                {% else %}
-                    📄
-                {% endif %}
+            {% if ns.current_period != file.periodo %}
+                {% set ns.current_period = file.periodo %}
+                <h2 class="period-title">Periodo {{ file.periodo }}</h2>
+            {% endif %}
+            <div class="material-card">
+                <div class="material-icon">
+                    {% if 'ScapeRoom' in file['display_name'] %}
+                        🔐
+                    {% elif 'gamif' in file['display_name'] or 'jue' in file['display_name'] %}
+                        🎮
+                    {% elif 'ppt' in file['display_name'] or 'SL' in file['display_name'] %}
+                        📊
+                    {% elif 'concentrece' in file['display_name'] or 'cru' in file['display_name'] %}
+                        🧩
+                    {% else %}
+                        📄
+                    {% endif %}
+                </div>
+                <div class="material-info">
+                    <h3>{{ file['display_name'] }}</h3>
+                    <a href="{{ url_for('serve_material', periodo_id=file['periodo'], filename=file['filename']) }}" target="_blank" class="btn-secondary" onclick="simulateCompletion()">Abrir Actividad</a>
+                </div>
             </div>
-            <div class="material-info">
-                <h3>{{ file['display_name'] }}</h3>
-                <a href="{{ url_for('serve_material', filename=file['filename']) }}" target="_blank" class="btn-secondary" onclick="simulateCompletion()">Abrir Actividad</a>
-            </div>
-        </div>
         {% endfor %}
     {% else %}
         <div class="empty-state">

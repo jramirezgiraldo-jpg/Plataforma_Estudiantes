@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terapias Génicas: La Medicina del Futuro en Quimbaya</title>
+    <style>
+        /* ================= VARIABLES Y PALETA DE COLORES ================= */
+        :root {
+            --c-cafe-oscuro: #3e2723;
+            --c-cafe-medio: #5d4037;
+            --c-verde-cafetal: #2e7d32;
+            --c-verde-claro: #81c784;
+            --c-naranja-citrico: #e65100;
+            --c-amarillo-sol: #fbc02d;
+            --c-fondo: #fcf3e8;
+            --c-blanco: #ffffff;
+            --c-texto: #212121;
+            --c-alerta: #c62828;
+            --c-exito: #2e7d32;
+            --c-borde: #e0e0e0;
+            --fuente-principal: 'Segoe UI', system-ui, sans-serif;
+            --sombra-card: 0 10px 25px rgba(0,0,0,0.08);
+            --radio-esquina: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--fuente-principal); }
+        body { background-color: var(--c-fondo); color: var(--c-texto); line-height: 1.8; overflow-x: hidden; }
+        
+        /* ================= HUD SUPERIOR (FIJO) ================= */
+        #hud-global {
+            position: fixed; top: 0; left: 0; width: 100%; height: 75px;
+            background: linear-gradient(90deg, var(--c-cafe-oscuro), var(--c-verde-cafetal));
+            color: var(--c-blanco); display: flex; justify-content: space-between; align-items: center;
+            padding: 0 30px; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.4s;
+        }
+        .hud-oculto { transform: translateY(-100%); }
+        .hud-info { display: flex; align-items: center; gap: 15px; font-size: 1.15rem; font-weight: bold; }
+        
+        .contenedor-barra {
+            flex-grow: 1; margin: 0 40px; background: rgba(255,255,255,0.2); height: 16px;
+            border-radius: 8px; position: relative; overflow: hidden;
+        }
+        #barra-avance {
+            height: 100%; width: 0%; background: var(--c-amarillo-sol);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 12px var(--c-amarillo-sol);
+        }
+        
+        /* Iconos desbloqueables */
+        .logros-caja { display: flex; gap: 10px; }
+        .icono-logro { width: 30px; height: 30px; fill: rgba(255,255,255,0.3); transition: 0.5s; }
+        .icono-logro.desbloqueado { fill: var(--c-amarillo-sol); filter: drop-shadow(0 0 5px var(--c-amarillo-sol)); transform: scale(1.1); }
+
+        /* ================= PANTALLA DE BIENVENIDA ================= */
+        #pantalla-bienvenida {
+            height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: radial-gradient(circle at center, rgba(46,125,50,0.85), rgba(62,39,35,0.95)), 
+                        url('data:image/svg+xml;utf8,<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><path d="M40 10 C60 30 60 50 40 70 C20 50 20 30 40 10" fill="none" stroke="%23ffffff" stroke-width="1.5" opacity="0.05"/></svg>');
+            color: var(--c-blanco); text-align: center; padding: 20px;
+        }
+        .caja-login {
+            background: rgba(255,255,255,0.05); backdrop-filter: blur(15px); padding: 50px 60px;
+            border-radius: var(--radio-esquina); border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5); max-width: 500px; width: 100%;
+        }
+        .caja-login h1 { font-size: 2.8rem; margin-bottom: 10px; color: var(--c-amarillo-sol); }
+        .caja-login p { font-size: 1.2rem; color: #E8F5E9; margin-bottom: 30px; }
+        
+        .grupo-input { margin-bottom: 25px; text-align: left; }
+        .grupo-input label { display: block; margin-bottom: 8px; font-weight: bold; letter-spacing: 0.5px; }
+        .input-text {
+            width: 100%; padding: 15px; border-radius: 8px; border: 2px solid transparent;
+            font-size: 1.1rem; outline: none; transition: 0.3s; background: rgba(255,255,255,0.95); color: var(--c-cafe-oscuro);
+        }
+        .input-text:focus { border-color: var(--c-naranja-citrico); box-shadow: 0 0 15px rgba(230,81,0,0.5); }
+        
+        .btn-accion {
+            background-color: var(--c-naranja-citrico); color: var(--c-blanco); border: none;
+            padding: 16px 35px; border-radius: 30px; font-size: 1.2rem; font-weight: 800;
+            cursor: pointer; transition: all 0.3s; text-transform: uppercase; width: 100%; letter-spacing: 1px;
+        }
+        .btn-accion:hover:not(:disabled) { transform: translateY(-4px); background-color: #EF6C00; box-shadow: 0 10px 20px rgba(239,108,0,0.4); }
+        .btn-accion:disabled { background: #9E9E9E; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ================= CONTENIDO DEL OVA ================= */
+        #contenido-ova { display: none; padding-top: 100px; max-width: 1000px; margin: 0 auto; padding-bottom: 120px; }
+        
+        .tarjeta-modulo {
+            background: var(--c-blanco); margin: 35px 20px; padding: 50px;
+            border-radius: var(--radio-esquina); box-shadow: var(--sombra-card);
+            border-top: 8px solid var(--c-verde-cafetal);
+        }
+        
+        h1, h2, h3 { color: var(--c-verde-cafetal); margin-bottom: 25px; line-height: 1.3; }
+        h1 { font-size: 2.8rem; border-bottom: 4px solid var(--c-naranja-citrico); padding-bottom: 10px; }
+        h2 { font-size: 2.2rem; margin-top: 40px; color: var(--c-cafe-medio); }
+        h3 { font-size: 1.6rem; color: var(--c-cafe-oscuro); }
+
+        .parrafo-academico { text-align: justify; margin-bottom: 25px; font-size: 1.18rem; color: #424242; }
+        .parrafo-academico::first-letter { font-size: 3em; color: var(--c-naranja-citrico); font-weight: bold; float: left; margin-right: 10px; line-height: 0.9; }
+
+        /* ================= PREGUNTAS Y BOTONES ================= */
+        .caja-pregunta {
+            background: #F1F8E9; border: 2px solid #C8E6C9; padding: 30px;
+            border-radius: var(--radio-esquina); margin-bottom: 30px; transition: 0.3s;
+        }
+        .caja-pregunta:hover { border-color: var(--c-verde-claro); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .caja-pregunta p { font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; color: var(--c-cafe-oscuro); }
+        
+        .btn-opcion {
+            display: block; width: 100%; text-align: left; padding: 16px 20px; margin: 12px 0;
+            background: var(--c-blanco); border: 2px solid var(--c-verde-claro);
+            border-radius: 10px; cursor: pointer; font-size: 1.1rem; transition: 0.2s; color: var(--c-texto);
+        }
+        .btn-opcion:hover:not(:disabled) { background: #E8F5E9; transform: translateX(8px); }
+        .btn-opcion.correcta { background: #C8E6C9; border-color: var(--c-exito); color: var(--c-exito); font-weight: bold; }
+        .btn-opcion.incorrecta { background: #FFCDD2; border-color: var(--c-alerta); color: var(--c-alerta); }
+
+        /* ================= PAUSAS ACTIVAS ================= */
+        .pausa-interactiva {
+            background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%); border-left: 8px solid var(--c-amarillo-sol);
+            padding: 30px; margin: 40px 0; border-radius: 0 12px 12px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .btn-pausa {
+            background: var(--c-cafe-medio); color: var(--c-blanco); border: none; padding: 12px 25px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.3s; font-size: 1.1rem;
+        }
+        .btn-pausa:hover:not(:disabled) { background: var(--c-cafe-oscuro); }
+        .btn-pausa:disabled { background: var(--c-verde-cafetal); cursor: default; }
+
+        /* ================= TABLAS RESPONSIVAS ================= */
+        .tabla-quindiana {
+            width: 100%; border-collapse: collapse; margin: 40px 0; font-size: 1.1rem;
+            box-shadow: var(--sombra-card); border-radius: 12px; overflow: hidden;
+        }
+        .tabla-quindiana th, .tabla-quindiana td { padding: 18px; text-align: left; border-bottom: 1px solid var(--c-borde); }
+        .tabla-quindiana th { background: var(--c-verde-cafetal); color: var(--c-blanco); font-weight: bold; }
+        .tabla-quindiana tr:nth-child(even) { background: #FAFAFA; }
+        .tabla-quindiana tr:hover { background: #F1F8E9; }
+
+        /* ================= DRAG AND DROP (JUEGOS JS PURO) ================= */
+        .zona-juego-dd {
+            background: #FAFAFA; border: 3px dashed var(--c-naranja-citrico); border-radius: var(--radio-esquina);
+            padding: 40px; margin: 45px 0; text-align: center;
+        }
+        .contenedor-fichas, .contenedor-ranuras { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 25px 0; min-height: 70px; }
+        
+        .ficha-drag {
+            background: var(--c-cafe-oscuro); color: var(--c-blanco); padding: 15px 25px;
+            border-radius: 8px; cursor: grab; font-weight: bold; font-size: 1.3rem;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2); user-select: none; transition: transform 0.1s;
+        }
+        .ficha-drag:active { cursor: grabbing; transform: scale(1.1); }
+        
+        .ranura-drop {
+            min-width: 70px; height: 70px; border: 3px solid var(--c-cafe-medio); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; background: var(--c-blanco);
+            font-weight: bold; font-size: 1.3rem; color: var(--c-texto); transition: 0.2s;
+        }
+        .ranura-drop.es-palabra { min-width: 160px; padding: 0 15px; }
+        .ranura-drop.hover-activo { background: #FFF8E1; border-color: var(--c-naranja-citrico); transform: scale(1.05); }
+
+        /* ================= VISUALES Y CANVAS ================= */
+        .contenedor-grafico {
+            margin: 50px 0; text-align: center; background: var(--c-blanco); padding: 35px;
+            border-radius: var(--radio-esquina); box-shadow: var(--sombra-card); border: 1px solid var(--c-borde);
+        }
+        canvas {
+            background: #0B0C10; border-radius: 12px; max-width: 100%;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.6); cursor: pointer; margin-top: 20px;
+        }
+
+        /* ================= SISTEMA ANTI-FRAUDE ================= */
+        .textarea-protegido {
+            width: 100%; height: 140px; padding: 18px; border: 2px solid #BDBDBD; border-radius: 10px;
+            resize: vertical; font-size: 1.15rem; transition: 0.3s; margin-top: 15px; background: #FAFAFA;
+        }
+        .textarea-protegido:focus { border-color: var(--c-verde-cafetal); box-shadow: 0 0 12px rgba(46,125,50,0.3); outline: none; background: var(--c-blanco); }
+        
+        #pantalla-bloqueo {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9);
+            display: none; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(10px);
+        }
+        .modal-bloqueo {
+            background: var(--c-blanco); padding: 50px; border-radius: var(--radio-esquina);
+            text-align: center; max-width: 550px; border-top: 15px solid var(--c-alerta);
+            animation: sacudir-error 0.4s ease-in-out;
+        }
+        @keyframes sacudir-error { 0%,100%{transform: translateX(0);} 20%,60%{transform: translateX(-15px);} 40%,80%{transform: translateX(15px);} }
+
+        #resultados-finales {
+            display: none; background: #E8F5E9; padding: 50px; border-radius: var(--radio-esquina);
+            text-align: center; margin-top: 60px; border: 4px solid var(--c-verde-cafetal);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HUD SUPERIOR (GAMIFICACIÓN Y PROGRESO) -->
+    <div id="hud-global" class="hud-oculto">
+        <div class="hud-info">
+            <svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/></svg>
+            <span id="ui-estudiante">Cargando...</span>
+        </div>
+        <div class="contenedor-barra">
+            <div id="barra-avance"></div>
+        </div>
+        <div class="hud-info">
+            <span>Genética:</span>
+            <span id="ui-puntos" style="color: var(--c-amarillo-sol); font-size: 1.6rem;">0.0</span> / 5.0
+            
+            <div class="logros-caja">
+                <!-- Grano Café -->
+                <svg id="logro-1" class="icono-logro" viewBox="0 0 24 24"><path d="M12,2C17.52,2 22,6.48 22,12C22,17.52 17.52,22 12,22C6.48,22 2,17.52 2,12C2,6.48 6.48,2 12,2M12,20C16.42,20 20,16.42 20,12C20,7.58 16.42,4 12,4C7.58,4 4,7.58 4,12C4,16.42 7.58,20 12,20M12,6C13.5,6 14.88,6.58 15.93,7.5C14.07,9.1 12.87,11.41 12.87,14C12.87,14.71 13,15.4 13.23,16.03C12.84,16.09 12.43,16.13 12,16.13C9.72,16.13 7.85,14.26 7.85,11.98C7.85,9.7 9.72,7.83 12,7.83M12,8.83C10.27,8.83 8.85,10.25 8.85,11.98C8.85,13.71 10.27,15.13 12,15.13C12.16,15.13 12.31,15.11 12.46,15.09C12.06,14.28 11.87,13.38 11.87,12.44C11.87,10.74 12.67,9.23 13.92,8.27C13.33,8.04 12.68,7.83 12,7.83Z"/></svg>
+                <!-- Flor Cítrico -->
+                <svg id="logro-2" class="icono-logro" viewBox="0 0 24 24"><path d="M12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z"/></svg>
+                <!-- Vaca (Ganadería) -->
+                <svg id="logro-3" class="icono-logro" viewBox="0 0 24 24"><path d="M4 11V8C4 5.79 5.79 4 8 4H16C18.21 4 20 5.79 20 8V11H21V13H20V20H18V18H6V20H4V13H3V11H4M8 6C6.9 6 6 6.9 6 8V11H18V8C18 6.9 17.1 6 16 6H8M6 13V16H18V13H6M10 14.5C10 15.33 9.33 16 8.5 16S7 15.33 7 14.5 7.67 13 8.5 13 10 13.67 10 14.5M17 14.5C17 15.33 16.33 16 15.5 16S14 15.33 14 14.5 14.67 13 15.5 13 17 13.67 17 14.5Z"/></svg>
+                <!-- ADN/Salud -->
+                <svg id="logro-4" class="icono-logro" viewBox="0 0 24 24"><path d="M12.92,10.68L12.56,11.5L13.88,11.83L14.07,11.39C14.5,10.37 15.3,9.55 16.27,9.08L15.39,8.21C14.28,8.87 13.39,9.68 12.92,10.68M15.11,5L11,9L12,10.05L16.14,6.05L15.11,5M7.86,17.95L8.89,19L13,15L12,13.95L7.86,17.95M11.08,13.32L11.44,12.5L10.12,12.17L9.93,12.61C9.5,13.63 8.7,14.45 7.73,14.92L8.61,15.79C9.72,15.13 10.61,14.32 11.08,13.32M19.46,6.88L17.12,4.54C16.53,3.95 15.58,3.95 15,4.54L4.54,15C3.95,15.58 3.95,16.53 4.54,17.12L6.88,19.46C7.47,20.05 8.42,20.05 9,19.46L19.46,9C20.05,8.42 20.05,7.47 19.46,6.88M18.05,8.29L15.71,5.95L16.41,5.24L18.76,7.58L18.05,8.29M8.29,18.05L5.95,15.71L6.66,15L9,17.34L8.29,18.05Z"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA ANTI-FRAUDE -->
+    <div id="pantalla-bloqueo">
+        <div class="modal-bloqueo">
+            <svg style="width:90px; fill: var(--c-alerta); margin-bottom:20px;" viewBox="0 0 24 24"><path d="M12,2L1,21H23M12,6L19.53,19H4.47M11,10V14H13V10M11,16V18H13V16"/></svg>
+            <h2 style="color: var(--c-alerta);">¡Bloqueo de Integridad!</h2>
+            <p style="font-size: 1.25rem; margin: 20px 0; color: var(--c-cafe-oscuro);">El sistema ha detectado "Copiar y Pegar" o el uso de Inteligencia Artificial (velocidad de escritura inhumana).</p>
+            <p style="color: #616161; font-style:italic;">En Pueblo Rico, cultivamos el conocimiento con esfuerzo propio. El campo ha sido borrado.</p>
+            <button class="btn-accion" style="margin-top: 30px; background-color: var(--c-cafe-medio);" onclick="document.getElementById('pantalla-bloqueo').style.display='none'">Comprendo y Escribiré Manualmente</button>
+        </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="pantalla-bienvenida">
+        <div class="caja-login">
+            <h1>Código Biológico</h1>
+            <p>Terapias Génicas: La Medicina del Futuro (Grado 10)</p>
+            
+            <div class="grupo-input">
+                <label>Tus Nombres:</label>
+                <input type="text" id="in-nombres" class="input-text" placeholder="Ej: Santiago">
+            </div>
+            <div class="grupo-input">
+                <label>Tus Apellidos:</label>
+                <input type="text" id="in-apellidos" class="input-text" placeholder="Ej: Giraldo Aristizábal">
+            </div>
+            
+            <button id="btn-ingresar" class="btn-accion">Acceder al Laboratorio</button>
+        </div>
+    </div>
+
+    <!-- CONTENIDO CENTRAL OVA -->
+    <div id="contenido-ova">
+
+        <!-- INTRODUCCIÓN Y PRE-SABERES -->
+        <div class="tarjeta-modulo">
+            <h1>Sanando desde la Semilla</h1>
+            <h3>Objetivo de Aprendizaje</h3>
+            <p class="parrafo-academico">
+                Identificar y analizar los usos de la biotecnología moderna en la salud humana, específicamente las Terapias Génicas, comprendiendo sus mecanismos moleculares a través de analogías directas con las prácticas agronómicas (control de plagas, mejoramiento de cafetales y ganadería) que sostienen la Vereda Pueblo Rico en el municipio de Quimbaya.
+            </p>
+
+            <h3 style="margin-top: 45px;">Pre-saberes: La salud en el campo</h3>
+            <p>Responde a estas situaciones. Tus aciertos se guardarán automáticamente (+0.1 pts c/u).</p>
+
+            <div class="caja-pregunta" id="pre-1">
+                <p>1. Cuando una plaga ataca un cultivo de cítricos en Pueblo Rico, los campesinos aplican químicos para matar al insecto (tratan el síntoma). Pero si lograran hacer que el árbol naciera con inmunidad natural (cambian la raíz del problema), se parecería más a:</p>
+                <button class="btn-opcion" data-correct="false" onclick="validarOpcion('pre-1', this, false)">A. La medicina tradicional con pastillas.</button>
+                <button class="btn-opcion" data-correct="true" onclick="validarOpcion('pre-1', this, true)">B. La Terapia Génica, que busca curar la causa en el ADN y no solo el síntoma.</button>
+                <button class="btn-opcion" data-correct="false" onclick="validarOpcion('pre-1', this, false)">C. Una cirugía plástica reconstructiva.</button>
+            </div>
+
+            <div class="caja-pregunta" id="pre-2">
+                <p>2. A veces, los agrónomos en Quindío usan avispas microscópicas (un vector biológico) para que ataquen plagas específicas en los cafetales sin dañar la planta. En biotecnología humana, los científicos usan un "vector" similar para introducir un gen curativo en las células. ¿Qué suele usarse como vector?</p>
+                <button class="btn-opcion" data-correct="true" onclick="validarOpcion('pre-2', this, true)">A. Virus modificados en laboratorio para que sean inofensivos.</button>
+                <button class="btn-opcion" data-correct="false" onclick="validarOpcion('pre-2', this, false)">B. Bacterias que causan tuberculosis.</button>
+                <button class="btn-opcion" data-correct="false" onclick="validarOpcion('pre-2', this, false)">C. Glóbulos blancos de animales.</button>
+            </div>
+
+            <div class="caja-pregunta" id="pre-3">
+                <p>3. El ADN es como el manual de instrucciones de una finca. Si un trabajador hereda un "manual con errores de ortografía" (una enfermedad genética), ¿cuál crees que es el objetivo de herramientas como CRISPR-Cas9?</p>
+                <button class="btn-opcion" data-correct="false" onclick="validarOpcion('pre-3', this, false)">A. Quemar el manual completo para que no se use.</button>
+                <button class="btn-opcion" data-correct="false" onclick="validarOpcion('pre-3', this, false)">B. Leer el manual en voz alta para aliviar el dolor.</button>
+                <button class="btn-opcion" data-correct="true" onclick="validarOpcion('pre-3', this, true)">C. Actuar como unas tijeras moleculares que cortan el error y lo reemplazan por la instrucción correcta.</button>
+            </div>
+        </div>
+
+        <!-- CUERPO INDUCTIVO: BIOTECNOLOGÍA EN CONTEXTO -->
+        <div class="tarjeta-modulo">
+            <h2>El Manual de la Finca y el ADN Humano</h2>
+            
+            <p class="parrafo-academico">
+                Bienvenido a la Vereda Pueblo Rico, el corazón verde de Quimbaya. Imagina que eres el administrador de una finca cafetera. Para que todo funcione perfectamente (las despulpadoras, el beneficio, la recolección), tienes un manual de instrucciones exacto. Si el manual dice "usar aceite sucio en la máquina", la despulpadora se dañará constantemente. Podrías pasar toda la vida reparando la máquina cada semana (medicina tradicional), o podrías tomar un lápiz, borrar el error en el manual y escribir "usar aceite limpio". Al corregir el manual, el problema desaparece para siempre. Esto, a nivel biológico, es exactamente lo que propone la <strong>Terapia Génica</strong>.
+            </p>
+            <p class="parrafo-academico">
+                En el cuerpo humano, ese manual de instrucciones se llama ADN, y las "máquinas" son nuestras proteínas y células. Muchas de las enfermedades más graves que pueden afectar a los campesinos y sus familias (como la fibrosis quística, la hemofilia o ciertas distrofias musculares) no son causadas por bacterias o virus que se contraen en el campo, sino por errores genéticos heredados; "errores de ortografía" en su manual de ADN. La medicina convencional que solemos conseguir en las farmacias del pueblo se enfoca en tratar los síntomas: dar analgésicos, aplicar insulina o realizar terapias respiratorias. La biotecnología moderna busca cambiar el paradigma: <em>Curar la enfermedad desde su código fuente</em>.
+            </p>
+            <p class="parrafo-academico">
+                La Terapia Génica es la aplicación cumbre de la biotecnología en la salud. Consiste en la introducción, eliminación o cambio de material genético dentro de las células de un paciente para tratar una enfermedad hereditaria o adquirida. Volviendo a nuestra analogía agrícola, los agrónomos del Paisaje Cultural Cafetero llevan décadas haciendo algo similar en las plantas: cruzando especies para introducir genes de resistencia a plagas o, más recientemente, usando bioingeniería para fortificar cultivos. Hoy, la ciencia médica utiliza estos mismos principios moleculares, pero aplicados a las células humanas.
+            </p>
+            <p class="parrafo-academico">
+                Sin embargo, cambiar el ADN dentro de un ser humano vivo no es tan fácil como borrar un papel. Las células humanas están fuertemente protegidas. Para lograr que un "gen sano" entre a la célula enferma y llegue hasta el núcleo, los científicos se inspiraron en la propia naturaleza. En la agricultura orgánica de Quimbaya, si hay una plaga de áfidos en los cítricos, a veces se sueltan avispas parasitoides que atacan específicamente a esa plaga. En medicina, se usan <strong>Vectores Virales</strong>. Se toman virus reales, se les extrae su contenido dañino para que no causen enfermedad, y se les carga con el gen curativo. El virus, que es experto en infiltrar células, "infecta" al paciente con la cura.
+            </p>
+            <p class="parrafo-academico">
+                Las implicaciones de esto son revolucionarias. Significa que en el futuro cercano, las enfermedades que hoy consideramos sentencias de vida podrían curarse con una sola inyección intravenosa. La medicina rural, las jornadas de salud en Pueblo Rico y la esperanza de vida de la región podrían transformarse radicalmente si logramos democratizar el acceso a estas terapias, pasando de una medicina de mantenimiento a una medicina de edición perfecta.
+            </p>
+
+            <!-- TABLA COMPARATIVA -->
+            <h3>Cuadro Comparativo: Medicina vs. Agricultura</h3>
+            <table class="tabla-quindiana">
+                <thead>
+                    <tr>
+                        <th>Concepto / Problema</th>
+                        <th>Enfoque Tradicional (Mantenimiento)</th>
+                        <th>Enfoque Biotecnológico / Terapia Génica</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Enfermedad Genética (Humano)</strong></td>
+                        <td>Pastillas para el dolor, terapias continuas, cirugías recurrentes. (Ataca el síntoma).</td>
+                        <td>Insertar un gen sano en las células para que el cuerpo se repare solo. (Ataca la causa).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Plaga en el Cafetal (Agricultura)</strong></td>
+                        <td>Fumigar químicos contaminantes cada mes sobre las hojas.</td>
+                        <td>Editar la genética de la planta para que sea naturalmente resistente a la roya.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Entrega de la Solución (Vector)</strong></td>
+                        <td>Inyección directa en la sangre que se disipa en horas.</td>
+                        <td>Uso de <em>Virus Modificados</em> que se insertan permanentemente en el núcleo celular.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- JUEGO DD 1: LETRAS -->
+            <div class="zona-juego-dd" id="juego-l1">
+                <h3>Actividad 1: El Transportador Biológico (0.2 pts)</h3>
+                <p>Ordena las letras para revelar el nombre del "vehículo" (generalmente un virus modificado) que los científicos usan para introducir el gen sano dentro de la célula del paciente.</p>
+                <div class="contenedor-fichas" id="items-L1"></div>
+                <div class="contenedor-ranuras" id="huecos-L1"></div>
+                <button class="btn-accion" onclick="validarLetras('juego-l1', 'VECTOR', 0.2)">Validar Término</button>
+            </div>
+
+            <!-- JUEGO DD 2: PALABRAS -->
+            <div class="zona-juego-dd" id="juego-p1">
+                <h3>Actividad 2: El Principio de Cura (0.2 pts)</h3>
+                <p>Ordena las palabras para formar la frase que describe lo que ocurre en el núcleo celular durante una terapia exitosa.</p>
+                <div class="contenedor-fichas" id="items-P1"></div>
+                <div class="contenedor-ranuras" id="huecos-P1"></div>
+                <button class="btn-accion" onclick="validarPalabras('juego-p1', 'EL ADN DEFECTUOSO ES REEMPLAZADO', 0.2)">Validar Frase</button>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 1-5 -->
+            <h2>Pausas Activas (Cuaderno de Trabajo)</h2>
+            <p>Realiza estas actividades desconectado de la pantalla. (Ganas 0.1 pts al marcarlas).</p>
+            
+            <div class="pausa-interactiva">
+                <h3>1. Reflexión Ética</h3>
+                <p>Si pudieras usar la Terapia Génica para hacer a los humanos más inteligentes o altos (no para curar enfermedades), ¿crees que debería permitirse? Escribe 3 líneas en tu cuaderno.</p>
+                <button class="btn-pausa" id="btn-pausa-1" onclick="ejecutarPausa(1)">Realizado en el cuaderno</button>
+            </div>
+            <div class="pausa-interactiva">
+                <h3>2. Dibujo de Analogía</h3>
+                <p>Dibuja un camión Willys (típico de Quimbaya) cargando cajas sanas hacia una finca. Al lado, dibuja un Virus (hexágono con patas) cargando una tira de ADN brillante hacia una célula.</p>
+                <button class="btn-pausa" id="btn-pausa-2" onclick="ejecutarPausa(2)">Realizado en el cuaderno</button>
+            </div>
+            <div class="pausa-interactiva">
+                <h3>3. Mapa Mental Inicial</h3>
+                <p>En el centro: "Biotecnología en Salud". Dos ramas principales: "Medicina Tradicional" y "Terapia Génica". Agrega las características de cada una.</p>
+                <button class="btn-pausa" id="btn-pausa-3" onclick="ejecutarPausa(3)">Realizado en el cuaderno</button>
+            </div>
+            <div class="pausa-interactiva">
+                <h3>4. Síntesis de Conceptos</h3>
+                <p>Escribe en tu cuaderno con tus propias palabras qué es un "Vector Viral" y por qué es necesario "quitarle su contenido dañino" antes de usarlo.</p>
+                <button class="btn-pausa" id="btn-pausa-4" onclick="ejecutarPausa(4)">Realizado en el cuaderno</button>
+            </div>
+            <div class="pausa-interactiva">
+                <h3>5. Flujograma Básico</h3>
+                <p>Dibuja el proceso: Gen Sano aislado -> Se mete en el Virus Vector -> Se inyecta al paciente -> El virus entra a la célula enferma -> El Gen sano empieza a funcionar.</p>
+                <button class="btn-pausa" id="btn-pausa-5" onclick="ejecutarPausa(5)">Realizado en el cuaderno</button>
+            </div>
+
+        </div>
+
+        <!-- PREGUNTA ICFES (GRÁFICA SVG) -->
+        <div class="tarjeta-modulo">
+            <h2>Competencia Científica: Indagar (0.4 pts)</h2>
+            <p class="parrafo-academico">
+                En un ensayo clínico hipotético realizado en poblaciones rurales expuestas a un trastorno genético neurodegenerativo, se evaluó la "Gravedad de los Síntomas" (Escala 0 al 100) en dos grupos de pacientes a lo largo de 12 meses. Un grupo recibió pastillas tradicionales diarias y el otro recibió una única dosis de Terapia Génica en el mes 2. Analiza la gráfica.
+            </p>
+
+            <div class="contenedor-grafico">
+                <svg width="650" height="380" viewBox="0 -20 650 400">
+                    <!-- Fondo de cuadrícula -->
+                    <rect x="60" y="20" width="550" height="280" fill="#fcfcfc" />
+                    <!-- Líneas horizontales de guía -->
+                    <line x1="60" y1="90" x2="610" y2="90" stroke="#e0e0e0" stroke-width="1"/>
+                    <line x1="60" y1="160" x2="610" y2="160" stroke="#e0e0e0" stroke-width="1"/>
+                    <line x1="60" y1="230" x2="610" y2="230" stroke="#e0e0e0" stroke-width="1"/>
+
+                    <!-- Ejes Principales -->
+                    <line x1="60" y1="300" x2="610" y2="300" stroke="#333" stroke-width="3"/>
+                    <line x1="60" y1="20" x2="60" y2="300" stroke="#333" stroke-width="3"/>
+                    
+                    <!-- Textos de ejes -->
+                    <text x="335" y="350" font-size="15" font-weight="bold" text-anchor="middle">Tiempo (Meses)</text>
+                    <text x="20" y="160" font-size="15" font-weight="bold" transform="rotate(-90, 20, 160)" text-anchor="middle">Gravedad de Síntomas (0 - 100)</text>
+                    
+                    <!-- Marcas Eje X -->
+                    <text x="60" y="325" font-size="13" text-anchor="middle">0</text>
+                    <text x="170" y="325" font-size="13" text-anchor="middle">Mes 3</text>
+                    <text x="280" y="325" font-size="13" text-anchor="middle">Mes 6</text>
+                    <text x="390" y="325" font-size="13" text-anchor="middle">Mes 9</text>
+                    <text x="500" y="325" font-size="13" text-anchor="middle">Mes 12</text>
+
+                    <!-- Marcas Eje Y -->
+                    <text x="50" y="300" font-size="13" text-anchor="end">0</text>
+                    <text x="50" y="235" font-size="13" text-anchor="end">25</text>
+                    <text x="50" y="165" font-size="13" text-anchor="end">50</text>
+                    <text x="50" y="95" font-size="13" text-anchor="end">75</text>
+                    <text x="50" y="25" font-size="13" text-anchor="end">100</text>
+
+                    <!-- Línea 1: Medicina Tradicional (Constante) -->
+                    <polyline points="60,60 170,70 280,65 390,75 500,80" fill="none" stroke="#e65100" stroke-width="4" stroke-dasharray="10,5"/>
+                    <circle cx="60" cy="60" r="5" fill="#e65100"/><circle cx="500" cy="80" r="5" fill="#e65100"/>
+                    
+                    <!-- Línea 2: Terapia Génica (Caída drástica) -->
+                    <polyline points="60,60 133,50 170,180 280,260 390,290 500,295" fill="none" stroke="#2e7d32" stroke-width="4" stroke-linecap="round"/>
+                    <!-- Marcador inyección -->
+                    <line x1="133" y1="20" x2="133" y2="300" stroke="#c62828" stroke-dasharray="5,5" stroke-width="2"/>
+                    <text x="138" y="35" font-size="11" fill="#c62828" font-weight="bold">Única Inyección (Mes 2)</text>
+                    <circle cx="60" cy="60" r="5" fill="#2e7d32"/><circle cx="500" cy="295" r="5" fill="#2e7d32"/>
+
+                    <!-- Leyenda -->
+                    <rect x="420" y="30" width="180" height="70" fill="#fff" stroke="#ccc" rx="6"/>
+                    <line x1="430" y1="50" x2="460" y2="50" stroke="#e65100" stroke-width="4" stroke-dasharray="10,5"/>
+                    <text x="470" y="55" font-size="12">Pastillas (Tradicional)</text>
+                    <line x1="430" y1="80" x2="460" y2="80" stroke="#2e7d32" stroke-width="4"/>
+                    <text x="470" y="85" font-size="12">Terapia Génica</text>
+                </svg>
+            </div>
+
+            <div class="caja-pregunta" id="icfes-1">
+                <p>Al analizar el comportamiento de las dos curvas tras el mes 2, ¿qué ventaja fundamental demuestra la Terapia Génica sobre la medicina tradicional en este estudio?</p>
+                <button class="btn-opcion" data-correct="false" onclick="validarOpcion('icfes-1', this, false)">A. La terapia génica aumenta la gravedad de los síntomas temporalmente antes de actuar.</button>
+                <button class="btn-opcion" data-correct="false" onclick="validarOpcion('icfes-1', this, false)">B. Ambas terapias tienen exactamente el mismo efecto a largo plazo.</button>
+                <button class="btn-opcion" data-correct="true" onclick="validarOpcion('icfes-1', this, true)">C. La terapia génica provee una corrección duradera y progresiva de la enfermedad con una sola intervención, mientras que las pastillas solo mantienen los síntomas sin curarlos.</button>
+                <button class="btn-opcion" data-correct="false" onclick="validarOpcion('icfes-1', this, false)">D. Las pastillas tradicionales eliminaron por completo la enfermedad en el mes 12.</button>
+            </div>
+        </div>
+
+        <!-- CUERPO DEDUCTIVO: TECNOLOGÍA EN EL NÚCLEO -->
+        <div class="tarjeta-modulo">
+            <h2>CRISPR y el Bisturí Molecular</h2>
+            
+            <p class="parrafo-academico">
+                Para lograr la corrección que vimos en la gráfica anterior, la ciencia ha evolucionado más allá de los vectores virales clásicos. Así como las herramientas de campo en Pueblo Rico pasaron del machete tradicional a modernas podadoras mecánicas precisas, la biotecnología desarrolló su herramienta definitiva en 2012: el sistema <strong>CRISPR-Cas9</strong>. Esta tecnología, ganadora del Premio Nobel, funciona como un "bisturí o machete molecular" extremadamente preciso, capaz de encontrar una secuencia específica de ADN, cortarla y permitir que la célula la repare con la secuencia correcta.
+            </p>
+            <p class="parrafo-academico">
+                CRISPR (Repeticiones Palindrómicas Cortas Agrupadas y Regularmente Interespaciadas) fue descubierto originalmente en las bacterias. Es el sistema inmunológico natural que usan las bacterias para defenderse de los virus. Ellas guardan "fotos" del ADN de los virus que las atacan y, si el virus vuelve, usan la proteína Cas9 para buscar y destrozar ese ADN invasor. Los científicos lograron programar esta proteína Cas9 para que no busque ADN de virus, sino que busque el <em>gen humano defectuoso</em> (por ejemplo, el gen que causa la ceguera hereditaria).
+            </p>
+            <p class="parrafo-academico">
+                El proceso es asombroso: El complejo CRISPR entra al núcleo de la célula del paciente. Una guía de ARN lo dirige como un GPS (Sistema de Posicionamiento Global) a través de los miles de millones de letras del genoma hasta encontrar exactamente el error. Una vez allí, la Cas9 corta la doble hélice de ADN. Luego, los científicos proporcionan un molde de ADN sano. Los mecanismos naturales de reparación de la célula toman este molde y "parchan" el corte, corrigiendo la mutación para siempre.
+            </p>
+            <p class="parrafo-academico">
+                Actualmente, existen dos formas principales de aplicar estas terapias. La terapia <em>In vivo</em>, donde el medicamento o vector se inyecta directamente en el torrente sanguíneo o en el órgano afectado del paciente (como inyectar en el ojo). Y la terapia <em>Ex vivo</em>, donde se extraen células del paciente (como células de la médula ósea), se llevan a un laboratorio, se editan genéticamente para curarlas, y luego se vuelven a transfundir al paciente. Este último método es como arrancar una plántula enferma, curarla en el vivero de la finca, y volverla a sembrar sana.
+            </p>
+            <p class="parrafo-academico">
+                A pesar de su inmenso potencial, existen grandes retos. Las terapias génicas hoy en día tienen costos astronómicos, superando a veces los millones de dólares por dosis, lo que las hace inalcanzables para un campesino promedio de Quindío. Además, los dilemas bioéticos nos obligan a preguntarnos: ¿Dónde está el límite de la edición genética? ¿Se usará solo para curar o también para "mejorar" características estéticas? El futuro de la medicina dependerá de que la sociedad se eduque sobre biotecnología para garantizar un acceso justo y ético.
+            </p>
+
+            <!-- ANIMACIÓN CANVAS A 60FPS: INYECCIÓN VIRAL -->
+            <div class="contenedor-grafico">
+                <h3>Simulador Interactivo: Terapia <i>In Vivo</i> mediante Vector Viral</h3>
+                <p style="font-size:1rem; margin-bottom:15px; color:#555;">Observa cómo un vector viral modificado inyecta un gen sano (Azul) en el núcleo, reemplazando la secuencia defectuosa (Roja).</p>
+                <canvas id="canvas-terapia" width="700" height="300"></canvas>
+                <div style="margin-top:20px;">
+                    <button class="btn-accion" id="btn-anim-canvas" style="width: auto; padding: 12px 30px;">Inyectar Vector Viral</button>
+                </div>
+                <p id="lbl-estado-canvas" style="font-weight: bold; margin-top: 15px; color: var(--c-alerta);">Estado: Célula con Mutación (Gen Defectuoso Activo)</p>
+            </div>
+
+            <!-- JUEGO DD 3: LETRAS -->
+            <div class="zona-juego-dd" id="juego-l2">
+                <h3>Actividad 3: El Bisturí Molecular (0.2 pts)</h3>
+                <p>Ordena las letras para formar el acrónimo de la tecnología revolucionaria que actúa como tijeras genéticas guiadas por GPS.</p>
+                <div class="contenedor-fichas" id="items-L2"></div>
+                <div class="contenedor-ranuras" id="huecos-L2"></div>
+                <button class="btn-accion" onclick="validarLetras('juego-l2', 'CRISPR', 0.2)">Validar Término</button>
+            </div>
+
+            <!-- JUEGO DD 4: PALABRAS -->
+            <div class="zona-juego-dd" id="juego-p2">
+                <h3>Actividad 4: El Objetivo Final (0.2 pts)</h3>
+                <p>Ordena las palabras para formar la conclusión definitiva del propósito de esta biotecnología.</p>
+                <div class="contenedor-fichas" id="items-P2"></div>
+                <div class="contenedor-ranuras" id="huecos-P2"></div>
+                <button class="btn-accion" onclick="validarPalabras('juego-p2', 'LA TERAPIA GENICA CURA ENFERMEDADES', 0.2)">Validar Frase</button>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 6-10 -->
+            <h2>Retos Finales (Cuaderno de Trabajo)</h2>
+            <p>Concluye tu sesión de estudio físico marcando estas tareas (+0.1 pts c/u).</p>
+
+            <div class="pausa-interactiva">
+                <h3>6. Cuadro Comparativo de Terapias</h3>
+                <p>En tu cuaderno, haz una tabla con dos columnas: "Terapia In vivo" (Se inyecta directo al cuerpo) vs "Terapia Ex vivo" (Se sacan las células, se editan fuera y se regresan).</p>
+                <button class="btn-pausa" id="btn-pausa-6" onclick="ejecutarPausa(6)">Realizado en el cuaderno</button>
+            </div>
+            <div class="pausa-interactiva">
+                <h3>7. El Costo de la Cura</h3>
+                <p>Anota y reflexiona: Una dosis de terapia génica Zolgensma cuesta 2.1 millones de dólares. ¿Cómo afectaría esto a las familias de Pueblo Rico? ¿Qué debería hacer el Estado?</p>
+                <button class="btn-pausa" id="btn-pausa-7" onclick="ejecutarPausa(7)">Realizado en el cuaderno</button>
+            </div>
+            <div class="pausa-interactiva">
+                <h3>8. Biología Bacteriana</h3>
+                <p>Escribe: "CRISPR-Cas9 era el sistema de defensa natural de las bacterias contra los virus, que los científicos tomaron prestado para editar ADN humano".</p>
+                <button class="btn-pausa" id="btn-pausa-8" onclick="ejecutarPausa(8)">Realizado en el cuaderno</button>
+            </div>
+            <div class="pausa-interactiva">
+                <h3>9. Dibujo Técnico: CRISPR</h3>
+                <p>Dibuja una doble hélice de ADN. Ponle unas "tijeras" gigantes cortando un segmento rojo brillante, y una "mano" poniendo un segmento azul brillante.</p>
+                <button class="btn-pausa" id="btn-pausa-9" onclick="ejecutarPausa(9)">Realizado en el cuaderno</button>
+            </div>
+            <div class="pausa-interactiva">
+                <h3>10. Síntesis Científica</h3>
+                <p>Escribe en 4 renglones: ¿Por qué curar el ADN en lugar de tratar los síntomas es considerado "La Medicina del Futuro" para la humanidad?</p>
+                <button class="btn-pausa" id="btn-pausa-10" onclick="ejecutarPausa(10)">Realizado en el cuaderno</button>
+            </div>
+        </div>
+
+        <!-- TALLER FINAL Y EXPORTACIÓN -->
+        <div class="tarjeta-modulo">
+            <h2>Evaluación Final: Genetistas del Quindío</h2>
+            <p style="color: var(--c-alerta); font-weight:bold; margin-bottom: 20px;">⚠ Filtro de Integridad Académica activado. No se permite pegar respuestas ni velocidad asistida por IA.</p>
+
+            <h3>I. Selección Múltiple (0.3 pts c/u)</h3>
+            
+            <div class="caja-pregunta" id="eval-m1">
+                <p>1. El objetivo principal de la Terapia Génica es:</p>
+                <select id="sel-m1" class="input-text" style="border: 1px solid #ccc; background:#fff;">
+                    <option value="">Seleccione su respuesta...</option>
+                    <option value="A">Aliviar temporalmente los dolores producidos por una enfermedad hereditaria.</option>
+                    <option value="B">Modificar, insertar o eliminar genes específicos en las células del paciente para curar la enfermedad de raíz.</option>
+                    <option value="C">Destruir todas las células del cuerpo y reemplazarlas por células artificiales.</option>
+                </select>
+            </div>
+
+            <div class="caja-pregunta" id="eval-m2">
+                <p>2. ¿Para qué se utilizan los "Vectores Virales" en estas terapias?</p>
+                <select id="sel-m2" class="input-text" style="border: 1px solid #ccc; background:#fff;">
+                    <option value="">Seleccione su respuesta...</option>
+                    <option value="A">Como vehículos de transporte para lograr que el gen sano penetre las defensas de la célula y llegue al núcleo.</option>
+                    <option value="B">Para enfermar intencionalmente al paciente y fortalecer su sistema inmune.</option>
+                    <option value="C">Para cortar físicamente el ADN defectuoso, actuando como tijeras.</option>
+                </select>
+            </div>
+
+            <div class="caja-pregunta" id="eval-m3">
+                <p>3. ¿Cuál es la función específica de la tecnología CRISPR-Cas9?</p>
+                <select id="sel-m3" class="input-text" style="border: 1px solid #ccc; background:#fff;">
+                    <option value="">Seleccione su respuesta...</option>
+                    <option value="A">Transportar sangre oxigenada a los tejidos dañados.</option>
+                    <option value="B">Detectar genes de virus en el aire libre.</option>
+                    <option value="C">Actuar como tijeras moleculares precisas que cortan secuencias específicas del ADN para permitir su edición.</option>
+                </select>
+            </div>
+
+            <div class="caja-pregunta" id="eval-m4">
+                <p>4. La diferencia entre una terapia <i>In vivo</i> y una <i>Ex vivo</i> es:</p>
+                <select id="sel-m4" class="input-text" style="border: 1px solid #ccc; background:#fff;">
+                    <option value="">Seleccione su respuesta...</option>
+                    <option value="A">Que "In vivo" se inyecta directamente al paciente, mientras que "Ex vivo" se extraen las células, se editan en laboratorio y se reinyectan.</option>
+                    <option value="B">Que "In vivo" usa pastillas y "Ex vivo" usa jarabes.</option>
+                    <option value="C">Ninguna, ambas significan realizar cirugías a corazón abierto.</option>
+                </select>
+            </div>
+
+            <div class="caja-pregunta" id="eval-m5">
+                <p>5. Analógicamente con la agricultura en Quimbaya, la medicina tradicional es a "fumigar un árbol enfermo" como la Terapia Génica es a:</p>
+                <select id="sel-m5" class="input-text" style="border: 1px solid #ccc; background:#fff;">
+                    <option value="">Seleccione su respuesta...</option>
+                    <option value="A">Aplicar más fertilizante a las raíces podridas.</option>
+                    <option value="B">Modificar la genética de la semilla para que el árbol nazca inmune a la enfermedad.</option>
+                    <option value="C">Cortar el árbol y quemarlo por completo.</option>
+                </select>
+            </div>
+
+            <h3 style="margin-top: 45px;">II. Análisis Científico (Preguntas Abiertas) (0.2 pts c/u)</h3>
+            <p style="font-size: 0.95rem; color: #555; margin-bottom: 20px;">Redacta respuestas completas, con tus propias palabras (Mínimo 10-15 palabras por respuesta).</p>
+
+            <div class="caja-pregunta">
+                <label><strong>1. Contextualización Agrícola:</strong> Si un agricultor repara el motor de su despulpadora dañada cambiando el engranaje defectuoso, ¿A qué equivale esto biológicamente dentro de una célula sometida a terapia génica?</label>
+                <textarea id="eval-a1" class="textarea-protegido" placeholder="Argumenta tu respuesta aquí..."></textarea>
+            </div>
+
+            <div class="caja-pregunta">
+                <label><strong>2. El Vector:</strong> ¿Por qué la ciencia de la biotecnología utiliza específicamente VIRUS modificados (y no bacterias u hongos) para transportar el gen sano hacia el núcleo humano?</label>
+                <textarea id="eval-a2" class="textarea-protegido" placeholder="Argumenta tu respuesta aquí..."></textarea>
+            </div>
+
+            <div class="caja-pregunta">
+                <label><strong>3. Mecanismo CRISPR:</strong> Explica, con tus propias palabras, qué hacen las dos partes principales del sistema CRISPR (la guía GPS y la proteína Cas9) cuando entran al ADN.</label>
+                <textarea id="eval-a3" class="textarea-protegido" placeholder="Argumenta tu respuesta aquí..."></textarea>
+            </div>
+
+            <div class="caja-pregunta">
+                <label><strong>4. Impacto Futuro:</strong> ¿Por qué crees que una sola dosis de terapia génica (que corrige el ADN) puede reemplazar a miles de dosis de pastillas tradicionales que el paciente tomaría en toda su vida?</label>
+                <textarea id="eval-a4" class="textarea-protegido" placeholder="Argumenta tu respuesta aquí..."></textarea>
+            </div>
+
+            <div class="caja-pregunta">
+                <label><strong>5. Bioética Local:</strong> ¿Qué dilema ético y económico enfrentarían las familias de la vereda Pueblo Rico si se descubre una terapia génica curativa para el cáncer, pero cuesta millones de dólares?</label>
+                <textarea id="eval-a5" class="textarea-protegido" placeholder="Argumenta tu respuesta aquí..."></textarea>
+            </div>
+
+            <button id="btn-finalizar" class="btn-accion" style="margin-top: 30px; padding: 20px;">Evaluar OVA y Generar Reporte</button>
+
+            <!-- CONTENEDOR RESULTADOS -->
+            <div id="resultados-finales">
+                <h2 style="color: var(--c-verde-cafetal); font-size: 2.6rem; margin-bottom: 10px;">¡Protocolo Finalizado!</h2>
+                <p style="font-size: 1.4rem; color: #424242;">Tu Calificación Final es: <strong id="nota-final" style="font-size: 2.8rem; color: var(--c-naranja-citrico);">0.0</strong> / 5.0</p>
+                
+                <div id="feedback-ruta" style="background: white; padding: 25px; border-radius: 12px; text-align: left; margin: 30px 0; border: 2px solid var(--c-borde); font-size: 1.15rem; color: #333;">
+                    <!-- JS Injects Feedback Here -->
+                </div>
+
+                <button class="btn-accion" onclick="descargarCertificado()" style="background-color: var(--c-verde-cafetal); width: auto; padding: 15px 40px;">Descargar Resultados (.txt)</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT PRINCIPAL: Lógica, Motor DD, Canvas, Anti-Fraude -->
+    <script>
+        /**
+         * ========================================================
+         * 1. GESTIÓN DE ESTADO Y ALMACENAMIENTO (LocalStorage)
+         * ========================================================
+         */
+        const DB_ID = 'ova_terapias_quimbaya_grado10';
+        let sysState = {
+            nombres: '', apellidos: '',
+            puntos: 0.0, progreso: 0,
+            marcadores: [], respuestasGuardadas: {},
+            terminado: false
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedData = localStorage.getItem(DB_ID);
+            if(savedData) { sysState = JSON.parse(savedData); cargarInterfaz(); }
+        });
+
+        function persistirEstado() { localStorage.setItem(DB_ID, JSON.stringify(sysState)); actualizarHUD(); }
+
+        function aplicarPuntos(cant, uuid) {
+            if(!sysState.marcadores.includes(uuid)) {
+                sysState.puntos = Math.min(5.0, sysState.puntos + cant);
+                sysState.progreso = Math.min(100, sysState.progreso + 5.5); // Aproximadamente 18 items evaluables = 100%
+                sysState.marcadores.push(uuid);
+                
+                // Desbloqueo visual de Iconos Cultura Quindiana (Logros)
+                if(sysState.puntos >= 1.0) document.getElementById('logro-1').classList.add('desbloqueado');
+                if(sysState.puntos >= 2.0) document.getElementById('logro-2').classList.add('desbloqueado');
+                if(sysState.puntos >= 3.0) document.getElementById('logro-3').classList.add('desbloqueado');
+                if(sysState.puntos >= 4.0) document.getElementById('logro-4').classList.add('desbloqueado');
+
+                persistirEstado(); return true;
+            } return false;
+        }
+
+        function actualizarHUD() {
+            document.getElementById('ui-estudiante').innerText = `${sysState.nombres} ${sysState.apellidos}`;
+            document.getElementById('ui-puntos').innerText = sysState.puntos.toFixed(1);
+            document.getElementById('barra-avance').style.width = `${sysState.progreso}%`;
+        }
+
+        document.getElementById('btn-ingresar').addEventListener('click', () => {
+            const nom = document.getElementById('in-nombres').value.trim();
+            const ape = document.getElementById('in-apellidos').value.trim();
+            if(!nom || !ape) return alert("Los campos de identidad son obligatorios.");
+            sysState.nombres = nom; sysState.apellidos = ape; persistirEstado(); iniciarVisualizacion();
+        });
+
+        function iniciarVisualizacion() {
+            document.getElementById('pantalla-bienvenida').style.display = 'none';
+            document.getElementById('contenido-ova').style.display = 'block';
+            document.getElementById('hud-global').classList.remove('hud-oculto');
+            actualizarHUD(); arrancarCanvas();
+        }
+
+        function cargarInterfaz() {
+            if(sysState.nombres) {
+                iniciarVisualizacion();
+                // Restaurar interactivos bloqueados
+                sysState.marcadores.forEach(id => {
+                    if(id.startsWith('pre-') || id.startsWith('icfes-')) {
+                        const btn = document.querySelector(`#${id} button[data-correct="true"]`);
+                        if(btn) btn.classList.add('correcta');
+                        document.querySelectorAll(`#${id} button`).forEach(b => b.disabled = true);
+                    }
+                    if(id.startsWith('btn-pausa-')) {
+                        const btn = document.getElementById(id);
+                        if(btn) { btn.disabled = true; btn.textContent = "Completado ✓"; }
+                    }
+                    if(id.startsWith('juego-')) {
+                        const btn = document.querySelector(`#${id} .btn-accion`);
+                        if(btn) { btn.disabled = true; btn.textContent = "Verificado ✓"; btn.style.background = "var(--c-exito)"; }
+                    }
+                });
+                // Restaurar inputs memoria
+                for(let i=1; i<=5; i++) {
+                    if(sysState.respuestasGuardadas[`sel-m${i}`]) document.getElementById(`sel-m${i}`).value = sysState.respuestasGuardadas[`sel-m${i}`];
+                    if(sysState.respuestasGuardadas[`eval-a${i}`]) document.getElementById(`eval-a${i}`).value = sysState.respuestasGuardadas[`eval-a${i}`];
+                }
+                if(sysState.terminado) mostrarReporteFinal();
+            }
+        }
+
+        /**
+         * ========================================================
+         * 2. LÓGICA DE CUESTIONARIOS Y PAUSAS
+         * ========================================================
+         */
+        function validarOpcion(idBloque, domBtn, esRespuesta) {
+            document.querySelectorAll(`#${idBloque} button`).forEach(b => b.disabled = true);
+            if(esRespuesta) {
+                domBtn.classList.add('correcta');
+                let valor = idBloque.startsWith('icfes') ? 0.4 : 0.1;
+                aplicarPuntos(valor, idBloque);
+            } else {
+                domBtn.classList.add('incorrecta');
+                document.querySelectorAll(`#${idBloque} button`).forEach(b => {
+                    if(b.getAttribute('data-correct') === 'true') b.style.border = '3px solid var(--c-exito)';
+                });
+                sysState.marcadores.push(idBloque); persistirEstado(); // Registrar intento fallido
+            }
+        }
+
+        function ejecutarPausa(n) {
+            const btnID = `btn-pausa-${n}`;
+            document.getElementById(btnID).disabled = true;
+            document.getElementById(btnID).textContent = "Completado ✓";
+            aplicarPuntos(0.1, btnID);
+        }
+
+        /**
+         * ========================================================
+         * 3. MOTOR DRAG & DROP (Vanilla JS Completo)
+         * ========================================================
+         */
+        let dragElem = null;
+
+        function inicializarDragDrop(idOrigen, idDestino, elementosArray, modoPalabras) {
+            const contOrigen = document.getElementById(idOrigen);
+            const contDestino = document.getElementById(idDestino);
+            contOrigen.innerHTML = ''; contDestino.innerHTML = '';
+
+            // Randomizar array
+            const randomizados = [...elementosArray].sort(() => Math.random() - 0.5);
+
+            randomizados.forEach(txt => {
+                const el = document.createElement('div');
+                el.className = 'ficha-drag'; el.textContent = txt; el.draggable = true;
+                
+                el.addEventListener('dragstart', e => {
+                    dragElem = el; e.dataTransfer.setData('text/plain', txt);
+                    setTimeout(() => el.style.opacity = '0.5', 0);
+                });
+                el.addEventListener('dragend', () => el.style.opacity = '1');
+                contOrigen.appendChild(el);
+            });
+
+            elementosArray.forEach(() => {
+                const hueco = document.createElement('div');
+                hueco.className = `ranura-drop ${modoPalabras ? 'es-palabra' : ''}`;
+                
+                hueco.addEventListener('dragover', e => { e.preventDefault(); hueco.classList.add('hover-activo'); });
+                hueco.addEventListener('dragleave', () => hueco.classList.remove('hover-activo'));
+                hueco.addEventListener('drop', e => {
+                    e.preventDefault(); hueco.classList.remove('hover-activo');
+                    if(dragElem) {
+                        if(hueco.textContent !== '') {
+                            // Devolver ficha existente a origen
+                            const regresar = document.createElement('div');
+                            regresar.className = 'ficha-drag'; regresar.textContent = hueco.textContent; regresar.draggable = true;
+                            regresar.addEventListener('dragstart', ev => { dragElem=regresar; ev.dataTransfer.setData('text', regresar.textContent); setTimeout(()=>regresar.style.opacity='0.5',0); });
+                            regresar.addEventListener('dragend', () => regresar.style.opacity='1');
+                            contOrigen.appendChild(regresar);
+                        }
+                        hueco.textContent = dragElem.textContent; dragElem.remove();
+                    }
+                });
+
+                // Fallback clic para devolver
+                hueco.addEventListener('click', () => {
+                    if(hueco.textContent !== '') {
+                        const regresar = document.createElement('div');
+                        regresar.className = 'ficha-drag'; regresar.textContent = hueco.textContent; regresar.draggable = true;
+                        regresar.addEventListener('dragstart', ev => { dragElem=regresar; ev.dataTransfer.setData('text', regresar.textContent); setTimeout(()=>regresar.style.opacity='0.5',0); });
+                        regresar.addEventListener('dragend', () => regresar.style.opacity='1');
+                        contOrigen.appendChild(regresar); hueco.textContent = '';
+                    }
+                });
+                contDestino.appendChild(hueco);
+            });
+        }
+
+        inicializarDragDrop('items-L1', 'huecos-L1', ['V','E','C','T','O','R'], false);
+        inicializarDragDrop('items-P1', 'huecos-P1', ['EL','ADN','DEFECTUOSO','ES','REEMPLAZADO'], true);
+        inicializarDragDrop('items-L2', 'huecos-L2', ['C','R','I','S','P','R'], false);
+        inicializarDragDrop('items-P2', 'huecos-P2', ['LA','TERAPIA','GENICA','CURA','ENFERMEDADES'], true);
+
+        function validarLetras(idContenedor, respuestaReal, pts) {
+            let cadena = '';
+            document.querySelectorAll(`#${idContenedor.replace('juego-','huecos-').toUpperCase()} .ranura-drop`).forEach(h => cadena += h.textContent);
+            if(cadena === respuestaReal) {
+                if(aplicarPuntos(pts, idContenedor)) {
+                    const bt = document.querySelector(`#${idContenedor} button`);
+                    bt.disabled = true; bt.textContent = "Verificado ✓"; bt.style.background = "var(--c-exito)";
+                    alert("¡Secuencia molecular identificada correctamente!");
+                }
+            } else alert("La secuencia genética es incorrecta. Revísala.");
+        }
+
+        function validarPalabras(idContenedor, respuestaReal, pts) {
+            let arreglo = [];
+            document.querySelectorAll(`#${idContenedor.replace('juego-','huecos-').toUpperCase()} .ranura-drop`).forEach(h => { if(h.textContent) arreglo.push(h.textContent); });
+            if(arreglo.join(' ') === respuestaReal) {
+                if(aplicarPuntos(pts, idContenedor)) {
+                    const bt = document.querySelector(`#${idContenedor} button`);
+                    bt.disabled = true; bt.textContent = "Verificado ✓"; bt.style.background = "var(--c-exito)";
+                    alert("¡Concepto biológico estructurado a la perfección!");
+                }
+            } else alert("Falla en la sintaxis de la terapia. Reorganiza las palabras.");
+        }
+
+        /**
+         * ========================================================
+         * 4. ANIMACIÓN CANVAS 60FPS: INFECCIÓN VIRAL & EDICIÓN
+         * ========================================================
+         */
+        function arrancarCanvas() {
+            const canvas = document.getElementById('canvas-terapia');
+            const ctx = canvas.getContext('2d');
+            const btnTerapia = document.getElementById('btn-anim-canvas');
+            const lblEstado = document.getElementById('lbl-estado-canvas');
+            
+            let etapaAnim = 0; // 0: Reposo, 1: Virus viajando, 2: Inyección, 3: Reemplazo ADN, 4: Sano
+            let tFrame = 0;
+
+            // Objetos Escenario
+            let celula = { x: 450, y: 150, radio: 120, col: 'rgba(46, 125, 50, 0.1)' };
+            let nucleo = { x: 450, y: 150, radio: 60, col: 'rgba(255, 255, 255, 0.1)' };
+            let virus = { x: 50, y: 50, radio: 15, col: '#fbc02d' }; // Vector
+            
+            // ADN (Defectuoso = Rojo, Sano = Azul Vibrante)
+            let adnHebra = [];
+            for(let i=0; i<10; i++) adnHebra.push({ x: 410 + (i*8), offset: i });
+
+            function dibujarPoligono(x, y, r, lados, color) {
+                ctx.beginPath();
+                for (let i = 0; i < lados; i++) {
+                    ctx.lineTo(x + r * Math.cos(i * 2 * Math.PI / lados), y + r * Math.sin(i * 2 * Math.PI / lados));
+                }
+                ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+            }
+
+            function dibujarADN(hebra, t, colorMutante) {
+                ctx.lineWidth = 2;
+                
+                // Superior
+                ctx.beginPath(); ctx.strokeStyle = '#666';
+                for(let i=0; i<hebra.length; i++) {
+                    let py = 150 + Math.sin((t + hebra[i].offset) * 0.3) * 15;
+                    if(i===0) ctx.moveTo(hebra[i].x, py); else ctx.lineTo(hebra[i].x, py);
+                } ctx.stroke();
+
+                // Inferior
+                ctx.beginPath(); ctx.strokeStyle = '#aaa';
+                for(let i=0; i<hebra.length; i++) {
+                    let py = 150 + Math.cos((t + hebra[i].offset) * 0.3) * 15;
+                    if(i===0) ctx.moveTo(hebra[i].x, py); else ctx.lineTo(hebra[i].x, py);
+                } ctx.stroke();
+
+                // Escaleras (Bases)
+                for(let i=0; i<hebra.length; i++) {
+                    let py1 = 150 + Math.sin((t + hebra[i].offset) * 0.3) * 15;
+                    let py2 = 150 + Math.cos((t + hebra[i].offset) * 0.3) * 15;
+                    
+                    ctx.beginPath();
+                    // Si es la sección media (4,5,6), pintar según estado
+                    if(i>=4 && i<=6) { ctx.strokeStyle = colorMutante; ctx.lineWidth = 4; }
+                    else { ctx.strokeStyle = '#e0e0e0'; ctx.lineWidth = 2; }
+                    
+                    ctx.moveTo(hebra[i].x, py1); ctx.lineTo(hebra[i].x, py2); ctx.stroke();
+                }
+            }
+
+            function loopCanvas() {
+                // Background
+                ctx.fillStyle = 'rgba(11, 12, 16, 0.4)';
+                ctx.fillRect(0,0, canvas.width, canvas.height);
+                tFrame++;
+
+                // Dibujar Célula y Núcleo
+                ctx.beginPath(); ctx.arc(celula.x, celula.y, celula.radio, 0, Math.PI*2); ctx.fillStyle = celula.col; ctx.fill();
+                ctx.strokeStyle = '#2e7d32'; ctx.lineWidth=3; ctx.stroke();
+                ctx.beginPath(); ctx.arc(nucleo.x, nucleo.y, nucleo.radio, 0, Math.PI*2); ctx.fillStyle = nucleo.col; ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth=2; ctx.stroke();
+
+                let adnColor = '#e65100'; // Defectuoso
+
+                if(etapaAnim === 0) {
+                    dibujarPoligono(virus.x, virus.y, virus.radio, 6, virus.col);
+                }
+                else if(etapaAnim === 1) {
+                    // Virus viaja
+                    virus.x += (celula.x - 60 - virus.x) * 0.05;
+                    virus.y += (celula.y - virus.y) * 0.05;
+                    dibujarPoligono(virus.x, virus.y, virus.radio, 6, virus.col);
+                    if(Math.abs(virus.x - (celula.x - 60)) < 2) { etapaAnim = 2; tFrame = 0; }
+                }
+                else if(etapaAnim === 2) {
+                    // Virus inyecta gen sano (línea azul)
+                    dibujarPoligono(virus.x, virus.y, virus.radio, 6, virus.col);
+                    ctx.beginPath(); ctx.strokeStyle = '#03A9F4'; ctx.lineWidth = 3;
+                    ctx.moveTo(virus.x + 10, virus.y);
+                    let endX = virus.x + 10 + (tFrame * 2);
+                    if(endX > 450) endX = 450;
+                    ctx.lineTo(endX, virus.y); ctx.stroke();
+                    if(endX === 450) { etapaAnim = 3; tFrame = 0; lblEstado.innerText = "Estado: Editando Código Genético..."; lblEstado.style.color = "#03A9F4"; }
+                }
+                else if(etapaAnim === 3) {
+                    // ADN Parpadea y cambia
+                    adnColor = tFrame % 20 < 10 ? '#e65100' : '#03A9F4';
+                    if(tFrame > 100) { etapaAnim = 4; lblEstado.innerText = "Estado: ¡Paciente Sano! Célula Curada"; lblEstado.style.color = "#2e7d32"; celula.col = 'rgba(46, 125, 50, 0.4)'; }
+                }
+                else if(etapaAnim === 4) {
+                    adnColor = '#03A9F4'; // Sano y azul brillante
+                }
+
+                dibujarADN(adnHebra, tFrame, adnColor);
+
+                requestAnimationFrame(loopCanvas);
+            }
+            loopCanvas();
+
+            btnTerapia.addEventListener('click', () => {
+                if(etapaAnim === 0 || etapaAnim === 4) {
+                    etapaAnim = 1; tFrame = 0; virus.x = 50; virus.y = 50;
+                    celula.col = 'rgba(46, 125, 50, 0.1)';
+                    lblEstado.innerText = "Estado: Vector Viral infiltrando la célula..."; lblEstado.style.color = "#fbc02d";
+                }
+            });
+        }
+
+        /**
+         * ========================================================
+         * 5. MÓDULO DE INTEGRIDAD ANTI-FRAUDE EXTREMA
+         * ========================================================
+         */
+        const listTextareas = document.querySelectorAll('.textarea-protegido');
+        
+        listTextareas.forEach(ta => {
+            let lastKeyTime = Date.now();
+
+            const desencadenarBloqueo = (eventoDetectado) => {
+                eventoDetectado.preventDefault(); ta.value = '';
+                document.getElementById('pantalla-bloqueo').style.display = 'flex';
+            };
+
+            // Prevención física de pegado/arrastre
+            ta.addEventListener('paste', desencadenarBloqueo);
+            ta.addEventListener('drop', desencadenarBloqueo);
+            ta.addEventListener('contextmenu', e => e.preventDefault());
+
+            // Análisis de cadencia y atajos de teclado
+            ta.addEventListener('keydown', e => {
+                // Detectar Ctrl+V Mac/Win
+                if((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) { desencadenarBloqueo(e); return; }
+                
+                const currentStamp = Date.now();
+                // Bloquear bots/IA tipeando más de 1 tecla por cada 20 milisegundos
+                if(e.key.length === 1 && (currentStamp - lastKeyTime) < 20) { desencadenarBloqueo(e); }
+                lastKeyTime = currentStamp;
+
+                // Autoguardado instantáneo
+                sysState.respuestasGuardadas[ta.id] = ta.value; persistirEstado();
+            });
+            ta.addEventListener('blur', () => { sysState.respuestasGuardadas[ta.id] = ta.value; persistirEstado(); });
+        });
+
+        // Guardado de selectores
+        for(let i=1; i<=5; i++) {
+            const s = document.getElementById(`sel-m${i}`);
+            s.addEventListener('change', () => { sysState.respuestasGuardadas[s.id] = s.value; persistirEstado(); });
+        }
+
+        /**
+         * ========================================================
+         * 6. CALIFICACIÓN Y EXPORTACIÓN INTELIGENTE
+         * ========================================================
+         */
+        document.getElementById('btn-finalizar').addEventListener('click', () => {
+            
+            // Validación Criterios Abiertos (10 palabras)
+            for(let i=1; i<=5; i++) {
+                const inputText = document.getElementById(`eval-a${i}`).value.trim();
+                const wordCnt = inputText.split(/\s+/).filter(w => w.length > 0).length;
+                if(wordCnt < 10) return alert(`Falla en la Pregunta Abierta #${i}. Necesitas argumentar con un mínimo de 10 palabras.`);
+            }
+
+            // Validación Criterios Múltiples (Llenos)
+            for(let i=1; i<=5; i++) {
+                if(document.getElementById(`sel-m${i}`).value === '') return alert(`Debes emitir tu respuesta en la Selección Múltiple #${i}.`);
+            }
+
+            // Corrección Múltiple (1:B, 2:A, 3:C, 4:A, 5:B)
+            const mapCorrectas = ['B', 'A', 'C', 'A', 'B'];
+            let puntajeExamen = 0;
+            for(let i=1; i<=5; i++) { if(document.getElementById(`sel-m${i}`).value === mapCorrectas[i-1]) puntajeExamen += 0.3; }
+
+            // Puntaje Abierto Asignado (por superar filtros y longitud) = 1.0 (5 * 0.2)
+            const puntajeArgumentativo = 1.0;
+
+            sysState.puntos = Math.min(5.0, sysState.puntos + puntajeExamen + puntajeArgumentativo);
+            sysState.progreso = 100; sysState.terminado = true;
+            persistirEstado(); mostrarReporteFinal();
+        });
+
+        function mostrarReporteFinal() {
+            document.getElementById('btn-finalizar').style.display = 'none';
+            document.getElementById('resultados-finales').style.display = 'block';
+            document.getElementById('nota-final').textContent = sysState.puntos.toFixed(1);
+
+            let txtFeedback = "";
+            if(sysState.puntos >= 4.5) {
+                txtFeedback = "<strong>¡Excelencia Bio-Médica!</strong> Demuestras un manejo sobresaliente de los conceptos de biotecnología. Has entendido cómo las herramientas que salvan cultivos en Quindío son la base de la tecnología que curará las enfermedades genéticas humanas del futuro. Eres un futuro líder en genética.";
+            } else if(sysState.puntos >= 3.0) {
+                txtFeedback = "<strong>¡Aprobación Destacada!</strong> Comprendes la idea central, pero recomendamos repasar el funcionamiento de los Vectores Virales. Recuerda: los virus son como 'mensajeros' que reparten el ADN sano a la célula. Sigue explorando el mundo de CRISPR.";
+            } else {
+                txtFeedback = "<strong>Requiere Profundización Tecnológica.</strong> Te sugerimos regresar al módulo Inductivo. La diferencia entre tratar síntomas (medicina normal / fumigar hojas) y curar la causa (Terapia génica / cambiar la semilla) es la base de todo. Revisa el simulador Canvas nuevamente.";
+            }
+
+            document.getElementById('feedback-ruta').innerHTML = txtFeedback;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function descargarCertificado() {
+            let infoExport = "========================================================================\n";
+            infoExport += "   REPORTE TÉCNICO: TERAPIAS GÉNICAS - LA MEDICINA DEL FUTURO\n";
+            infoExport += "          Institución Educativa - Vereda Pueblo Rico (Quimbaya)\n";
+            infoExport += "========================================================================\n\n";
+            infoExport += `Genetista (Estudiante): ${sysState.nombres} ${sysState.apellidos}\n`;
+            infoExport += `Nota Académica Definitiva: ${sysState.puntos.toFixed(1)} / 5.0\n`;
+            infoExport += `Estado Anti-Fraude: APROBADO (Escritura Manual Validada)\n\n`;
+
+            infoExport += "--- REVISIÓN DE SELECCIÓN MÚLTIPLE ---\n";
+            const refs = ['B', 'A', 'C', 'A', 'B'];
+            for(let i=1; i<=5; i++) { 
+                infoExport += `Pregunta ${i}: Opción dada [${sysState.respuestasGuardadas[`sel-m${i}`]}] -> Correcta Clave [${refs[i-1]}]\n`; 
+            }
+
+            infoExport += "\n--- ANÁLISIS DE PREGUNTAS ABIERTAS ---\n";
+            for(let i=1; i<=5; i++) { 
+                infoExport += `Resp. ${i}:\n${sysState.respuestasGuardadas[`eval-a${i}`]}\n\n`; 
+            }
+            
+            infoExport += "\n* Informe auditado y generado por el núcleo de aprendizaje OVA Quindío.";
+
+            const blobObject = new Blob([infoExport], { type: 'text/plain;charset=utf-8' });
+            const docUrl = URL.createObjectURL(blobObject);
+            const anchor = document.createElement('a');
+            anchor.href = docUrl; anchor.download = `Reporte_TerapiasGenicas_${sysState.apellidos}.txt`;
+            anchor.click(); URL.revokeObjectURL(docUrl);
+        }
+    </script>
+</body>
+</html>

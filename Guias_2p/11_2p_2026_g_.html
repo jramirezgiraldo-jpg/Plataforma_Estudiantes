@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Llanto de la Quebrada - Pueblo Rico, Quimbaya</title>
+    <style>
+        /* =========================================
+           PALETA DE COLORES (Paisaje Cultural Cafetero)
+           ========================================= */
+        :root {
+            --cafe-oscuro: #2D1A11;
+            --cafe-tierra: #5D4037;
+            --verde-bosque: #1B5E20;
+            --verde-hoja: #4CAF50;
+            --azul-agua: #0288D1;
+            --azul-claro: #81D4FA;
+            --amarillo-citrico: #FBC02D;
+            --crema-pergamino: #F5F5F0;
+            --blanco: #FFFFFF;
+            --gris-texto: #333333;
+            --rojo-alerta: #D32F2F;
+        }
+
+        /* =========================================
+           ESTILOS BASE Y TIPOGRAFÍA
+           ========================================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--crema-pergamino);
+            color: var(--gris-texto);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4 { color: var(--verde-bosque); margin-bottom: 1rem; }
+        p { margin-bottom: 1.2rem; text-align: justify; font-size: 1.1rem; }
+        
+        /* =========================================
+           INTERFAZ Y NAVEGACIÓN
+           ========================================= */
+        #navbar {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background-color: var(--cafe-oscuro);
+            color: var(--blanco);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .nav-info { display: flex; align-items: center; gap: 20px; }
+        .user-name { font-weight: bold; color: var(--amarillo-citrico); }
+        
+        .progress-container {
+            width: 200px; height: 15px;
+            background-color: var(--cafe-tierra);
+            border-radius: 10px; overflow: hidden;
+            border: 1px solid var(--amarillo-citrico);
+        }
+        .progress-bar {
+            width: 0%; height: 100%;
+            background-color: var(--azul-agua);
+            transition: width 0.5s ease-in-out;
+        }
+
+        .gamification-icons { display: flex; gap: 10px; }
+        .icon-slot {
+            width: 30px; height: 30px;
+            fill: #777; opacity: 0.3; transition: all 0.5s;
+        }
+        .icon-slot.unlocked { fill: var(--amarillo-citrico); opacity: 1; transform: scale(1.2); }
+
+        /* =========================================
+           PANTALLA DE BIENVENIDA
+           ========================================= */
+        #welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: linear-gradient(135deg, var(--verde-bosque) 0%, var(--azul-agua) 100%);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 2000; transition: opacity 0.5s;
+        }
+        .login-box {
+            background-color: var(--crema-pergamino);
+            padding: 40px; border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center; max-width: 450px; width: 90%;
+        }
+        .login-box h2 { color: var(--cafe-oscuro); margin-bottom: 5px; }
+        .login-box h4 { color: var(--azul-agua); margin-bottom: 20px; font-style: italic; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 5px; color: var(--verde-bosque); }
+        .input-group input {
+            width: 100%; padding: 10px; border: 2px solid var(--verde-hoja);
+            border-radius: 5px; font-size: 1rem; outline: none;
+        }
+        .input-group input:focus { border-color: var(--azul-agua); }
+        .btn-primary {
+            background-color: var(--verde-hoja); color: white;
+            border: none; padding: 12px 25px; border-radius: 5px;
+            font-size: 1.1rem; cursor: pointer; transition: background 0.3s;
+            font-weight: bold; width: 100%;
+        }
+        .btn-primary:hover { background-color: var(--verde-bosque); }
+        .btn-secondary {
+            background-color: var(--azul-agua); color: white;
+            border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+        .btn-secondary:hover { background-color: #0277BD; }
+
+        /* =========================================
+           CONTENEDOR PRINCIPAL Y SECCIONES
+           ========================================= */
+        #main-content {
+            padding: 80px 20px 40px 20px;
+            max-width: 1050px; margin: 0 auto;
+            display: none;
+        }
+        
+        .section-card {
+            background: var(--blanco);
+            padding: 35px; border-radius: 12px; margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-left: 6px solid var(--azul-agua);
+        }
+
+        /* =========================================
+           CUADROS COMPARATIVOS
+           ========================================= */
+        .table-responsive { overflow-x: auto; margin: 25px 0; }
+        table {
+            width: 100%; border-collapse: collapse;
+            background-color: var(--blanco);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: var(--verde-bosque); color: var(--blanco); font-weight: bold; }
+        tr:hover { background-color: #f1f8e9; }
+        tr:nth-child(even) { background-color: #fafafa; }
+
+        /* =========================================
+           PAUSAS ACTIVAS
+           ========================================= */
+        .pausa-activa {
+            background-color: #e1f5fe; border: 2px dashed var(--azul-agua);
+            padding: 20px; border-radius: 10px; margin: 20px 0;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .pausa-activa h4 { color: var(--cafe-oscuro); margin-bottom: 0; display: flex; align-items: center; gap: 10px; }
+        .btn-done {
+            align-self: flex-start; background-color: var(--amarillo-citrico);
+            border: none; padding: 8px 15px; border-radius: 5px;
+            font-weight: bold; cursor: pointer; color: var(--cafe-oscuro); transition: 0.3s;
+        }
+        .btn-done:hover { transform: scale(1.05); }
+        .btn-done:disabled { background-color: #ccc; cursor: not-allowed; transform: none; }
+
+        /* =========================================
+           EVALUACIÓN Y ANTI-FRAUDE
+           ========================================= */
+        .question-block { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .options label { display: block; margin-bottom: 10px; cursor: pointer; padding: 10px; border-radius: 5px; transition: background 0.2s; border: 1px solid transparent; }
+        .options label:hover { background-color: #f0f8ff; border-color: var(--azul-claro); }
+        
+        textarea {
+            width: 100%; height: 110px; padding: 15px; border: 2px solid var(--cafe-tierra);
+            border-radius: 8px; font-family: inherit; font-size: 1rem; resize: vertical;
+        }
+        textarea:focus { border-color: var(--azul-agua); outline: none; }
+        .word-count { font-size: 0.9rem; color: var(--cafe-oscuro); font-weight: bold; margin-top: 5px; }
+        .fraud-alert { color: var(--blanco); background-color: var(--rojo-alerta); padding: 8px; border-radius: 5px; font-weight: bold; display: none; margin-top: 5px; }
+
+        /* =========================================
+           CANVAS Y GRÁFICOS SVG
+           ========================================= */
+        .canvas-container {
+            width: 100%; display: flex; flex-direction: column; align-items: center;
+            background: #111; border-radius: 12px; padding: 25px; margin: 25px 0;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+        canvas { background: #1a237e; border: 3px solid var(--verde-hoja); border-radius: 8px; max-width: 100%; box-shadow: 0 0 15px rgba(76, 175, 80, 0.5); }
+        .canvas-controls { margin-top: 20px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        
+        .svg-container {
+            width: 100%; background: var(--blanco); padding: 20px;
+            border-radius: 10px; border: 1px solid #ccc; margin: 25px 0;
+        }
+        
+        /* Resultados */
+        #results-area { display: none; background: linear-gradient(135deg, var(--cafe-oscuro), var(--verde-bosque)); color: white; padding: 40px; border-radius: 15px; text-align: center; }
+        .feedback-box { background: rgba(255,255,255,0.1); padding: 25px; border-radius: 10px; margin-top: 25px; text-align: left; border-left: 5px solid var(--amarillo-citrico); }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE BIENVENIDA -->
+    <div id="welcome-screen">
+        <div class="login-box">
+            <svg width="70" height="70" viewBox="0 0 24 24" fill="var(--azul-agua)">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+            </svg>
+            <h2>El Llanto de la Quebrada</h2>
+            <h4>Laboratorio de Eco-Dinámica - Pueblo Rico</h4>
+            <p>Ingresa tus datos para iniciar el estudio hidrológico de nuestra vereda.</p>
+            <div class="input-group">
+                <label for="input-apellidos">Apellidos:</label>
+                <input type="text" id="input-apellidos" placeholder="Ej: Castaño Giraldo" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="input-nombres">Nombres:</label>
+                <input type="text" id="input-nombres" placeholder="Ej: Andrés Felipe" autocomplete="off">
+            </div>
+            <button class="btn-primary" id="btn-iniciar">Iniciar Investigación</button>
+            <p id="login-error" style="color: var(--rojo-alerta); font-weight:bold; display: none; margin-top: 10px;">Por favor, ingresa tus nombres y apellidos.</p>
+        </div>
+    </div>
+
+    <!-- BARRA DE NAVEGACIÓN Y GAMIFICACIÓN -->
+    <nav id="navbar">
+        <div class="nav-info">
+            <span>Investigador(a): <span id="display-name" class="user-name"></span></span>
+            <div class="gamification-icons" id="icon-container">
+                <!-- Iconos SVG inyectados vía JS -->
+            </div>
+        </div>
+        <div class="nav-info">
+            <span>Misiones:</span>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <span id="score-display">0 / 5</span>
+        </div>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="main-content">
+        
+        <!-- INICIO -->
+        <section class="section-card" id="inicio">
+            <h1>El Llanto de la Quebrada: Relación Árbol-Agua</h1>
+            <p><strong>Objetivo de Aprendizaje:</strong> Comprender, mediante la aplicación de leyes físicas y principios de ecología de ecosistemas, la relación termodinámica e hidrológica entre la cobertura forestal y la regulación de los cuerpos de agua, contextualizado en las dinámicas productivas de la Vereda Pueblo Rico (Quimbaya).</p>
+            
+            <hr style="margin: 25px 0; border: 0; border-top: 2px solid #eee;">
+            
+            <h3>Pre-saberes: La física del agua y las plantas</h3>
+            <p>Antes de caminar por las fincas de la vereda, responde estas 3 preguntas exploratorias:</p>
+            
+            <div class="question-block">
+                <p>1. ¿Cómo se llama el proceso biológico y físico mediante el cual las plantas liberan vapor de agua a la atmósfera a través de sus hojas?</p>
+                <div class="options">
+                    <label><input type="radio" name="pre1" value="a"> a) Fotosíntesis hídrica.</label>
+                    <label><input type="radio" name="pre1" value="b"> b) Transpiración.</label>
+                    <label><input type="radio" name="pre1" value="c"> c) Condensación radicular.</label>
+                </div>
+            </div>
+            <div class="question-block">
+                <p>2. En el ciclo del agua, la escorrentía superficial (el agua que corre sobre la tierra en lugar de infiltrarse) aumenta significativamente cuando:</p>
+                <div class="options">
+                    <label><input type="radio" name="pre2" value="a"> a) Hay mucha vegetación y raíces profundas.</label>
+                    <label><input type="radio" name="pre2" value="b"> b) El suelo carece de árboles y está compactado.</label>
+                    <label><input type="radio" name="pre2" value="c"> c) El sol evapora rápidamente los charcos.</label>
+                </div>
+            </div>
+            <div class="question-block">
+                <p>3. ¿Qué fuerza física permite que el agua ascienda contra la gravedad desde las raíces de un árbol maderable hasta sus hojas más altas?</p>
+                <div class="options">
+                    <label><input type="radio" name="pre3" value="a"> a) La presión atmosférica que empuja el agua hacia abajo.</label>
+                    <label><input type="radio" name="pre3" value="b"> b) La gravedad lunar actuando sobre los estomas.</label>
+                    <label><input type="radio" name="pre3" value="c"> c) La cohesión de las moléculas de agua y la tensión generada al evaporarse.</label>
+                </div>
+            </div>
+            <button class="btn-secondary" id="btn-presaberes">Verificar Hipótesis</button>
+            <p id="presaberes-feedback" style="margin-top: 15px; font-weight: bold;"></p>
+        </section>
+
+        <!-- CUERPO INDUCTIVO -->
+        <section class="section-card" id="inductivo">
+            <h2>El diagnóstico en terreno: Un viaje por Pueblo Rico</h2>
+            
+            <p>Quienes han recorrido la Vereda Pueblo Rico a bordo de un tradicional Jeep Willys, saben que el paisaje no es uniforme. Aunque a simple vista domina el verde característico del Paisaje Cultural Cafetero, una mirada científica revela mosaicos muy distintos: fincas con cafetales bajo densos bosques de sombrío, extensas laderas sembradas con cítricos a plena exposición solar y, cada vez más frecuentes, amplias praderas desprovistas de árboles destinadas a la ganadería bovina. Es precisamente en las fronteras entre estos diferentes usos del suelo donde los campesinos más veteranos de Quimbaya han notado un fenómeno alarmante: las pequeñas quebradas y nacimientos de agua, que históricamente no se secaban ni en los veranos más recios, ahora se reducen a un hilo de lodo o desaparecen por completo. A este fenómeno local, teñido de melancolía agrícola, lo llaman "el llanto de la quebrada".</p>
+
+            <p>Para entender este problema, debemos observar el suelo no como tierra inerte, sino como una estructura viva y porosa. En una finca cafetera tradicional o en los parches de bosque nativo que aún sobreviven en las cañadas de Pueblo Rico, los árboles actúan como gigantescas esponjas hidráulicas. Las raíces de especies como el guamo, el nogal cafetero o el yarumo no solo anclan la planta, sino que fracturan el subsuelo, creando canales (macroporos). Simultáneamente, la caída constante de hojas, ramas y materia orgánica forma un colchón en la superficie conocido como <em>hojarasca</em>. Cuando las lluvias torrenciales, típicas del régimen bimodal del Quindío, caen sobre este bosque, la hojarasca disipa la energía cinética de las gotas. El agua no corre violentamente loma abajo; en cambio, se infiltra lentamente a través de los poros creados por las raíces, recargando los acuíferos subterráneos. Estos acuíferos son los verdaderos "tanques de reserva" que alimentan las quebradas gota a gota durante las sequías.</p>
+
+            <p>Sin embargo, la dinámica económica ha traído transformaciones. Con el aumento en el precio de los insumos y la búsqueda de rentabilidad a corto plazo, algunos lotes en Pueblo Rico han sido deforestados para dar paso a la ganadería. Aquí el panorama hídrico cambia drásticamente. Al talar el bosque, se elimina la hojarasca y la red radicular que estructuraba el suelo. Pero el agravante mayor es el pisoteo del ganado. Cientos de kilos concentrados en las pezuñas de las vacas comprimen mecánicamente el suelo, un proceso conocido como <em>compactación edáfica</em>. El suelo compactado pierde sus poros. Cuando llueve sobre un potrero deforestado y compactado, el agua encuentra una superficie casi impermeable. Se produce entonces una alta <em>escorrentía superficial</em>: el agua fluye rápidamente por encima de la tierra, arrastrando la capa fértil (erosión) y llegando de golpe a las quebradas, causando inundaciones relámpago, seguidas de sequías severas al cesar la lluvia, pues el acuífero nunca se recargó.</p>
+
+            <p>Esta alteración del ciclo hidrológico local también afecta directamente a otros sectores. Los cultivadores de cítricos (naranja, mandarina, limón tahití), que requieren considerables volúmenes de agua para la formación y llenado del fruto, ven sus cosechas mermadas cuando los nacimientos colindantes se secan debido a la tala en fincas vecinas. El ciclo del agua no reconoce linderos ni cercas de alambre de púas. Un árbol talado en la parte alta de la cuenca afecta la presión de turgencia (el agua dentro de las células vegetales que mantiene a la planta erguida) de un naranjo ubicado cientos de metros más abajo, impactando su productividad y el tamaño de la fruta que se venderá en las plazas de mercado.</p>
+
+            <p>Finalmente, este desequilibrio atenta contra el motor emergente de Quimbaya: el ecoturismo. Decenas de eco-hoteles y alojamientos rurales dependen de la estética del paisaje y del suministro constante de agua para sus huéspedes. Una quebrada seca y laderas erosionadas no solo rompen el equilibrio ecológico, sino que desdibujan el encanto del Paisaje Cultural Cafetero. El "llanto de la quebrada" es, por tanto, una advertencia termodinámica: hemos roto la infraestructura natural que capta, regula y distribuye el recurso más vital. Para revertirlo, primero debemos comprender a la perfección las leyes físicas que gobiernan el interior de un árbol.</p>
+
+            <div class="table-responsive">
+                <table>
+                    <caption><strong>Cuadro Comparativo: Dinámica Hídrica según Uso del Suelo en Pueblo Rico</strong></caption>
+                    <thead>
+                        <tr>
+                            <th>Variable Hidrológica</th>
+                            <th>Bosque Nativo / Café con Sombrío</th>
+                            <th>Potrero Ganadero (Deforestado y Compactado)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Tasa de Infiltración</strong></td>
+                            <td>Muy alta. Los macroporos radiculares actúan como embudos hacia el acuífero.</td>
+                            <td>Muy baja. La compactación por pezuñas sella el suelo.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Escorrentía Superficial</strong></td>
+                            <td>Mínima (2% - 5%). El agua se frena por la hojarasca.</td>
+                            <td>Crítica (40% - 70%). El agua corre llevándose los nutrientes.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Regulación de Quebradas</strong></td>
+                            <td>Estable. Caudal constante en invierno y verano.</td>
+                            <td>Extrema. Crecidas súbitas en invierno, sequía total en verano.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Microclima (Evapotranspiración)</strong></td>
+                            <td>Fresco y húmedo. Alta regulación térmica local.</td>
+                            <td>Cálido y seco. Alta radiación incidente sobre el suelo desnudo.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- PAUSAS ACTIVAS 1-5 -->
+        <section class="section-card">
+            <h3>Laboratorio de Campo: Pausas Activas (Cuaderno de Biología y Física)</h3>
+            <p>Realiza los siguientes retos en tu cuaderno. Al terminar, confirma haciendo clic en "Ya lo hice" para registrar tu avance en la investigación.</p>
+            
+            <div class="pausa-activa">
+                <h4>1. Análisis Reflexivo <span>💧</span></h4>
+                <p>Responde en un párrafo (5-8 líneas): Si el agua de lluvia es la misma para toda la vereda, ¿por qué la quebrada que pasa por un potrero se seca en verano y la que pasa por un guadual o bosque no?</p>
+                <button class="btn-done" id="btn-pausa1" onclick="completarPausa(1, 'cafe')">Ya lo hice</button>
+            </div>
+            
+            <div class="pausa-activa">
+                <h4>2. Observación Anatómica <span>✏️</span></h4>
+                <p>Dibuja un corte transversal del suelo (perfil edáfico). En la mitad izquierda, dibuja las raíces de un árbol nativo creando macroporos y la infiltración. En la mitad derecha, dibuja el suelo compactado de un potrero y el agua escurriendo por encima.</p>
+                <button class="btn-done" id="btn-pausa2" onclick="completarPausa(2, 'hoja')">Ya lo hice</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>3. Mapa Mental de Impactos <span>🧠</span></h4>
+                <p>Construye un mapa mental con el nodo central "Deforestación en Pueblo Rico". Ramifica los impactos hacia: a) Disponibilidad de agua, b) Turismo, c) Cultivos de cítricos y d) Calidad del suelo.</p>
+                <button class="btn-done" id="btn-pausa3" onclick="completarPausa(3, 'citrico')">Ya lo hice</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>4. Tabla de Soluciones <span>📊</span></h4>
+                <p>Elabora una tabla de dos columnas. En la izquierda, anota 3 problemas causados por la ganadería extensiva al agua. En la derecha, propón 3 soluciones basadas en la siembra de árboles (ej: sistemas silvopastoriles).</p>
+                <button class="btn-done" id="btn-pausa4" onclick="completarPausa(4, 'sombrero')">Ya lo hice</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>5. Diagrama de Flujo del Agua <span>🛤️</span></h4>
+                <p>Diseña un diagrama de flujo que trace el viaje de una gota de lluvia en un bosque: Lluvia -> Hojarasca -> Infiltración radicular -> Acuífero subterráneo -> Manantial (quebrada) -> Evaporación.</p>
+                <button class="btn-done" id="btn-pausa5" onclick="completarPausa(5, 'willys')">Ya lo hice</button>
+            </div>
+        </section>
+
+        <!-- GRÁFICA ANALÍTICA Y PREGUNTA ICFES -->
+        <section class="section-card">
+            <h2>Análisis Hidrológico: Caudales Comparados</h2>
+            <p>La siguiente gráfica vectorial muestra los datos reales simulados de los aforos (medición de caudal en Litros/segundo) de dos quebradas en la Vereda Pueblo Rico durante un año típico (12 meses). La línea azul representa la quebrada "El Guamo" (cuenca protegida con bosque denso). La línea roja representa la quebrada "La Desolada" (cuenca deforestada hace 5 años para pastoreo).</p>
+            
+            <div class="svg-container">
+                <svg viewBox="0 0 700 350" width="100%" height="100%">
+                    <!-- Fondo y ejes -->
+                    <rect width="700" height="350" fill="#f8f9fa" rx="8" />
+                    <line x1="60" y1="300" x2="650" y2="300" stroke="#333" stroke-width="2" />
+                    <line x1="60" y1="40" x2="60" y2="300" stroke="#333" stroke-width="2" />
+                    
+                    <!-- Cuadrícula Y (Caudal) -->
+                    <line x1="60" y1="250" x2="650" y2="250" stroke="#e0e0e0" stroke-width="1" />
+                    <line x1="60" y1="200" x2="650" y2="200" stroke="#e0e0e0" stroke-width="1" />
+                    <line x1="60" y1="150" x2="650" y2="150" stroke="#e0e0e0" stroke-width="1" />
+                    <line x1="60" y1="100" x2="650" y2="100" stroke="#e0e0e0" stroke-width="1" />
+                    <line x1="60" y1="50" x2="650" y2="50" stroke="#e0e0e0" stroke-width="1" />
+                    
+                    <!-- Etiquetas Y (Caudal L/s) -->
+                    <text x="50" y="305" font-size="12" text-anchor="end" fill="#333">0</text>
+                    <text x="50" y="255" font-size="12" text-anchor="end" fill="#333">20</text>
+                    <text x="50" y="205" font-size="12" text-anchor="end" fill="#333">40</text>
+                    <text x="50" y="155" font-size="12" text-anchor="end" fill="#333">60</text>
+                    <text x="50" y="105" font-size="12" text-anchor="end" fill="#333">80</text>
+                    <text x="50" y="55" font-size="12" text-anchor="end" fill="#333">100</text>
+                    <text x="25" y="170" font-size="14" font-weight="bold" fill="#0288D1" transform="rotate(-90 25 170)" text-anchor="middle">Caudal (Litros/segundo)</text>
+
+                    <!-- Zonas Climáticas (Fondo) -->
+                    <rect x="60" y="40" width="140" height="260" fill="rgba(255, 193, 7, 0.1)" /> <!-- Verano -->
+                    <rect x="200" y="40" width="190" height="260" fill="rgba(33, 150, 243, 0.1)" /> <!-- Invierno -->
+                    <rect x="390" y="40" width="140" height="260" fill="rgba(255, 193, 7, 0.1)" /> <!-- Verano -->
+                    <rect x="530" y="40" width="120" height="260" fill="rgba(33, 150, 243, 0.1)" /> <!-- Invierno -->
+
+                    <text x="130" y="35" font-size="11" text-anchor="middle" fill="#757575">Temporada Seca</text>
+                    <text x="295" y="35" font-size="11" text-anchor="middle" fill="#757575">Temporada Lluvias</text>
+                    <text x="460" y="35" font-size="11" text-anchor="middle" fill="#757575">Temporada Seca</text>
+                    <text x="590" y="35" font-size="11" text-anchor="middle" fill="#757575">Lluvias</text>
+
+                    <!-- Etiquetas X (Meses) -->
+                    <text x="80" y="320" font-size="12" text-anchor="middle" fill="#333">Ene</text>
+                    <text x="130" y="320" font-size="12" text-anchor="middle" fill="#333">Feb</text>
+                    <text x="180" y="320" font-size="12" text-anchor="middle" fill="#333">Mar</text>
+                    <text x="230" y="320" font-size="12" text-anchor="middle" fill="#333">Abr</text>
+                    <text x="280" y="320" font-size="12" text-anchor="middle" fill="#333">May</text>
+                    <text x="330" y="320" font-size="12" text-anchor="middle" fill="#333">Jun</text>
+                    <text x="380" y="320" font-size="12" text-anchor="middle" fill="#333">Jul</text>
+                    <text x="430" y="320" font-size="12" text-anchor="middle" fill="#333">Ago</text>
+                    <text x="480" y="320" font-size="12" text-anchor="middle" fill="#333">Sep</text>
+                    <text x="530" y="320" font-size="12" text-anchor="middle" fill="#333">Oct</text>
+                    <text x="580" y="320" font-size="12" text-anchor="middle" fill="#333">Nov</text>
+                    <text x="630" y="320" font-size="12" text-anchor="middle" fill="#333">Dic</text>
+                    <text x="350" y="345" font-size="14" font-weight="bold" fill="#333" text-anchor="middle">Meses del Año</text>
+
+                    <!-- Línea Q. El Guamo (Bosque) - Azul estable -->
+                    <!-- Caudales aprox: 45, 42, 45, 55, 60, 58, 48, 45, 50, 65, 70, 60 -->
+                    <!-- Y = 300 - (Caudal * 2.5) -->
+                    <polyline points="80,187.5 130,195 180,187.5 230,162.5 280,150 330,155 380,180 430,187.5 480,175 530,137.5 580,125 630,150" fill="none" stroke="#0288D1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                    
+                    <!-- Línea Q. La Desolada (Deforestada) - Roja extrema -->
+                    <!-- Caudales aprox: 5, 0, 10, 90, 100, 85, 10, 0, 15, 95, 105, 80 -->
+                    <!-- Y = 300 - (Caudal * 2.5) -->
+                    <polyline points="80,287.5 130,300 180,275 230,75 280,50 330,87.5 380,275 430,300 480,262.5 530,62.5 580,37.5 630,100" fill="none" stroke="#D32F2F" stroke-width="3" stroke-dasharray="6,4" stroke-linecap="round" stroke-linejoin="round" />
+
+                    <!-- Leyenda -->
+                    <rect x="420" y="60" width="20" height="4" fill="#0288D1" />
+                    <text x="450" y="65" font-size="12" fill="#333">Q. El Guamo (Cuenca Boscosa)</text>
+                    <line x1="420" y1="80" x2="440" y2="80" stroke="#D32F2F" stroke-width="3" stroke-dasharray="4,2" />
+                    <text x="450" y="85" font-size="12" fill="#333">Q. La Desolada (Cuenca Deforestada)</text>
+                    
+                    <!-- Puntos críticos -->
+                    <circle cx="130" cy="300" r="5" fill="#D32F2F" />
+                    <text x="130" y="285" font-size="10" fill="#D32F2F" text-anchor="middle">Quebrada seca (0 L/s)</text>
+
+                    <circle cx="280" cy="50" r="5" fill="#D32F2F" />
+                    <text x="280" y="40" font-size="10" fill="#D32F2F" text-anchor="middle">Inundación súbita (100 L/s)</text>
+                </svg>
+            </div>
+
+            <div class="pausa-activa" style="border-color: var(--cafe-tierra);">
+                <h4>Pregunta Tipo ICFES (Competencia: Explicar Fenómenos)</h4>
+                <p>Al analizar el comportamiento de las dos quebradas durante la temporada de lluvias (Abril - Junio), la línea roja (Q. La Desolada) presenta picos de caudal muy superiores a la línea azul, seguidos de caídas dramáticas en verano. ¿Qué principio físico-ecológico explica este comportamiento en la cuenca deforestada?</p>
+                <div class="options">
+                    <label><input type="radio" name="icfes1" value="a"> a) La falta de cobertura vegetal elimina la interceptación y evapotranspiración, permitiendo que el 100% de la lluvia se infiltre profundamente en los acuíferos, causando sobrepresión y desbordamientos.</label>
+                    <label><input type="radio" name="icfes1" value="b"> b) La ausencia de raíces y hojarasca reduce drásticamente el potencial mátrico y la porosidad del suelo, provocando que el agua escurra superficialmente a gran velocidad en invierno y no haya reservas subterráneas para el verano.</label>
+                    <label><input type="radio" name="icfes1" value="c"> c) Los árboles del bosque (línea azul) consumen tanta agua durante el invierno que impiden que la quebrada "El Guamo" crezca, secándola artificialmente.</label>
+                    <label><input type="radio" name="icfes1" value="d"> d) La compactación del suelo por la ganadería aumenta la capilaridad, lo que hace que el agua subterránea suba rápidamente a la superficie y se evapore antes de llegar a la quebrada.</label>
+                </div>
+                <button class="btn-secondary" id="btn-evaluar-icfes" style="margin-top: 10px;">Evaluar mi respuesta</button>
+                <p id="icfes-feedback" style="margin-top: 10px; font-weight: bold;"></p>
+            </div>
+        </section>
+
+        <!-- CUERPO DEDUCTIVO Y ANIMACIÓN CANVAS -->
+        <section class="section-card" id="deductivo">
+            <h2>El Árbol como Bomba Hidráulica: La Física de la Transpiración</h2>
+            
+            <p>Para comprender por qué un bosque retiene y distribuye el agua tan eficientemente, debemos adentrarnos en las leyes de la biofísica que operan dentro del tronco de cualquier árbol gigante de nuestra vereda. Un árbol no tiene un corazón o una bomba mecánica para empujar el agua desde sus raíces hasta la copa, que puede estar a 30 metros de altura. Entonces, ¿cómo vence el agua la fuerza de la gravedad? La respuesta se encuentra en el asombroso fenómeno microscópico descrito por la <strong>Teoría Tenso-Coheso-Transpiratoria</strong>. Esta teoría unifica la termodinámica atmosférica con las propiedades químicas de la molécula de agua (H<sub>2</sub>O).</p>
+
+            <p>Todo comienza en las hojas, específicamente en unos poros microscópicos llamados estomas. Cuando el sol de Quimbaya calienta la copa del árbol, el agua dentro de las hojas se evapora y sale a la atmósfera en forma de gas (vapor). Este proceso de pérdida de agua se llama <em>transpiración</em>. En física, cuando extraemos un líquido de un sistema cerrado, generamos una presión negativa o <em>tensión</em>. Imagina cuando absorbes líquido por un pitillo: creas un vacío parcial en tu boca que empuja el líquido hacia arriba. En el árbol, la evaporación en la hoja crea una tensión que "tira" del agua que se encuentra en los tubos conductores del tronco, conocidos como xilema.</p>
+
+            <p>Pero la tensión por sí sola no bastaría si el agua no tuviera una propiedad química excepcional: la <em>cohesión</em>. Gracias a los puentes de hidrógeno, las moléculas de agua se atraen fuertemente entre sí. Además, presentan <em>adhesión</em>, es decir, se pegan a las paredes delgadas del xilema (gracias a las fuerzas intermoleculares de celulosa y lignina). Esta combinación de fuerzas permite que el agua forme una columna ininterrumpida desde la hoja hasta la punta de la raíz más profunda. Si cortamos un árbol (tala), rompemos violentamente millones de estas columnas de agua. El sistema de bombeo impulsado por la energía solar colapsa de inmediato.</p>
+
+            <p>Esta dinámica no solo es vital para el árbol, sino para todo el ecosistema y el clima local. Este continuo movimiento se rige por gradientes de energía, específicamente por el <em>Potencial Hídrico (Ψ)</em>. El agua siempre se moverá de zonas con mayor potencial hídrico (el suelo húmedo de Pueblo Rico) hacia zonas con menor potencial hídrico (la atmósfera seca). Un solo árbol adulto puede transpirar cientos de litros de agua en un día soleado. Cuando agrupamos miles de árboles en un bosque, este proceso (llamado evapotranspiración) inyecta toneladas de vapor de agua a la atmósfera. Este vapor se condensa, forma nubes locales y regula la temperatura térmica de las fincas cafeteras, creando el microclima perfecto que define nuestra calidad de taza a nivel mundial.</p>
+
+            <p>La tragedia del "llanto de la quebrada" ocurre porque la deforestación desmantela esta intrincada maquinaria física. Al eliminar los árboles, eliminamos la bomba que extraía humedad de las profundidades para liberarla lentamente. Sin la sombra protectora del dosel forestal, el suelo desnudo recibe la radiación solar directa, evaporando la poca humedad superficial. La temperatura del potrero sube, el suelo se resquebraja, las bacterias beneficiosas mueren por desecación, y el ciclo se rompe. La ciencia es clara: proteger nuestros bosques no es solo un acto de amor por la naturaleza, es la única estrategia termodinámica viable para garantizar el agua de las futuras generaciones de Quimbaya. Observa el simulador a continuación para visualizar estos vectores físicos en acción.</p>
+
+            <!-- ANIMACIÓN CANVAS -->
+            <div class="canvas-container">
+                <h3 style="color: var(--amarillo-citrico);">Simulador Físico: Eje Suelo-Planta-Atmósfera</h3>
+                <p style="color: #aaa; text-align: center; margin-bottom: 15px;">Física de partículas: Cohesión, Transpiración y Escorrentía (60fps).</p>
+                <canvas id="treeCanvas" width="800" height="400"></canvas>
+                <div class="canvas-controls">
+                    <button class="btn-primary" id="btn-lluvia">1. Simular Lluvia</button>
+                    <button class="btn-primary" id="btn-sol" style="background-color: var(--amarillo-citrico); color: var(--cafe-oscuro);" disabled>2. Sol (Activar Transpiración)</button>
+                    <button class="btn-primary" id="btn-talar" style="background-color: var(--rojo-alerta);" disabled>3. Talar Árbol (Ver Impacto)</button>
+                </div>
+                <p id="canvas-status" style="color: var(--blanco); margin-top: 15px; font-weight: bold;">Estado: Ecosistema en equilibrio. Esperando precipitación.</p>
+                
+                <!-- Medidores virtuales -->
+                <div style="display: flex; gap: 30px; margin-top: 15px; color: var(--blanco); font-family: monospace;">
+                    <div>Infiltración: <span id="meter-inf" style="color: var(--verde-hoja);">Alta (90%)</span></div>
+                    <div>Caudal Quebrada: <span id="meter-cau" style="color: var(--azul-claro);">Estable</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAUSAS ACTIVAS 6-10 -->
+        <section class="section-card">
+            <h3>Laboratorio de Campo: Pausas Activas (Parte 2)</h3>
+            
+            <div class="pausa-activa">
+                <h4>6. Mapa Conceptual Biofísico <span>🕸️</span></h4>
+                <p>Construye un mapa conceptual usando los siguientes términos: Evapotranspiración, Potencial Hídrico, Cohesión, Tensión, Xilema, Hojas (Estomas), Raíces.</p>
+                <button class="btn-done" id="btn-pausa6" onclick="completarPausa(6, 'willys')">Ya lo hice</button>
+            </div>
+            
+            <div class="pausa-activa">
+                <h4>7. Tabla de Datos Observacional <span>📝</span></h4>
+                <p>Basado en la animación Canvas, describe en una tabla de dos columnas qué sucede con el agua cuando: 1) El árbol está intacto bajo el sol, 2) Se tala el árbol y llueve de nuevo.</p>
+                <button class="btn-done" id="btn-pausa7" onclick="completarPausa(7, 'hoja')">Ya lo hice</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>8. Dibujo Técnico: El Xilema <span>📐</span></h4>
+                <p>Dibuja un tubo microscópico (xilema) dentro del tronco. Dibuja las moléculas de agua (H2O) unidas entre sí por líneas punteadas (puentes de hidrógeno / cohesión) subiendo hacia arriba.</p>
+                <button class="btn-done" id="btn-pausa8" onclick="completarPausa(8, 'cafe')">Ya lo hice</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>9. Síntesis Escrita: El argumento <span>✍️</span></h4>
+                <p>Imagina que eres un perito ambiental. Escribe un párrafo técnico (7 líneas) dirigido a la Alcaldía de Quimbaya argumentando por qué permitir la deforestación de las cañadas para pastos destruye las propiedades físico-químicas del suelo.</p>
+                <button class="btn-done" id="btn-pausa9" onclick="completarPausa(9, 'citrico')">Ya lo hice</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>10. Problema Matemático <span>🧮</span></h4>
+                <p>Si un árbol nativo en Pueblo Rico transpira 150 litros de agua al día, y se talan 200 árboles de un lote, ¿cuántos litros de agua diarios dejan de inyectarse a la atmósfera para formar nubes y microclima? (Anota el cálculo y la respuesta).</p>
+                <button class="btn-done" id="btn-pausa10" onclick="completarPausa(10, 'sombrero')">Ya lo hice</button>
+            </div>
+        </section>
+
+        <!-- EVALUACIÓN FINAL TIPO TALLER -->
+        <section class="section-card" id="evaluacion">
+            <h2>Evaluación Final: Validando el rigor científico</h2>
+            <p>Resuelve la siguiente prueba técnica. Para las preguntas abiertas, el sistema validará la autenticidad de tu digitación y la extensión (estrictamente entre <strong>10 y 15 palabras</strong> por respuesta). Demuestra tu comprensión de la física y la ecología de Pueblo Rico.</p>
+            
+            <hr style="margin: 20px 0;">
+            <h3>I. Selección Múltiple (Biología y Física)</h3>
+
+            <div class="question-block">
+                <p>1. ¿Qué función hidrológica principal cumple la hojarasca en un bosque nativo del Quindío?</p>
+                <select id="eval-m1" style="padding: 8px; font-size: 1rem; width: 100%; border-radius:5px;">
+                    <option value="">-- Selecciona una opción --</option>
+                    <option value="a">Impermeabilizar el suelo para evitar que el agua se filtre.</option>
+                    <option value="b">Disipar la energía cinética de las gotas de lluvia y promover la infiltración.</option>
+                    <option value="c">Aumentar la escorrentía superficial hacia las cañadas.</option>
+                </select>
+            </div>
+
+            <div class="question-block">
+                <p>2. Según la Teoría Tenso-Coheso-Transpiratoria, la fuerza que empuja el agua hacia arriba en el tronco se origina en:</p>
+                <select id="eval-m2" style="padding: 8px; font-size: 1rem; width: 100%; border-radius:5px;">
+                    <option value="">-- Selecciona una opción --</option>
+                    <option value="a">Las raíces que succionan la tierra como motores.</option>
+                    <option value="b">La tensión generada por la evaporación (transpiración) en los estomas de las hojas.</option>
+                    <option value="c">La presión del viento empujando las ramas hacia el cielo.</option>
+                </select>
+            </div>
+
+            <div class="question-block">
+                <p>3. ¿Cómo altera la ganadería bovina la termodinámica y el ciclo del agua en el suelo?</p>
+                <select id="eval-m3" style="padding: 8px; font-size: 1rem; width: 100%; border-radius:5px;">
+                    <option value="">-- Selecciona una opción --</option>
+                    <option value="a">Compacta los macroporos, anulando la infiltración y aumentando la escorrentía superficial.</option>
+                    <option value="b">Mejora la porosidad gracias al peso de los animales, permitiendo más recarga de acuíferos.</option>
+                    <option value="c">Las vacas transpiran el agua que los árboles ya no pueden evaporar.</option>
+                </select>
+            </div>
+
+            <div class="question-block">
+                <p>4. Físicamente, la cohesión del agua dentro del xilema de un árbol se debe a:</p>
+                <select id="eval-m4" style="padding: 8px; font-size: 1rem; width: 100%; border-radius:5px;">
+                    <option value="">-- Selecciona una opción --</option>
+                    <option value="a">La fuerza gravitatoria de la tierra.</option>
+                    <option value="b">La existencia de puentes de hidrógeno entre las moléculas de H2O.</option>
+                    <option value="c">La acción de bacterias en la savia elaborada.</option>
+                </select>
+            </div>
+
+            <div class="question-block">
+                <p>5. Si medimos el Potencial Hídrico (Ψ), el agua viaja en el continuo suelo-planta-atmósfera:</p>
+                <select id="eval-m5" style="padding: 8px; font-size: 1rem; width: 100%; border-radius:5px;">
+                    <option value="">-- Selecciona una opción --</option>
+                    <option value="a">De mayor potencial (suelo húmedo) a menor potencial (atmósfera seca).</option>
+                    <option value="b">De menor potencial a mayor potencial siempre.</option>
+                    <option value="c">No viaja por gradientes de potencial, viaja por difusión simple celular.</option>
+                </select>
+            </div>
+
+            <hr style="margin: 20px 0;">
+            <h3>II. Preguntas Abiertas de Argumentación</h3>
+            <p style="color: var(--cafe-oscuro); font-size: 0.95rem; background: #FFF9C4; padding: 10px; border-left: 4px solid var(--amarillo-citrico);"><em><strong>Instrucción Crítica:</strong> Redacta tú mismo las respuestas. Deben contener <strong>exactamente entre 10 y 15 palabras</strong>. El sistema bloquea acciones de pegado y detecta velocidades de escritura propias de la Inteligencia Artificial.</em></p>
+
+            <div class="question-block">
+                <p>6. Define el concepto de "escorrentía superficial" aplicado a un potrero deforestado.</p>
+                <textarea id="eval-o1" class="secure-input"></textarea>
+                <div class="word-count" id="count-o1">Palabras: 0</div>
+                <div class="fraud-alert" id="alert-o1">⚠️ ¡Bloqueo de Seguridad! Velocidad irreal de tipeo (Posible uso de IA o copiado automático).</div>
+            </div>
+
+            <div class="question-block">
+                <p>7. Explica cómo la hojarasca protege el suelo de Pueblo Rico durante las tormentas.</p>
+                <textarea id="eval-o2" class="secure-input"></textarea>
+                <div class="word-count" id="count-o2">Palabras: 0</div>
+                <div class="fraud-alert" id="alert-o2">⚠️ ¡Bloqueo de Seguridad! Velocidad irreal de tipeo (Posible uso de IA o copiado automático).</div>
+            </div>
+
+            <div class="question-block">
+                <p>8. Describe por qué los puentes de hidrógeno son vitales para el árbol.</p>
+                <textarea id="eval-o3" class="secure-input"></textarea>
+                <div class="word-count" id="count-o3">Palabras: 0</div>
+                <div class="fraud-alert" id="alert-o3">⚠️ ¡Bloqueo de Seguridad! Velocidad irreal de tipeo (Posible uso de IA o copiado automático).</div>
+            </div>
+
+            <div class="question-block">
+                <p>9. ¿Qué relación existe entre la deforestación y la temperatura de los cultivos cercanos?</p>
+                <textarea id="eval-o4" class="secure-input"></textarea>
+                <div class="word-count" id="count-o4">Palabras: 0</div>
+                <div class="fraud-alert" id="alert-o4">⚠️ ¡Bloqueo de Seguridad! Velocidad irreal de tipeo (Posible uso de IA o copiado automático).</div>
+            </div>
+
+            <div class="question-block">
+                <p>10. Concluye: ¿Por qué talar un bosque seca la quebrada durante los meses de verano?</p>
+                <textarea id="eval-o5" class="secure-input"></textarea>
+                <div class="word-count" id="count-o5">Palabras: 0</div>
+                <div class="fraud-alert" id="alert-o5">⚠️ ¡Bloqueo de Seguridad! Velocidad irreal de tipeo (Posible uso de IA o copiado automático).</div>
+            </div>
+
+            <button class="btn-primary" id="btn-finalizar" style="margin-top: 20px; font-size: 1.2rem; padding: 15px;">Enviar Evaluación Final</button>
+
+        </section>
+
+        <!-- ÁREA DE RESULTADOS -->
+        <div id="results-area">
+            <h2>Reporte de Investigación Hidrológica</h2>
+            <h1 id="final-score" style="color: var(--amarillo-citrico); font-size: 3.5rem; margin: 15px 0;">0.0 / 5.0</h1>
+            
+            <div class="feedback-box">
+                <h3 style="color: var(--amarillo-citrico); border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px;">Análisis de Inteligencia Pedagógica:</h3>
+                <p id="smart-feedback" style="margin-top: 15px; font-size: 1.1rem; line-height: 1.8;"></p>
+            </div>
+
+            <button class="btn-secondary" id="btn-descargar" style="margin-top: 30px; background-color: var(--verde-hoja); font-size: 1.1rem; padding: 12px 25px;">📄 Descargar Reporte (.txt)</button>
+        </div>
+
+    </div> <!-- Fin main-content -->
+
+    <script>
+        /* =========================================
+           ESTADO Y GESTIÓN DE USUARIO
+           ========================================= */
+        const state = {
+            nombres: "",
+            apellidos: "",
+            puntos: 0,
+            pausasCompletadas: 0,
+            respuestasAbiertas: {},
+            intentosFraude: 0
+        };
+
+        const respuestasCorrectas = { m1: 'b', m2: 'b', m3: 'a', m4: 'b', m5: 'a' };
+
+        document.getElementById('btn-iniciar').addEventListener('click', () => {
+            const apellidos = document.getElementById('input-apellidos').value.trim();
+            const nombres = document.getElementById('input-nombres').value.trim();
+            
+            if (apellidos === "" || nombres === "") {
+                document.getElementById('login-error').style.display = "block";
+                return;
+            }
+
+            state.apellidos = apellidos;
+            state.nombres = nombres;
+            
+            document.getElementById('display-name').textContent = `${nombres} ${apellidos}`;
+            document.getElementById('welcome-screen').style.opacity = "0";
+            
+            setTimeout(() => {
+                document.getElementById('welcome-screen').style.display = "none";
+                document.getElementById('navbar').style.display = "flex";
+                document.getElementById('main-content').style.display = "block";
+                generarIconosGami();
+                initCanvas(); // Iniciar motor físico
+            }, 500);
+        });
+
+        /* =========================================
+           GAMIFICACIÓN Y PROGRESO
+           ========================================= */
+        const iconData = {
+            'cafe': '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86l7.45 7.45c-.49.27-1.02.41-1.5.41zm6.75-3.32l-7.43-7.43c.49-.28 1.02-.42 1.5-.42 4.41 0 8 3.59 8 8 0 .28-.02.57-.07.85z"/>', // Grano
+            'hoja': '<path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66l.95-2.3c3.47.5 5.99-1.39 7.34-4.7c1.35-3.31 1.25-5.5-.32-7z"/>',
+            'citrico': '<path d="M12 22A10 10 0 1 1 12 2a10 10 0 0 1 0 20z M12 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>',
+            'sombrero': '<path d="M22 17H2c-1.1 0-2 .9-2 2v2h24v-2c0-1.1-.9-2-2-2zm-6-2H8l-1.5-6h11L16 15z M12 3C8 3 5 6 5 9h14c0-3-3-6-7-6z"/>',
+            'willys': '<path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>'
+        };
+
+        const iconKeys = Object.keys(iconData);
+
+        function generarIconosGami() {
+            const container = document.getElementById('icon-container');
+            iconKeys.forEach(key => {
+                container.innerHTML += `<svg id="icon-${key}" class="icon-slot" viewBox="0 0 24 24">${iconData[key]}</svg>`;
+            });
+        }
+
+        window.completarPausa = function(num, iconKey) {
+            const btn = document.getElementById(`btn-pausa${num}`);
+            btn.disabled = true;
+            btn.textContent = "¡Registrado!";
+            btn.style.backgroundColor = "var(--verde-hoja)";
+            btn.style.color = "white";
+            
+            state.pausasCompletadas++;
+            if (state.pausasCompletadas % 2 === 0) {
+                state.puntos++;
+                actualizarBarra();
+                desbloquearIcono(iconKeys[state.puntos - 1]);
+            }
+        };
+
+        function actualizarBarra() {
+            const pct = (state.puntos / 5) * 100;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+            document.getElementById('score-display').textContent = `${state.puntos} / 5`;
+        }
+
+        function desbloquearIcono(key) {
+            const icon = document.getElementById(`icon-${key}`);
+            if (icon) icon.classList.add('unlocked');
+        }
+
+        /* =========================================
+           INTERACTIVIDAD PRE-SABERES E ICFES
+           ========================================= */
+        document.getElementById('btn-presaberes').addEventListener('click', () => {
+            const p1 = document.querySelector('input[name="pre1"]:checked');
+            const p2 = document.querySelector('input[name="pre2"]:checked');
+            const p3 = document.querySelector('input[name="pre3"]:checked');
+            
+            const feedback = document.getElementById('presaberes-feedback');
+            if(!p1 || !p2 || !p3) {
+                feedback.textContent = "Responde las 3 preguntas para validar tu hipótesis.";
+                feedback.style.color = "var(--rojo-alerta)";
+                return;
+            }
+
+            let correct = 0;
+            if(p1.value === 'b') correct++;
+            if(p2.value === 'b') correct++;
+            if(p3.value === 'c') correct++;
+
+            feedback.textContent = `Alineación inicial: ${correct} de 3 aciertos. ¡Vamos al campo de estudio!`;
+            feedback.style.color = "var(--verde-bosque)";
+            document.getElementById('btn-presaberes').disabled = true;
+        });
+
+        document.getElementById('btn-evaluar-icfes').addEventListener('click', () => {
+            const ans = document.querySelector('input[name="icfes1"]:checked');
+            const feedback = document.getElementById('icfes-feedback');
+            if(!ans) {
+                feedback.textContent = "Debes seleccionar una opción de análisis.";
+                feedback.style.color = "var(--rojo-alerta)";
+                return;
+            }
+            if(ans.value === 'b') {
+                feedback.textContent = "¡Análisis Físico Correcto! La línea roja muestra un comportamiento torrencial (sin infiltración mátrica) y rápida desecación.";
+                feedback.style.color = "var(--verde-bosque)";
+            } else {
+                feedback.textContent = "Incorrecto. Analiza el papel de la raíz y la hojarasca como esponjas. Si las quitas (Línea Roja), el agua no se retiene en el suelo.";
+                feedback.style.color = "var(--rojo-alerta)";
+            }
+            document.getElementById('btn-evaluar-icfes').disabled = true;
+        });
+
+        /* =========================================
+           MOTOR ANTI-FRAUDE (EVENTOS Y CADENCIA)
+           ========================================= */
+        const textareas = document.querySelectorAll('.secure-input');
+        
+        textareas.forEach(ta => {
+            let keystrokes = [];
+            let lastTime = Date.now();
+
+            ta.addEventListener('paste', e => e.preventDefault());
+            ta.addEventListener('drop', e => e.preventDefault());
+            ta.addEventListener('contextmenu', e => e.preventDefault());
+
+            ta.addEventListener('keydown', e => {
+                if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'v')) {
+                    e.preventDefault(); return;
+                }
+                
+                // Ignorar teclas largas (Shift, Backspace, etc)
+                if (e.key.length === 1) {
+                    const now = Date.now();
+                    const delay = now - lastTime;
+                    keystrokes.push(delay);
+                    if (keystrokes.length > 15) keystrokes.shift();
+                    lastTime = now;
+                }
+            });
+
+            ta.addEventListener('input', () => {
+                const text = ta.value.trim();
+                const words = text === "" ? 0 : text.split(/\s+/).length;
+                const idNum = ta.id.split('-')[1];
+                const countUI = document.getElementById(`count-${idNum}`);
+                countUI.textContent = `Palabras: ${words}`;
+                
+                if (words < 10) countUI.style.color = "var(--cafe-oscuro)";
+                else if (words <= 15) countUI.style.color = "var(--verde-bosque)";
+                else countUI.style.color = "var(--rojo-alerta)";
+
+                if (words > 15) {
+                    ta.value = text.split(/\s+/).slice(0, 15).join(" ");
+                    countUI.textContent = `Palabras: 15 (Límite Máximo)`;
+                }
+
+                // Detector IA / Inyección
+                if (keystrokes.length >= 8) {
+                    const avg = keystrokes.reduce((a,b)=>a+b,0) / keystrokes.length;
+                    // Velocidad promedio humana escribiendo texto nuevo: ~150-300ms por tecla.
+                    // Scripts inyectan a < 20ms.
+                    if (avg < 30) {
+                        document.getElementById(`alert-${idNum}`).style.display = 'block';
+                        state.intentosFraude++;
+                        ta.value = ""; // Castigo: Borrar todo.
+                        keystrokes = [];
+                    } else {
+                        document.getElementById(`alert-${idNum}`).style.display = 'none';
+                    }
+                }
+            });
+        });
+
+        /* =========================================
+           MOTOR FÍSICO CANVAS (FLUIDOS Y PARTÍCULAS)
+           ========================================= */
+        let cvs, ctx, animFrame;
+        let isRaining = false;
+        let isSunny = false;
+        let isCut = false;
+        
+        // Estructuras
+        const soilY = 300;
+        let waterParticles = [];
+        let rainParticles = [];
+        let streamWaterLevel = 50; // Nivel de la quebrada (Y offset desde fondo)
+        
+        function initCanvas() {
+            cvs = document.getElementById('treeCanvas');
+            ctx = cvs.getContext('2d');
+            drawScene();
+        }
+
+        class WaterParticle {
+            constructor(x, y, isRunoff = false) {
+                this.x = x; this.y = y;
+                this.r = 2;
+                this.active = true;
+                this.isRunoff = isRunoff;
+                
+                // Fases: 0: Infiltrando, 1: Subiendo Xilema, 2: Evaporando
+                this.phase = isRunoff ? -1 : 0; 
+            }
+            update() {
+                if(!this.active) return;
+                
+                if (this.isRunoff) {
+                    // Escorrentía superficial (corre rápido hacia la derecha)
+                    this.x += 4;
+                    this.y += (Math.random() - 0.5);
+                    if(this.x > 750) { // Cae a la quebrada
+                        this.y += 5;
+                        if(this.y > 380) { this.active = false; streamWaterLevel += 0.5; }
+                    }
+                    return;
+                }
+
+                if (this.phase === 0) {
+                    // Infiltración hacia raíces centrales (X:400)
+                    if(this.y < 350) this.y += 0.5;
+                    if(this.x < 390) this.x += 1;
+                    else if(this.x > 410) this.x -= 1;
+                    else if(this.y >= 350) {
+                        if(isSunny && !isCut) this.phase = 1; // Solo sube si hay sol (tensión) y árbol
+                    }
+                } else if (this.phase === 1) {
+                    // Sube por xilema
+                    this.y -= 2;
+                    this.x += (Math.random() - 0.5) * 2; // Movimiento browniano leve
+                    if(this.y < 150) this.phase = 2; // Llega a hojas
+                } else if (this.phase === 2) {
+                    // Evapotranspiración
+                    this.y -= 1.5;
+                    this.x += (Math.random() - 0.5) * 4;
+                    this.r += 0.05; // Se expande como gas
+                    if(this.y < 20) this.active = false;
+                }
+            }
+            draw(ctx) {
+                if(!this.active) return;
+                ctx.fillStyle = this.phase === 2 ? "rgba(255,255,255,0.5)" : "rgba(129, 212, 250, 0.8)";
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+
+        class RainDrop {
+            constructor() {
+                this.x = Math.random() * 600; // Cae en la zona del suelo
+                this.y = 0;
+                this.vy = 5 + Math.random() * 5;
+                this.active = true;
+            }
+            update() {
+                this.y += this.vy;
+                if(this.y >= soilY) {
+                    this.active = false;
+                    // Al chocar, si hay árbol se infiltra, si no, se vuelve escorrentía
+                    waterParticles.push(new WaterParticle(this.x, soilY, isCut));
+                }
+            }
+            draw(ctx) {
+                if(!this.active) return;
+                ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+                ctx.fillRect(this.x, this.y, 1.5, 8);
+            }
+        }
+
+        function drawScene() {
+            ctx.clearRect(0,0, cvs.width, cvs.height);
+
+            // Cielo
+            let gradient = ctx.createLinearGradient(0,0,0,soilY);
+            gradient.addColorStop(0, isSunny ? "#4FC3F7" : "#546E7A");
+            gradient.addColorStop(1, isSunny ? "#E1F5FE" : "#CFD8DC");
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0,0, cvs.width, soilY);
+
+            // Sol
+            if(isSunny) {
+                ctx.fillStyle = "#FFEE58";
+                ctx.beginPath(); ctx.arc(100, 80, 40, 0, Math.PI*2); ctx.fill();
+            }
+
+            // Suelo (Corte transversal)
+            ctx.fillStyle = isCut ? "#795548" : "#3E2723"; // Más claro y seco si está talado
+            ctx.fillRect(0, soilY, 650, cvs.height - soilY);
+            
+            // Quebrada (Derecha)
+            ctx.fillStyle = "#8D6E63";
+            ctx.fillRect(650, soilY, 150, cvs.height - soilY); // Lecho
+            ctx.fillStyle = "rgba(3, 169, 244, 0.7)";
+            ctx.fillRect(650, cvs.height - streamWaterLevel, 150, streamWaterLevel); // Agua
+
+            // Árbol (si no está talado)
+            if(!isCut) {
+                // Tronco
+                ctx.fillStyle = "#5D4037";
+                ctx.fillRect(380, 150, 40, 150);
+                // Raíces
+                ctx.beginPath(); ctx.moveTo(380, 300); ctx.lineTo(320, 380); ctx.lineTo(340, 380); ctx.lineTo(400, 300); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(420, 300); ctx.lineTo(480, 380); ctx.lineTo(460, 380); ctx.lineTo(400, 300); ctx.fill();
+                // Copa (Dosel)
+                ctx.fillStyle = "rgba(46, 125, 50, 0.9)";
+                ctx.beginPath(); ctx.arc(400, 130, 80, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(350, 150, 60, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(450, 150, 60, 0, Math.PI*2); ctx.fill();
+            } else {
+                // Tocón talado
+                ctx.fillStyle = "#5D4037";
+                ctx.fillRect(380, 280, 40, 20);
+            }
+
+            // Actualizar y dibujar partículas
+            if(isRaining) {
+                if(Math.random() < 0.3) rainParticles.push(new RainDrop());
+            }
+
+            for(let i=rainParticles.length-1; i>=0; i--){
+                rainParticles[i].update();
+                rainParticles[i].draw(ctx);
+                if(!rainParticles[i].active) rainParticles.splice(i,1);
+            }
+
+            for(let i=waterParticles.length-1; i>=0; i--){
+                waterParticles[i].update();
+                waterParticles[i].draw(ctx);
+                if(!waterParticles[i].active) waterParticles.splice(i,1);
+            }
+
+            // Drenaje lento de la quebrada (Flujo base)
+            if(streamWaterLevel > 20) streamWaterLevel -= 0.05; 
+            if(streamWaterLevel > 100) streamWaterLevel = 100; // Límite máximo (Inundación)
+
+            // Actualizar medidores UI
+            const uiInf = document.getElementById('meter-inf');
+            const uiCau = document.getElementById('meter-cau');
+            
+            if(isCut) {
+                uiInf.textContent = "Nula (Suelo Sellado)"; uiInf.style.color = "var(--rojo-alerta)";
+            } else {
+                uiInf.textContent = "Alta (Porosidad radicular)"; uiInf.style.color = "var(--verde-hoja)";
+            }
+
+            if(streamWaterLevel > 80) {
+                uiCau.textContent = "ALERTA INUNDACIÓN SÚBITA"; uiCau.style.color = "var(--rojo-alerta)";
+            } else if (streamWaterLevel < 25) {
+                uiCau.textContent = "ALERTA SEQUÍA (Caudal crítico)"; uiCau.style.color = "var(--amarillo-citrico)";
+            } else {
+                uiCau.textContent = "Estable (Sostenible)"; uiCau.style.color = "var(--azul-claro)";
+            }
+
+            animFrame = requestAnimationFrame(drawScene);
+        }
+
+        document.getElementById('btn-lluvia').addEventListener('click', () => {
+            isRaining = true; isSunny = false;
+            document.getElementById('btn-sol').disabled = false;
+            if(!isCut) document.getElementById('btn-talar').disabled = false;
+            document.getElementById('canvas-status').textContent = "Lloviendo: Infiltración activa recargando el suelo.";
+        });
+
+        document.getElementById('btn-sol').addEventListener('click', () => {
+            isRaining = false; isSunny = true;
+            if(!isCut) {
+                document.getElementById('canvas-status').textContent = "Sol activo: Estomas abiertos, generando tensión (succión xilemática) y evapotranspiración.";
+            } else {
+                document.getElementById('canvas-status').textContent = "Sol activo: Suelo desnudo se reseca. No hay transpiración celular.";
+            }
+        });
+
+        document.getElementById('btn-talar').addEventListener('click', () => {
+            isCut = true;
+            document.getElementById('btn-talar').disabled = true;
+            document.getElementById('canvas-status').textContent = "¡ÁRBOL TALADO! La tensión se rompe. El suelo se compacta. Observa la escorrentía al llover.";
+            // Limpiar agua infiltrada
+            waterParticles = waterParticles.filter(p => p.phase > 0); 
+            // Iniciar lluvia para mostrar el daño
+            setTimeout(() => { document.getElementById('btn-lluvia').click(); }, 1500);
+        });
+
+        /* =========================================
+           EVALUACIÓN Y REPORTE FINAL
+           ========================================= */
+        document.getElementById('btn-finalizar').addEventListener('click', () => {
+            // Validar Selección Múltiple
+            let puntajeSM = 0;
+            for(let i=1; i<=5; i++) {
+                if(document.getElementById(`eval-m${i}`).value === respuestasCorrectas[`m${i}`]) {
+                    puntajeSM++;
+                }
+            }
+
+            // Validar Preguntas Abiertas
+            let puntajeAbiertas = 0;
+            let problemasValidacion = [];
+            
+            for(let i=1; i<=5; i++) {
+                const text = document.getElementById(`eval-o${i}`).value.trim();
+                const numWords = text === "" ? 0 : text.split(/\s+/).length;
+                
+                if(numWords >= 10 && numWords <= 15) {
+                    puntajeAbiertas++;
+                } else {
+                    problemasValidacion.push(`Pregunta ${i+5} no cumple longitud (10 a 15 palabras). Tienes ${numWords}.`);
+                }
+                state.respuestasAbiertas[`o${i}`] = text;
+            }
+
+            const totalAciertos = puntajeSM + puntajeAbiertas;
+            const notaFinal = (totalAciertos / 10) * 5.0; // Escala 0 a 5.0
+
+            // IA Analítica Simple
+            let feedback = `Aciertos SM: ${puntajeSM}/5. Aciertos Abiertas (Válidas): ${puntajeAbiertas}/5.<br><br>`;
+            
+            if(notaFinal >= 4.0) {
+                feedback += "<strong>Nivel: Científico Hídrico.</strong> Tienes una comprensión magistral de la biofísica del bosque. Entiendes que la cohesión y la transpiración son el motor del agua en Pueblo Rico.";
+            } else if (notaFinal >= 3.0) {
+                feedback += "<strong>Nivel: Observador Agrícola.</strong> Entiendes el problema del campo, pero necesitas repasar conceptos físicos. Te sugerimos revisar nuevamente el simulador del Xilema y la tensión.";
+            } else {
+                feedback += "<strong>Alerta Académica:</strong> Tus conceptos termodinámicos presentan fallas. Debes repasar la relación entre el potencial hídrico y la infiltración radicular.";
+            }
+
+            if(problemasValidacion.length > 0) {
+                feedback += "<br><br><span style='color:var(--amarillo-citrico);'><strong>Observaciones de Validación:</strong></span><br>" + problemasValidacion.join("<br>");
+            }
+
+            if(state.intentosFraude > 0) {
+                feedback += `<br><br><span style="color:var(--rojo-alerta); font-weight:bold;">SISTEMA ANTI-FRAUDE: Se detectaron y bloquearon ${state.intentosFraude} intentos de escritura a velocidad no humana. Tu evaluación es válida, pero se registró el suceso.</span>`;
+            }
+
+            document.getElementById('final-score').textContent = `${notaFinal.toFixed(1)} / 5.0`;
+            document.getElementById('smart-feedback').innerHTML = feedback;
+            
+            document.getElementById('evaluacion').style.display = 'none';
+            document.getElementById('results-area').style.display = 'block';
+        });
+
+        // Descarga de TXT
+        document.getElementById('btn-descargar').addEventListener('click', () => {
+            let contenido = `====================================================\n`;
+            contenido += `REPORTE DE INVESTIGACIÓN: EL LLANTO DE LA QUEBRADA\n`;
+            contenido += `====================================================\n\n`;
+            contenido += `Investigador(a): ${state.nombres} ${state.apellidos}\n`;
+            contenido += `Fecha y Hora: ${new Date().toLocaleString()}\n`;
+            contenido += `Nota Científica Final: ${document.getElementById('final-score').textContent}\n\n`;
+            contenido += `--- ARGUMENTACIONES TÉCNICAS (Respuestas Abiertas) ---\n\n`;
+            for(let i=1; i<=5; i++) {
+                contenido += `Pregunta ${i+5}:\n${state.respuestasAbiertas[`o${i}`]}\n\n`;
+            }
+            contenido += `--- DATOS DEL SISTEMA ---\n`;
+            contenido += `Gamificación (Misiones): ${state.puntos}/5 completadas.\n`;
+            contenido += `Alertas de Fraude/IA Disparadas: ${state.intentosFraude}\n`;
+            
+            const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Reporte_Hidrologico_${state.apellidos.replace(/\s/g, '_')}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Biotecnología y Semillas Transgénicas</title>
+    <style>
+        /* =========================================
+           VARIABLES Y DISEÑO BASE (Agro & BioTech)
+           ========================================= */
+        :root {
+            --verde-agro: #2E7D32;
+            --verde-claro: #A5D6A7;
+            --morado-bio: #6A1B9A;
+            --morado-claro: #E1BEE7;
+            --naranja-cafe: #E65100;
+            --cafe-tierra: #4E342E;
+            --crema-fondo: #F9FBE7;
+            --blanco: #FFFFFF;
+            --gris-texto: #263238;
+            
+            /* Gamificación: Tabla Periódica */
+            --oro-au: #FFD700;
+            --plata-ag: #E0E0E0;
+            --hierro-fe: #A19D94;
+            --rojo-error: #D32F2F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--crema-fondo);
+            color: var(--gris-texto);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* =========================================
+           PANTALLA DE LOGUEO
+           ========================================= */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, var(--verde-agro), var(--morado-bio));
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 0.6s ease;
+        }
+
+        .login-box {
+            background: var(--blanco); padding: 40px; border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; max-width: 450px; width: 90%;
+            border-top: 6px solid var(--naranja-cafe);
+        }
+
+        .login-box h1 { color: var(--verde-agro); margin-bottom: 10px; font-size: 1.8em; }
+        .login-box p { font-size: 0.95em; margin-bottom: 25px; color: #555; }
+
+        .input-group { margin-bottom: 18px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 6px; font-weight: 700; color: var(--cafe-tierra); }
+        .input-group input {
+            width: 100%; padding: 12px; border: 2px solid var(--verde-claro); border-radius: 8px; font-size: 1em;
+            background-color: #F1F8E9; transition: border-color 0.3s;
+        }
+        .input-group input:focus { border-color: var(--morado-bio); outline: none; background-color: var(--blanco);}
+
+        .btn {
+            background-color: var(--morado-bio); color: var(--blanco); border: none;
+            padding: 14px 25px; border-radius: 8px; font-size: 1.1em; cursor: pointer;
+            font-weight: bold; transition: transform 0.2s, background-color 0.3s; width: 100%;
+        }
+        .btn:hover { background-color: #4A148C; transform: scale(1.02); }
+        .btn:disabled { background-color: #B0BEC5; cursor: not-allowed; transform: none; }
+
+        /* =========================================
+           INTERFAZ PRINCIPAL (SINGLE-PAGE)
+           ========================================= */
+        #main-app { display: none; }
+
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; background: var(--blanco);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1); z-index: 500; padding: 12px 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 4px solid var(--verde-agro);
+        }
+
+        .user-badge { font-weight: bold; color: var(--cafe-tierra); display: flex; align-items: center; gap: 10px; font-size: 1.1em;}
+        
+        .score-board {
+            display: flex; align-items: center; gap: 15px; background: var(--verde-agro);
+            color: white; padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 1.2em;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            border: 2px solid var(--verde-claro);
+        }
+
+        main { max-width: 850px; margin: 90px auto 50px auto; padding: 20px; }
+
+        /* =========================================
+           CONTENEDORES DE TEXTO (PEDAGOGÍA)
+           ========================================= */
+        .content-section {
+            background: var(--blanco); padding: 30px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 40px;
+            border-left: 6px solid var(--naranja-cafe);
+        }
+
+        h2 { color: var(--morado-bio); border-bottom: 2px solid var(--verde-agro); padding-bottom: 8px; margin-bottom: 20px; }
+        p { margin-bottom: 15px; text-align: justify; font-size: 1.1em; }
+        .highlight { background-color: var(--morado-claro); padding: 2px 5px; font-weight: bold; color: var(--morado-bio); border-radius: 3px;}
+
+        /* =========================================
+           DISEÑO DE ACTIVIDADES (GAMIFICACIÓN)
+           ========================================= */
+        .activity-card {
+            background: #FFFFFF; border: 2px solid #E0E0E0; border-radius: 10px;
+            padding: 25px; margin: 25px 0; position: relative;
+            transition: border-color 0.3s, background-color 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .activity-card.solved { border-color: var(--verde-agro); background: #E8F5E9; }
+        .activity-card.failed { border-color: var(--rojo-error); background: #FFEBEE; }
+
+        .act-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .act-type { font-size: 0.85em; font-weight: bold; color: var(--blanco); background: var(--cafe-tierra); padding: 6px 12px; border-radius: 15px; text-transform: uppercase;}
+        .act-attempts { font-size: 0.9em; font-weight: bold; color: var(--morado-bio); background: #F3E5F5; padding: 4px 10px; border-radius: 10px; border: 1px solid var(--morado-bio);}
+        
+        /* Juego 1: Anagramas (Letras Explicitas) */
+        .anagram-display {
+            font-size: 2.2em; font-weight: bold; color: var(--verde-agro);
+            text-align: center; letter-spacing: 4px; margin: 20px 0;
+            background: #E8F5E9; padding: 20px; border-radius: 8px; font-family: monospace;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.1); border: 2px dashed var(--verde-claro);
+        }
+        
+        .answer-input {
+            width: 100%; padding: 15px; font-size: 1.2em; border: 2px solid #B0BEC5; border-radius: 8px;
+            text-align: center; text-transform: uppercase; margin-bottom: 15px;
+            background-color: var(--blanco); font-weight: bold; letter-spacing: 2px;
+        }
+        .answer-input:focus { border-color: var(--morado-bio); outline: none; }
+
+        /* Juego 2: Ordenar Palabras (Frases) */
+        .word-bank {
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 20px 0; min-height: 50px;
+        }
+        .word-btn {
+            background: var(--blanco); color: var(--cafe-tierra); border: 2px solid var(--morado-bio); padding: 10px 18px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.05em;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s, background-color 0.2s;
+        }
+        .word-btn:hover { background-color: var(--morado-claro); }
+        .word-btn:active { transform: scale(0.95); }
+        
+        .sentence-builder {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start;
+            background: #ECEFF1; padding: 20px; border-radius: 8px; min-height: 80px; margin-bottom: 15px;
+            border: 2px dashed #90A4AE; align-items: center; font-size: 1.1em;
+        }
+        .word-btn.selected { background: var(--verde-agro); color: var(--blanco); border-color: var(--verde-agro); opacity: 0.5; pointer-events: none;}
+
+        .btn-clear { background: #90A4AE; margin-top: 5px; width: auto; padding: 10px 20px;}
+        .btn-clear:hover { background: #78909C; }
+
+        /* Insignias Químicas (Tabla Periódica) */
+        .medal-badge {
+            position: absolute; top: -20px; right: -20px; width: 65px; height: 65px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.6em; color: var(--cafe-tierra);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 4px solid white; display: none;
+            flex-direction: column; line-height: 1; z-index: 10;
+        }
+        .medal-badge span { font-size: 0.35em; text-transform: uppercase; margin-top: 2px; }
+        .medal-au { background: linear-gradient(135deg, #FFD700, #FBC02D); display: flex; }
+        .medal-ag { background: linear-gradient(135deg, #F5F5F5, #BDBDBD); display: flex; }
+        .medal-fe { background: linear-gradient(135deg, #8D6E63, #5D4037); color: white; display: flex; }
+
+        .feedback-msg { margin-top: 15px; font-weight: bold; text-align: center; font-size: 1.2em; min-height: 28px;}
+
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         PILARES 1: PANTALLA DE LOGUEO
+         ========================================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>Biotecnología y Semillas</h1>
+            <p>Laboratorio de Agroecología - Grado 10°<br>Vereda Pueblo Rico, Quimbaya</p>
+            <div class="input-group">
+                <label for="inp-nombre">Nombre del Estudiante:</label>
+                <input type="text" id="inp-nombre" placeholder="Ingresa tu nombre" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="inp-apellido">Apellido del Estudiante:</label>
+                <input type="text" id="inp-apellido" placeholder="Ingresa tu apellido" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar">Ingresar a la Finca</button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         PILARES 2 & 3: INTERFAZ PRINCIPAL
+         ========================================= -->
+    <div id="main-app">
+        <header>
+            <div class="user-badge">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--verde-agro)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                <span id="display-name">Estudiante</span>
+            </div>
+            <div class="score-board">
+                <span>Puntaje:</span>
+                <span id="display-score">0</span>
+            </div>
+        </header>
+
+        <main id="content-container">
+            <!-- Las 20 actividades se generan aquí de forma dinámica -->
+        </main>
+    </div>
+
+    <!-- =========================================
+         LÓGICA JAVASCRIPT (VANILLA)
+         ========================================= -->
+    <script>
+        // --- 1. DATOS PEDAGÓGICOS (20 ACTIVIDADES DE GRADO 10) ---
+        const courseContent = [
+            // SECCIÓN 1: BIOTECNOLOGÍA ANCESTRAL
+            {
+                type: 'text',
+                title: '1. Biotecnología en la Cocina: Conocimiento Ancestral',
+                content: `Cuando escuchamos la palabra <span class="highlight">Biotecnología</span>, solemos imaginar laboratorios modernos con batas blancas. Sin embargo, en las fincas de la Vereda Pueblo Rico (Quimbaya), los abuelos han sido biotecnólogos durante generaciones. La biotecnología no es más que el uso de organismos vivos o sus partes para crear productos útiles para el ser humano.<br><br>
+                Cada vez que en una finca se hace queso, yogur o se fermenta la chicha, se están utilizando <strong>microorganismos</strong> (como hongos y bacterias) a nuestro favor. Un hongo microscópico muy famoso es la levadura, que consume azúcares y libera gases, permitiendo que el pan se infle.`
+            },
+            { type: 'anagram', id: 'a1', answer: 'BIOTECNOLOGIA', hint: 'Uso de seres vivos para crear productos útiles.' },
+            { type: 'anagram', id: 'a2', answer: 'LEVADURA', hint: 'Hongo microscópico usado para fermentar el pan o la chicha.' },
+            { type: 'sentence', id: 's1', answer: 'La biotecnología ancestral utiliza microorganismos para elaborar alimentos', hint: 'El principio de la biotecnología rural.' },
+            { type: 'sentence', id: 's2', answer: 'La fermentación es un proceso biológico que transforma los azúcares', hint: 'La función biológica de las bacterias y hongos en la cocina.' },
+            { type: 'anagram', id: 'a3', answer: 'BACTERIA', hint: 'Microorganismo empleado para hacer queso o yogur en la finca.' },
+            { type: 'sentence', id: 's3', answer: 'Nuestros abuelos practicaban la biotecnología al seleccionar las mejores semillas', hint: 'La ciencia oculta en el campo tradicional.' },
+            
+            // SECCIÓN 2: SEMILLAS TRANSGÉNICAS
+            {
+                type: 'text',
+                title: '2. La semilla campesina vs. La semilla de laboratorio',
+                content: `Durante siglos, el campesino quindiano ha guardado y cruzado sus mejores semillas, logrando que se adapten perfectamente al suelo y clima de la región. A esto se le conoce como mejoramiento tradicional.<br><br>
+                No obstante, la biotecnología moderna introdujo una revolución: la <span class="highlight">Ingeniería Genética</span>. En lugar de cruzar plantas de forma natural, los científicos en laboratorios cortan un gen de una especie (ej. una bacteria resistente al veneno) y lo pegan en el ADN de una semilla de maíz o soya. A este nuevo ser vivo se le llama <strong>Organismo Modificado Genéticamente (OMG)</strong> o <strong>Transgénico</strong>. A diferencia de la semilla campesina, que es libre, las semillas transgénicas son patentadas por corporaciones, obligando al agricultor a comprarlas cada año.`
+            },
+            { type: 'anagram', id: 'a4', answer: 'TRANSGENICO', hint: 'Organismo cuyo material genético ha sido alterado en un laboratorio.' },
+            { type: 'anagram', id: 'a5', answer: 'GENETICA', hint: 'Ciencia que estudia los genes y la herencia biológica.' },
+            { type: 'sentence', id: 's4', answer: 'Un organismo genéticamente modificado contiene genes de otra especie', hint: 'Definición de OMG.' },
+            { type: 'sentence', id: 's5', answer: 'La semilla campesina guarda la memoria de adaptación al territorio', hint: 'El valor incalculable de la semilla nativa.' },
+            { type: 'anagram', id: 'a6', answer: 'INGENIERIA', hint: 'Técnica directa de manipulación de genes en un laboratorio.' },
+            { type: 'anagram', id: 'a7', answer: 'PLASMIDO', hint: 'Vehículo o anillo de ADN usado en el laboratorio para introducir genes nuevos.' },
+            { type: 'sentence', id: 's6', answer: 'Las corporaciones patentan las semillas transgénicas para controlar la agricultura', hint: 'El impacto económico y de propiedad de los OMG.' },
+
+            // SECCIÓN 3: CONSECUENCIAS E IMPACTO AMBIENTAL
+            {
+                type: 'text',
+                title: '3. Consecuencias: El Ecosistema bajo Presión',
+                content: `La introducción de cultivos transgénicos tiene profundas consecuencias en el Paisaje Cultural Cafetero. Muchas semillas de laboratorio son diseñadas con un solo objetivo: resistir la aplicación de poderosos <strong>Herbicidas</strong> (como el Glifosato).<br><br>
+                Al regar estos venenos desde el aire, todo muere excepto la planta transgénica. Esto fomenta los grandes monocultivos sin vida, destruyendo la biodiversidad natural, eliminando las flores silvestres que alimentan a las abejas y contaminando las aguas subterráneas de las fincas. Además, el polen de una planta transgénica puede viajar por el viento y fertilizar una planta tradicional campesina, contaminándola genéticamente (polinización cruzada). Defender las semillas limpias es defender la soberanía alimentaria.`
+            },
+            { type: 'anagram', id: 'a8', answer: 'HERBICIDA', hint: 'Químico tóxico que mata las malezas y contamina el agua.' },
+            { type: 'sentence', id: 's7', answer: 'Los monocultivos transgénicos destruyen la biodiversidad del paisaje cafetero', hint: 'El efecto en nuestro ecosistema.' },
+            { type: 'sentence', id: 's8', answer: 'El uso excesivo de agrotóxicos contamina los suelos de origen volcánico', hint: 'El daño físico al territorio del Quindío.' },
+            { type: 'anagram', id: 'a9', answer: 'GLIFOSATO', hint: 'Pesticida muy potente asociado al cultivo de semillas modificadas.' },
+            { type: 'sentence', id: 's9', answer: 'La polinización cruzada puede contaminar las semillas tradicionales de la vereda', hint: 'El peligro invisible que viaja por el viento.' },
+            { type: 'anagram', id: 'a10', answer: 'RESISTENCIA', hint: 'Lo que desarrollan las plagas y malezas al estar expuestas a tantos químicos.' },
+            { type: 'sentence', id: 's10', answer: 'Proteger la semilla nativa es garantizar nuestra soberanía alimentaria', hint: 'La gran conclusión para nuestro futuro agrícola.' }
+        ];
+
+        // --- 2. PILAR 1: PERSISTENCIA LOCAL (ESTADO GLOBAL) ---
+        const LOCAL_KEY = 'ova_biotecnologia_g10_quimbaya';
+        let gameState = {
+            nombre: '',
+            apellido: '',
+            score: 0,
+            activities: {} 
+        };
+
+        // --- 3. ALGORITMOS DE MEZCLA (FISHER-YATES PURO Y ESTRICTO) ---
+        function fisherYatesShuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex > 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Desordenar Letras: Asegura que no quede igual y usa formato con guiones
+        function shuffleLetters(word) {
+            let arr = word.split('');
+            let shuffled;
+            do {
+                shuffled = fisherYatesShuffle([...arr]);
+            } while (shuffled.join('') === word && word.length > 2); 
+            
+            return shuffled.join('-'); // Retorna explícitamente formato A-M-R-E-G-O-P
+        }
+
+        // Desordenar Palabras: Asegura que no quede en el mismo orden
+        function shuffleWords(sentence) {
+            let arr = sentence.split(' ');
+            let shuffled;
+            do {
+                shuffled = fisherYatesShuffle([...arr]);
+            } while (shuffled.join(' ') === sentence && arr.length > 2);
+            
+            return shuffled;
+        }
+
+        // --- 4. INICIALIZACIÓN E INTERFAZ ---
+        document.addEventListener("DOMContentLoaded", () => {
+            configurarLogin();
+            loadState();
+        });
+
+        function configurarLogin() {
+            document.getElementById('btn-iniciar').addEventListener('click', () => {
+                const nombre = document.getElementById('inp-nombre').value.trim();
+                const apellido = document.getElementById('inp-apellido').value.trim();
+                
+                if (nombre === '' || apellido === '') {
+                    alert("Se requiere registrar Nombre y Apellido para iniciar la sesión de laboratorio.");
+                    return;
+                }
+                gameState.nombre = nombre;
+                gameState.apellido = apellido;
+                saveState();
+                mostrarApp();
+            });
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(LOCAL_KEY);
+            if (saved) {
+                gameState = JSON.parse(saved);
+                if (gameState.nombre !== '') {
+                    mostrarApp();
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(gameState));
+            updateHeader();
+        }
+
+        function mostrarApp() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                updateHeader();
+                renderContent(); // Generar las 20 actividades dinámicamente
+            }, 600);
+        }
+
+        function updateHeader() {
+            document.getElementById('display-name').textContent = `${gameState.nombre} ${gameState.apellido}`;
+            document.getElementById('display-score').textContent = gameState.score % 1 === 0 ? gameState.score : gameState.score.toFixed(1);
+        }
+
+        // --- 5. PILAR 2: ESTRUCTURA SCROLL (20 ACTIVIDADES) ---
+        function renderContent() {
+            const container = document.getElementById('content-container');
+            container.innerHTML = ''; 
+
+            let anagramCount = 1;
+            let sentenceCount = 1;
+
+            courseContent.forEach(item => {
+                if (item.type === 'text') {
+                    const div = document.createElement('div');
+                    div.className = 'content-section';
+                    div.innerHTML = `<h2>${item.title}</h2><p>${item.content}</p>`;
+                    container.appendChild(div);
+                } 
+                else if (item.type === 'anagram') {
+                    const div = createAnagramUI(item, anagramCount);
+                    container.appendChild(div);
+                    anagramCount++;
+                }
+                else if (item.type === 'sentence') {
+                    const div = createSentenceUI(item, sentenceCount);
+                    container.appendChild(div);
+                    sentenceCount++;
+                }
+            });
+
+            configurarAntiFraudeInputs();
+        }
+
+        function getActState(id) {
+            if (!gameState.activities[id]) {
+                gameState.activities[id] = { attempts: 0, solved: false, medal: null };
+            }
+            return gameState.activities[id];
+        }
+
+        function getMedalHTML(medal) {
+            if (!medal || medal === 'Failed') return '';
+            let symbol = medal === 'Au' ? 'Au' : (medal === 'Ag' ? 'Ag' : 'Fe');
+            let text = medal === 'Au' ? 'Oro' : (medal === 'Ag' ? 'Plata' : 'Hierro');
+            return `<div class="medal-badge medal-${medal.toLowerCase()}">${symbol}<br><span>${text}</span></div>`;
+        }
+
+        // --- 5.1 CONSTRUCTOR: ANAGRAMAS ---
+        function createAnagramUI(item, index) {
+            const state = getActState(item.id);
+            const div = document.createElement('div');
+            
+            let statusClass = state.solved ? (state.medal === 'Failed' ? 'failed' : 'solved') : '';
+            div.className = `activity-card ${statusClass}`;
+            div.id = `card-${item.id}`;
+
+            // Si está resuelto, muestra la palabra original, sino, la desordena.
+            let displayWord = state.solved && state.medal !== 'Failed' ? item.answer.split('').join('-') : shuffleLetters(item.answer);
+            let attemptsLeft = 3 - state.attempts;
+            
+            let html = `
+                ${getMedalHTML(state.medal)}
+                <div class="act-header">
+                    <span class="act-type">Anagrama #${index}</span>
+                    <span class="act-attempts" id="att-${item.id}">Intentos restantes: ${attemptsLeft}</span>
+                </div>
+                <p>Ordena las letras para revelar el término biotecnológico. Pista: <em>${item.hint}</em></p>
+                <div class="anagram-display" id="disp-${item.id}">${displayWord}</div>
+            `;
+
+            if (state.solved) {
+                if (state.medal === 'Failed') {
+                    html += `<div class="feedback-msg" style="color: var(--rojo-error);">Límite de intentos agotado. La respuesta era: <br><strong>${item.answer}</strong></div>`;
+                } else {
+                    html += `<div class="feedback-msg" style="color: var(--verde-agro);">¡Validación exitosa! Insignia de ${state.medal} ganada.</div>`;
+                }
+            } else {
+                html += `
+                    <input type="text" class="answer-input anti-fraud" id="inp-${item.id}" placeholder="Digita tu respuesta..." autocomplete="off">
+                    <button class="btn" id="btn-${item.id}" onclick="validateAnagram('${item.id}', '${item.answer}')">Validar Término</button>
+                    <div class="feedback-msg" id="feed-${item.id}"></div>
+                `;
+            }
+            div.innerHTML = html;
+            return div;
+        }
+
+        // --- 5.2 CONSTRUCTOR: ORDENAR FRASES ---
+        function createSentenceUI(item, index) {
+            const state = getActState(item.id);
+            const div = document.createElement('div');
+            
+            let statusClass = state.solved ? (state.medal === 'Failed' ? 'failed' : 'solved') : '';
+            div.className = `activity-card ${statusClass}`;
+            div.id = `card-${item.id}`;
+
+            let attemptsLeft = 3 - state.attempts;
+            
+            let html = `
+                ${getMedalHTML(state.medal)}
+                <div class="act-header">
+                    <span class="act-type">Reconstruir Frase #${index}</span>
+                    <span class="act-attempts" id="att-${item.id}">Intentos restantes: ${attemptsLeft}</span>
+                </div>
+                <p>Haz clic en las palabras en el orden correcto para reconstruir la oración científica.</p>
+            `;
+
+            if (state.solved) {
+                if (state.medal === 'Failed') {
+                    html += `<div class="feedback-msg" style="color: var(--rojo-error);">Intentos agotados. La oración correcta era:<br><strong>${item.answer}</strong></div>`;
+                } else {
+                    html += `<div class="sentence-builder" style="border-color: var(--verde-agro); justify-content:center; text-align:center;"><strong>${item.answer}</strong></div>`;
+                    html += `<div class="feedback-msg" style="color: var(--verde-agro);">¡Estructura Gramatical Correcta! Insignia ${state.medal} acreditada.</div>`;
+                }
+            } else {
+                let words = shuffleWords(item.answer);
+                
+                html += `<div class="sentence-builder" id="builder-${item.id}"></div>`;
+                html += `<div class="word-bank" id="bank-${item.id}">`;
+                words.forEach((w, i) => {
+                    html += `<button class="word-btn" id="wb-${item.id}-${i}" onclick="selectWord('${item.id}', '${w}', this.id)">${w}</button>`;
+                });
+                html += `</div>`;
+                
+                html += `
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-clear" onclick="clearSentence('${item.id}')">🔄 Reiniciar Frase</button>
+                        <button class="btn" id="btn-${item.id}" onclick="validateSentence('${item.id}', '${item.answer}')">Validar Oración</button>
+                    </div>
+                    <div class="feedback-msg" id="feed-${item.id}"></div>
+                `;
+            }
+            div.innerHTML = html;
+            return div;
+        }
+
+        // Lógica interactiva para Oraciones
+        let sentenceMemory = {};
+
+        function selectWord(actId, word, btnId) {
+            let btn = document.getElementById(btnId);
+            if(btn.classList.contains('selected')) return; 
+            
+            btn.classList.add('selected'); 
+            if(!sentenceMemory[actId]) sentenceMemory[actId] = [];
+            sentenceMemory[actId].push(word);
+            
+            renderSentenceBuilder(actId);
+        }
+
+        function clearSentence(actId) {
+            sentenceMemory[actId] = [];
+            renderSentenceBuilder(actId);
+            let bank = document.getElementById(`bank-${actId}`);
+            let btns = bank.querySelectorAll('.word-btn');
+            btns.forEach(b => b.classList.remove('selected'));
+        }
+
+        function renderSentenceBuilder(actId) {
+            let builder = document.getElementById(`builder-${actId}`);
+            let arr = sentenceMemory[actId] || [];
+            builder.innerHTML = arr.map(w => `<span class="word-btn" style="background:var(--verde-agro); color:white; border-color:var(--verde-agro); cursor:default;">${w}</span>`).join('');
+        }
+
+        // --- 6. PILAR 3 Y 4: GAMIFICACIÓN Y VALIDACIONES INDEPENDIENTES ---
+        function processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl) {
+            let state = gameState.activities[id];
+            
+            if (isCorrect) {
+                state.solved = true;
+                let points = 0; let medal = '';
+                
+                // Puntajes Dinámicos
+                if(state.attempts === 0) { points = 5; medal = 'Au'; }
+                else if(state.attempts === 1) { points = 3; medal = 'Ag'; }
+                else if(state.attempts === 2) { points = 1.5; medal = 'Fe'; }
+
+                state.medal = medal;
+                gameState.score += points;
+                
+                cardEl.classList.add('solved');
+                feedEl.style.color = 'var(--verde-agro)';
+                feedEl.textContent = `¡Respuesta Correcta! Sumas +${points} pts (Medalla de ${medal}).`;
+                btnEl.disabled = true;
+                cardEl.insertAdjacentHTML('afterbegin', getMedalHTML(medal));
+                
+                // Refrescar el DOM de la actividad para bloquearla visualmente
+                setTimeout(renderContent, 1800); 
+
+            } else {
+                state.attempts++;
+                let remaining = 3 - state.attempts;
+                attEl.textContent = `Intentos restantes: ${remaining}`;
+                
+                if (state.attempts >= 3) {
+                    state.solved = true;
+                    state.medal = 'Failed';
+                    cardEl.classList.add('failed');
+                    btnEl.disabled = true;
+                    feedEl.style.color = 'var(--rojo-error)';
+                    feedEl.textContent = `Límite de intentos superado. La actividad se ha bloqueado.`;
+                    setTimeout(renderContent, 2500);
+                } else {
+                    feedEl.style.color = 'var(--rojo-error)';
+                    feedEl.textContent = `Error en la respuesta. Analiza la pista y vuelve a intentarlo.`;
+                    
+                    // Efecto de vibración
+                    cardEl.style.transform = 'translateX(6px)';
+                    setTimeout(()=> cardEl.style.transform = 'translateX(-6px)', 100);
+                    setTimeout(()=> cardEl.style.transform = 'translateX(6px)', 200);
+                    setTimeout(()=> cardEl.style.transform = 'translateX(0)', 300);
+                }
+            }
+            saveState(); 
+        }
+
+        // Validación Anagramas
+        function validateAnagram(id, correctAnswer) {
+            let state = getActState(id);
+            if(state.solved || state.attempts >= 3) return;
+
+            let inputEl = document.getElementById(`inp-${id}`);
+            let feedEl = document.getElementById(`feed-${id}`);
+            let attEl = document.getElementById(`att-${id}`);
+            let cardEl = document.getElementById(`card-${id}`);
+            let btnEl = document.getElementById(`btn-${id}`);
+
+            let userVal = inputEl.value.trim().toUpperCase();
+            if(userVal === '') return;
+
+            // Normalizar acentos
+            const normalize = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            let isCorrect = (normalize(userVal) === normalize(correctAnswer.toUpperCase()));
+            processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl);
+        }
+
+        // Validación Oraciones
+        function validateSentence(id, correctAnswer) {
+            let state = getActState(id);
+            if(state.solved || state.attempts >= 3) return;
+
+            let feedEl = document.getElementById(`feed-${id}`);
+            let attEl = document.getElementById(`att-${id}`);
+            let cardEl = document.getElementById(`card-${id}`);
+            let btnEl = document.getElementById(`btn-${id}`);
+
+            let currentArr = sentenceMemory[id] || [];
+            if(currentArr.length === 0) return;
+
+            let userVal = currentArr.join(' ');
+            let isCorrect = (userVal === correctAnswer);
+            
+            processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl);
+            if(!isCorrect && state.attempts < 3) {
+                clearSentence(id); // Limpia para facilitar el siguiente intento
+            }
+        }
+
+        // --- SISTEMA ANTI-FRAUDE ---
+        function configurarAntiFraudeInputs() {
+            const inputs = document.querySelectorAll('.anti-fraud');
+            inputs.forEach(inp => {
+                // Bloqueo de copia, pegado y arrastre 
+                inp.addEventListener('paste', e => { e.preventDefault(); alert("Laboratorio restringido: Prohibido pegar respuestas."); });
+                inp.addEventListener('drop', e => { e.preventDefault(); });
+                inp.addEventListener('contextmenu', e => { e.preventDefault(); });
+
+                // Detección de cadencia de tipeo (Prevención de Scripts/Bots)
+                let keyTimes = [];
+                inp.addEventListener('keydown', e => {
+                    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'v')) {
+                        e.preventDefault(); return;
+                    }
+                    if(e.key.length > 1) return; 
+                    
+                    const now = Date.now();
+                    keyTimes.push(now);
+                    if(keyTimes.length > 4) keyTimes.shift();
+
+                    if(keyTimes.length === 4) {
+                        let totalDiff = 0;
+                        for(let i=1; i<keyTimes.length; i++){ totalDiff += (keyTimes[i] - keyTimes[i-1]); }
+                        let avg = totalDiff / 3;
+                        
+                        if(avg < 25) { 
+                            inp.value = ""; keyTimes = [];
+                            alert("¡Aviso de Integridad! Sistema automatizado de tecleo detectado. Campo borrado.");
+                            e.preventDefault();
+                        }
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

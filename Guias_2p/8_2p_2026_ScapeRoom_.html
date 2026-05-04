@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: Homeostasis - El Equilibrio de la Finca Interior</title>
+    <style>
+        /* CSS3 Inmersivo: Bio-Digital / Rústico */
+        :root {
+            --bg-color: #1a1a2e; /* Azul oscuro digital */
+            --text-color: #e0e0e0;
+            --neon-green: #0f0; /* Neon de control */
+            --parchment: #c8a2c8; /* Tinte púrpura para bio-datos */
+            --rustic-brown: #8c6d48; /* Cuaderno de campo */
+            --error-red: #f44;
+            --border-style: 2px solid;
+            --font-main: 'Georgia', serif; /* Narrativa rústica */
+            --font-code: 'Courier New', monospace; /* Datos digitales */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(0, 255, 0, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 90%, rgba(200, 162, 200, 0.05) 0%, transparent 20%);
+        }
+
+        body::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 2px);
+            pointer-events: none;
+        }
+
+        #game-container {
+            width: 90%;
+            max-width: 900px;
+            height: 85vh;
+            border: var(--border-style) var(--neon-green);
+            background-color: rgba(10, 10, 20, 0.9);
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            border-radius: 10px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--neon-green);
+            font-family: var(--font-code);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 0;
+        }
+
+        h1 { font-size: 1.5rem; text-shadow: 0 0 5px var(--neon-green); }
+        h2 { font-size: 1.1rem; color: var(--parchment); }
+
+        .game-screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+            padding-right: 10px; /* space for scrollbar */
+        }
+
+        .active-screen {
+            display: flex;
+        }
+
+        .narrative-panel {
+            background-color: rgba(140, 109, 72, 0.1); /* Rustic tint */
+            border: 1px solid var(--rustic-brown);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border-left: 5px solid var(--parchment);
+        }
+
+        .critical-reading {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .critical-reading strong {
+            color: var(--neon-green);
+            font-family: var(--font-code);
+        }
+
+        .puzzle-image {
+            max-width: 100%;
+            height: auto;
+            border: var(--border-style) var(--parchment);
+            margin: 10px auto;
+            display: block;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(200, 162, 200, 0.2);
+        }
+
+        .code-block {
+            font-family: var(--font-code);
+            background-color: #000;
+            color: var(--neon-green);
+            padding: 10px;
+            border: 1px dashed var(--neon-green);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: auto;
+            padding: 15px;
+            border-top: 1px solid #333;
+        }
+
+        input[type="text"] {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: var(--border-style) var(--parchment);
+            color: var(--neon-green);
+            font-family: var(--font-code);
+            padding: 10px;
+            font-size: 1.2rem;
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 10px var(--parchment);
+        }
+
+        button {
+            background-color: transparent;
+            border: var(--border-style) var(--neon-green);
+            color: var(--neon-green);
+            font-family: var(--font-code);
+            padding: 10px 20px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: var(--neon-green);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-green);
+        }
+
+        button:disabled {
+            border-color: #333;
+            color: #333;
+            cursor: not-allowed;
+        }
+
+        .lockout-timer {
+            color: var(--error-red);
+            font-family: var(--font-code);
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* Sistema de Inventario */
+        #inventory-bar {
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .inventory-item {
+            font-family: var(--font-code);
+            font-size: 0.8rem;
+            color: var(--parchment);
+            border: 1px solid var(--parchment);
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        /* Scrollbar styling */
+        .game-screen::-webkit-scrollbar { width: 8px; }
+        .game-screen::-webkit-scrollbar-track { background: #0a0a14; }
+        .game-screen::-webkit-scrollbar-thumb { background: var(--parchment); border-radius: 4px; }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <h1>PROJECT BIOS: Homeostasis</h1>
+    <h2>Estabular el Equilibrio de la Finca Interior</h2>
+
+    <div id="inventory-bar">
+        </div>
+
+    <div id="room-1" class="game-screen active-screen">
+        <h2>Sector 1: Puerta de Enlace Bio-Digital</h2>
+        <div class="narrative-panel">
+            ¡Saludos, aprendiz de Ingeniería Agrícola de Quindío! Te encuentras ante la interfaz central del **Proyecto BIOS**, una finca experimental hiper-avanzada que simula un organismo vivo. El sistema está en crisis. La *Homeostasis*, el equilibrio perfecto que mantiene la vida, se está desmoronando. Tu misión es restaurarla.
+        </div>
+        <p><strong>Acertijo 1 (Vocabulario):</strong> Para iniciar la secuencia de estabilización, debes definir el concepto clave. Según los protocolos antiguos, la homeostasis es el proceso de mantener condiciones internas constantes a pesar de los cambios externos. Encuentra la palabra oculta en este mensaje desordenado que describe este estado de equilibrio:</p>
+        <div class="code-block">B L I Q U I R I O E</div>
+        
+        <div class="input-group">
+            <input type="text" id="input-1" placeholder="Palabra clave..." autocomplete="off">
+            <button onclick="checkAnswer(1)">Validar Acceso</button>
+            <div id="lockout-1" class="lockout-timer">BLOQUEO: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-2" class="game-screen">
+        <h2>Sector 2: Cuartel Central del Sistema Nervioso</h2>
+        <div class="narrative-panel">
+            ¡Acceso concedido! El Administrador de la Finca BIOS (el Sistema Nervioso) está desbordado. Sus mensajeros rápidos, las neuronas, están enviando señales caóticas. Para re-coordinar, necesitas activar una vía neural clave.
+        </div>
+        <p><strong>Acertijo 2 (Caesar Code):</strong> Un "chasqui" neural te ha entregado un código cifrado. Usa un Cifrado César (Desplazamiento +3, A->D, B->E) para descifrar la función principal del Administrador. El mensaje codificado es:</p>
+        <div class="code-block">F R R U G L Q D F L R Q</div>
+        <p><em>Pista: Desplaza cada letra 3 posiciones hacia ATRÁS en el abecedario.</em></p>
+
+        <div class="input-group">
+            <input type="text" id="input-2" placeholder="Función descifrada..." autocomplete="off">
+            <button onclick="checkAnswer(2)">Enviar Señal</button>
+            <div id="lockout-2" class="lockout-timer">BLOQUEO: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-3" class="game-screen">
+        <h2>Sector 3: Matriz de Activación Neural</h2>
+        <div class="narrative-panel">
+            La coordinación está volviendo, pero una vía de comunicación crucial está bloqueada. Estás frente al terminal de activación de una sinapsis.
+        </div>
+        <p><strong>Acertijo 3 (Visual Complejo):</strong> Analiza la imagen de la Pista 1. Muestra un diagrama técnico de una sinapsis. Observa los diales numéricos cerca de las vesículas y los patrones únicos en la vaina de mielina de fondo. Necesitas encontrar el código numérico exacto de 4 dígitos que permite la liberación del neurotransmisor correcto. Introduce el código:</p>
+        
+        <img src="pista_1.png" alt="Pista 1: Matriz de Activación Neural" class="puzzle-image">
+
+        <div class="input-group">
+            <input type="text" id="input-3" placeholder="Código de 4 dígitos..." autocomplete="off">
+            <button onclick="checkAnswer(3)">Activar Sinapsis</button>
+            <div id="lockout-3" class="lockout-timer">BLOQUEO: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-4" class="game-screen">
+        <h2>Sector 4: Bitácora del Administrador</h2>
+        <div class="narrative-panel">
+            ¡Vía activada! Has logrado acceder a los registros ocultos del Administrador.
+        </div>
+        <p><strong>Acertijo 4 (Lectura Crítica >200 palabras):</strong> Lee atentamente el registro de la bitácora para identificar cómo BIOS gestiona una sobrecarga sensorial. La solución requiere deducir los tres componentes del bucle de retroalimentación negativa escondidos en el texto.</p>
+        
+        <div class="critical-reading narrative-panel">
+            <strong>REGISTRO 045: GESTIÓN DE SOBRECARGA.</strong> <br>
+            "El monitoreo constante de la finca BIOS ha detectado un aumento crítico en la temperatura del sector de fermentación de café. Este evento, que amenaza la homeostasis, es detectado inicialmente por nuestros **sensores térmicos especializados** distribuidos en la red. Estos sensores, actuando como receptores eficientes, envían una señal de alerta inmediata al Cuartel Central (el Administrador). Al recibir la señal, el Administrador compara la lectura con el valor de referencia establecido y determina que se requiere una acción correctiva. Acto seguido, el Administrador emite una orden de activación. Esta orden viaja a través de las vías rápidas hacia los **aspersores de agua de enfriamiento**, los efectores encargados de ejecutar la respuesta. Una vez activados, los aspersores reducen la temperatura. Al disminuir el calor, los sensores térmicos reportan el cambio, y el Administrador detiene la señal de alerta. Este ciclo de retroalimentación negativa es esencial para evitar el colapso. La clave para sincronizar este bucle es identificar el orden correcto de operación: 1st-Detección por Receptor, 2nd-Procesamiento Central, 3rd-Ejecución por Efector. El código de sincronización es la combinación de las primeras letras de estos tres componentes en mayúsculas."
+        </div>
+
+        <p>Sincroniza el bucle de retroalimentación negativa ingresando las tres letras mayúsculas iniciales en el orden: Receptor, Procesamiento, Efector.</p>
+
+        <div class="input-group">
+            <input type="text" id="input-4" placeholder="Ej: ABC..." autocomplete="off">
+            <button onclick="checkAnswer(4)">Sincronizar Bucle</button>
+            <div id="lockout-4" class="lockout-timer">BLOQUEO: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-5" class="game-screen">
+        <h2>Sector 5: Zona de Alerta "Lucha o Huida"</h2>
+        <div class="narrative-panel">
+            ¡Bucle sincronizado! De repente, una alarma externa suena. Un depredador simulado (un jaguar) ha sido detectado cerca de los potreros de ganadería. Proyecto BIOS activa inmediatamente la respuesta de "Lucha o Huida". El equilibrio interno se altera violentamente para priorizar la supervivencia.
+        </div>
+        <p><strong>Acertijo 5 (Deducción Lógica/Datos):</strong> Analiza la siguiente tabla de datos vitales simulados para un organismo en BIOS bajo estrés extremo. Deduce qué sistema NO se activa prioritariamente durante la respuesta de lucha o huida.</p>
+        
+        <table class="code-block" style="width: 100%; text-align: left; font-size: 0.8rem;">
+            <tr><th>Variable Vital</th><th>Estado Normal</th><th>Estado de Alerta (Jaguar detected)</th><th>Tendencia</th></tr>
+            <tr><td>Frecuencia Cardíaca (lat/min)</td><td>72</td><td>145</td><td>Aumento Crítico</td></tr>
+            <tr><td>Frecuencia Respiratoria (resp/min)</td><td>16</td><td>35</td><td>Aumento Crítico</td></tr>
+            <tr><td>Glucosa en Sangre (mg/dL)</td><td>90</td><td>180</td><td>Aumento (Energía rápida)</td></tr>
+            <tr><td>Pupilas</td><td>Constreñidas</td><td>Dilatadas</td><td>Aumento (Visión)</td></tr>
+            <tr><td>Flujo Sanguíneo Digestivo (mL/min)</td><td>500</td><td>150</td><td>Disminución (Ahorro energía)</td></tr>
+        </table>
+        
+        <p>¿Qué proceso se inhibe (se reduce) para ahorrar energía durante la alerta? (Respuesta en una sola palabra).</p>
+
+        <div class="input-group">
+            <input type="text" id="input-5" placeholder="Proceso inhibido..." autocomplete="off">
+            <button onclick="checkAnswer(5)">Validar Análisis</button>
+            <div id="lockout-5" class="lockout-timer">BLOQUEO: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-6" class="game-screen">
+        <h2>Sector 6: Terminal de Activación de Adrenalina</h2>
+        <div class="narrative-panel">
+            El jaguar simulado sigue cerca. Para mantener la respuesta de alerta y asegurar la supervivencia, BIOS necesita desplegar adrenalina de forma segura. El terminal de actuación está bloqueado por un código molecular.
+        </div>
+        <p><strong>Acertijo 6 (Visual Complejo):</strong> Analiza la imagen de la Pista 2. Muestra un esquema bio-digital de la molécula de adrenalina. Observa las partes resaltadas con neón y los números asociados que el sistema prioriza. Necesitas encontrar la secuencia numérica de 4 dígitos correcta para activar el despliegue de adrenalina. Introduce el código:</p>
+        
+        <img src="pista_2.png" alt="Pista 2: Código de Adrenalina" class="puzzle-image">
+
+        <div class="input-group">
+            <input type="text" id="input-6" placeholder="Código de 4 dígitos..." autocomplete="off">
+            <button onclick="checkAnswer(6)">Activar Adrenalina</button>
+            <div id="lockout-6" class="lockout-timer">BLOQUEO: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-7" class="game-screen">
+        <h2>Sector 7: Los Invernaderos Hormonales "Cabañuelas"</h2>
+        <div class="narrative-panel">
+            ¡Adrenalina desplegada! La amenaza externa ha sido neutralizada por los protocolos de seguridad. Pero la oleada de adrenalina ha dejado el equilibrio hormonal de BIOS hecho un desastre. Estás en los "Invernaderos Hormonales" (el Sistema Endocrino), conocidos como las "cabañuelas corporales" porque regulan el estado a largo plazo.
+        </div>
+        <p><strong>Acertijo 7 (Lógica de Inventario):</strong> Una bomba de regulación hormonal clave está fallando debido a la sobrecarga eléctrica de Room 1. Necesitas estabilizarla usando el *Patch de Neurotransmisor Estabilizador* que recolectaste en el Sector 1 (y que ahora debería estar en tu inventario). Para usarlo, debes identificar qué hormona es crucial para regular el metabolismo a largo plazo (el "clima" de la finca BIOS) que se ha visto alterado por el jaguar.</p>
+        <p>¿Qué hormona clave regula el metabolismo general?</p>
+
+        <div class="input-group">
+            <input type="text" id="input-7" placeholder="Hormona clave..." autocomplete="off">
+            <button onclick="checkAnswer(7)">Estabilizar Bomba</button>
+            <div id="lockout-7" class="lockout-timer">BLOQUEO: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-8" class="game-screen">
+        <h2>Sector 8: Mapa de Sectores Endocrinos</h2>
+        <div class="narrative-panel">
+            La bomba está estabilizada. Ahora debes re-sincronizar los diferentes invernaderos hormonales.
+        </div>
+        <p><strong>Acertijo 8 (Visual Complejo):</strong> Analiza el mapa de la Pista 3, que muestra Proyecto BIOS como sectores productivos (Invernaderos Hormonales). Cada sector (glándula) tiene asignado un código de frecuencia de 3 dígitos (ej: Pituitaria=000, Tiroides=001, etc.).</p>
+        <p>Según el manual de Proyecto BIOS, la sincronización tras una alerta debe priorizar el "Comando Central" (Pituitaria), seguido de la "Regulación del Metabolismo" (Tiroides). Ingresa los códigos de frecuencia de 3 dígitos en el orden secuencial correcto (Pituitaria seguido de Tiroides) para sincronizar.</p>
+        
+        <img src="pista_3.png" alt="Pista 3: Mapa de Sectores Endocrinos" class="puzzle-image">
+
+        <div class="input-group">
+            <input type="text" id="input-8" placeholder="Secuencia de 6 dígitos..." autocomplete="off">
+            <button onclick="checkAnswer(8)">Sincronizar Sectores</button>
+            <div id="lockout-8" class="lockout-timer">BLOQUEO: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-9" class="game-screen">
+        <h2>Sector 9: Central de Estabilización Homeostática</h2>
+        <div class="narrative-panel">
+            ¡Sectores hormonales sincronizados! Has coordinado los mensajeros rápidos (nerviosos) y los lentos (hormonales), y BIOS ha sobrevivido a una alerta. Estás en la Central de Estabilización final. El equilibrio conceptual perfecto está casi a tu alcance.
+        </div>
+        <p><strong>Acertijo 9 (Maestría Visual/Lógica):</strong> Analiza la Matriz de Estabilización en la Pista 4. Esta matriz compleja representa el estado conceptual de homeostasis. Rows representan sistemas (Control Nervioso, Pico de Adrenalina, Flujo Endocrino) y Columnas representan estadios (Input de Señal, Modulación, Efecto de Salida). La matriz está incompleta y muestra signos de '?' en celdas críticas. Para estabilizar BIOS, debes determinar la secuencia numérica de 5 dígitos que representa los números faltantes necesarios para crear conceptualmente un equilibrio 'cero' (homeostasis perfecta). Deduce los números basándote en la lógica de regulación que has aprendido y los códigos anteriores.</p>
+        
+        <img src="pista_4.png" alt="Pista 4: Matriz de Estabilización" class="puzzle-image">
+
+        <div class="input-group">
+            <input type="text" id="input-9" placeholder="Código final de 5 dígitos..." autocomplete="off">
+            <button onclick="checkAnswer(9)">Estabilizar BIOS</button>
+            <div id="lockout-9" class="lockout-timer">BLOQUEO: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-10" class="game-screen">
+        <h2>Sector 10: Escenario de Estabilización Final</h2>
+        <div class="narrative-panel">
+            ¡Matriz estabilizada! BIOS está conceptualmente en equilibrio, pero una última alerta operativa surge en la "Granja de Glucosa" (Páncreas). Hubo una sobreproducción masiva de azúcar durante la alerta del jaguar para dar energía rápida, y ahora BIOS se enfrenta a una hiperglucemia crítica.
+        </div>
+        <p><strong>Acertijo 10 (Maestría Lógica Multi-paso):</strong> Aplica tus conocimientos para resolver esta crisis final y graduarte como Ingeniero en Homeostasis Bio-Digital. BIOS debe ejecutar un protocolo de 3 pasos para estabilizar la glucosa. Determina el orden correcto de operación del bucle de retroalimentación negativa que solucionará la hiperglucemia.</p>
+        
+        <p class="code-block" style="text-align: left;">
+            Acciones disponibles:<br>
+            A) El Hígado convierte el exceso de glucosa en glucógeno (almacenamiento).<br>
+            B) Los sensores detectan alta glucosa en sangre.<br>
+            C) El Páncreas libera Insulina.<br>
+            D) Los sensores detectan baja glucosa.<br>
+            E) El Hígado libera glucosa (glucogenólisis).
+        </p>
+
+        <p>¿Cuál es la secuencia lógica de 3 pasos (letras) para reducir la hiperglucemia? (Receptor -> Procesamiento Central -> Efector).</p>
+
+        <div class="input-group">
+            <input type="text" id="input-10" placeholder="Ej: BCA..." autocomplete="off">
+            <button onclick="checkAnswer(10)">Ejecutar Protocolo Final</button>
+            <div id="lockout-10" class="lockout-timer">BLOQUEO: 7s</div>
+        </div>
+    </div>
+
+    <div id="room-success" class="game-screen">
+        <h2>¡ÉXITO! Homeostasis Restaurada</h2>
+        <div class="narrative-panel" style="border-left-color: var(--neon-green); text-align: center;">
+            <p><strong>¡Felicitaciones, Ingeniero en Homeostasis Bio-Digital Junior!</strong></p>
+            <p>Has equilibrado exitosamente Proyecto BIOS. Has demostrado dominio sobre los mensajeros nerviosos rápidos, la respuesta de supervivencia de "Lucha o Huida" y los reguladores hormonales lentos.</p>
+            <p>El Administrador te otorga la Certificación de Maestría en Equilibrio Ecosistémico. La Finca Interior está a salvo.</p>
+        </div>
+        <div class="input-group">
+            <button onclick="restartGame()">Reiniciar Simulación BIOS</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Configuración y Estado del Juego
+    let currentRoom = 1;
+    let inventory = [];
+    let isLockout = false;
+    let lockoutCountdown;
+
+    // Respuestas correctas (Normalizadas: Trim, Lowercase)
+    const correctAnswers = {
+        1: "equilibrio",
+        2: "coordinacion", // Decoded Caesar 'FRRUG...' with +3 shift backwards
+        3: "3719", // From Pista 1 Visual
+        4: "rpe", // Receptor, Procesamiento, Efector (Sensores, Administrador, Aspersores)
+        5: "digestion", // Process inhibited based on Table data
+        6: "9268", // From Pista 2 Visual
+        7: "tiroxina", // Key metabolism hormone, used Stabilizer Patch conceptual use.
+        8: "000001", // Gland sequence Pituitary (000) then Thyroid (001) from Pista 3 Map
+        9: "25801", // From Pista 4 Visual Mastery Matrix
+        10: "bca" // Sequential protocol: Sensors detect high glucose -> Pancreas releases Insulina -> Hígado stores glucose.
+    };
+
+    // Ítems de Inventario que se obtienen en ciertas fases (de Room 1 para Room 7)
+    const inventoryItemsAvailable = {
+        1: "Patch de Neurotransmisor Estabilizador (Sector 1)"
+    };
+
+    function init() {
+        loadProgress();
+        updateInventoryDisplay();
+    }
+
+    // Cambiar de Habitación (Screen Navigation)
+    function changeRoom(roomNumber) {
+        if (isLockout) return; // Prevent navigation during lockout
+
+        document.querySelectorAll('.game-screen').forEach(screen => {
+            screen.classList.remove('active-screen');
+        });
+        const targetScreen = document.getElementById(roomNumber === 'success' ? 'room-success' : `room-${roomNumber}`);
+        if (targetScreen) {
+            targetScreen.classList.add('active-screen');
+            currentRoom = roomNumber;
+            
+            // Focus on input
+            if (roomNumber !== 'success') {
+                const input = document.getElementById(`input-${roomNumber}`);
+                if(input) input.focus();
+            }
+
+            // Grant inventory items based on room entry
+            if (inventoryItemsAvailable[roomNumber] && !inventory.includes(inventoryItemsAvailable[roomNumber])) {
+                addInventoryItem(inventoryItemsAvailable[roomNumber]);
+            }
+
+            saveProgress();
+        }
+    }
+
+    // Validación de Respuestas y Penalización
+    function checkAnswer(puzzleId) {
+        if (isLockout) return;
+
+        const inputEl = document.getElementById(`input-${puzzleId}`);
+        const lockoutEl = document.getElementById(`lockout-${puzzleId}`);
+        const submitBtn = inputEl.nextElementSibling;
+
+        // Normalizar Input: Trim, Lowercase, quitar acentos básicos
+        const playerAnswer = inputEl.value.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const correctAnswer = correctAnswers[puzzleId].toLowerCase();
+
+        if (playerAnswer === correctAnswer) {
+            // Correct Answer
+            inputEl.style.borderColor = var(--neon-green);
+            // Move to next stage
+            if (puzzleId === 10) {
+                changeRoom('success');
+            } else {
+                changeRoom(puzzleId + 1);
+            }
+        } else {
+            // Incorrect Answer: Penalty Lockout
+            startLockout(inputEl, submitBtn, lockoutEl);
+        }
+    }
+
+    // Mecánica de Penalización de 7 Segundos
+    function startLockout(inputEl, submitBtn, lockoutEl) {
+        isLockout = true;
+        inputEl.disabled = true;
+        submitBtn.disabled = true;
+        lockoutEl.style.display = 'block';
+        inputEl.style.borderColor = var(--error-red);
+
+        let secondsLeft = 7;
+        lockoutEl.textContent = `BLOQUEO: ${secondsLeft}s`;
+
+        lockoutCountdown = setInterval(() => {
+            secondsLeft--;
+            lockoutEl.textContent = `BLOQUEO: ${secondsLeft}s`;
+
+            if (secondsLeft <= 0) {
+                clearInterval(lockoutCountdown);
+                isLockout = false;
+                inputEl.disabled = false;
+                submitBtn.disabled = false;
+                lockoutEl.style.display = 'none';
+                lockoutEl.textContent = 'BLOQUEO: 7s';
+                inputEl.focus();
+                inputEl.value = ''; // Clear input on lockout end
+                inputEl.style.borderColor = var(--parchment);
+            }
+        }, 1000);
+    }
+
+    // Sistema de Inventario
+    function addInventoryItem(item) {
+        if (item && !inventory.includes(item)) {
+            inventory.push(item);
+            saveProgress();
+            updateInventoryDisplay();
+        }
+    }
+
+    function updateInventoryDisplay() {
+        const invBar = document.getElementById('inventory-bar');
+        if (inventory.length === 0) {
+            invBar.style.display = 'none';
+            invBar.innerHTML = '';
+        } else {
+            invBar.style.display = 'flex';
+            invBar.innerHTML = '<span style="color:var(--text-color); font-size:0.8rem;">Morral de Campo:</span>';
+            inventory.forEach(item => {
+                const itemSpan = document.createElement('span');
+                itemSpan.className = 'inventory-item';
+                itemSpan.textContent = item;
+                invBar.appendChild(itemSpan);
+            });
+        }
+    }
+
+    // Persistencia con localStorage
+    function saveProgress() {
+        const gameState = {
+            room: currentRoom,
+            inventory: inventory
+        };
+        localStorage.setItem('quindioEscapeBios_V2', JSON.stringify(gameState));
+    }
+
+    function loadProgress() {
+        const savedState = localStorage.getItem('quindioEscapeBios_V2');
+        if (savedState) {
+            const state = JSON.parse(savedState);
+            currentRoom = state.room || 1;
+            inventory = state.inventory || [];
+            
+            // Grant item if needed upon load
+            if (currentRoom > 1 && inventoryItemsAvailable[1] && !inventory.includes(inventoryItemsAvailable[1])) {
+                addInventoryItem(inventoryItemsAvailable[1]);
+            }
+            
+            changeRoom(currentRoom);
+        }
+    }
+
+    function restartGame() {
+        localStorage.removeItem('quindioEscapeBios_V2');
+        location.reload(); // Hard reload to screen 1
+    }
+
+    // Inicialización al cargar
+    window.onload = init;
+
+</script>
+
+</body>
+</html>

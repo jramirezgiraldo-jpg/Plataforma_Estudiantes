@@ -9,7 +9,8 @@ app.secret_key = 'super_secret_key_educativa_2026'
 
 # Carpeta donde están los documentos HTML del profesor (Adaptado para producción)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-GUIAS_PATH = os.path.join(BASE_DIR, "Guias_1p")
+GUIAS_1P_PATH = os.path.join(BASE_DIR, "Guias_1p")
+GUIAS_2P_PATH = os.path.join(BASE_DIR, "Guias_2p")
 
 def get_db_connection():
     db_path = os.path.join(BASE_DIR, 'users.db')
@@ -45,29 +46,27 @@ def get_animal_reward(score):
         return 'owl'
     return 'tortoise'
 
-# Categorizar los archivos por grado
+# Categorizar los archivos por grado y periodo
 def get_files_for_grade(grade):
-    # grade podría ser un entero 6, 7, 8, 9, 10, 11
-    # Los archivos empiezan con "6 ", "7 ", "10 ", etc.
-    # Listamos todos los html de Guias 1p
-    if not os.path.exists(GUIAS_PATH):
-        return []
-    
     files = []
-    # Buscamos archivos que comiencen por "{grade} " o "{grade}_"
-    # Tambien hay excepciones como "6-11 mapas .html" que aplican a todos.
     
-    all_files = os.listdir(GUIAS_PATH)
-    for f in all_files:
-        if f.endswith('.html') or f.endswith('.py'):
-            # Si el archivo empieza por "6 " y el grado es 6
-            if f.startswith(f"{grade} ") or f.startswith(f"{grade}_") or f.startswith(f"{grade}-"):
-                # Formatear el nombre para mostrarlo bonito
-                display_name = f.replace('.html', '').replace('.py', '')
-                files.append({'filename': f, 'display_name': display_name})
+    # Listar archivos de ambos periodos
+    for periodo, path in [('1P', GUIAS_1P_PATH), ('2P', GUIAS_2P_PATH)]:
+        if os.path.exists(path):
+            all_files = os.listdir(path)
+            for f in all_files:
+                if f.endswith('.html') or f.endswith('.py'):
+                    # Si el archivo empieza por "{grade} " o "{grade}_"
+                    if f.startswith(f"{grade} ") or f.startswith(f"{grade}_") or f.startswith(f"{grade}-"):
+                        display_name = f.replace('.html', '').replace('.py', '')
+                        files.append({
+                            'filename': f, 
+                            'display_name': display_name,
+                            'periodo': periodo
+                        })
     
-    # Ordenar alfabéticamente
-    files.sort(key=lambda x: x['display_name'])
+    # Ordenar por periodo y luego por nombre
+    files.sort(key=lambda x: (x['periodo'], x['display_name']))
     return files
 
 @app.route('/')
@@ -194,17 +193,16 @@ def admin_dashboard():
         
     return render_template('admin_dashboard.html', students=student_data, name=session['name'], selected_grade=grade_filter)
 
-@app.route('/material/<filename>')
-def serve_material(filename):
+@app.route('/material/<periodo_id>/<filename>')
+def serve_material(periodo_id, filename):
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    # Simple seguridad para evitar salir del directorio
-    # En producción habría que ser más riguroso
     if '/' in filename or '\\' in filename:
         return "Acceso denegado", 403
         
-    return send_from_directory(GUIAS_PATH, filename)
+    path = GUIAS_2P_PATH if periodo_id == '2P' else GUIAS_1P_PATH
+    return send_from_directory(path, filename)
 
 @app.route('/logout')
 def logout():

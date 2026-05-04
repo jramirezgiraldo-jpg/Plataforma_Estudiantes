@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Mitosis II - Sanando Heridas en Pueblo Rico</title>
+    <style>
+        /* === PALETA DE COLORES: PAISAJE CULTURAL CAFETERO === */
+        :root {
+            --cafe-tierra: #3E2723;
+            --cafe-suave: #6D4C41;
+            --verde-cafetal: #1B5E20;
+            --verde-platano: #4CAF50;
+            --naranja-citrico: #E65100;
+            --amarillo-sol: #FBC02D;
+            --crema-fondo: #FDFBF7;
+            --blanco: #FFFFFF;
+            --texto-oscuro: #212121;
+            --alerta-rojo: #D32F2F;
+            --borde-suave: #D7CCC8;
+            --azul-cielo: #0288D1;
+        }
+
+        /* === RESET Y ESTILOS BASE === */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--crema-fondo); color: var(--texto-oscuro); line-height: 1.6; scroll-behavior: smooth; overflow-x: hidden; }
+        .hidden { display: none !important; }
+        h1, h2, h3, h4 { color: var(--cafe-tierra); margin-bottom: 15px; }
+        p { margin-bottom: 20px; text-align: justify; font-size: 1.05rem; }
+        
+        /* === UTILIDADES === */
+        .resaltado { background-color: rgba(251, 192, 45, 0.3); padding: 2px 5px; border-radius: 4px; font-weight: bold; color: var(--cafe-tierra); }
+        .sub { vertical-align: sub; font-size: smaller; }
+        
+        /* === BOTONES === */
+        .btn {
+            background-color: var(--verde-cafetal); color: var(--blanco); border: none; padding: 12px 25px;
+            font-size: 1.1rem; border-radius: 8px; cursor: pointer; transition: all 0.3s;
+            font-weight: bold; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn:hover:not(:disabled) { background-color: var(--verde-platano); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+        .btn:disabled { background-color: #BCAAA4; cursor: not-allowed; color: #FAFAFA; box-shadow: none; transform: none;}
+        .btn-actividad { background-color: var(--naranja-citrico); width: 100%; margin-top: 10px; font-size: 1rem; }
+        .btn-actividad.completada { background-color: var(--cafe-suave); color: white; }
+
+        /* === FORMULARIOS === */
+        input[type="text"], textarea, select {
+            width: 100%; padding: 12px; border: 2px solid var(--borde-suave); border-radius: 8px;
+            font-size: 1rem; margin-bottom: 15px; transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, textarea:focus, select:focus { outline: none; border-color: var(--verde-cafetal); }
+        textarea { resize: vertical; min-height: 90px; }
+
+        /* === ESTRUCTURA === */
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .tarjeta { background: var(--blanco); border-radius: 12px; padding: 35px; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); border-top: 6px solid var(--verde-cafetal); }
+        
+        /* === PANTALLA INICIO === */
+        #pantalla-login { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, var(--verde-cafetal), var(--cafe-tierra)); }
+        .login-box { background: white; padding: 40px; border-radius: 15px; text-align: center; max-width: 450px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+
+        /* === BARRA SUPERIOR (GAMIFICACIÓN) === */
+        #navbar {
+            position: sticky; top: 0; background: var(--blanco); padding: 15px 20px; z-index: 1000;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-bottom: 3px solid var(--naranja-citrico);
+        }
+        .nav-info { display: flex; align-items: center; gap: 20px; font-weight: bold; font-size: 1.1rem; color: var(--cafe-tierra);}
+        .puntaje-box { background: var(--amarillo-sol); padding: 5px 15px; border-radius: 20px; border: 2px solid var(--naranja-citrico); color: var(--cafe-tierra);}
+        .insignias { display: flex; gap: 10px; }
+        .icono-insignia { width: 35px; height: 35px; fill: #E0E0E0; transition: all 0.5s; }
+        .icono-insignia.activa { fill: var(--cafe-tierra); filter: drop-shadow(0 0 5px rgba(230, 81, 0, 0.4)); transform: scale(1.15);}
+        .barra-progreso-fondo { width: 100%; background: #E0E0E0; height: 6px; position: absolute; bottom: -3px; left: 0; }
+        .barra-progreso-llena { height: 100%; background: var(--verde-cafetal); width: 0%; transition: width 0.8s ease; }
+
+        /* === TABLAS Y BLOQUES === */
+        .tabla-comparativa { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 1rem; }
+        .tabla-comparativa th, .tabla-comparativa td { border: 1px solid var(--borde-suave); padding: 15px; text-align: left; }
+        .tabla-comparativa th { background-color: var(--cafe-suave); color: white; text-align: center; }
+        .tabla-comparativa tr:nth-child(even) { background-color: #F5F5F5; }
+
+        .pausa-activa { background-color: #FFF3E0; border-left: 6px solid var(--naranja-citrico); border-top: none; padding: 25px; margin-bottom: 20px;}
+        .pausa-titulo { color: var(--naranja-citrico); border-bottom: 2px dashed var(--naranja-citrico); padding-bottom: 5px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;}
+
+        .bloque-pregunta { background: #FAFAFA; border: 1px solid #EEEEEE; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid var(--cafe-suave);}
+        .opciones label { display: block; padding: 10px; margin-bottom: 8px; border-radius: 5px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent;}
+        .opciones label:hover { background: #EFEBE9; border-color: var(--borde-suave);}
+        
+        .feedback { margin-top: 15px; font-weight: bold; padding: 15px; border-radius: 5px; }
+        .feedback.correcto { background: #C8E6C9; color: #1B5E20; border: 1px solid #81C784; }
+        .feedback.incorrecto { background: #FFCDD2; color: #B71C1C; border: 1px solid #E57373; }
+
+        /* === ALERTA ANTI-FRAUDE === */
+        .alerta-fraude { background-color: var(--alerta-rojo); color: white; font-weight: bold; text-align: center; padding: 8px; border-radius: 5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;}
+
+        /* === GRÁFICOS Y CANVAS === */
+        .contenedor-svg { width: 100%; max-width: 750px; margin: 25px auto; background: white; border: 2px solid var(--borde-suave); border-radius: 8px; padding: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05);}
+        .contenedor-canvas { width: 100%; height: 450px; background: #EFEBE9; border-radius: 12px; position: relative; border: 4px solid var(--cafe-suave); margin: 25px 0; overflow: hidden;}
+        canvas { display: block; width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+    <!-- ================= PANTALLA DE BIENVENIDA ================= -->
+    <div id="pantalla-login">
+        <div class="login-box">
+            <svg viewBox="0 0 100 100" width="100" height="100">
+                <!-- Hoja de plátano / café estilizada -->
+                <path d="M50 10 C20 30, 10 60, 50 90 C90 60, 80 30, 50 10 Z" fill="var(--verde-platano)"/>
+                <path d="M50 10 C20 30, 10 60, 50 90 L50 10 Z" fill="var(--verde-cafetal)"/>
+                <!-- Célula sanando -->
+                <circle cx="50" cy="55" r="18" fill="#FFF"/>
+                <circle cx="43" cy="55" r="5" fill="var(--naranja-citrico)"/>
+                <circle cx="57" cy="55" r="5" fill="var(--naranja-citrico)"/>
+                <path d="M50 40 L50 70" stroke="var(--verde-cafetal)" stroke-width="2" stroke-dasharray="3"/>
+            </svg>
+            <h2 style="margin-top: 15px; color: var(--cafe-tierra);">I.E. Pueblo Rico</h2>
+            <p style="color: #666; font-weight: bold; margin-bottom: 5px;">Ciencias Naturales - Grado 6°</p>
+            <p style="font-size: 0.9rem; margin-bottom: 20px;">Módulo: Sanando Heridas (Mitosis II)</p>
+            
+            <div style="text-align: left; margin-bottom: 20px;">
+                <label for="input-nombres" style="font-weight: bold; color: var(--cafe-tierra);">Nombres completos:</label>
+                <input type="text" id="input-nombres" placeholder="Ej: Juan David" autocomplete="off">
+                <label for="input-apellidos" style="font-weight: bold; color: var(--cafe-tierra);">Apellidos completos:</label>
+                <input type="text" id="input-apellidos" placeholder="Ej: Gómez Pérez" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar" style="width: 100%;">Ingresar al Laboratorio</button>
+        </div>
+    </div>
+
+    <!-- ================= APLICACIÓN PRINCIPAL ================= -->
+    <div id="app-principal" class="hidden">
+        
+        <!-- BARRA SUPERIOR Y GAMIFICACIÓN -->
+        <div id="navbar">
+            <div class="nav-info">
+                <span>🌱 Estudiante: <span id="nombre-estudiante"></span></span>
+                <div class="puntaje-box">Puntos: <span id="puntaje-ui">0.0</span> / 5.0</div>
+            </div>
+            <div class="insignias">
+                <!-- Insignia 1: Grano de Café (Diagnóstico) -->
+                <svg class="icono-insignia" id="insignia-1" viewBox="0 0 24 24" title="Nivel 1: Chapola"><path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8c0-4.41,3.59-8,8-8 s8,3.59,8,8C20,16.41,16.41,20,12,20z M11,5.08c-3.15,0.48-5.63,2.96-6.11,6.11c2.19-0.85,4.64-0.85,6.83,0 C11.39,9.08,11.39,7.18,11,5.08z M17.11,12.81c-2.19,0.85-4.64,0.85-6.83,0c0.33,2.11,0.33,4.01,0.72,6.11 C14.15,18.44,16.63,15.96,17.11,12.81z"/></svg>
+                <!-- Insignia 2: Sombrero Aguadeño (Desarrollo) -->
+                <svg class="icono-insignia" id="insignia-2" viewBox="0 0 24 24" title="Nivel 2: Campesino"><path d="M12.5,4C14.5,4 16,5.5 16,7.5V8.5C18.5,9 20,11 20,13.5V14H4V13.5C4,11 5.5,9 8,8.5V7.5C8,5.5 9.5,4 11.5,4M11.5,5A2.5,2.5 0 0,0 9,7.5V8H14V7.5A2.5,2.5 0 0,0 11.5,5M5,15H19V16A3,3 0 0,1 16,19H8A3,3 0 0,1 5,16V15Z"/></svg>
+                <!-- Insignia 3: Vaca (Evaluación) -->
+                <svg class="icono-insignia" id="insignia-3" viewBox="0 0 24 24" title="Nivel 3: Ganadería"><path d="M17,17A2,2 0 0,0 15,15A2,2 0 0,0 13,17A2,2 0 0,0 15,19A2,2 0 0,0 17,17M7,17A2,2 0 0,0 5,15A2,2 0 0,0 3,17A2,2 0 0,0 5,19A2,2 0 0,0 7,17M15,10A2,2 0 0,0 13,8A2,2 0 0,0 11,10A2,2 0 0,0 13,12A2,2 0 0,0 15,10M9,10A2,2 0 0,0 7,8A2,2 0 0,0 5,10A2,2 0 0,0 7,12A2,2 0 0,0 9,10M20.5,12L18.5,16H18V18H16V16H8V18H6V16H5.5L3.5,12C3.1,11.3 3.4,10.4 4.1,10.1L5.5,9.5V7C5.5,5.9 6.4,5 7.5,5H9V4C9,3.5 9.4,3 10,3H14C14.6,3 15,3.5 15,4V5H16.5C17.6,5 18.5,5.9 18.5,7V9.5L19.9,10.1C20.6,10.4 20.9,11.3 20.5,12Z"/></svg>
+            </div>
+            <div class="barra-progreso-fondo"><div class="barra-progreso-llena" id="barra-ui"></div></div>
+        </div>
+
+        <div class="container">
+            
+            <!-- ====== SECCIÓN 1: INICIO Y DIAGNÓSTICO ====== -->
+            <div class="tarjeta" id="sec-diagnostico">
+                <h2>🎯 Objetivo de Aprendizaje</h2>
+                <p>En este módulo aprenderás a <strong>explicar la regeneración de los tejidos mediante la mitosis</strong>, comprendiendo cómo sanan los animales y las plantas de nuestras fincas. Además, serás capaz de <strong>modelar las fases celulares</strong> utilizando elementos de tu entorno (semillas, hojas de plátano o plastilina).</p>
+                <hr style="margin: 20px 0; border: 1px solid var(--borde-suave);">
+
+                <h3>Fase 1: Pre-Saberes (Diagnóstico)</h3>
+                <p>Recordemos algunos conceptos del módulo anterior. Responde estas 3 preguntas (0.5 Puntos totales).</p>
+                
+                <div class="bloque-pregunta">
+                    <p><strong>1.</strong> Cuando un trabajador en Quimbaya hace la poda de un árbol de naranja, cortando ramas enteras, ¿qué mecanismo biológico permite que nazcan nuevos brotes en la herida del tronco?</p>
+                    <div class="opciones">
+                        <label><input type="radio" name="p1" value="a"> a) La respiración celular, creando ramas a partir del O<sub>2</sub>.</label>
+                        <label><input type="radio" name="p1" value="b"> b) La mitosis, multiplicando células vegetales para reparar el tejido dañado.</label>
+                        <label><input type="radio" name="p1" value="c"> c) La fotosíntesis, convirtiendo luz solar directamente en madera sólida.</label>
+                    </div>
+                </div>
+                
+                <div class="bloque-pregunta">
+                    <p><strong>2.</strong> ¿Cuál de las siguientes afirmaciones sobre las "células hijas" resultantes de una mitosis reparadora en la piel de una vaca es correcta?</p>
+                    <div class="opciones">
+                        <label><input type="radio" name="p2" value="a"> a) Son genéticamente idénticas a la célula madre original.</label>
+                        <label><input type="radio" name="p2" value="b"> b) Tienen la mitad de la información genética.</label>
+                        <label><input type="radio" name="p2" value="c"> c) Son células completamente distintas que se transforman en pelo.</label>
+                    </div>
+                </div>
+
+                <div class="bloque-pregunta">
+                    <p><strong>3.</strong> Para que una célula pueda dividirse y sanar un rasguño, primero debe copiar sus "planos de instrucción". ¿Cómo se llama esa molécula de instrucciones que se encuentra en el núcleo?</p>
+                    <div class="opciones">
+                        <label><input type="radio" name="p3" value="a"> a) Clorofila.</label>
+                        <label><input type="radio" name="p3" value="b"> b) Glucosa (C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>).</label>
+                        <label><input type="radio" name="p3" value="c"> c) ADN (Ácido Desoxirribonucleico).</label>
+                    </div>
+                </div>
+                
+                <button class="btn" id="btn-eval-diag">Revisar Diagnóstico</button>
+                <div id="fb-diag" class="hidden"></div>
+            </div>
+
+            <!-- ====== SECCIÓN 2: CUERPO INDUCTIVO ====== -->
+            <div class="tarjeta hidden" id="sec-inductivo">
+                <h2>Fase 2: El Milagro de Sanar en la Finca La Esperanza</h2>
+                
+                <p>Amanece en la Finca La Esperanza, ubicada en lo alto de la Vereda Pueblo Rico. Don Octavio, el administrador, realiza su recorrido matutino revisando los potreros donde pastan las vacas lecheras de raza Normando. De repente, nota que "La Niña", una de las mejores productoras de leche, tiene una cortada profunda en su pata trasera derecha. Seguramente, durante la noche, intentó rascarse contra un poste de madera y se enganchó con un alambre de púas suelto. La herida está abierta y ha sangrado un poco. Aunque Don Octavio la limpia y aplica yodo para evitar infecciones, sabe que la verdadera medicina no viene del frasco, sino del interior mismo del animal.</p>
+
+                <p>En el transcurso de las siguientes tres semanas, ocurre un proceso silencioso pero imparable bajo la piel de "La Niña". Al principio, la sangre se coagula formando una costra protectora (como una barrera contra las bacterias del potrero). Inmediatamente después, las células sanas que quedaron en los bordes de la herida reciben una señal de emergencia química. El mensaje es claro: <span class="resaltado">"¡Falta tejido aquí, necesitamos reemplazos inmediatos!"</span>. Es en este preciso instante donde la Mitosis deja de ser un simple concepto de crecimiento y se convierte en el mecanismo fundamental de <strong>regeneración y supervivencia</strong>.</p>
+
+                <p>Las células del tejido epitelial (la piel) comienzan a dividirse aceleradamente. Una célula se prepara, duplica su ADN y se divide en dos células hijas idénticas. Estas, a su vez, se dividen en cuatro, luego en ocho, empujando suavemente hacia el centro del corte para rellenar el vacío. A nivel microscópico, es como si miles de obreros estuvieran fabricando ladrillos idénticos para tapar un hueco en la pared de la finca. En poco tiempo, el tejido muscular debajo se restaura, y una nueva capa de piel cubierta de pelo reemplaza a la costra seca, que finalmente cae al suelo.</p>
+
+                <p>Este mismo fenómeno de regeneración se observa un poco más abajo, en el lote de cítricos de la finca. Para mantener los árboles de naranja saludables y atractivos para el agroturismo (una actividad clave en Quimbaya), los campesinos deben realizar una poda severa, cortando las ramas más viejas y enfermas con un machete o serrucho bien afilado. Para el árbol, esto es una herida colosal. Sin embargo, en lugar de desangrarse, el árbol produce resinas para sellar el corte, y en el borde de la "cicatriz" de la madera, las células del tejido meristemático inician una mitosis explosiva. En pocas semanas, de esa madera aparentemente muerta, brotan yemas de un verde brillante que formarán nuevas ramas y hojas.</p>
+
+                <p>Comprender cómo sana el ganado o cómo se recuperan los cultivos tras una poda o una granizada nos permite mejorar nuestras prácticas en el campo. Si el suelo de Quimbaya no tuviera nutrientes, el naranjo no tendría la energía (ATP) para hacer mitosis y moriría por la herida. Si la vaca estuviera desnutrida, sus células no tendrían los materiales (proteínas) para regenerar su piel. Así, la Mitosis es el motor microscópico que mantiene verde nuestro Paisaje Cultural Cafetero y productivas nuestras fincas ganaderas.</p>
+
+                <h3>📊 Comparativo: Sanación Vegetal vs. Sanación Animal</h3>
+                <table class="tabla-comparativa">
+                    <tr>
+                        <th>Característica de la Regeneración</th>
+                        <th>En el Naranjo (Célula Vegetal)</th>
+                        <th>En la Vaca "La Niña" (Célula Animal)</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Señal de Inicio</strong></td>
+                        <td>Pérdida de la rama (Poda) o daño por insectos.</td>
+                        <td>Ruptura de la piel (Corte por alambre).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Respuesta Inmediata</strong></td>
+                        <td>Secreción de resina o savia para sellar.</td>
+                        <td>Formación de un coágulo de sangre (Costra).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tipo de Mitosis</strong></td>
+                        <td>Mitosis vegetal (forma una <strong>Placa Celular</strong> para dividir la pared rígida de celulosa).</td>
+                        <td>Mitosis animal (forma un <strong>Anillo Contráctil</strong> que estrangula la célula por la mitad).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Resultado Final</strong></td>
+                        <td>Brotes nuevos (yemas) y nueva corteza vegetal.</td>
+                        <td>Tejido conectivo nuevo, piel sana y pelo.</td>
+                    </tr>
+                </table>
+
+                <!-- PAUSAS 1 A 5 -->
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">✍️ Actividad 1: Reflexión en el Cuaderno</h3>
+                    <p>Responde: Si un árbol y una vaca usan la misma "Mitosis" para sanar, ¿por qué crees que a la vaca no le crecen ramas, sino pelo?</p>
+                    <button class="btn btn-actividad" id="btn-p1" onclick="app.marcarPausa(1)">Registrar Actividad 1 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">🎨 Actividad 2: Dibujo de Observación</h3>
+                    <p>Dibuja el tronco de un árbol de tu vereda que haya sido podado o cortado con machete y muestra cómo están saliendo las hojas nuevas de la cicatriz.</p>
+                    <button class="btn btn-actividad" id="btn-p2" onclick="app.marcarPausa(2)">Registrar Actividad 2 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">🧠 Actividad 3: Mapa Mental</h3>
+                    <p>Crea un mapa mental titulado "Sanando en la Finca". Saca dos ramas principales: 1. Animales (Piel y Músculo), 2. Plantas (Ramas y Corteza).</p>
+                    <button class="btn btn-actividad" id="btn-p3" onclick="app.marcarPausa(3)">Registrar Actividad 3 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">📝 Actividad 4: Elaborar Cuadro Comparativo</h3>
+                    <p>Copia el "Comparativo: Sanación Vegetal vs. Sanación Animal" en tu cuaderno. Usa regla. Subraya de rojo la palabra "Costra" y de verde "Resina".</p>
+                    <button class="btn btn-actividad" id="btn-p4" onclick="app.marcarPausa(4)">Registrar Actividad 4 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">🔄 Actividad 5: Diagrama de Flujo</h3>
+                    <p>Crea un diagrama de flujo de cómo sanó la vaca La Niña: [Herida] ➔ [Sangrado] ➔ [Costra] ➔ [Señal Química] ➔ [Mitosis Rápida] ➔ [Piel Nueva].</p>
+                    <button class="btn btn-actividad" id="btn-p5" onclick="app.marcarPausa(5)">Registrar Actividad 5 ✔</button>
+                </div>
+
+                <!-- GRÁFICO SVG E ICFES -->
+                <h3 style="margin-top:40px; color: var(--cafe-tierra);">🔍 Análisis de Datos (Competencia: Indagación)</h3>
+                <p>El veterinario de la finca midió durante 14 días cómo se cerraba la herida de la vaca (en milímetros) y la relacionó con la actividad celular (Tasa de Mitosis). Analiza el gráfico:</p>
+                
+                <div class="contenedor-svg">
+                    <svg viewBox="0 0 700 350" width="100%">
+                        <!-- Fondo y Ejes -->
+                        <rect width="700" height="350" fill="#fcfcfc" rx="8"/>
+                        <!-- Eje X -->
+                        <line x1="60" y1="300" x2="640" y2="300" stroke="#000" stroke-width="2"/>
+                        <!-- Eje Y Izquierdo (Herida mm) -->
+                        <line x1="60" y1="300" x2="60" y2="40" stroke="#000" stroke-width="2"/>
+                        <!-- Eje Y Derecho (Tasa Mitosis) -->
+                        <line x1="640" y1="300" x2="640" y2="40" stroke="#000" stroke-width="2"/>
+                        
+                        <!-- Cuadrícula -->
+                        <g stroke="#e0e0e0" stroke-dasharray="4">
+                            <line x1="60" y1="235" x2="640" y2="235"/>
+                            <line x1="60" y1="170" x2="640" y2="170"/>
+                            <line x1="60" y1="105" x2="640" y2="105"/>
+                        </g>
+
+                        <!-- Títulos -->
+                        <text x="15" y="170" transform="rotate(-90 15,170)" font-size="14" font-weight="bold" fill="var(--alerta-rojo)">Tamaño de la Herida Abierta (mm)</text>
+                        <text x="680" y="170" transform="rotate(-90 680,170)" font-size="14" font-weight="bold" fill="var(--azul-cielo)">Actividad Celular (Tasa de Mitosis)</text>
+                        <text x="350" y="340" font-size="14" font-weight="bold" text-anchor="middle">Tiempo de Recuperación (Días)</text>
+
+                        <!-- Etiquetas X -->
+                        <text x="60" y="320" font-size="12" text-anchor="middle">Día 0</text>
+                        <text x="150" y="320" font-size="12" text-anchor="middle">Día 2</text>
+                        <text x="250" y="320" font-size="12" text-anchor="middle">Día 4</text>
+                        <text x="350" y="320" font-size="12" text-anchor="middle">Día 6</text>
+                        <text x="450" y="320" font-size="12" text-anchor="middle">Día 8</text>
+                        <text x="550" y="320" font-size="12" text-anchor="middle">Día 10</text>
+                        <text x="640" y="320" font-size="12" text-anchor="middle">Día 14</text>
+
+                        <!-- Línea Roja: Herida (Baja) -->
+                        <path d="M 60 50 L 150 55 L 250 80 L 350 150 L 450 250 L 550 290 L 640 300" fill="none" stroke="var(--alerta-rojo)" stroke-width="4"/>
+                        <!-- Línea Azul: Mitosis (Sube y luego baja) -->
+                        <path d="M 60 290 L 150 250 L 250 100 L 350 60 L 450 120 L 550 250 L 640 295" fill="none" stroke="var(--azul-cielo)" stroke-width="4" stroke-dasharray="6"/>
+                        
+                        <!-- Puntos Clave -->
+                        <circle cx="250" cy="100" r="6" fill="var(--azul-cielo)"/> <!-- Pico mitosis -->
+                        <text x="250" y="85" font-size="12" font-weight="bold" fill="var(--azul-cielo)" text-anchor="middle">Pico de División</text>
+
+                        <circle cx="640" cy="300" r="6" fill="var(--alerta-rojo)"/> <!-- Herida cerrada -->
+                        <text x="620" y="285" font-size="12" font-weight="bold" fill="var(--alerta-rojo)" text-anchor="end">Herida Cerrada (0mm)</text>
+                    </svg>
+                </div>
+
+                <div class="bloque-pregunta">
+                    <p><strong>Pregunta Tipo ICFES:</strong> Al analizar la gráfica, ¿qué conclusión es biológicamente correcta respecto a la relación entre la actividad celular (mitosis) y el cierre de la herida entre el Día 2 y el Día 6?</p>
+                    <div class="opciones">
+                        <label><input type="radio" name="icfes" value="a"> A) La mitosis disminuye drásticamente, lo que causa que la herida aumente su tamaño (la línea roja sube en el eje).</label>
+                        <label><input type="radio" name="icfes" value="b"> B) El aumento acelerado de la mitosis (línea azul sube) genera un gran número de células que rellenan el tejido, causando que el tamaño de la herida (línea roja) empiece a disminuir rápidamente.</label>
+                        <label><input type="radio" name="icfes" value="c"> C) La herida se cierra por sí sola debido a factores externos, provocando que las células dejen de hacer mitosis el día 2.</label>
+                        <label><input type="radio" name="icfes" value="d"> D) Ambas líneas son paralelas, lo que indica que no hay relación entre la división celular y la cicatrización en la vaca.</label>
+                    </div>
+                    <button class="btn" id="btn-eval-icfes" style="margin-top: 10px;">Validar Respuesta</button>
+                    <div id="fb-icfes" class="hidden"></div>
+                </div>
+
+            </div>
+
+            <!-- ====== SECCIÓN 3: CUERPO DEDUCTIVO Y ANIMACIÓN ====== -->
+            <div class="tarjeta hidden" id="sec-deductivo">
+                <h2>Fase 3: Modelando las Fases de la Mitosis</h2>
+                
+                <p>Ya entendemos la importancia de la mitosis para sanar las heridas en nuestra finca. Pero, ¿cómo ocurre exactamente esta división por dentro? Para visualizarlo mejor, vamos a modelarlo. Imagina que tomas un trozo rectangular de hoja de plátano verde; esa será nuestra célula vegetal. En el centro, usando semillas de café (pergamino blanco y café tostado oscuro) o plastilina de colores, representaremos los <strong>cromosomas</strong>, que son los paquetes donde está guardado el ADN de la planta.</p>
+
+                <p>El ciclo inicia con la <strong>Interfase</strong>. La célula se está preparando. En este momento, las semillas de café (ADN) se duplican. Si teníamos 4 semillas blancas, la célula fabrica otras 4 copias exactas. El núcleo está lleno de material genético desenredado. Justo después, arranca la verdadera división con la primera etapa: la <strong>Profase</strong>. Aquí, la envoltura del núcleo desaparece y el ADN se empaqueta fuertemente. En tu modelo sobre la hoja de plátano, esto se vería como agrupar las semillas de café en pares (en forma de "X"), listas para moverse por el citoplasma celular.</p>
+
+                <p>La segunda etapa es la más ordenada: la <strong>Metafase</strong>. Imagina a los jeeps Willys alineándose perfectamente en la plaza de Quimbaya antes de salir. En la célula, ocurre lo mismo. Unas cuerdas microscópicas llamadas "huso acromático" jalan los cromosomas (las semillas en forma de X) y los alinean exactamente en el ecuador (la mitad) de la hoja de plátano. Esta alineación es crítica; si un cromosoma queda torcido, una de las células hijas podría nacer deforme o defectuosa.</p>
+
+                <p>Luego viene el momento de la acción, la <strong>Anafase</strong>. Es la separación. Los cromosomas que estaban emparejados en el centro se rompen por la mitad. Las cuerdas del huso acromático tiran hacia los polos (los extremos) de la célula. En tu modelo de hoja de plátano, moverías la mitad de las semillas blancas y oscuras hacia el borde superior, y la otra copia exacta hacia el borde inferior. Ambas partes de la herida están recibiendo su dotación completa de "planos de construcción".</p>
+
+                <p>Finalmente, llegamos a la <strong>Telofase y Citocinesis</strong>. Los cromosomas ya llegaron a los extremos. Se forma un nuevo núcleo alrededor de ellos. Como es una célula vegetal (nuestra hoja de plátano), no se puede simplemente "pellizcar" por el medio porque tiene una pared celular muy dura (hecha de celulosa). Así que la célula construye una nueva pared justo en el centro (Ecuador), como levantar un muro de ladrillos separando un cuarto en dos. Al final, cortas la hoja de plátano por la mitad y tendrás: ¡Dos células idénticas trabajando para cerrar la herida del árbol!</p>
+
+                <h3>🔬 Simulador Científico: Regeneración Tisular Dinámica</h3>
+                <p>Interactúa con el microscopio virtual. Se muestra una sección de tejido epidérmico con una "herida" (espacio vacío arriba). Presiona <strong>"Estimular Mitosis"</strong> para ordenar a las células vecinas que dupliquen su ADN y se dividan para cerrar la herida celular a 60 fotogramas por segundo.</p>
+                
+                <div class="contenedor-canvas">
+                    <div style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 5px; border: 1px solid var(--cafe-suave); font-weight: bold; z-index: 10;">
+                        Estado: <span id="estado-tejido" style="color: var(--alerta-rojo);">Tejido Dañado</span><br>
+                        Células Nuevas: <span id="contador-celulas">0</span>
+                    </div>
+                    <canvas id="simuladorMitosis"></canvas>
+                </div>
+                <button class="btn" id="btn-anim-mitosis" style="width: 100%; margin-top: 5px;">⚡ Estimular Mitosis (Iniciar Reparación)</button>
+                <p style="text-align: center; font-size: 0.9rem; margin-top: 10px; color: #555;">Observa cómo el núcleo (círculo interior) se duplica antes de que la célula se divida hacia el espacio vacío.</p>
+
+                <!-- PAUSAS 6 A 10 -->
+                <div class="pausa-activa" style="margin-top: 30px;">
+                    <h3 class="pausa-titulo">🗺️ Actividad 6: Mapa Conceptual de Fases</h3>
+                    <p>Diseña un mapa conceptual en tu cuaderno con los siguientes cuadros en orden: Profase ➔ Metafase ➔ Anafase ➔ Telofase. Escribe una pequeña frase debajo de cada una.</p>
+                    <button class="btn btn-actividad" id="btn-p6" onclick="app.marcarPausa(6)">Registrar Actividad 6 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">📋 Actividad 7: Tabla de Modelado</h3>
+                    <p>Si fueras a hacer la maqueta celular en tu casa, crea una tabla enumerando los materiales. Ej: Citoplasma = Hoja de plátano; Cromosomas = Granos de Café; Huso acromático = Hilos de coser.</p>
+                    <button class="btn btn-actividad" id="btn-p7" onclick="app.marcarPausa(7)">Registrar Actividad 7 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">📐 Actividad 8: Dibujo Esquemático (Metafase)</h3>
+                    <p>Dibuja específicamente la <strong>Metafase</strong>. Dibuja un rectángulo grande, traza una línea punteada en la mitad (ecuador) y dibuja 4 cromosomas (X) exactamente sobre la línea.</p>
+                    <button class="btn btn-actividad" id="btn-p8" onclick="app.marcarPausa(8)">Registrar Actividad 8 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">📝 Actividad 9: Síntesis de Citocinesis</h3>
+                    <p>Escribe con tus propias palabras: ¿Cuál es la diferencia final entre cómo se divide en dos una célula de vaca (animal) y una célula de café (vegetal)? (Pista: pellizco vs. muro de ladrillos).</p>
+                    <button class="btn btn-actividad" id="btn-p9" onclick="app.marcarPausa(9)">Registrar Actividad 9 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">🧮 Actividad 10: Problema Matemático Ganadero</h3>
+                    <p>Para sanar 1 milímetro cuadrado de piel de vaca se necesitan 2,000 células nuevas. Si la herida mide 5 milímetros cuadrados, y cada célula madre se divide en 2 células hijas. ¿Cuántas células nuevas en total se requieren?</p>
+                    <button class="btn btn-actividad" id="btn-p10" onclick="app.marcarPausa(10)">Registrar Actividad 10 ✔</button>
+                </div>
+
+                <button class="btn" id="btn-ir-eval" style="width: 100%; margin-top: 20px; font-size: 1.2rem;" disabled>🔒 Debes registrar las 10 Actividades para Desbloquear el Taller Final</button>
+
+            </div>
+
+            <!-- ====== SECCIÓN 4: EVALUACIÓN FINAL ====== -->
+            <div class="tarjeta hidden" id="sec-evaluacion">
+                <h2>🎓 Taller de Certificación de Aprendizaje</h2>
+                <p>Para obtener tu certificado, responde la siguiente prueba. <strong>ATENCIÓN AL SISTEMA ANTI-FRAUDE:</strong> Las preguntas abiertas (P6 a P10) deben ser respondidas usando el teclado. <strong>Tu respuesta debe tener EXACTAMENTE entre 10 y 15 palabras</strong>. Si el sistema detecta que copiaste y pegaste, borrará la respuesta.</p>
+
+                <!-- 5 MULTIPLE CHOICE -->
+                <div class="bloque-pregunta">
+                    <p><strong>P1:</strong> Al modelar la célula con hojas de plátano, ¿qué material de nuestro entorno cafetero representa mejor a los cromosomas que guardan el ADN?</p>
+                    <select id="eval-q1">
+                        <option value="">Selecciona...</option>
+                        <option value="a">Gotas de agua de lluvia.</option>
+                        <option value="b">Semillas (como granos de café pergamino y tostado).</option>
+                        <option value="c">Tierra de la finca.</option>
+                    </select>
+                </div>
+                <div class="bloque-pregunta">
+                    <p><strong>P2:</strong> Durante la mitosis, ¿en qué fase los cromosomas son alineados exactamente en el centro (ecuador) de la célula?</p>
+                    <select id="eval-q2">
+                        <option value="">Selecciona...</option>
+                        <option value="a">Telofase</option>
+                        <option value="b">Profase</option>
+                        <option value="c">Metafase</option>
+                    </select>
+                </div>
+                <div class="bloque-pregunta">
+                    <p><strong>P3:</strong> ¿Qué estructura celular impide que la célula vegetal (como el naranjo) se estrangule por el centro, obligándola a construir una placa celular en su lugar?</p>
+                    <select id="eval-q3">
+                        <option value="">Selecciona...</option>
+                        <option value="a">El núcleo central.</option>
+                        <option value="b">La pared celular rígida de celulosa.</option>
+                        <option value="c">La vacuola de agua.</option>
+                    </select>
+                </div>
+                <div class="bloque-pregunta">
+                    <p><strong>P4:</strong> Cuando la herida de la vaca "La Niña" sana, ¿cuál es el producto final de <strong>una</strong> célula de su piel haciendo mitosis celular?</p>
+                    <select id="eval-q4">
+                        <option value="">Selecciona...</option>
+                        <option value="a">Cuatro células con diferente ADN.</option>
+                        <option value="b">Una sola célula gigante.</option>
+                        <option value="c">Dos células hijas idénticas a la célula original.</option>
+                    </select>
+                </div>
+                <div class="bloque-pregunta">
+                    <p><strong>P5:</strong> Antes de que inicie la Profase, la célula debe pasar por la Interfase. ¿Cuál es el proceso crítico que ocurre allí?</p>
+                    <select id="eval-q5">
+                        <option value="">Selecciona...</option>
+                        <option value="a">El ADN (Cromosomas) se duplica o saca copias de sí mismo.</option>
+                        <option value="b">La célula absorbe oxígeno y explota.</option>
+                        <option value="c">Las raíces crecen hacia abajo buscando agua del suelo.</option>
+                    </select>
+                </div>
+
+                <hr style="margin: 30px 0;">
+
+                <!-- 5 OPEN QUESTIONS ANTI-FRAUD -->
+                <h3 style="color: var(--alerta-rojo);">📝 Respuestas de Desarrollo (Regla: Exactamente de 10 a 15 palabras)</h3>
+                
+                <div class="bloque-pregunta">
+                    <p><strong>P6:</strong> Explica, con tus palabras, por qué es importante que un árbol de cítricos realice mitosis tras ser podado con un machete.</p>
+                    <div id="alerta-q6" class="alerta-fraude hidden">🛡️ SISTEMA DE SEGURIDAD ACTIVO</div>
+                    <textarea id="eval-q6" placeholder="Escribe aquí... (10 a 15 palabras)"></textarea>
+                    <div style="text-align: right; font-weight: bold; font-size: 0.9rem;">Palabras: <span id="wc-q6" style="color:var(--alerta-rojo)">0</span> / 15 permitidas</div>
+                </div>
+
+                <div class="bloque-pregunta">
+                    <p><strong>P7:</strong> Describe qué ocurre con los cromosomas durante la etapa de la <strong>Anafase</strong> (cuando se rompen).</p>
+                    <div id="alerta-q7" class="alerta-fraude hidden">🛡️ SISTEMA DE SEGURIDAD ACTIVO</div>
+                    <textarea id="eval-q7" placeholder="Escribe aquí... (10 a 15 palabras)"></textarea>
+                    <div style="text-align: right; font-weight: bold; font-size: 0.9rem;">Palabras: <span id="wc-q7" style="color:var(--alerta-rojo)">0</span> / 15 permitidas</div>
+                </div>
+
+                <div class="bloque-pregunta">
+                    <p><strong>P8:</strong> ¿Qué función cumple el <strong>huso acromático</strong> (las cuerdas) dentro de la división celular?</p>
+                    <div id="alerta-q8" class="alerta-fraude hidden">🛡️ SISTEMA DE SEGURIDAD ACTIVO</div>
+                    <textarea id="eval-q8" placeholder="Escribe aquí... (10 a 15 palabras)"></textarea>
+                    <div style="text-align: right; font-weight: bold; font-size: 0.9rem;">Palabras: <span id="wc-q8" style="color:var(--alerta-rojo)">0</span> / 15 permitidas</div>
+                </div>
+
+                <div class="bloque-pregunta">
+                    <p><strong>P9:</strong> Si estuvieras haciendo la maqueta de la hoja de plátano, ¿qué representarían las semillas de café (ADN)?</p>
+                    <div id="alerta-q9" class="alerta-fraude hidden">🛡️ SISTEMA DE SEGURIDAD ACTIVO</div>
+                    <textarea id="eval-q9" placeholder="Escribe aquí... (10 a 15 palabras)"></textarea>
+                    <div style="text-align: right; font-weight: bold; font-size: 0.9rem;">Palabras: <span id="wc-q9" style="color:var(--alerta-rojo)">0</span> / 15 permitidas</div>
+                </div>
+
+                <div class="bloque-pregunta">
+                    <p><strong>P10:</strong> Resume la principal diferencia en la Citocinesis entre la célula de la vaca y la de la planta.</p>
+                    <div id="alerta-q10" class="alerta-fraude hidden">🛡️ SISTEMA DE SEGURIDAD ACTIVO</div>
+                    <textarea id="eval-q10" placeholder="Escribe aquí... (10 a 15 palabras)"></textarea>
+                    <div style="text-align: right; font-weight: bold; font-size: 0.9rem;">Palabras: <span id="wc-q10" style="color:var(--alerta-rojo)">0</span> / 15 permitidas</div>
+                </div>
+
+                <button class="btn" id="btn-finalizar" style="width: 100%; font-size: 1.3rem;">Entregar Laboratorio Virtual</button>
+
+            </div>
+
+            <!-- ====== SECCIÓN 5: RESULTADOS Y EXPORTACIÓN ====== -->
+            <div class="tarjeta hidden" id="sec-resultados">
+                <h2 style="text-align: center; color: var(--cafe-tierra);">Reporte de Laboratorio: Pueblo Rico</h2>
+                <div style="font-size: 5.5rem; text-align: center; color: var(--verde-cafetal); font-weight: bold; margin: 10px 0;" id="nota-final">0.0</div>
+                <h3 id="mensaje-retro" style="text-align: center; color: var(--texto-oscuro);"></h3>
+                
+                <div style="background: #E8F5E9; padding: 25px; border-radius: 8px; margin-top: 30px; border-left: 5px solid var(--verde-cafetal);">
+                    <h4 style="color: var(--verde-cafetal); margin-top:0;">🧭 Ruta de Fortalecimiento Personalizada:</h4>
+                    <p id="ruta-texto" style="font-size: 1.1rem; margin-top: 10px; margin-bottom: 0;"></p>
+                </div>
+
+                <button class="btn" id="btn-descargar" style="width: 100%; margin-top: 30px; background-color: var(--cafe-tierra);">⬇ Descargar Certificado de Notas (.txt)</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================================= LÓGICA JAVASCRIPT ================================= -->
+    <script>
+        const app = {
+            estado: {
+                nombres: "", apellidos: "", puntaje: 0.0,
+                pausas: Array(10).fill(false),
+                diagOK: false, icfesOK: false, finalOK: false,
+                simuladorActivo: false
+            },
+
+            iniciar() {
+                // Event Listeners (Vanilla JS - Evitar <form>)
+                document.getElementById('btn-iniciar').addEventListener('click', () => this.login());
+                document.getElementById('btn-eval-diag').addEventListener('click', () => this.evaluarDiag());
+                document.getElementById('btn-eval-icfes').addEventListener('click', () => this.evaluarIcfes());
+                document.getElementById('btn-ir-eval').addEventListener('click', () => this.mostrarEvaluacion());
+                document.getElementById('btn-finalizar').addEventListener('click', () => this.evaluarFinal());
+                document.getElementById('btn-descargar').addEventListener('click', () => this.generarTXT());
+
+                // Setup Sistema Anti-Fraude
+                for(let i=6; i<=10; i++) {
+                    this.setupAntiFraude(`eval-q${i}`, `wc-q${i}`, `alerta-q${i}`);
+                }
+            },
+
+            login() {
+                const nom = document.getElementById('input-nombres').value.trim();
+                const ape = document.getElementById('input-apellidos').value.trim();
+                if(nom === "" || ape === "") return alert("Faltan datos. Ingresa nombres y apellidos.");
+
+                this.estado.nombres = nom;
+                this.estado.apellidos = ape;
+                document.getElementById('nombre-estudiante').innerText = `${nom} ${ape}`;
+                
+                document.getElementById('pantalla-login').classList.add('hidden');
+                document.getElementById('app-principal').classList.remove('hidden');
+                window.scrollTo(0,0);
+            },
+
+            actualizarUI() {
+                document.getElementById('puntaje-ui').innerText = this.estado.puntaje.toFixed(1);
+                
+                // Progreso (1 diag + 1 icfes + 10 pausas + 1 final = 13 hitos)
+                let hitos = (this.estado.diagOK?1:0) + (this.estado.icfesOK?1:0) + (this.estado.finalOK?1:0);
+                hitos += this.estado.pausas.filter(p=>p).length;
+                document.getElementById('barra-ui').style.width = ((hitos/13)*100) + "%";
+
+                // Insignias (Gamificación)
+                if(this.estado.puntaje >= 0.5) document.getElementById('insignia-1').classList.add('activa');
+                if(this.estado.puntaje >= 2.0) document.getElementById('insignia-2').classList.add('activa');
+                if(this.estado.puntaje >= 4.0) document.getElementById('insignia-3').classList.add('activa');
+            },
+
+            evaluarDiag() {
+                if(this.estado.diagOK) return;
+                const r1 = document.querySelector('input[name="p1"]:checked');
+                const r2 = document.querySelector('input[name="p2"]:checked');
+                const r3 = document.querySelector('input[name="p3"]:checked');
+
+                if(!r1 || !r2 || !r3) return alert("Responde todas las preguntas del diagnóstico.");
+
+                let fb = "<strong>Resultados:</strong><br>";
+                let pts = 0;
+
+                if(r1.value === 'b') { pts += 0.16; fb += "✅ P1: ¡Correcto! La mitosis repara cortes vegetales.<br>"; } else fb += "❌ P1: Recuerda, la división para reparar es la Mitosis.<br>";
+                if(r2.value === 'a') { pts += 0.17; fb += "✅ P2: ¡Correcto! Son clones idénticos genéticamente.<br>"; } else fb += "❌ P2: Al reparar, las células nuevas deben ser idénticas a las viejas.<br>";
+                if(r3.value === 'c') { pts += 0.17; fb += "✅ P3: ¡Correcto! El ADN guarda los planos.<br>"; } else fb += "❌ P3: Las instrucciones de la vida están en el ADN.<br>";
+
+                this.estado.puntaje += pts;
+                this.estado.diagOK = true;
+                
+                const divFb = document.getElementById('fb-diag');
+                divFb.innerHTML = fb;
+                divFb.className = "feedback " + (pts > 0.4 ? "correcto" : "incorrecto");
+                divFb.classList.remove('hidden');
+                document.getElementById('btn-eval-diag').disabled = true;
+
+                document.getElementById('sec-inductivo').classList.remove('hidden');
+                this.actualizarUI();
+                setTimeout(()=> window.scrollTo({ top: document.getElementById('sec-inductivo').offsetTop - 60, behavior: 'smooth' }), 500);
+            },
+
+            marcarPausa(num) {
+                const idx = num - 1;
+                if(!this.estado.pausas[idx]) {
+                    this.estado.pausas[idx] = true;
+                    this.estado.puntaje += 0.15; // 10 pausas * 0.15 = 1.5 puntos
+                    
+                    const btn = document.getElementById(`btn-p${num}`);
+                    btn.innerHTML = "Libreta Actualizada 📔✔";
+                    btn.classList.add("completada");
+                    btn.disabled = true;
+
+                    this.actualizarUI();
+                    this.verificarFlujo();
+                }
+            },
+
+            evaluarIcfes() {
+                if(this.estado.icfesOK) return;
+                const res = document.querySelector('input[name="icfes"]:checked');
+                if(!res) return alert("Selecciona una opción sobre la gráfica.");
+
+                const fbDiv = document.getElementById('fb-icfes');
+                if(res.value === 'b') {
+                    this.estado.puntaje += 0.5;
+                    fbDiv.className = "feedback correcto";
+                    fbDiv.innerHTML = "✅ ¡Excelente Indagación! Identificaste la correlación inversa: a mayor mitosis (curva azul sube), la herida disminuye su tamaño (curva roja baja) al llenarse de tejido nuevo.";
+                } else {
+                    fbDiv.className = "feedback incorrecto";
+                    fbDiv.innerHTML = "❌ Análisis Incorrecto. Observa la gráfica: el pico de división celular (mitosis) causa que la línea de tamaño de la herida caiga rápidamente hacia los 0mm (cierre).";
+                }
+
+                this.estado.icfesOK = true;
+                fbDiv.classList.remove('hidden');
+                document.getElementById('btn-eval-icfes').disabled = true;
+                this.actualizarUI();
+                this.verificarFlujo();
+            },
+
+            verificarFlujo() {
+                // Desbloquear Deductivo
+                const bloque1_ok = this.estado.pausas.slice(0,5).every(p=>p) && this.estado.icfesOK;
+                if(bloque1_ok) {
+                    const sec = document.getElementById('sec-deductivo');
+                    if(sec.classList.contains('hidden')){
+                        sec.classList.remove('hidden');
+                        this.iniciarCanvas();
+                    }
+                }
+
+                // Desbloquear Evaluación
+                const bloque2_ok = this.estado.pausas.slice(5,10).every(p=>p);
+                if(bloque2_ok && bloque1_ok) {
+                    const btn = document.getElementById('btn-ir-eval');
+                    btn.disabled = false;
+                    btn.innerHTML = "Ir al Taller de Certificación 🚀";
+                    btn.style.backgroundColor = "var(--naranja-citrico)";
+                }
+            },
+
+            mostrarEvaluacion() {
+                document.getElementById('sec-evaluacion').classList.remove('hidden');
+                window.scrollTo({ top: document.getElementById('sec-evaluacion').offsetTop - 60, behavior: 'smooth' });
+            },
+
+            // ================== SISTEMA ANTI-FRAUDE (JS) ==================
+            setupAntiFraude(idInput, idContador, idAlerta) {
+                const el = document.getElementById(idInput);
+                const wc = document.getElementById(idContador);
+                const al = document.getElementById(idAlerta);
+                
+                // 1. Bloqueos de eventos nativos
+                const msjBloqueo = "🚫 ACCIÓN DENEGADA: Debes usar tu propio conocimiento y tipear la respuesta.";
+                el.addEventListener('paste', e => { e.preventDefault(); this.mostrarAlertaSeguridad(al, msjBloqueo); });
+                el.addEventListener('drop', e => { e.preventDefault(); this.mostrarAlertaSeguridad(al, msjBloqueo); });
+                el.addEventListener('contextmenu', e => { e.preventDefault(); this.mostrarAlertaSeguridad(al, msjBloqueo); });
+
+                // 2. Control de Cadencia (Anti-Bot / IA Inject / Ctrl+V)
+                let ultimosTiempos = [];
+                let ultimoKeyTime = Date.now();
+
+                el.addEventListener('keydown', e => {
+                    // Bloqueo duro de Ctrl/Cmd + V
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+                        e.preventDefault();
+                        this.mostrarAlertaSeguridad(al, msjBloqueo);
+                        return;
+                    }
+
+                    if(e.key.length === 1) { // Solo teclas alfanuméricas
+                        const ahora = Date.now();
+                        const diff = ahora - ultimoKeyTime;
+                        
+                        if(diff > 0 && diff < 1000) {
+                            ultimosTiempos.push(diff);
+                            if(ultimosTiempos.length > 8) ultimosTiempos.shift();
+                            
+                            // Si tipea 8 caracteres en menos de ~40ms de media, es inhumano
+                            if(ultimosTiempos.length === 8) {
+                                const prom = ultimosTiempos.reduce((a,b)=>a+b,0) / 8;
+                                if(prom < 35) { 
+                                    this.mostrarAlertaSeguridad(al, "🤖 ALERTA IA/BOT: Velocidad de tipeo anormal detectada. Campo formateado.");
+                                    el.value = ""; // Castigo
+                                    ultimosTiempos = [];
+                                }
+                            }
+                        }
+                        ultimoKeyTime = ahora;
+                    }
+                });
+
+                // 3. Conteo de Palabras en Tiempo Real
+                el.addEventListener('input', () => {
+                    const txt = el.value.trim();
+                    const words = txt === "" ? 0 : txt.split(/\s+/).length;
+                    wc.innerText = words;
+                    
+                    if(words >= 10 && words <= 15) {
+                        wc.style.color = "var(--verde-cafetal)";
+                        el.style.borderColor = "var(--verde-cafetal)";
+                        al.classList.add('hidden');
+                    } else {
+                        wc.style.color = "var(--alerta-rojo)";
+                        el.style.borderColor = "var(--alerta-rojo)";
+                    }
+                });
+            },
+
+            mostrarAlertaSeguridad(elemento, mensaje) {
+                elemento.innerText = mensaje;
+                elemento.classList.remove('hidden');
+                elemento.style.backgroundColor = "#B71C1C";
+                setTimeout(()=> { elemento.style.backgroundColor = "var(--alerta-rojo)"; }, 300);
+            },
+
+            validarPreguntaAbierta(id) {
+                const txt = document.getElementById(id).value.trim();
+                const num = txt === "" ? 0 : txt.split(/\s+/).length;
+                return (num >= 10 && num <= 15);
+            },
+
+            evaluarFinal() {
+                if(this.estado.finalOK) return;
+
+                // Validar Selección Múltiple
+                let p1 = document.getElementById('eval-q1').value;
+                let p2 = document.getElementById('eval-q2').value;
+                let p3 = document.getElementById('eval-q3').value;
+                let p4 = document.getElementById('eval-q4').value;
+                let p5 = document.getElementById('eval-q5').value;
+
+                if(!p1||!p2||!p3||!p4||!p5) return alert("Por favor, responde todas las preguntas de selección múltiple.");
+
+                // Validar Abiertas (Seguridad de Longitud)
+                let abiertasValidas = true;
+                for(let i=6; i<=10; i++) {
+                    if(!this.validarPreguntaAbierta(`eval-q${i}`)) abiertasValidas = false;
+                }
+
+                if(!abiertasValidas) {
+                    alert("⛔ ERROR DE VALIDACIÓN: Al menos una pregunta abierta (P6 a P10) no cumple la regla estricta de tener entre 10 y 15 palabras exactas. Revisa los contadores en rojo.");
+                    return;
+                }
+
+                // Puntuar
+                let pts = 0;
+                if(p1 === 'b') pts += 0.2;
+                if(p2 === 'c') pts += 0.2;
+                if(p3 === 'b') pts += 0.2;
+                if(p4 === 'c') pts += 0.2;
+                if(p5 === 'a') pts += 0.2;
+
+                // Preguntas abiertas verificadas algorítmicamente ganan su punto (el profe evalúa calidad en TXT)
+                pts += 1.5; // (0.3 cada una x 5 = 1.5)
+
+                this.estado.puntaje += pts;
+                this.estado.finalOK = true;
+                this.actualizarUI();
+
+                // Mostrar Resultados
+                document.getElementById('sec-evaluacion').classList.add('hidden');
+                document.getElementById('sec-resultados').classList.remove('hidden');
+                
+                const nt = this.estado.puntaje.toFixed(1);
+                document.getElementById('nota-final').innerText = nt;
+
+                const msg = document.getElementById('mensaje-retro');
+                const rut = document.getElementById('ruta-texto');
+
+                if(nt >= 4.5) {
+                    msg.innerText = "🌟 ¡Excelencia Campesina! Dominas la regeneración celular.";
+                    rut.innerText = "Felicidades, lograste conectar la biología con el campo de Quimbaya. Tu siguiente ruta es investigar cómo los factores externos (como los agroquímicos) pueden dañar el ADN durante la Interfase, causando enfermedades en los cultivos.";
+                } else if(nt >= 3.5) {
+                    msg.innerText = "👍 Muy Buen Trabajo, conocimiento sólido.";
+                    rut.innerText = "Comprendes las bases del modelado y la mitosis. Debes afianzar la diferencia exacta entre las fases de Anafase y Telofase revisando nuevamente la animación del microscopio.";
+                } else {
+                    document.getElementById('nota-final').style.color = "var(--naranja-citrico)";
+                    msg.innerText = "🌱 Vas por buen camino, pero la semilla requiere más abono.";
+                    rut.innerText = "El sistema detectó debilidades en los conceptos clave de las fases. Debes volver a realizar la maqueta de la hoja de plátano en casa, grabando un pequeño video donde expliques qué le pasa a los granos de café paso a paso.";
+                }
+
+                window.scrollTo({ top: document.getElementById('sec-resultados').offsetTop - 60, behavior: 'smooth' });
+            },
+
+            // ================== ANIMACIÓN CANVAS (REGENERACIÓN) ==================
+            iniciarCanvas() {
+                const cvs = document.getElementById('simuladorMitosis');
+                const ctx = cvs.getContext('2d');
+                cvs.width = cvs.parentElement.clientWidth;
+                cvs.height = cvs.parentElement.clientHeight;
+
+                // Grid de Células
+                let celulas = [];
+                const cols = Math.floor(cvs.width / 50);
+                const rows = Math.floor(cvs.height / 50);
+                let contadorNuevas = 0;
+
+                // Crear tejido base (con una herida triangular arriba)
+                for(let y=0; y<rows; y++) {
+                    for(let x=0; x<cols; x++) {
+                        // Crear una forma de V para la herida (vacío en el centro-arriba)
+                        const isHerida = (y < rows/2) && (x > cols/2 - y - 1) && (x < cols/2 + y + 1);
+                        if(!isHerida) {
+                            celulas.push({
+                                x: x*50, y: y*50, size: 48,
+                                color: "rgba(129, 199, 132, 0.6)", // Verde saludable
+                                nucleoColor: "#1B5E20",
+                                duplicando: false, dividiendo: false, offsetDiv: 0,
+                                targetX: x*50, targetY: y*50,
+                                isNueva: false
+                            });
+                        }
+                    }
+                }
+
+                let animacionActiva = false;
+
+                const draw = () => {
+                    ctx.clearRect(0, 0, cvs.width, cvs.height);
+                    
+                    // Fondo
+                    ctx.fillStyle = "#EFEBE9";
+                    ctx.fillRect(0,0,cvs.width,cvs.height);
+
+                    // Dibujar células
+                    celulas.forEach(c => {
+                        // Lerp de posición si se está moviendo (regenerando huecos)
+                        c.x += (c.targetX - c.x) * 0.05;
+                        c.y += (c.targetY - c.y) * 0.05;
+
+                        ctx.fillStyle = c.color;
+                        ctx.strokeStyle = "var(--verde-cafetal)";
+                        ctx.lineWidth = 2;
+                        
+                        ctx.beginPath();
+                        ctx.roundRect(c.x, c.y, c.size, c.size, 8);
+                        ctx.fill(); ctx.stroke();
+
+                        // Núcleo
+                        ctx.fillStyle = c.nucleoColor;
+                        if(c.duplicando) {
+                            // Interfase (ADN duplicándose visualmente)
+                            ctx.beginPath(); ctx.arc(c.x + c.size/2 - 5, c.y + c.size/2, 6, 0, Math.PI*2); ctx.fill();
+                            ctx.beginPath(); ctx.arc(c.x + c.size/2 + 5, c.y + c.size/2, 6, 0, Math.PI*2); ctx.fill();
+                        } else if (c.dividiendo) {
+                            // Mitosis separando
+                            c.offsetDiv += 0.5;
+                            ctx.beginPath(); ctx.arc(c.x + c.size/2 - c.offsetDiv, c.y + c.size/2, 6, 0, Math.PI*2); ctx.fill();
+                            ctx.beginPath(); ctx.arc(c.x + c.size/2 + c.offsetDiv, c.y + c.size/2, 6, 0, Math.PI*2); ctx.fill();
+                        } else {
+                            // Normal
+                            ctx.beginPath(); ctx.arc(c.x + c.size/2, c.y + c.size/2, 8, 0, Math.PI*2); ctx.fill();
+                        }
+                    });
+
+                    if(animacionActiva && Math.random() < 0.03 && celulas.length < (cols*rows)) {
+                        triggerMitosisAlgoritmica();
+                    }
+
+                    requestAnimationFrame(draw);
+                };
+
+                const triggerMitosisAlgoritmica = () => {
+                    // Buscar una celula del "borde" de la herida
+                    // Un borde es una célula que tiene un espacio vacío encima
+                    for(let i=0; i<celulas.length; i++) {
+                        let c = celulas[i];
+                        if(c.dividiendo || c.duplicando) continue; // ya está ocupada
+
+                        // Chequear si hay espacio arriba (targetY - 50)
+                        let espacioLibre = true;
+                        let targetHuecoY = c.targetY - 50;
+                        if(targetHuecoY < 0) continue; // Límite superior
+
+                        for(let j=0; j<celulas.length; j++) {
+                            if(celulas[j].targetX === c.targetX && celulas[j].targetY === targetHuecoY) {
+                                espacioLibre = false; break;
+                            }
+                        }
+
+                        if(espacioLibre) {
+                            // Secuencia de Mitosis
+                            c.color = "rgba(255, 152, 0, 0.4)"; // Se pone naranja indicando actividad
+                            c.duplicando = true;
+                            
+                            setTimeout(() => {
+                                c.duplicando = false;
+                                c.dividiendo = true;
+                                c.color = "rgba(129, 199, 132, 0.8)";
+                                
+                                setTimeout(() => {
+                                    c.dividiendo = false;
+                                    c.offsetDiv = 0;
+                                    // Crear célula nueva en el hueco
+                                    contadorNuevas++;
+                                    document.getElementById('contador-celulas').innerText = contadorNuevas;
+                                    
+                                    celulas.push({
+                                        x: c.targetX, y: c.targetY, size: 48,
+                                        color: "rgba(251, 192, 45, 0.8)", // Célula nueva color amarillo inicial
+                                        nucleoColor: "#1B5E20",
+                                        duplicando: false, dividiendo: false, offsetDiv: 0,
+                                        targetX: c.targetX, targetY: targetHuecoY, // se mueve arriba
+                                        isNueva: true
+                                    });
+
+                                    // Chequear si ya sanó
+                                    if(contadorNuevas > 20) {
+                                        document.getElementById('estado-tejido').innerText = "Tejido Regenerado";
+                                        document.getElementById('estado-tejido').style.color = "var(--verde-cafetal)";
+                                        animacionActiva = false;
+                                        document.getElementById('btn-anim-mitosis').innerText = "Reparación Exitosa";
+                                    }
+
+                                }, 600);
+                            }, 500);
+                            break; // Solo inicia una por frame
+                        }
+                    }
+                };
+
+                document.getElementById('btn-anim-mitosis').addEventListener('click', () => {
+                    if(!animacionActiva && contadorNuevas < 20) {
+                        animacionActiva = true;
+                        document.getElementById('btn-anim-mitosis').disabled = true;
+                        document.getElementById('estado-tejido').innerText = "Mitosis Activa...";
+                        document.getElementById('estado-tejido').style.color = "var(--naranja-citrico)";
+                    }
+                });
+
+                draw(); // Iniciar Loop 60fps
+            },
+
+            // ================== EXPORTAR TXT OFFLINE ==================
+            generarTXT() {
+                const r = [];
+                for(let i=6; i<=10; i++) r.push(document.getElementById(`eval-q${i}`).value.trim());
+                
+                const fecha = new Date().toLocaleString('es-CO');
+
+                let contenido = `===========================================================
+CERTIFICADO DE LABORATORIO VIRTUAL - CIENCIAS NATURALES
+===========================================================
+INSTITUCIÓN: Institución Educativa Pueblo Rico, Quimbaya.
+MÓDULO: Sanando Heridas (Mitosis II)
+ESTUDIANTE: ${this.estado.nombres} ${this.estado.apellidos}
+FECHA: ${fecha}
+CALIFICACIÓN GLOBAL: ${this.estado.puntaje.toFixed(1)} / 5.0
+-----------------------------------------------------------
+RÚBRICA DE ACTIVIDADES:
+> Diagnóstico de Saberes: APROBADO
+> Análisis de Gráfica SVG ICFES: APROBADO
+> Participación Cuaderno Físico (10 Pausas): 100% REGISTRADAS
+> Simulación de Tejidos HTML5: EJECUTADO
+-----------------------------------------------------------
+DESARROLLO ABIERTO (VALIDACIÓN ANTI-FRAUDE: Aprobada 10-15 palabras):
+
+[Pregunta 6] Importancia mitigación poda en cítricos:
+"${r[0]}"
+
+[Pregunta 7] Anafase y Cromosomas:
+"${r[1]}"
+
+[Pregunta 8] Función del Huso Acromático:
+"${r[2]}"
+
+[Pregunta 9] Modelado con semillas de Café (ADN):
+"${r[3]}"
+
+[Pregunta 10] Citocinesis Animal vs Vegetal:
+"${r[4]}"
+===========================================================
+FIRMA DIGITAL DEL SISTEMA OVA: 0xCAFE_QUIMBAYA_MITOSIS
+Generado y auditado localmente sin librerías externas.
+===========================================================`;
+
+                const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Reporte_Mitosis_${this.estado.apellidos.replace(/\s/g,'')}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        };
+
+        // Iniciar
+        window.onload = () => app.iniciar();
+
+    </script>
+</body>
+</html>

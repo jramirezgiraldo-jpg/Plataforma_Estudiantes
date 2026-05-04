@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA · La fiebre de la Tierra: calentamiento global</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #c7d9c0;  /* verde tierra suave */
+            color: #1e3c2a;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+        /* login */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #1f4f2bdd;
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .login-card {
+            background: #f5f0d7;
+            border-radius: 4rem 1.5rem 4rem 1.5rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 25px 35px #0f2f1a, inset 0 0 0 4px #a5b882;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 2px solid #6d8c5c;
+        }
+        .login-card h1 {
+            font-size: 2.2rem;
+            color: #39633a;
+            border-bottom: 4px solid #afab6b;
+            display: inline-block;
+            padding-bottom: 6px;
+        }
+        .login-card input {
+            display: block;
+            width: 100%;
+            margin: 1.4rem 0;
+            padding: 1rem 1.2rem;
+            border: 2px solid #9db87a;
+            border-radius: 40px;
+            background: #feffee;
+            font-size: 1.1rem;
+        }
+        .login-card input:focus {
+            outline: none;
+            border-color: #1d6b2c;
+        }
+        .login-card button {
+            background: #607d4b;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.4rem;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            border-bottom: 5px solid #2f562f;
+            cursor: pointer;
+            width: 100%;
+        }
+        .login-card button:hover {
+            background: #769e5c;
+        }
+        /* contenido principal */
+        #mainContent {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+        /* header fijo */
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            background: #e0dbb8;
+            border-radius: 0 0 40px 40px;
+            padding: 0.8rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 12px #4e653b66;
+            z-index: 100;
+            border: 2px solid #8aa06b;
+            backdrop-filter: blur(4px);
+            margin-bottom: 2.5rem;
+        }
+        .user-name {
+            background: #32643b;
+            color: #f8ffe2;
+            padding: 0.4rem 1.4rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .progress-area {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        .barra-wrapper {
+            width: 220px;
+            height: 22px;
+            background: #afb78a;
+            border-radius: 30px;
+            border: 2px solid #4b6e3b;
+            overflow: hidden;
+        }
+        #progresoFill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #dfb45b, #db5a3a);
+        }
+        .niveles {
+            display: flex;
+            gap: 6px;
+            font-weight: bold;
+        }
+        .nivel {
+            background: #6f7d5e;
+            color: white;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            text-align: center;
+            line-height: 1.2;
+            box-shadow: inset 0 -4px 0 #3b4b2f;
+            border: 2px solid #364b29;
+            padding: 0 2px;
+            transition: 0.2s;
+        }
+        .nivel.unlocked {
+            background: #c7983a;
+            box-shadow: 0 0 15px #f5b041, inset 0 -4px 0 #8f6820;
+            border-color: #d9a844;
+        }
+        /* secciones */
+        .seccion {
+            background: #fbffed;
+            border-radius: 50px 20px 50px 20px;
+            padding: 2.2rem;
+            margin-bottom: 3rem;
+            box-shadow: 15px 15px 0 #92a477;
+            border: 2px solid #6f8c5a;
+        }
+        h2 {
+            font-size: 2.2rem;
+            color: #1f602a;
+            border-left: 16px solid #e0a82b;
+            padding-left: 1.3rem;
+            margin-bottom: 1.8rem;
+        }
+        button {
+            background: #688f50;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            border-bottom: 4px solid #2f5a2f;
+            cursor: pointer;
+            margin: 0.4rem 0;
+        }
+        button:hover {
+            background: #82af63;
+        }
+        .pausa-box {
+            background: #e1eacd;
+            border-radius: 30px;
+            padding: 1.2rem 1.8rem;
+            margin: 2rem 0;
+            border-left: 12px solid #da9435;
+        }
+        .pregunta {
+            background: #f1f7e3;
+            padding: 1.5rem;
+            border-radius: 25px;
+            margin: 1.2rem 0;
+        }
+        .feedback {
+            margin-top: 0.6rem;
+            padding: 0.6rem;
+            border-radius: 20px;
+        }
+        .correcto { background: #d0e5b2; color: #1a591a; }
+        .incorrecto { background: #fad0c4; color: #a1301a; }
+        canvas {
+            display: block;
+            margin: 2rem auto;
+            border-radius: 40px;
+            background: #272822;  /* fondo oscuro para resaltar partículas */
+            box-shadow: 0 12px 0 #4a613c, 0 20px 22px #1f3a1f55;
+            max-width: 100%;
+            border: 3px solid #ceaa6b;
+        }
+        .svg-clima {
+            width: 100%;
+            background: #baceb0;
+            border-radius: 40px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .word-counter {
+            font-size: 0.95rem;
+        }
+        .valido { color: #1f731f; font-weight: bold; }
+        .invalido { color: #b33; }
+        .ruta-card {
+            background: #e1dbb2;
+            border-radius: 30px;
+            padding: 1.5rem;
+            border: 3px dashed #76945c;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN Apellidos y Nombres -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <h1>🌍 Fiebre Tierra</h1>
+            <p style="color:#3d682b;">calentamiento global</p>
+            <input type="text" id="apellidosInput" placeholder="Apellidos" autocomplete="off">
+            <input type="text" id="nombresInput" placeholder="Nombres" autocomplete="off">
+            <button id="btnIngresar">🔥 Entrar al diagnóstico</button>
+            <p style="margin-top:1.8rem; background:#dacfac; border-radius:40px; padding:0.5rem;">Apellidos luego Nombres</p>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="mainContent">
+        <!-- header fijo con nombre y niveles -->
+        <div class="fixed-header">
+            <span class="user-name" id="headerNombre">Cargando...</span>
+            <div class="progress-area">
+                <div class="barra-wrapper">
+                    <div id="progresoFill"></div>
+                </div>
+                <div class="niveles" id="nivelesContainer">
+                    <span class="nivel" id="nivel1">subatómico</span>
+                    <span class="nivel" id="nivel2">atómico</span>
+                    <span class="nivel" id="nivel3">molecular</span>
+                    <span class="nivel" id="nivel4">celular</span>
+                    <span class="nivel" id="nivel5">ecosistema</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- INICIO: objetivo y pre-saberes -->
+        <section class="seccion">
+            <h2>🌡️ Objetivo: Comprender el calentamiento global</h2>
+            <p style="font-size:1.3rem;"><strong>Explicar las causas locales y globales del cambio climático.</strong> Analizaremos el efecto invernadero, las quemas en la vereda y cómo, desde lo subatómico hasta el ecosistema, podemos reconocer el dolor de la Tierra y actuar con esperanza.</p>
+            <h3>📝 Pre-saberes: lo que ya sabemos</h3>
+            <div class="pregunta" id="presaber1">
+                <p>1. ¿Cuál es el principal gas de efecto invernadero producido por el ser humano?</p>
+                <label><input type="radio" name="pre1" value="a"> a) Oxígeno</label><br>
+                <label><input type="radio" name="pre1" value="b"> b) Dióxido de carbono (CO<sub>2</sub>)</label><br>
+                <label><input type="radio" name="pre1" value="c"> c) Nitrógeno</label><br>
+                <div class="feedback" id="feedPre1"></div>
+            </div>
+            <div class="pregunta" id="presaber2">
+                <p>2. ¿Qué fenómeno natural mantiene la Tierra lo suficientemente cálida para la vida?</p>
+                <label><input type="radio" name="pre2" value="a"> a) Efecto invernadero</label><br>
+                <label><input type="radio" name="pre2" value="b"> b) Lluvia ácida</label><br>
+                <label><input type="radio" name="pre2" value="c"> c) Capa de ozono</label><br>
+                <div class="feedback" id="feedPre2"></div>
+            </div>
+            <div class="pregunta" id="presaber3">
+                <p>3. ¿Una actividad local que contribuye al calentamiento es:</p>
+                <label><input type="radio" name="pre3" value="a"> a) Sembrar árboles</label><br>
+                <label><input type="radio" name="pre3" value="b"> b) Quemar basura en la vereda</label><br>
+                <label><input type="radio" name="pre3" value="c"> c) Reciclar</label><br>
+                <div class="feedback" id="feedPre3"></div>
+            </div>
+        </section>
+
+        <!-- CUERPO INDUCTIVO (texto extenso + 5 pausas) -->
+        <section class="seccion">
+            <h2>🌱 Camino inductivo: historias de la vereda y el mundo</h2>
+            <div>
+                <p>En muchas veredas de Colombia, la quema de basura es una práctica común. Doña Elvira, en la vereda El Porvenir, quema cada semana los plásticos y residuos porque "no pasa el carro recolector". Lo que ella no ve son las moléculas de CO<sub>2</sub> y negro de humo que suben a la atmósfera. Esas mismas moléculas, millones de veces, están atrapando el calor que debería escapar al espacio. Es la fiebre de la Tierra.</p>
+                <p>Los abuelos recuerdan que antes los veranos eran más frescos y las lluvias más predecibles. Hoy, las temporadas secas son más largas y los aguaceros más intensos. Esto no es casualidad: desde la Revolución Industrial, la quema de carbón, petróleo y gas ha aumentado la concentración de CO<sub>2</sub> de 280 ppm a más de 420 ppm. Cada pequeño acto, como una quema, suma.</p>
+                <p>En 1896, el científico Svante Arrhenius ya predijo que duplicar el CO<sub>2</sub> elevaría la temperatura varios grados. Pero fue hasta la década de 1950 que se empezaron a medir con precisión los niveles en la atmósfera. El observatorio de Mauna Loa, en Hawái, muestra un aumento imparable, como un termómetro que no deja de subir. Ese gráfico se conoce como la "curva de Keeling".</p>
+                <p>Pero no solo es CO<sub>2</sub>. El metano (CH<sub>4</sub>) de los arrozales y el ganado, el óxido nitroso de los fertilizantes, y los gases fluorados también atrapan calor. El metano es 25 veces más potente que el CO<sub>2</sub>. En la vereda, los cultivos de arroz inundados liberan metano por la descomposición de materia orgánica sin oxígeno. Es una paradoja: producir alimentos también calienta el planeta.</p>
+                <p>La Tierra duele. Lo vemos en los glaciares que se derriten, en los corales blanqueados, en las sequías que arruinan cosechas. Pero también hay esperanza: muchas comunidades están restaurando bosques, usando energías limpias, dejando de quemar. La ciencia nos muestra el camino, y la sabiduría local también. Reconocer el dolor es el primer paso para sanar.</p>
+            </div>
+            <!-- 5 pausas inductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 1: Pregunta en tu vereda o barrio: ¿qué hacen con la basura? ¿Hay quemas? Anota en tu cuaderno.</p><button class="pausa-btn" data-id="0">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 2: Dibuja el ciclo del carbono: incluye quema, fotosíntesis, océanos.</p><button class="pausa-btn" data-id="1">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 3: Investiga qué es la "curva de Keeling" y dibújala aproximadamente.</p><button class="pausa-btn" data-id="2">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 4: Escribe tres efectos del cambio climático que hayas notado en tu región (sequías, lluvias intensas, etc.).</p><button class="pausa-btn" data-id="3">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 5: Reflexiona: ¿qué significa "la Tierra tiene fiebre" para ti?</p><button class="pausa-btn" data-id="4">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- PREGUNTA TIPO ICFES con SVG -->
+        <section class="seccion">
+            <h2>🧪 Pregunta ICFES (Indagar)</h2>
+            <div class="svg-clima">
+                <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Sol y rayos -->
+                    <circle cx="80" cy="60" r="25" fill="#f9d71c" />
+                    <line x1="105" y1="60" x2="150" y2="60" stroke="#f9d71c" stroke-width="3" stroke-dasharray="3 3" />
+                    <line x1="100" y1="80" x2="140" y2="110" stroke="#f9d71c" stroke-width="3" stroke-dasharray="3 3" />
+                    <!-- atmósfera con moléculas -->
+                    <rect x="150" y="30" width="300" height="120" fill="none" stroke="#487a48" stroke-width="2" stroke-dasharray="5 3" />
+                    <circle cx="220" cy="80" r="10" fill="#aaa" /><text x="215" y="70" fill="#1f4f1f">CO<sub>2</sub></text>
+                    <circle cx="300" cy="110" r="10" fill="#aaa" /><text x="295" y="100" fill="#1f4f1f">CO<sub>2</sub></text>
+                    <circle cx="380" cy="60" r="10" fill="#aaa" /><text x="375" y="50" fill="#1f4f1f">CO<sub>2</sub></text>
+                    <!-- rayos infrarrojos atrapados -->
+                    <path d="M180 150 Q210 130 240 150" stroke="#e05a5a" stroke-width="3" fill="none" />
+                    <path d="M280 150 Q310 130 340 150" stroke="#e05a5a" stroke-width="3" fill="none" />
+                    <text x="200" y="180" fill="#a1301a">Radiación atrapada</text>
+                </svg>
+            </div>
+            <p>En el esquema, las moléculas de CO<sub>2</sub> actúan atrapando parte de la radiación infrarroja que emite la Tierra. ¿Cómo se llama este proceso?</p>
+            <div class="pregunta">
+                <label><input type="radio" name="icfes" value="a"> a) Refracción</label><br>
+                <label><input type="radio" name="icfes" value="b"> b) Efecto invernadero</label><br>
+                <label><input type="radio" name="icfes" value="c"> c) Convección</label><br>
+                <label><input type="radio" name="icfes" value="d"> d) Radiación de cuerpo negro</label><br>
+                <button id="revisarIcfes">Revisar</button>
+                <div id="feedIcfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <!-- CUERPO DEDUCTIVO (con canvas central) -->
+        <section class="seccion">
+            <h2>⚙️ Camino deductivo: física del clima y niveles de organización</h2>
+            <p><strong>Nivel subatómico:</strong> La radiación solar está compuesta por fotones. Cuando llegan a la Tierra, parte es reflejada (albedo) y parte absorbida. La Tierra reemite radiación infrarroja (calor). Los fotones infrarrojos interactúan con las moléculas de gases de efecto invernadero a nivel cuántico: excitan sus modos vibracionales, atrapando energía.</p>
+            <p><strong>Nivel atómico:</strong> Los átomos de carbono, oxígeno e hidrógeno forman moléculas como CO<sub>2</sub>, CH<sub>4</sub>, H<sub>2</sub>O. Cada molécula tiene frecuencias de vibración específicas que coinciden con las de la radiación infrarroja. Así, absorben y reemiten en todas direcciones, devolviendo parte del calor a la superficie.</p>
+            <p><strong>Nivel molecular:</strong> Las colisiones entre moléculas distribuyen la energía, aumentando la temperatura del aire. Este es el mecanismo microscópico del calentamiento. La concentración de estos gases determina cuánto calor queda retenido. Desde 1750, el CO<sub>2</sub> ha aumentado un 50%.</p>
+            <p><strong>Nivel celular:</strong> El aumento de temperatura afecta a los seres vivos. Por ejemplo, el estrés térmico daña las proteínas de las células, reduce la fotosíntesis en plantas y causa blanqueamiento de corales (expulsión de algas simbióticas). A nivel celular, el calor modifica la fluidez de las membranas.</p>
+            <p><strong>Nivel ecosistema:</strong> Los cambios en temperatura y precipitación alteran hábitats, migraciones, ciclos de cultivo. Los incendios forestales se vuelven más frecuentes. El deshielo de los polos reduce el albedo, creando un ciclo de retroalimentación positiva. Pero también hay esperanza: los ecosistemas pueden restaurarse si reducimos emisiones.</p>
+            <p>El principio físico fundamental es que la Tierra está en equilibrio radiativo: la energía que llega del sol debe igualar la que sale. Al añadir gases invernadero, ese equilibrio se rompe y la temperatura sube hasta que se alcanza un nuevo balance. Es como cuando abrigamos a alguien con fiebre: el calor no escapa.</p>
+
+            <!-- CANVAS: simulación de efecto invernadero con partículas -->
+            <canvas id="canvasClima" width="700" height="300"></canvas>
+            <p style="text-align:center;">Mueve el mouse a la derecha para aumentar la concentración de CO<sub>2</sub> (puntos verdes) y observa cómo más fotones infrarrojos (rojos) quedan atrapados.</p>
+
+            <!-- 5 pausas deductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 6: Explica cómo un fotón infrarrojo interactúa con una molécula de CO<sub>2</sub> a nivel subatómico.</p><button class="pausa-btn" data-id="5">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 7: ¿Qué nivel de organización corresponde a una molécula de metano? ¿Y a un bosque?</p><button class="pausa-btn" data-id="6">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 8: Investiga qué es el albedo y cómo influye en el calentamiento.</p><button class="pausa-btn" data-id="7">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 9: Dibuja una cadena de retroalimentación positiva (ej. deshielo-albedo).</p><button class="pausa-btn" data-id="8">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 10: Escribe dos acciones locales que pueden ayudar a enfriar la Tierra.</p><button class="pausa-btn" data-id="9">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- EVALUACIÓN FINAL (TALLER) -->
+        <section class="seccion">
+            <h2>📋 Taller: Diagnóstico climático</h2>
+            <h3>Selección múltiple (autocalifica)</h3>
+            <div><p>1. ¿Cuál es el gas de efecto invernadero más abundante (aparte del vapor de agua)?</p>
+                <label><input type="radio" name="m1" value="0"> a) Metano</label><br>
+                <label><input type="radio" name="m1" value="1"> b) Dióxido de carbono</label><br>
+                <label><input type="radio" name="m1" value="2"> c) Óxido nitroso</label><br>
+                <label><input type="radio" name="m1" value="3"> d) Ozono</label><br></div>
+            <div><p>2. El nivel de organización "atómico" incluye:</p>
+                <label><input type="radio" name="m2" value="0"> a) Electrones y quarks</label><br>
+                <label><input type="radio" name="m2" value="1"> b) Átomos de carbono</label><br>
+                <label><input type="radio" name="m2" value="2"> c) Moléculas de CO<sub>2</sub></label><br>
+                <label><input type="radio" name="m2" value="3"> d) Células</label><br></div>
+            <div><p>3. La quema de basura en la vereda contribuye al calentamiento porque libera:</p>
+                <label><input type="radio" name="m3" value="0"> a) Oxígeno</label><br>
+                <label><input type="radio" name="m3" value="1"> b) CO<sub>2</sub> y partículas</label><br>
+                <label><input type="radio" name="m3" value="2"> c) Nitrógeno</label><br>
+                <label><input type="radio" name="m3" value="3"> d) Vapor de agua</label><br></div>
+            <div><p>4. El efecto invernadero natural es:</p>
+                <label><input type="radio" name="m4" value="0"> a) Dañino y debe eliminarse</label><br>
+                <label><input type="radio" name="m4" value="1"> b) Necesario para la vida</label><br>
+                <label><input type="radio" name="m4" value="2"> c) Solo causado por el hombre</label><br>
+                <label><input type="radio" name="m4" value="3"> d) Un invento científico</label><br></div>
+            <div><p>5. ¿Qué nivel de organización estudia el impacto del calor en una célula vegetal?</p>
+                <label><input type="radio" name="m5" value="0"> a) Subatómico</label><br>
+                <label><input type="radio" name="m5" value="1"> b) Molecular</label><br>
+                <label><input type="radio" name="m5" value="2"> c) Celular</label><br>
+                <label><input type="radio" name="m5" value="3"> d) Ecosistema</label><br></div>
+            <button id="calificarMultiple">Calificar múltiple</button>
+            <div id="resultadoMultiple"></div>
+
+            <h3>Preguntas abiertas (10-15 palabras c/u)</h3>
+            <div>
+                <p>1. ¿Qué es el calentamiento global y cuál es su principal causa?</p>
+                <textarea id="open1" rows="2"></textarea><div class="word-counter" id="wc1">0 palabras</div>
+                <p>2. Menciona dos gases de efecto invernadero diferentes del CO<sub>2</sub>.</p>
+                <textarea id="open2" rows="2"></textarea><div class="word-counter" id="wc2">0 palabras</div>
+                <p>3. ¿Cómo afecta el cambio climático a los campesinos de tu región?</p>
+                <textarea id="open3" rows="2"></textarea><div class="word-counter" id="wc3">0 palabras</div>
+                <p>4. Explica la diferencia entre nivel molecular y nivel celular.</p>
+                <textarea id="open4" rows="2"></textarea><div class="word-counter" id="wc4">0 palabras</div>
+                <p>5. ¿Qué acción concreta puedes hacer para reducir tu huella de carbono?</p>
+                <textarea id="open5" rows="2"></textarea><div class="word-counter" id="wc5">0 palabras</div>
+                <button id="validarAbiertas">Validar respuestas</button> <span id="msgAbiertas"></span>
+            </div>
+
+            <!-- Ruta de fortalecimiento -->
+            <div style="margin:2rem 0">
+                <h3>🧭 Ruta de fortalecimiento personalizada</h3>
+                <button id="generarRuta">Analizar debilidades</button>
+                <div id="rutaTexto" class="ruta-card" style="margin-top:1rem;"></div>
+            </div>
+
+            <!-- descarga -->
+            <footer>
+                <button id="descargarResultados">📥 Descargar resultados (.txt)</button>
+            </footer>
+        </section>
+    </div>
+
+    <script>
+        (function(){
+            // Estado global
+            let usuario = { apellidos: '', nombres: '' };
+            let pausasHechas = new Array(10).fill(false);
+            let respuestasMulti = [null, null, null, null, null];
+            const correctasMulti = [1, 1, 1, 1, 2]; // según opciones (base 0)
+            let respuestasAbiertas = ['','','','',''];
+            let notaMultiple = 0;
+
+            // Elementos
+            const loginScreen = document.getElementById('loginScreen');
+            const mainContent = document.getElementById('mainContent');
+            const btnIngresar = document.getElementById('btnIngresar');
+            const apellidosInput = document.getElementById('apellidosInput');
+            const nombresInput = document.getElementById('nombresInput');
+            const headerNombre = document.getElementById('headerNombre');
+            const progresoFill = document.getElementById('progresoFill');
+            const niveles = ['nivel1','nivel2','nivel3','nivel4','nivel5'].map(id => document.getElementById(id));
+
+            // Funciones de progreso y niveles
+            function actualizarProgresoNiveles() {
+                const totalHechas = pausasHechas.filter(v => v).length;
+                const porcentaje = (totalHechas / 10) * 100;
+                progresoFill.style.width = porcentaje + '%';
+                const nivelAlcanzado = Math.min(5, Math.floor(totalHechas / 2)); // cada 2 pausas desbloquea un nivel
+                for (let i = 0; i < 5; i++) {
+                    if (i < nivelAlcanzado) niveles[i].classList.add('unlocked');
+                    else niveles[i].classList.remove('unlocked');
+                }
+                guardarLocal();
+            }
+
+            // localStorage
+            function guardarLocal() {
+                if (!usuario.apellidos) return;
+                const data = {
+                    apellidos: usuario.apellidos,
+                    nombres: usuario.nombres,
+                    pausas: pausasHechas,
+                    abiertas: respuestasAbiertas,
+                    multi: respuestasMulti
+                };
+                localStorage.setItem('ova_calentamiento', JSON.stringify(data));
+            }
+
+            function cargarLocal() {
+                const saved = localStorage.getItem('ova_calentamiento');
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        usuario = { apellidos: data.apellidos || '', nombres: data.nombres || '' };
+                        pausasHechas = data.pausas || new Array(10).fill(false);
+                        respuestasAbiertas = data.abiertas || ['','','','',''];
+                        respuestasMulti = data.multi || [null,null,null,null,null];
+                        // restaurar textareas
+                        document.getElementById('open1').value = respuestasAbiertas[0] || '';
+                        document.getElementById('open2').value = respuestasAbiertas[1] || '';
+                        document.getElementById('open3').value = respuestasAbiertas[2] || '';
+                        document.getElementById('open4').value = respuestasAbiertas[3] || '';
+                        document.getElementById('open5').value = respuestasAbiertas[4] || '';
+                        // restaurar radios multiple
+                        for (let i=1; i<=5; i++) {
+                            const val = respuestasMulti[i-1];
+                            if (val !== null) {
+                                const radio = document.querySelector(`input[name="m${i}"][value="${val}"]`);
+                                if (radio) radio.checked = true;
+                            }
+                        }
+                        if (usuario.apellidos && usuario.nombres) {
+                            loginScreen.style.display = 'none';
+                            mainContent.style.display = 'block';
+                            headerNombre.innerText = `${usuario.apellidos} ${usuario.nombres}`;
+                            actualizarProgresoNiveles();
+                            actualizarTodosWordCount();
+                        }
+                        // deshabilitar pausas ya hechas
+                        pausasHechas.forEach((h, idx) => {
+                            if (h) {
+                                const btn = document.querySelector(`.pausa-btn[data-id="${idx}"]`);
+                                if (btn) { btn.disabled = true; btn.innerText = '✔️ Hecho'; }
+                            }
+                        });
+                    } catch (e) {}
+                }
+            }
+
+            // contador de palabras
+            function contarPalabras(t) {
+                return t.trim().split(/\s+/).filter(p => p.length>0).length;
+            }
+            function actualizarWordCount(taId, ctId) {
+                const ta = document.getElementById(taId);
+                const num = contarPalabras(ta.value);
+                document.getElementById(ctId).innerText = num + ' palabras';
+                return num;
+            }
+            function actualizarTodosWordCount() {
+                for (let i=1; i<=5; i++) {
+                    actualizarWordCount(`open${i}`, `wc${i}`);
+                }
+            }
+
+            // LOGIN
+            btnIngresar.addEventListener('click', (e) => {
+                e.preventDefault();
+                const ap = apellidosInput.value.trim();
+                const nom = nombresInput.value.trim();
+                if (!ap || !nom) { alert('Completa ambos campos'); return; }
+                usuario.apellidos = ap; usuario.nombres = nom;
+                headerNombre.innerText = `${ap} ${nom}`;
+                loginScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                if (!localStorage.getItem('ova_calentamiento')) {
+                    pausasHechas = new Array(10).fill(false);
+                } else {
+                    cargarLocal();
+                }
+                actualizarProgresoNiveles();
+                guardarLocal();
+            });
+
+            // PAUSAS
+            document.querySelectorAll('.pausa-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'), 10);
+                    if (!isNaN(id) && id>=0 && id<10 && !pausasHechas[id]) {
+                        pausasHechas[id] = true;
+                        e.target.disabled = true;
+                        e.target.innerText = '✔️ Hecho';
+                        actualizarProgresoNiveles();
+                    }
+                });
+            });
+
+            // Pre-saberes
+            function configPre(ind, correctVal, feedId) {
+                document.querySelectorAll(`input[name="pre${ind}"]`).forEach(r => {
+                    r.addEventListener('change', function() {
+                        const f = document.getElementById(feedId);
+                        if (this.value === correctVal) {
+                            f.innerText = '✅ Correcto.';
+                            f.className = 'feedback correcto';
+                        } else {
+                            f.innerText = '❌ Vuelve a intentar.';
+                            f.className = 'feedback incorrecto';
+                        }
+                    });
+                });
+            }
+            configPre(1, 'b', 'feedPre1');
+            configPre(2, 'a', 'feedPre2');
+            configPre(3, 'b', 'feedPre3');
+
+            // ICFES
+            document.getElementById('revisarIcfes').addEventListener('click', () => {
+                const selec = document.querySelector('input[name="icfes"]:checked');
+                const feed = document.getElementById('feedIcfes');
+                if (!selec) { feed.innerText = 'Elige una opción'; return; }
+                if (selec.value === 'b') {
+                    feed.innerText = '✅ ¡Correcto! Es el efecto invernadero, un proceso natural intensificado por el hombre.';
+                    feed.className = 'feedback correcto';
+                } else {
+                    feed.innerText = '❌ No es correcto. Recuerda que el atrapamiento de infrarrojos se llama efecto invernadero.';
+                    feed.className = 'feedback incorrecto';
+                }
+            });
+
+            // Múltiple
+            document.getElementById('calificarMultiple').addEventListener('click', () => {
+                let aciertos = 0;
+                for (let i=1; i<=5; i++) {
+                    const radios = document.getElementsByName(`m${i}`);
+                    let val = null;
+                    for (let r of radios) if (r.checked) { val = r.value; break; }
+                    if (val !== null) {
+                        respuestasMulti[i-1] = parseInt(val,10);
+                        if (respuestasMulti[i-1] === correctasMulti[i-1]) aciertos++;
+                    } else respuestasMulti[i-1] = null;
+                }
+                notaMultiple = aciertos;
+                document.getElementById('resultadoMultiple').innerText = `Obtuviste ${aciertos}/5 correctas.`;
+                guardarLocal();
+            });
+
+            // Abiertas
+            ['open1','open2','open3','open4','open5'].forEach((id, idx) => {
+                document.getElementById(id).addEventListener('input', function() {
+                    actualizarWordCount(id, 'wc'+(idx+1));
+                    respuestasAbiertas[idx] = this.value;
+                    guardarLocal();
+                });
+            });
+            document.getElementById('validarAbiertas').addEventListener('click', () => {
+                let ok = true;
+                for (let i=1; i<=5; i++) {
+                    const num = contarPalabras(document.getElementById(`open${i}`).value);
+                    if (num<10 || num>15) ok = false;
+                }
+                document.getElementById('msgAbiertas').innerText = ok ? '✅ Todas entre 10-15 palabras.' : '❌ Revisa el contador de palabras (deben ser 10-15).';
+            });
+
+            // Ruta fortalecimiento
+            document.getElementById('generarRuta').addEventListener('click', () => {
+                // inductivas: preguntas 1,2 / deductivas: 3,4,5 (aproximadamente)
+                let indAc=0, indTot=0, dedAc=0, dedTot=0;
+                for (let i=0; i<5; i++) {
+                    if (respuestasMulti[i] !== null) {
+                        if (i<2) { indTot++; if (respuestasMulti[i]===correctasMulti[i]) indAc++; }
+                        else { dedTot++; if (respuestasMulti[i]===correctasMulti[i]) dedAc++; }
+                    }
+                }
+                let msg = '';
+                if (indTot>0 && indAc/indTot < 0.6) msg += '🌍 Fortalece lo inductivo: repasa ejemplos locales y la historia. ';
+                if (dedTot>0 && dedAc/dedTot < 0.6) msg += '🔬 Refuerza conceptos deductivos: niveles de organización y física del clima. ';
+                if (msg === '') msg = '🌟 ¡Buen trabajo! Sigue siendo agente de cambio.';
+                document.getElementById('rutaTexto').innerText = msg;
+            });
+
+            // CANVAS animación (efecto invernadero con partículas)
+            const canvas = document.getElementById('canvasClima');
+            const ctx = canvas.getContext('2d');
+            let mouseX = 350; // controla concentración de CO2
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+            });
+
+            let fotones = [];
+            for (let i=0; i<30; i++) {
+                fotones.push({
+                    x: Math.random()*700,
+                    y: Math.random()*300,
+                    vx: (Math.random()-0.5)*1.5,
+                    vy: (Math.random()-0.5)*1.5,
+                    tipo: 'infrarrojo',
+                    atrapado: false
+                });
+            }
+            let moleculas = [];
+            for (let i=0; i<15; i++) {
+                moleculas.push({
+                    x: Math.random()*600+50,
+                    y: Math.random()*200+50,
+                });
+            }
+
+            function actualizarCanvas() {
+                // ajustar número de moléculas según mouse (simula concentración)
+                const targetMol = Math.floor(10 + (mouseX/700)*30);
+                while (moleculas.length < targetMol) {
+                    moleculas.push({ x: Math.random()*600+50, y: Math.random()*200+50 });
+                }
+                while (moleculas.length > targetMol) {
+                    moleculas.pop();
+                }
+
+                // mover fotones y detectar atrapamiento
+                for (let f of fotones) {
+                    f.x += f.vx;
+                    f.y += f.vy;
+                    if (f.x<0 || f.x>700) f.vx *= -1;
+                    if (f.y<0 || f.y>300) f.vy *= -1;
+
+                    // interacción simple: si un fotón pasa cerca de una molécula, se "atrapa" (cambia color)
+                    f.atrapado = false;
+                    for (let m of moleculas) {
+                        const dx = f.x - m.x;
+                        const dy = f.y - m.y;
+                        if (Math.sqrt(dx*dx+dy*dy) < 20) {
+                            f.atrapado = true;
+                            break;
+                        }
+                    }
+                }
+
+                ctx.clearRect(0,0,700,300);
+                // fondo
+                ctx.fillStyle = '#1e2f1e';
+                ctx.fillRect(0,0,700,300);
+
+                // dibujar moléculas CO2
+                ctx.fillStyle = '#90be6d';
+                for (let m of moleculas) {
+                    ctx.beginPath();
+                    ctx.arc(m.x, m.y, 6, 0, 2*Math.PI);
+                    ctx.fill();
+                }
+
+                // dibujar fotones
+                for (let f of fotones) {
+                    ctx.beginPath();
+                    if (f.atrapado) ctx.fillStyle = '#f94144'; // rojo atrapado
+                    else ctx.fillStyle = '#f9c74f'; // amarillo libre
+                    ctx.arc(f.x, f.y, 3, 0, 2*Math.PI);
+                    ctx.fill();
+                }
+
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillStyle = '#f8f0d5';
+                ctx.fillText('← menos CO2   más CO2 →', 230, 280);
+                requestAnimationFrame(actualizarCanvas);
+            }
+            actualizarCanvas();
+
+            // Descarga resultados
+            document.getElementById('descargarResultados').addEventListener('click', () => {
+                const nombre = `${usuario.apellidos} ${usuario.nombres}`;
+                const nivelIndex = Math.min(5, Math.floor(pausasHechas.filter(v=>v).length / 2));
+                const nivelNom = ['subatómico','atómico','molecular','celular','ecosistema'][nivelIndex-1] || 'inicial';
+                const multiStr = respuestasMulti.map((v,i)=>`P${i+1}:${v!==null?v:'-'}`).join(' ');
+                const abiertasStr = respuestasAbiertas.map((t,i)=>`A${i+1}:${t.substring(0,30)}`).join(' | ');
+                const contenido = `Nombre: ${nombre}\nNota final múltiple: ${notaMultiple}/5\nNivel organización: ${nivelNom}\nRespuestas: ${multiStr}\nAbiertas: ${abiertasStr}`;
+                const blob = new Blob([contenido], {type:'text/plain'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `calentamiento_${usuario.apellidos}.txt`;
+                a.click();
+            });
+
+            window.addEventListener('load', () => {
+                cargarLocal();
+                actualizarTodosWordCount();
+            });
+        })();
+    </script>
+</body>
+</html>

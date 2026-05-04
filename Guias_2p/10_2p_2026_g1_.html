@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA · Biotecnología en la cocina: fermentos y sabiduría</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #f8ede3;  /* tono harina */
+            color: #3f2e1e;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+        /* login */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #7b4b2edd;
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .login-card {
+            background: #fff2db;
+            border-radius: 4rem 2rem 4rem 2rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 25px 35px #2f1d0e, inset 0 0 0 4px #c39a6b;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        .login-card h1 {
+            font-size: 2.2rem;
+            color: #673f1c;
+            border-bottom: 4px solid #c09a70;
+            display: inline-block;
+            padding-bottom: 6px;
+        }
+        .login-card input {
+            display: block;
+            width: 100%;
+            margin: 1.4rem 0;
+            padding: 1rem 1.2rem;
+            border: 2px solid #b5956e;
+            border-radius: 40px;
+            background: #fff8ed;
+            font-size: 1.1rem;
+        }
+        .login-card input:focus {
+            outline: none;
+            border-color: #3d7a3d;
+        }
+        .login-card button {
+            background: #a5672f;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.4rem;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            border-bottom: 5px solid #6b3f1b;
+            cursor: pointer;
+            width: 100%;
+        }
+        .login-card button:hover {
+            background: #b87c44;
+        }
+        /* contenido principal */
+        #mainContent {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+        /* header fijo */
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            background: #e7cfb2;
+            border-radius: 0 0 40px 40px;
+            padding: 0.8rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 12px #6b4f2e66;
+            z-index: 100;
+            border: 2px solid #b48b5a;
+            backdrop-filter: blur(4px);
+            margin-bottom: 2.5rem;
+        }
+        .user-name {
+            background: #5d462a;
+            color: #ffeecd;
+            padding: 0.4rem 1.4rem;
+            border-radius: 50px;
+            font-weight: 700;
+        }
+        .progress-area {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        .barra-wrapper {
+            width: 220px;
+            height: 22px;
+            background: #bb9f7a;
+            border-radius: 30px;
+            border: 2px solid #5a3f22;
+            overflow: hidden;
+        }
+        #progresoFill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #cb9e5e, #f0c45a);
+        }
+        .niveles {
+            display: flex;
+            gap: 6px;
+            font-weight: bold;
+        }
+        .nivel {
+            background: #7f6b4b;
+            color: white;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            text-align: center;
+            line-height: 1.2;
+            box-shadow: inset 0 -4px 0 #4a3a26;
+            border: 2px solid #4d351a;
+            padding: 0 3px;
+            transition: 0.2s;
+        }
+        .nivel.unlocked {
+            background: #b8863d;
+            box-shadow: 0 0 15px #f5b041, inset 0 -4px 0 #7a581f;
+            border-color: #d4a259;
+        }
+        /* secciones */
+        .seccion {
+            background: #fffcf2;
+            border-radius: 50px 20px 50px 20px;
+            padding: 2.2rem;
+            margin-bottom: 3rem;
+            box-shadow: 15px 15px 0 #a98963;
+            border: 2px solid #8f6e44;
+        }
+        h2 {
+            font-size: 2.2rem;
+            color: #684d2b;
+            border-left: 16px solid #b58d5b;
+            padding-left: 1.3rem;
+            margin-bottom: 1.8rem;
+        }
+        button {
+            background: #9b6e41;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            border-bottom: 4px solid #5f3e22;
+            cursor: pointer;
+            margin: 0.4rem 0;
+        }
+        button:hover {
+            background: #b68754;
+        }
+        .pausa-box {
+            background: #f1e0ca;
+            border-radius: 30px;
+            padding: 1.2rem 1.8rem;
+            margin: 2rem 0;
+            border-left: 12px solid #b3834a;
+        }
+        .pregunta {
+            background: #f7ede0;
+            padding: 1.5rem;
+            border-radius: 25px;
+            margin: 1.2rem 0;
+        }
+        .feedback {
+            margin-top: 0.6rem;
+            padding: 0.6rem;
+            border-radius: 20px;
+        }
+        .correcto { background: #d9e6b5; color: #1f5f1f; }
+        .incorrecto { background: #f5cfcf; color: #8b1a1a; }
+        canvas {
+            display: block;
+            margin: 2rem auto;
+            border-radius: 40px;
+            background: #fae4c6;
+            box-shadow: 0 12px 0 #a77d51, 0 20px 22px #3f2e1b55;
+            max-width: 100%;
+            border: 3px solid #b3874b;
+        }
+        .svg-fermento {
+            width: 100%;
+            background: #ebd5b0;
+            border-radius: 40px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .word-counter {
+            font-size: 0.95rem;
+        }
+        .valido { color: #1f731f; font-weight: bold; }
+        .invalido { color: #b33; }
+        .ruta-card {
+            background: #e3cdac;
+            border-radius: 30px;
+            padding: 1.5rem;
+            border: 3px dashed #8b6d44;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN Apellidos / Nombres -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <h1>🥖 Cocina viva</h1>
+            <p style="color:#5d3f22;">biotecnología ancestral</p>
+            <input type="text" id="apellidosInput" placeholder="Apellidos" autocomplete="off">
+            <input type="text" id="nombresInput" placeholder="Nombres" autocomplete="off">
+            <button id="btnIngresar">🍞 Entrar al fogón</button>
+            <p style="margin-top:1.8rem; background:#e5cfb0; border-radius:40px; padding:0.5rem;">Apellidos / Nombres (en ese orden)</p>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="mainContent">
+        <!-- header fijo -->
+        <div class="fixed-header">
+            <span class="user-name" id="headerNombre">Cargando...</span>
+            <div class="progress-area">
+                <div class="barra-wrapper">
+                    <div id="progresoFill"></div>
+                </div>
+                <div class="niveles" id="nivelesContainer">
+                    <span class="nivel" id="nivel1">subatómico</span>
+                    <span class="nivel" id="nivel2">atómico</span>
+                    <span class="nivel" id="nivel3">molecular</span>
+                    <span class="nivel" id="nivel4">celular</span>
+                    <span class="nivel" id="nivel5">ecosistema</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- INICIO: objetivo y pre-saberes -->
+        <section class="seccion">
+            <h2>🌾 Objetivo: Biotecnología en la cocina</h2>
+            <p style="font-size:1.3rem;"><strong>Introducir la biotecnología ancestral a través de la fermentación.</strong> Descubriremos cómo las abuelas, sin saber de genes, usaban microorganismos para hacer pan, yogur y más. Valorar su sabiduría es también entender la ciencia que hoy llamamos biotecnología.</p>
+            <h3>📝 Pre-saberes: lo que traemos</h3>
+            <div class="pregunta" id="presaber1">
+                <p>1. ¿Qué ingrediente básico necesitas para hacer pan?</p>
+                <label><input type="radio" name="pre1" value="a"> a) Harina, agua, sal y levadura</label><br>
+                <label><input type="radio" name="pre1" value="b"> b) Solo harina y agua</label><br>
+                <label><input type="radio" name="pre1" value="c"> c) Huevos y mantequilla</label><br>
+                <div class="feedback" id="feedPre1"></div>
+            </div>
+            <div class="pregunta" id="presaber2">
+                <p>2. La fermentación es un proceso realizado por:</p>
+                <label><input type="radio" name="pre2" value="a"> a) Hongos y bacterias</label><br>
+                <label><input type="radio" name="pre2" value="b"> b) Solo plantas</label><br>
+                <label><input type="radio" name="pre2" value="c"> c) Animales grandes</label><br>
+                <div class="feedback" id="feedPre2"></div>
+            </div>
+            <div class="pregunta" id="presaber3">
+                <p>3. ¿Qué producto lácteo se obtiene por fermentación?</p>
+                <label><input type="radio" name="pre3" value="a"> a) Queso fresco</label><br>
+                <label><input type="radio" name="pre3" value="b"> b) Yogur</label><br>
+                <label><input type="radio" name="pre3" value="c"> c) Leche pasteurizada</label><br>
+                <div class="feedback" id="feedPre3"></div>
+            </div>
+        </section>
+
+        <!-- CUERPO INDUCTIVO (texto extenso + 5 pausas) -->
+        <section class="seccion">
+            <h2>🌿 Camino inductivo: saberes de las abuelas</h2>
+            <div>
+                <p>En todas las culturas, las mujeres (y hombres) aprendieron a transformar alimentos usando microorganismos sin conocer su existencia. Desde el antiguo Egipto, donde se hacía pan con masa madre, hasta la chicha de maíz en América, la fermentación ha sido una aliada. Las abuelas sabían que si dejaban la masa reposar, "crecía"; si guardaban un poco de masa del día anterior, el pan siguiente subía mejor. Esa memoria viva es biotecnología.</p>
+                <p>Tomemos el yogur. En los Balcanes, las pastoras notaban que la leche se espesaba y volvía ácida en odres de cuero. Ese yogur contenía bacterias (Lactobacillus) que convertían la lactosa en ácido láctico. Sin saberlo, estaban seleccionando cepas benéficas. Hoy sabemos que esas bacterias son probióticas y ayudan a nuestra digestión. La abuela no necesitaba un microscopio: confiaba en el olor, la textura, el sabor.</p>
+                <p>El pan con levadura también es un ejemplo perfecto. La levadura Saccharomyces cerevisiae, un hongo unicelular, consume azúcares y produce dióxido de carbono (CO<sub>2</sub>) que hace que la masa se infle. Las abuelas a veces usaban "masa madre", un cultivo simbiótico de levaduras y bacterias. Este conocimiento pasaba de generación en generación, y cada familia tenía su propio "pie de masa" con características únicas, como una herencia biológica.</p>
+                <p>En Colombia, la chicha de maíz fermentado era sagrada para los muiscas. Preparaban la bebida masticando el maíz para que las enzimas de la saliva descompusieran el almidón, y luego lo dejaban fermentar. Hoy esa práctica ha sido reemplazada por métodos más higiénicos, pero la esencia es la misma: usar microorganismos para transformar y preservar alimentos. También el queso, el vinagre, el chocolate (que fermenta antes de secarse) son frutos de la biotecnología artesanal.</p>
+                <p>Valorar la sabiduría de las abuelas es reconocer que ellas fueron las primeras biotecnólogas. Experimentaban, observaban y transmitían. Cuando hacemos pan en casa siguiendo la receta de la abuela, estamos honrando ese conocimiento. Además, hoy sabemos que esos alimentos fermentados benefician nuestra microbiota intestinal. La ciencia valida lo que ellas sabían por experiencia: la fermentación hace los alimentos más digeribles y nutritivos.</p>
+            </div>
+            <!-- 5 pausas inductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 1: Pregunta a un adulto mayor si recuerda cómo se hacía pan o yogur en su infancia. Anota la receta en tu cuaderno.</p><button class="pausa-btn" data-id="0">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 2: Dibuja el proceso de elaboración de pan con masa madre, señalando los pasos.</p><button class="pausa-btn" data-id="1">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 3: Investiga qué es el “kéfir” y cómo lo preparaban las abuelas en algunas regiones.</p><button class="pausa-btn" data-id="2">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 4: Escribe 3 alimentos fermentados típicos de tu región y los microorganismos involucrados (puedes buscar).</p><button class="pausa-btn" data-id="3">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 5: Reflexiona: ¿por qué es importante conservar las recetas tradicionales de fermentación?</p><button class="pausa-btn" data-id="4">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- PREGUNTA TIPO ICFES (con SVG complejo) -->
+        <section class="seccion">
+            <h2>🧪 Pregunta ICFES (Indagar)</h2>
+            <div class="svg-fermento">
+                <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- masa madre y microorganismos estilizados -->
+                    <rect x="30" y="70" width="180" height="80" rx="20" fill="#e0b786" stroke="#6e4e2b" stroke-width="3" />
+                    <text x="70" y="110" fill="#2f1f0f" font-size="16">Masa madre</text>
+                    <circle cx="150" cy="100" r="12" fill="#f5deb3" stroke="#634d30" stroke-width="2" />
+                    <circle cx="180" cy="80" r="10" fill="#edd0a3" stroke="#634d30" stroke-width="2" />
+                    <circle cx="120" cy="130" r="8" fill="#ffe1a8" stroke="#634d30" stroke-width="2" />
+                    <text x="220" y="120" fill="#325f32" font-size="14">Levaduras</text>
+                    <!-- burbujas de CO2 -->
+                    <circle cx="270" cy="110" r="7" fill="#88aaff" stroke="#333" stroke-width="1" opacity="0.7" />
+                    <circle cx="300" cy="130" r="9" fill="#88aaff" stroke="#333" stroke-width="1" opacity="0.7" />
+                    <circle cx="330" cy="100" r="6" fill="#88aaff" stroke="#333" stroke-width="1" opacity="0.7" />
+                    <text x="360" y="120" fill="#1f4f1f">CO<sub>2</sub></text>
+                </svg>
+            </div>
+            <p>En la elaboración de pan con masa madre, las burbujas de gas que hacen crecer la masa son producidas principalmente por:</p>
+            <div class="pregunta">
+                <label><input type="radio" name="icfes" value="a"> a) Bacterias lácticas</label><br>
+                <label><input type="radio" name="icfes" value="b"> b) Levaduras que fermentan azúcares</label><br>
+                <label><input type="radio" name="icfes" value="c"> c) Aditivos químicos</label><br>
+                <label><input type="radio" name="icfes" value="d"> d) Calor del horno</label><br>
+                <button id="revisarIcfes">Revisar</button>
+                <div id="feedIcfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <!-- CUERPO DEDUCTIVO (con animación canvas) -->
+        <section class="seccion">
+            <h2>🧫 Camino deductivo: ciencia de la fermentación</h2>
+            <p><strong>La fermentación es un proceso anaeróbico (sin oxígeno) donde microorganismos obtienen energía degradando compuestos orgánicos.</strong> Por ejemplo, la levadura convierte glucosa en etanol y CO<sub>2</sub>: C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> → 2 CH<sub>3</sub>CH<sub>2</sub>OH + 2 CO<sub>2</sub>. Las bacterias lácticas hacen fermentación homoláctica: glucosa → 2 ácido láctico. Esto acidifica y preserva.</p>
+            <p>Los niveles de organización: desde partículas subatómicas (protones, electrones) que forman átomos (C, H, O), que se unen en moléculas (glucosa, proteínas), que se organizan en orgánulos (mitocondrias) dentro de células (levaduras, bacterias). Las células interactúan en comunidades (masa madre, biofilm) y éstas en ecosistemas (el entorno de la cocina). La abuela, sin saberlo, manejaba todos estos niveles.</p>
+            <p>El metabolismo microbiano depende de enzimas (proteínas con estructura tridimensional). Las enzimas son catalizadores que reducen la energía de activación. La temperatura es clave: si está muy fría, las levaduras trabajan lento; si muy caliente, mueren. Por eso las abuelas dejaban la masa en un lugar tibio, "que no le dé el sol directo pero que esté abrigada".</p>
+            <p>En el yogur, las bacterias termófilas (Lactobacillus bulgaricus, Streptococcus thermophilus) fermentan la lactosa a ácido láctico, coagulando las proteínas de la leche. El pH baja y esto impide el crecimiento de bacterias dañinas. Es un ejemplo de biopreservación. Las abuelas usaban un poco de yogur anterior como inóculo, una práctica que hoy llamamos "siembra".</p>
+            <p>La biotecnología moderna utiliza estos mismos principios a gran escala, pero también modifica genéticamente microorganismos para producir insulina, enzimas, etc. Sin embargo, el origen está en la cocina ancestral. Al hacer pan casero, estamos repitiendo un ritual de miles de años. La ciencia nos explica por qué funciona: los niveles subatómicos (enlaces químicos) permiten las reacciones.</p>
+            <p>En la masa madre, hay una simbiosis: levaduras producen alcohol y CO<sub>2</sub>, bacterias lácticas producen ácidos que dan sabor y protegen de patógenos. Cada región tiene masas madre únicas, con microorganismos del ambiente. Eso es biodiversidad doméstica.</p>
+
+            <!-- CANVAS ANIMACIÓN: simulación de fermentación (levaduras produciendo burbujas) -->
+            <canvas id="canvasFermentacion" width="700" height="300"></canvas>
+            <p style="text-align:center;">Mueve el mouse para ajustar la temperatura (frio/calor) y observa la actividad de las levaduras (puntos amarillos) generando CO<sub>2</sub> (burbujas).</p>
+
+            <!-- 5 pausas deductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 6: Explica la ecuación química de la fermentación alcohólica.</p><button class="pausa-btn" data-id="5">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 7: ¿Qué nivel de organización corresponde a una bacteria? (celular). ¿Y a una enzima? (molecular)</p><button class="pausa-btn" data-id="6">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 8: Investiga qué son los probióticos y menciona dos alimentos que los contengan.</p><button class="pausa-btn" data-id="7">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 9: Dibuja un esquema de una levadura y señala sus partes (pared, núcleo, vacuola).</p><button class="pausa-btn" data-id="8">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 10: ¿Por qué las abuelas recomendaban tapar la masa con un paño? Relaciona con la contaminación y la temperatura.</p><button class="pausa-btn" data-id="9">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- EVALUACIÓN FINAL (TALLER) -->
+        <section class="seccion">
+            <h2>📋 Taller: la ciencia en la cocina</h2>
+            <h3>Selección múltiple (autocalifica)</h3>
+            <div><p>1. ¿Qué gas produce la levadura en el pan?</p>
+                <label><input type="radio" name="m1" value="0"> a) Oxígeno</label><br>
+                <label><input type="radio" name="m1" value="1"> b) Dióxido de carbono</label><br>
+                <label><input type="radio" name="m1" value="2"> c) Nitrógeno</label><br>
+                <label><input type="radio" name="m1" value="3"> d) Hidrógeno</label><br></div>
+            <div><p>2. Las bacterias del yogur convierten la lactosa en:</p>
+                <label><input type="radio" name="m2" value="0"> a) Alcohol</label><br>
+                <label><input type="radio" name="m2" value="1"> b) Ácido láctico</label><br>
+                <label><input type="radio" name="m2" value="2"> c) Ácido acético</label><br>
+                <label><input type="radio" name="m2" value="3"> d) Agua</label><br></div>
+            <div><p>3. La fermentación es un proceso:</p>
+                <label><input type="radio" name="m3" value="0"> a) Aeróbico</label><br>
+                <label><input type="radio" name="m3" value="1"> b) Anaeróbico</label><br>
+                <label><input type="radio" name="m3" value="2"> c) Que requiere luz</label><br>
+                <label><input type="radio" name="m3" value="3"> d) Fotosintético</label><br></div>
+            <div><p>4. ¿Qué nivel de organización es una molécula de glucosa?</p>
+                <label><input type="radio" name="m4" value="0"> a) Subatómico</label><br>
+                <label><input type="radio" name="m4" value="1"> b) Atómico</label><br>
+                <label><input type="radio" name="m4" value="2"> c) Molecular</label><br>
+                <label><input type="radio" name="m4" value="3"> d) Celular</label><br></div>
+            <div><p>5. La masa madre contiene una simbiosis de:</p>
+                <label><input type="radio" name="m5" value="0"> a) Levaduras y mohos</label><br>
+                <label><input type="radio" name="m5" value="1"> b) Levaduras y bacterias lácticas</label><br>
+                <label><input type="radio" name="m5" value="2"> c) Bacterias y virus</label><br>
+                <label><input type="radio" name="m5" value="3"> d) Protozoos</label><br></div>
+            <button id="calificarMultiple">Calificar múltiple</button>
+            <div id="resultadoMultiple"></div>
+
+            <h3>Preguntas abiertas (10-15 palabras c/u)</h3>
+            <div>
+                <p>1. ¿Qué es la fermentación y qué microorganismos la realizan?</p>
+                <textarea id="open1" rows="2"></textarea><div class="word-counter" id="wc1">0 palabras</div>
+                <p>2. Nombra dos alimentos fermentados tradicionales en tu país.</p>
+                <textarea id="open2" rows="2"></textarea><div class="word-counter" id="wc2">0 palabras</div>
+                <p>3. ¿Cómo contribuyen las abuelas a la biotecnología?</p>
+                <textarea id="open3" rows="2"></textarea><div class="word-counter" id="wc3">0 palabras</div>
+                <p>4. Explica la diferencia entre levadura y bacteria.</p>
+                <textarea id="open4" rows="2"></textarea><div class="word-counter" id="wc4">0 palabras</div>
+                <p>5. ¿Qué nivel de organización es una levadura? ¿Y una enzima?</p>
+                <textarea id="open5" rows="2"></textarea><div class="word-counter" id="wc5">0 palabras</div>
+                <button id="validarAbiertas">Validar respuestas</button> <span id="msgAbiertas"></span>
+            </div>
+
+            <!-- Ruta de fortalecimiento -->
+            <div style="margin:2rem 0">
+                <h3>🧭 Ruta de fortalecimiento personalizada</h3>
+                <button id="generarRuta">Analizar debilidades</button>
+                <div id="rutaTexto" class="ruta-card" style="margin-top:1rem;"></div>
+            </div>
+
+            <!-- descarga -->
+            <footer>
+                <button id="descargarResultados">📥 Descargar resultados (.txt)</button>
+            </footer>
+        </section>
+    </div>
+
+    <script>
+        (function(){
+            // Estado global
+            let usuario = { apellidos: '', nombres: '' };
+            let pausasHechas = new Array(10).fill(false);
+            let respuestasMulti = [null, null, null, null, null];
+            const correctasMulti = [1, 1, 1, 2, 1]; // según opciones (base 0)
+            let respuestasAbiertas = ['','','','',''];
+            let notaMultiple = 0;
+
+            // Elementos
+            const loginScreen = document.getElementById('loginScreen');
+            const mainContent = document.getElementById('mainContent');
+            const btnIngresar = document.getElementById('btnIngresar');
+            const apellidosInput = document.getElementById('apellidosInput');
+            const nombresInput = document.getElementById('nombresInput');
+            const headerNombre = document.getElementById('headerNombre');
+            const progresoFill = document.getElementById('progresoFill');
+            const niveles = ['nivel1','nivel2','nivel3','nivel4','nivel5'].map(id => document.getElementById(id));
+
+            // Funciones de progreso y niveles
+            function actualizarProgresoNiveles() {
+                const totalHechas = pausasHechas.filter(v => v).length;
+                const porcentaje = (totalHechas / 10) * 100;
+                progresoFill.style.width = porcentaje + '%';
+                const nivelAlcanzado = Math.min(5, Math.floor(totalHechas / 2)); // cada 2 pausas se sube un nivel (0-5)
+                for (let i = 0; i < 5; i++) {
+                    if (i < nivelAlcanzado) niveles[i].classList.add('unlocked');
+                    else niveles[i].classList.remove('unlocked');
+                }
+                guardarLocal();
+            }
+
+            // localStorage
+            function guardarLocal() {
+                if (!usuario.apellidos) return;
+                const data = {
+                    apellidos: usuario.apellidos,
+                    nombres: usuario.nombres,
+                    pausas: pausasHechas,
+                    abiertas: respuestasAbiertas,
+                    multi: respuestasMulti
+                };
+                localStorage.setItem('ova_biotecnologia', JSON.stringify(data));
+            }
+
+            function cargarLocal() {
+                const saved = localStorage.getItem('ova_biotecnologia');
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        usuario = { apellidos: data.apellidos || '', nombres: data.nombres || '' };
+                        pausasHechas = data.pausas || new Array(10).fill(false);
+                        respuestasAbiertas = data.abiertas || ['','','','',''];
+                        respuestasMulti = data.multi || [null,null,null,null,null];
+                        // restaurar textareas
+                        document.getElementById('open1').value = respuestasAbiertas[0] || '';
+                        document.getElementById('open2').value = respuestasAbiertas[1] || '';
+                        document.getElementById('open3').value = respuestasAbiertas[2] || '';
+                        document.getElementById('open4').value = respuestasAbiertas[3] || '';
+                        document.getElementById('open5').value = respuestasAbiertas[4] || '';
+                        // restaurar radios multiple
+                        for (let i=1; i<=5; i++) {
+                            const val = respuestasMulti[i-1];
+                            if (val !== null) {
+                                const radio = document.querySelector(`input[name="m${i}"][value="${val}"]`);
+                                if (radio) radio.checked = true;
+                            }
+                        }
+                        if (usuario.apellidos && usuario.nombres) {
+                            loginScreen.style.display = 'none';
+                            mainContent.style.display = 'block';
+                            headerNombre.innerText = `${usuario.apellidos} ${usuario.nombres}`;
+                            actualizarProgresoNiveles();
+                            actualizarTodosWordCount();
+                        }
+                        // deshabilitar pausas ya hechas
+                        pausasHechas.forEach((h, idx) => {
+                            if (h) {
+                                const btn = document.querySelector(`.pausa-btn[data-id="${idx}"]`);
+                                if (btn) { btn.disabled = true; btn.innerText = '✔️ Hecho'; }
+                            }
+                        });
+                    } catch (e) {}
+                }
+            }
+
+            // contador de palabras
+            function contarPalabras(t) {
+                return t.trim().split(/\s+/).filter(p => p.length>0).length;
+            }
+            function actualizarWordCount(taId, ctId) {
+                const ta = document.getElementById(taId);
+                const num = contarPalabras(ta.value);
+                document.getElementById(ctId).innerText = num + ' palabras';
+                return num;
+            }
+            function actualizarTodosWordCount() {
+                for (let i=1; i<=5; i++) {
+                    actualizarWordCount(`open${i}`, `wc${i}`);
+                }
+            }
+
+            // LOGIN
+            btnIngresar.addEventListener('click', (e) => {
+                e.preventDefault();
+                const ap = apellidosInput.value.trim();
+                const nom = nombresInput.value.trim();
+                if (!ap || !nom) { alert('Completa ambos campos'); return; }
+                usuario.apellidos = ap; usuario.nombres = nom;
+                headerNombre.innerText = `${ap} ${nom}`;
+                loginScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                if (!localStorage.getItem('ova_biotecnologia')) {
+                    pausasHechas = new Array(10).fill(false);
+                } else {
+                    cargarLocal();
+                }
+                actualizarProgresoNiveles();
+                guardarLocal();
+            });
+
+            // PAUSAS
+            document.querySelectorAll('.pausa-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'), 10);
+                    if (!isNaN(id) && id>=0 && id<10 && !pausasHechas[id]) {
+                        pausasHechas[id] = true;
+                        e.target.disabled = true;
+                        e.target.innerText = '✔️ Hecho';
+                        actualizarProgresoNiveles();
+                    }
+                });
+            });
+
+            // Pre-saberes
+            function configPre(ind, correctVal, feedId) {
+                document.querySelectorAll(`input[name="pre${ind}"]`).forEach(r => {
+                    r.addEventListener('change', function() {
+                        const f = document.getElementById(feedId);
+                        if (this.value === correctVal) {
+                            f.innerText = '✅ Correcto.';
+                            f.className = 'feedback correcto';
+                        } else {
+                            f.innerText = '❌ Vuelve a intentar.';
+                            f.className = 'feedback incorrecto';
+                        }
+                    });
+                });
+            }
+            configPre(1, 'a', 'feedPre1');
+            configPre(2, 'a', 'feedPre2');
+            configPre(3, 'b', 'feedPre3');
+
+            // ICFES
+            document.getElementById('revisarIcfes').addEventListener('click', () => {
+                const selec = document.querySelector('input[name="icfes"]:checked');
+                const feed = document.getElementById('feedIcfes');
+                if (!selec) { feed.innerText = 'Elige una opción'; return; }
+                if (selec.value === 'b') {
+                    feed.innerText = '✅ ¡Correcto! Las levaduras producen CO2 durante la fermentación.';
+                    feed.className = 'feedback correcto';
+                } else {
+                    feed.innerText = '❌ No es correcto. Las burbujas son de CO2 generado por levaduras.';
+                    feed.className = 'feedback incorrecto';
+                }
+            });
+
+            // Múltiple
+            document.getElementById('calificarMultiple').addEventListener('click', () => {
+                let aciertos = 0;
+                for (let i=1; i<=5; i++) {
+                    const radios = document.getElementsByName(`m${i}`);
+                    let val = null;
+                    for (let r of radios) if (r.checked) { val = r.value; break; }
+                    if (val !== null) {
+                        respuestasMulti[i-1] = parseInt(val,10);
+                        if (respuestasMulti[i-1] === correctasMulti[i-1]) aciertos++;
+                    } else respuestasMulti[i-1] = null;
+                }
+                notaMultiple = aciertos;
+                document.getElementById('resultadoMultiple').innerText = `Obtuviste ${aciertos}/5 correctas.`;
+                guardarLocal();
+            });
+
+            // Abiertas
+            ['open1','open2','open3','open4','open5'].forEach((id, idx) => {
+                document.getElementById(id).addEventListener('input', function() {
+                    actualizarWordCount(id, 'wc'+(idx+1));
+                    respuestasAbiertas[idx] = this.value;
+                    guardarLocal();
+                });
+            });
+            document.getElementById('validarAbiertas').addEventListener('click', () => {
+                let ok = true;
+                for (let i=1; i<=5; i++) {
+                    const num = contarPalabras(document.getElementById(`open${i}`).value);
+                    if (num<10 || num>15) ok = false;
+                }
+                document.getElementById('msgAbiertas').innerText = ok ? '✅ Todas entre 10-15 palabras.' : '❌ Revisa el contador de palabras (deben ser 10-15).';
+            });
+
+            // Ruta fortalecimiento
+            document.getElementById('generarRuta').addEventListener('click', () => {
+                // inductivas: preguntas 1,2 / deductivas: 3,4,5 (aproximadamente)
+                let indAc=0, indTot=0, dedAc=0, dedTot=0;
+                for (let i=0; i<5; i++) {
+                    if (respuestasMulti[i] !== null) {
+                        if (i<2) { indTot++; if (respuestasMulti[i]===correctasMulti[i]) indAc++; }
+                        else { dedTot++; if (respuestasMulti[i]===correctasMulti[i]) dedAc++; }
+                    }
+                }
+                let msg = '';
+                if (indTot>0 && indAc/indTot < 0.6) msg += '🍞 Fortalece la parte inductiva: repasa los ejemplos ancestrales y el contexto. ';
+                if (dedTot>0 && dedAc/dedTot < 0.6) msg += '🧪 Refuerza conceptos deductivos: química de la fermentación y niveles de organización. ';
+                if (msg === '') msg = '🌟 ¡Excelente! Sigue explorando la biotecnología casera.';
+                document.getElementById('rutaTexto').innerText = msg;
+            });
+
+            // CANVAS animación (simulación de fermentación)
+            const canvas = document.getElementById('canvasFermentacion');
+            const ctx = canvas.getContext('2d');
+            let mouseX = 350; // temperatura simulada: izquierda frío, derecha caliente
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+            });
+
+            let particulas = [];
+            for (let i=0; i<30; i++) {
+                particulas.push({
+                    x: Math.random()*700,
+                    y: Math.random()*250+25,
+                    tipo: 'levadura',
+                    tam: Math.random()*5+5
+                });
+            }
+            let burbujas = [];
+
+            function actualizarCanvas() {
+                // temperatura afecta actividad: más burbujas hacia la derecha (calor)
+                const factor = (mouseX / 700) * 1.5 + 0.5; // entre 0.5 y 2.0
+                // agregar burbujas según factor
+                if (Math.random() < 0.05 * factor) {
+                    burbujas.push({
+                        x: 100 + Math.random()*500,
+                        y: 180 + Math.random()*50,
+                        r: Math.random()*6+4,
+                        vida: 1.0
+                    });
+                }
+                // mover burbujas hacia arriba
+                for (let i = burbujas.length-1; i>=0; i--) {
+                    let b = burbujas[i];
+                    b.y -= 0.5 * factor;
+                    b.vida -= 0.005;
+                    if (b.y < 30 || b.vida <=0) {
+                        burbujas.splice(i,1);
+                    }
+                }
+
+                ctx.clearRect(0,0,700,300);
+                // fondo de masa
+                ctx.fillStyle = '#f2d9b3';
+                ctx.fillRect(0,150,700,150);
+                ctx.fillStyle = '#d4b185';
+                ctx.fillRect(0,150,700,30); // sombra
+
+                // levaduras (puntos)
+                for (let p of particulas) {
+                    ctx.beginPath();
+                    ctx.fillStyle = '#a86f3c';
+                    ctx.arc(p.x, p.y, p.tam/2, 0, 2*Math.PI);
+                    ctx.fill();
+                }
+                // burbujas
+                for (let b of burbujas) {
+                    ctx.beginPath();
+                    ctx.fillStyle = `rgba(180,220,255,${b.vida*0.7})`;
+                    ctx.arc(b.x, b.y, b.r, 0, 2*Math.PI);
+                    ctx.fill();
+                    ctx.strokeStyle = '#336699';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillStyle = '#3f2a14';
+                ctx.fillText('Temperatura (← frío / calor →)', 230, 40);
+                ctx.fillText('Burbujas de CO₂', 300, 280);
+                requestAnimationFrame(actualizarCanvas);
+            }
+            actualizarCanvas();
+
+            // Descarga resultados
+            document.getElementById('descargarResultados').addEventListener('click', () => {
+                const nombre = `${usuario.apellidos} ${usuario.nombres}`;
+                const nivelIndex = Math.min(5, Math.floor(pausasHechas.filter(v=>v).length / 2));
+                const nivelNom = ['subatómico','atómico','molecular','celular','ecosistema'][nivelIndex-1] || 'inicial';
+                const multiStr = respuestasMulti.map((v,i)=>`P${i+1}:${v!==null?v:'-'}`).join(' ');
+                const abiertasStr = respuestasAbiertas.map((t,i)=>`A${i+1}:${t.substring(0,30)}`).join(' | ');
+                const contenido = `Nombre: ${nombre}\nNota final múltiple: ${notaMultiple}/5\nNivel organización: ${nivelNom}\nRespuestas: ${multiStr}\nAbiertas: ${abiertasStr}`;
+                const blob = new Blob([contenido], {type:'text/plain'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `biotecnologia_${usuario.apellidos}.txt`;
+                a.click();
+            });
+
+            window.addEventListener('load', () => {
+                cargarLocal();
+                actualizarTodosWordCount();
+            });
+        })();
+    </script>
+</body>
+</html>

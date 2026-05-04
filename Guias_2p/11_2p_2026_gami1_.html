@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: La Fiebre de la Tierra - Grado 11</title>
+    <style>
+        /* =========================================
+           VARIABLES Y DISEÑO BASE (Cambio Climático y Naturaleza)
+           ========================================= */
+        :root {
+            --rojo-calor: #D84315;
+            --naranja-tierra: #EF6C00;
+            --verde-megadiverso: #2E7D32;
+            --verde-claro: #C8E6C9;
+            --cafe-ganado: #4E342E;
+            --azul-cielo: #0288D1;
+            --crema-fondo: #FFF8E1;
+            --blanco: #FFFFFF;
+            --gris-texto: #263238;
+            
+            /* Gamificación: Tabla Periódica */
+            --oro-au: #FFD700;
+            --plata-ag: #E0E0E0;
+            --hierro-fe: #A19D94;
+            --rojo-error: #D32F2F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--crema-fondo);
+            color: var(--gris-texto);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* =========================================
+           PANTALLA DE LOGUEO
+           ========================================= */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, var(--rojo-calor), var(--verde-megadiverso));
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 0.6s ease;
+        }
+
+        .login-box {
+            background: var(--blanco); padding: 40px; border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; max-width: 450px; width: 90%;
+            border-top: 6px solid var(--naranja-tierra);
+        }
+
+        .login-box h1 { color: var(--rojo-calor); margin-bottom: 10px; font-size: 1.8em; }
+        .login-box p { font-size: 0.95em; margin-bottom: 25px; color: #555; }
+
+        .input-group { margin-bottom: 18px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 6px; font-weight: 700; color: var(--cafe-ganado); }
+        .input-group input {
+            width: 100%; padding: 12px; border: 2px solid var(--naranja-tierra); border-radius: 8px; font-size: 1em;
+            background-color: #FFF3E0; transition: border-color 0.3s;
+        }
+        .input-group input:focus { border-color: var(--rojo-calor); outline: none; background-color: var(--blanco);}
+
+        .btn {
+            background-color: var(--rojo-calor); color: var(--blanco); border: none;
+            padding: 14px 25px; border-radius: 8px; font-size: 1.1em; cursor: pointer;
+            font-weight: bold; transition: transform 0.2s, background-color 0.3s; width: 100%;
+        }
+        .btn:hover { background-color: #BF360C; transform: scale(1.02); }
+        .btn:disabled { background-color: #B0BEC5; cursor: not-allowed; transform: none; }
+
+        /* =========================================
+           INTERFAZ PRINCIPAL (SINGLE-PAGE)
+           ========================================= */
+        #main-app { display: none; }
+
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; background: var(--blanco);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1); z-index: 500; padding: 12px 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 4px solid var(--rojo-calor);
+        }
+
+        .user-badge { font-weight: bold; color: var(--cafe-ganado); display: flex; align-items: center; gap: 10px; font-size: 1.1em;}
+        
+        .score-board {
+            display: flex; align-items: center; gap: 15px; background: var(--rojo-calor);
+            color: white; padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 1.2em;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            border: 2px solid var(--naranja-tierra);
+        }
+
+        main { max-width: 850px; margin: 90px auto 50px auto; padding: 20px; }
+
+        /* =========================================
+           CONTENEDORES DE TEXTO (PEDAGOGÍA)
+           ========================================= */
+        .content-section {
+            background: var(--blanco); padding: 30px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 40px;
+            border-left: 6px solid var(--naranja-tierra);
+        }
+
+        h2 { color: var(--rojo-calor); border-bottom: 2px solid var(--naranja-tierra); padding-bottom: 8px; margin-bottom: 20px; font-size: 1.6em; }
+        p { margin-bottom: 15px; text-align: justify; font-size: 1.1em; }
+        .highlight { background-color: #FFF3E0; padding: 2px 5px; font-weight: bold; color: var(--rojo-calor); border-radius: 3px;}
+
+        /* =========================================
+           DISEÑO DE ACTIVIDADES (GAMIFICACIÓN)
+           ========================================= */
+        .activity-card {
+            background: #FFFFFF; border: 2px solid #E0E0E0; border-radius: 10px;
+            padding: 25px; margin: 25px 0; position: relative;
+            transition: border-color 0.3s, background-color 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .activity-card.solved { border-color: var(--verde-megadiverso); background: #E8F5E9; }
+        .activity-card.failed { border-color: var(--rojo-error); background: #FFEBEE; }
+
+        .act-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .act-type { font-size: 0.85em; font-weight: bold; color: var(--blanco); background: var(--cafe-ganado); padding: 6px 12px; border-radius: 15px; text-transform: uppercase;}
+        .act-attempts { font-size: 0.9em; font-weight: bold; color: var(--rojo-calor); background: #FFCCBC; padding: 4px 10px; border-radius: 10px; border: 1px solid var(--rojo-calor);}
+        
+        /* Juego 1: Anagramas (Letras Explicitas) */
+        .anagram-display {
+            font-size: 2.2em; font-weight: bold; color: var(--rojo-calor);
+            text-align: center; letter-spacing: 4px; margin: 20px 0;
+            background: #FBE9E7; padding: 20px; border-radius: 8px; font-family: monospace;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.1); border: 2px dashed var(--naranja-tierra);
+        }
+        
+        .answer-input {
+            width: 100%; padding: 15px; font-size: 1.2em; border: 2px solid #B0BEC5; border-radius: 8px;
+            text-align: center; text-transform: uppercase; margin-bottom: 15px;
+            background-color: var(--blanco); font-weight: bold; letter-spacing: 2px;
+        }
+        .answer-input:focus { border-color: var(--rojo-calor); outline: none; }
+
+        /* Juego 2: Ordenar Palabras (Frases) */
+        .word-bank {
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 20px 0; min-height: 50px;
+        }
+        .word-btn {
+            background: var(--blanco); color: var(--cafe-ganado); border: 2px solid var(--naranja-tierra); padding: 10px 18px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.05em;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s, background-color 0.2s;
+        }
+        .word-btn:hover { background-color: #FFE0B2; }
+        .word-btn:active { transform: scale(0.95); }
+        
+        .sentence-builder {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start;
+            background: #ECEFF1; padding: 20px; border-radius: 8px; min-height: 80px; margin-bottom: 15px;
+            border: 2px dashed #90A4AE; align-items: center; font-size: 1.1em;
+        }
+        .word-btn.selected { background: var(--rojo-calor); color: var(--blanco); border-color: var(--rojo-calor); opacity: 0.5; pointer-events: none;}
+
+        .btn-clear { background: #90A4AE; margin-top: 5px; width: auto; padding: 10px 20px; border: none; color: white; border-radius: 8px; cursor: pointer; font-weight:bold;}
+        .btn-clear:hover { background: #78909C; }
+
+        /* Insignias Químicas (Tabla Periódica) */
+        .medal-badge {
+            position: absolute; top: -20px; right: -20px; width: 65px; height: 65px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.6em; color: var(--cafe-ganado);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 4px solid white; display: none;
+            flex-direction: column; line-height: 1; z-index: 10;
+        }
+        .medal-badge span { font-size: 0.35em; text-transform: uppercase; margin-top: 2px; }
+        .medal-au { background: linear-gradient(135deg, #FFD700, #FBC02D); display: flex; }
+        .medal-ag { background: linear-gradient(135deg, #F5F5F5, #BDBDBD); display: flex; }
+        .medal-fe { background: linear-gradient(135deg, #8D6E63, #5D4037); color: white; display: flex; }
+
+        .feedback-msg { margin-top: 15px; font-weight: bold; text-align: center; font-size: 1.2em; min-height: 28px;}
+
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         PILARES 1: PANTALLA DE LOGUEO
+         ========================================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>La Fiebre de la Tierra</h1>
+            <p>Laboratorio de Ciencias Ambientales - Grado 11°<br>Vereda Pueblo Rico, Quimbaya</p>
+            <div class="input-group">
+                <label for="inp-nombre">Nombre del Analista:</label>
+                <input type="text" id="inp-nombre" placeholder="Ingresa tu nombre" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="inp-apellido">Apellido del Analista:</label>
+                <input type="text" id="inp-apellido" placeholder="Ingresa tu apellido" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar">Iniciar Investigación</button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         PILARES 2 & 3: INTERFAZ PRINCIPAL
+         ========================================= -->
+    <div id="main-app">
+        <header>
+            <div class="user-badge">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--rojo-calor)"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M11,7V13H13V7H11M11,15V17H13V15H11Z"/></svg>
+                <span id="display-name">Estudiante</span>
+            </div>
+            <div class="score-board">
+                <span>Puntaje Global:</span>
+                <span id="display-score">0</span>
+            </div>
+        </header>
+
+        <main id="content-container">
+            <!-- Las 20 actividades se generan aquí de forma dinámica -->
+        </main>
+    </div>
+
+    <!-- =========================================
+         LÓGICA JAVASCRIPT (VANILLA)
+         ========================================= -->
+    <script>
+        // --- 1. DATOS PEDAGÓGICOS (20 ACTIVIDADES DE GRADO 11) ---
+        const courseContent = [
+            // SECCIÓN 1: CALENTAMIENTO GLOBAL
+            {
+                type: 'text',
+                title: '1. La fiebre de la Tierra: Calentamiento Global',
+                content: `La Vereda Pueblo Rico no es ajena a la crisis climática mundial. Históricamente, el clima del Quindío permitía predecir con exactitud las floraciones del café. Hoy en día, experimentamos alteraciones drásticas: sequías extremas seguidas de aguaceros torrenciales. A este fenómeno global se le conoce como <span class="highlight">Calentamiento Global</span>.<br><br>
+                Este incremento de la temperatura promedio de la Tierra es un fenómeno principalmente <strong>antropogénico</strong>, es decir, causado por el ser humano. La quema de combustibles fósiles y la deforestación masiva liberan toneladas de Gases de Efecto Invernadero (GEI) como el Dióxido de Carbono (CO2), atrapando el calor en nuestra atmósfera. Esto aumenta dramáticamente la <strong>vulnerabilidad</strong> de nuestros sistemas agrícolas locales.`
+            },
+            { type: 'anagram', id: 'a1', answer: 'CALENTAMIENTO', hint: 'El incremento sostenido de la temperatura promedio de la Tierra.' },
+            { type: 'sentence', id: 's1', answer: 'El incremento de gases de efecto invernadero altera el clima global', hint: 'La principal causa química del cambio climático.' },
+            { type: 'anagram', id: 'a2', answer: 'ANTROPOGENICO', hint: 'Término que describe los efectos o procesos causados por el ser humano.' },
+            { type: 'sentence', id: 's2', answer: 'Las actividades humanas aceleran drasticamente el cambio climatico contemporaneo', hint: 'El papel del hombre en la crisis actual.' },
+            { type: 'anagram', id: 'a3', answer: 'VULNERABILIDAD', hint: 'El grado en que nuestro sistema agrícola es susceptible al daño climático.' },
+            { type: 'sentence', id: 's3', answer: 'Nuestra vereda experimenta sequias extremas que amenazan los cafetales', hint: 'El impacto directo y local del fenómeno.' },
+            
+            // SECCIÓN 2: COLOMBIA MEGADIVERSA
+            {
+                type: 'text',
+                title: '2. Colombia Megadiversa y nuestra vereda',
+                content: `Colombia es clasificada científicamente como un país <span class="highlight">Megadiverso</span>, concentrando cerca del 10% de la biodiversidad del planeta en su territorio. En el Quindío, los relictos de bosque andino son un tesoro ecológico que alberga un alto nivel de <strong>endemismo</strong> (especies que no existen en ninguna otra parte del mundo).<br><br>
+                Proteger esta <strong>biodiversidad</strong> no es solo un acto romántico; es una barrera de defensa. Los ecosistemas diversos poseen mayor resiliencia frente a los choques climáticos. Si promovemos la <strong>conservación</strong> de nuestros corredores biológicos en Pueblo Rico, garantizamos la regulación del agua y la supervivencia del Paisaje Cultural Cafetero frente a la crisis climática.`
+            },
+            { type: 'anagram', id: 'a4', answer: 'MEGADIVERSO', hint: 'Categoría otorgada a países que albergan la mayor parte de la biodiversidad de la Tierra.' },
+            { type: 'sentence', id: 's4', answer: 'Colombia alberga una de las mayores riquezas biologicas del mundo', hint: 'El estatus ecológico de nuestra nación.' },
+            { type: 'anagram', id: 'a5', answer: 'ENDEMISMO', hint: 'Distribución de una especie restringida a una región geográfica específica.' },
+            { type: 'sentence', id: 's5', answer: 'Proteger nuestras especies nativas garantiza la resiliencia del ecosistema', hint: 'El beneficio de cuidar lo propio.' },
+            { type: 'anagram', id: 'a6', answer: 'BIODIVERSIDAD', hint: 'Variedad de formas de vida en el planeta, incluyendo ecosistemas y genes.' },
+            { type: 'sentence', id: 's6', answer: 'El paisaje cultural cafetero depende de la conservacion ambiental', hint: 'La base de nuestro patrimonio regional.' },
+            { type: 'anagram', id: 'a7', answer: 'CONSERVACION', hint: 'La protección y preservación ética de los recursos naturales.' },
+
+            // SECCIÓN 3: LA HUELLA AGROPECUARIA
+            {
+                type: 'text',
+                title: '3. La huella en la tierra: Agricultura y Ganadería',
+                content: `El modelo de producción en Quimbaya debe ser analizado críticamente. La expansión de la ganadería extensiva es uno de los mayores emisores de gases a nivel local. A través del proceso de fermentación entérica, las vacas liberan enormes cantidades de gas metano (CH4), un potente agente del calentamiento global.<br><br>
+                Por otro lado, la agricultura basada en el <span class="highlight">Monocultivo</span> (cultivar una sola especie en grandes extensiones) agota los nutrientes del suelo de origen volcánico. Para crear estos inmensos potreros o monocultivos, históricamente se ha recurrido a la <strong>deforestación</strong>, destruyendo el hábitat y el ciclo del agua. Para mitigar esta huella, la agroecología moderna propone transitar hacia un modelo <strong>silvopastoril</strong>, donde se integran árboles, pasturas y ganado en un mismo espacio, capturando carbono y regenerando el suelo.`
+            },
+            { type: 'sentence', id: 's7', answer: 'La ganaderia extensiva emite grandes cantidades de gas metano', hint: 'El impacto químico del ganado en la atmósfera.' },
+            { type: 'anagram', id: 'a8', answer: 'MONOCULTIVO', hint: 'Práctica agrícola de sembrar una sola especie en vastas extensiones de tierra.' },
+            { type: 'sentence', id: 's8', answer: 'Los monocultivos agotan rapidamente los nutrientes del suelo volcanico', hint: 'El impacto del monocultivo en la tierra.' },
+            { type: 'anagram', id: 'a9', answer: 'DEFORESTACION', hint: 'La tala masiva de bosques para dar paso a actividades humanas.' },
+            { type: 'sentence', id: 's9', answer: 'Talar bosques para crear potreros destruye los corredores biologicos', hint: 'La consecuencia de la deforestación.' },
+            { type: 'anagram', id: 'a10', answer: 'SILVOPASTORIL', hint: 'Sistema que integra árboles, forrajes y ganado de manera sostenible.' },
+            { type: 'sentence', id: 's10', answer: 'Integrar arboles en los potreros mitiga el impacto del ganado', hint: 'La solución agroecológica para la ganadería.' }
+        ];
+
+        // --- 2. PILAR 1: PERSISTENCIA LOCAL (ESTADO GLOBAL) ---
+        const LOCAL_KEY = 'ova_quimbaya_clima_g11_state';
+        let gameState = {
+            nombre: '',
+            apellido: '',
+            score: 0,
+            activities: {} 
+        };
+
+        // --- 3. ALGORITMOS DE MEZCLA (FISHER-YATES PURO Y ESTRICTO) ---
+        function fisherYatesShuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex > 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Desordenar Letras: Asegura que no quede igual y usa formato con guiones
+        function shuffleLetters(word) {
+            let arr = word.split('');
+            let shuffled;
+            do {
+                shuffled = fisherYatesShuffle([...arr]);
+            } while (shuffled.join('') === word && word.length > 2); 
+            
+            return shuffled.join('-'); // Retorna explícitamente formato A-M-R-E-G-O-P
+        }
+
+        // Desordenar Palabras: Asegura que no quede en el mismo orden
+        function shuffleWords(sentence) {
+            let arr = sentence.split(' ');
+            let shuffled;
+            do {
+                shuffled = fisherYatesShuffle([...arr]);
+            } while (shuffled.join(' ') === sentence && arr.length > 2);
+            
+            return shuffled;
+        }
+
+        // --- 4. INICIALIZACIÓN E INTERFAZ ---
+        document.addEventListener("DOMContentLoaded", () => {
+            configurarLogin();
+            loadState();
+        });
+
+        function configurarLogin() {
+            document.getElementById('btn-iniciar').addEventListener('click', () => {
+                const nombre = document.getElementById('inp-nombre').value.trim();
+                const apellido = document.getElementById('inp-apellido').value.trim();
+                
+                if (nombre === '' || apellido === '') {
+                    alert("Es necesario registrar tu Nombre y Apellido para iniciar el análisis.");
+                    return;
+                }
+                gameState.nombre = nombre;
+                gameState.apellido = apellido;
+                saveState();
+                mostrarApp();
+            });
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(LOCAL_KEY);
+            if (saved) {
+                gameState = JSON.parse(saved);
+                if (gameState.nombre !== '') {
+                    mostrarApp();
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(gameState));
+            updateHeader();
+        }
+
+        function mostrarApp() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                updateHeader();
+                renderContent(); // Generar las 20 actividades dinámicamente
+            }, 600);
+        }
+
+        function updateHeader() {
+            document.getElementById('display-name').textContent = `${gameState.nombre} ${gameState.apellido}`;
+            document.getElementById('display-score').textContent = gameState.score % 1 === 0 ? gameState.score : gameState.score.toFixed(1);
+        }
+
+        // --- 5. PILAR 2: ESTRUCTURA SCROLL (20 ACTIVIDADES) ---
+        function renderContent() {
+            const container = document.getElementById('content-container');
+            container.innerHTML = ''; 
+
+            let anagramCount = 1;
+            let sentenceCount = 1;
+
+            courseContent.forEach(item => {
+                if (item.type === 'text') {
+                    const div = document.createElement('div');
+                    div.className = 'content-section';
+                    div.innerHTML = `<h2>${item.title}</h2><p>${item.content}</p>`;
+                    container.appendChild(div);
+                } 
+                else if (item.type === 'anagram') {
+                    const div = createAnagramUI(item, anagramCount);
+                    container.appendChild(div);
+                    anagramCount++;
+                }
+                else if (item.type === 'sentence') {
+                    const div = createSentenceUI(item, sentenceCount);
+                    container.appendChild(div);
+                    sentenceCount++;
+                }
+            });
+
+            configurarAntiFraudeInputs();
+        }
+
+        function getActState(id) {
+            if (!gameState.activities[id]) {
+                gameState.activities[id] = { attempts: 0, solved: false, medal: null };
+            }
+            return gameState.activities[id];
+        }
+
+        function getMedalHTML(medal) {
+            if (!medal || medal === 'Failed') return '';
+            let symbol = medal === 'Au' ? 'Au' : (medal === 'Ag' ? 'Ag' : 'Fe');
+            let text = medal === 'Au' ? 'Oro' : (medal === 'Ag' ? 'Plata' : 'Hierro');
+            return `<div class="medal-badge medal-${medal.toLowerCase()}">${symbol}<br><span>${text}</span></div>`;
+        }
+
+        // --- 5.1 CONSTRUCTOR: ANAGRAMAS ---
+        function createAnagramUI(item, index) {
+            const state = getActState(item.id);
+            const div = document.createElement('div');
+            
+            let statusClass = state.solved ? (state.medal === 'Failed' ? 'failed' : 'solved') : '';
+            div.className = `activity-card ${statusClass}`;
+            div.id = `card-${item.id}`;
+
+            // Si está resuelto, muestra la palabra original, sino, la desordena explicitamente
+            let displayWord = state.solved && state.medal !== 'Failed' ? item.answer.split('').join('-') : shuffleLetters(item.answer);
+            let attemptsLeft = 3 - state.attempts;
+            
+            let html = `
+                ${getMedalHTML(state.medal)}
+                <div class="act-header">
+                    <span class="act-type">Anagrama #${index}</span>
+                    <span class="act-attempts" id="att-${item.id}">Intentos restantes: ${attemptsLeft}</span>
+                </div>
+                <p>Ordena las letras para revelar el término científico. Pista: <em>${item.hint}</em></p>
+                <div class="anagram-display" id="disp-${item.id}">${displayWord}</div>
+            `;
+
+            if (state.solved) {
+                if (state.medal === 'Failed') {
+                    html += `<div class="feedback-msg" style="color: var(--rojo-error);">Límite de intentos agotado. La respuesta era: <br><strong>${item.answer}</strong></div>`;
+                } else {
+                    html += `<div class="feedback-msg" style="color: var(--verde-megadiverso);">¡Validación exitosa! Insignia de ${state.medal} ganada.</div>`;
+                }
+            } else {
+                html += `
+                    <input type="text" class="answer-input anti-fraud" id="inp-${item.id}" placeholder="Digita el concepto exacto..." autocomplete="off">
+                    <button class="btn" id="btn-${item.id}" onclick="validateAnagram('${item.id}', '${item.answer}')">Validar Término</button>
+                    <div class="feedback-msg" id="feed-${item.id}"></div>
+                `;
+            }
+            div.innerHTML = html;
+            return div;
+        }
+
+        // --- 5.2 CONSTRUCTOR: ORDENAR FRASES ---
+        function createSentenceUI(item, index) {
+            const state = getActState(item.id);
+            const div = document.createElement('div');
+            
+            let statusClass = state.solved ? (state.medal === 'Failed' ? 'failed' : 'solved') : '';
+            div.className = `activity-card ${statusClass}`;
+            div.id = `card-${item.id}`;
+
+            let attemptsLeft = 3 - state.attempts;
+            
+            let html = `
+                ${getMedalHTML(state.medal)}
+                <div class="act-header">
+                    <span class="act-type">Reconstruir Frase #${index}</span>
+                    <span class="act-attempts" id="att-${item.id}">Intentos restantes: ${attemptsLeft}</span>
+                </div>
+                <p>Haz clic en las palabras en el orden correcto para reconstruir la oración técnica.</p>
+            `;
+
+            if (state.solved) {
+                if (state.medal === 'Failed') {
+                    html += `<div class="feedback-msg" style="color: var(--rojo-error);">Intentos agotados. La oración correcta era:<br><strong>${item.answer}</strong></div>`;
+                } else {
+                    html += `<div class="sentence-builder" style="border-color: var(--verde-megadiverso); justify-content:center; text-align:center;"><strong>${item.answer}</strong></div>`;
+                    html += `<div class="feedback-msg" style="color: var(--verde-megadiverso);">¡Estructura Gramatical Correcta! Insignia ${state.medal} acreditada.</div>`;
+                }
+            } else {
+                let words = shuffleWords(item.answer);
+                
+                html += `<div class="sentence-builder" id="builder-${item.id}"></div>`;
+                html += `<div class="word-bank" id="bank-${item.id}">`;
+                words.forEach((w, i) => {
+                    html += `<button class="word-btn" id="wb-${item.id}-${i}" onclick="selectWord('${item.id}', '${w}', this.id)">${w}</button>`;
+                });
+                html += `</div>`;
+                
+                html += `
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-clear" onclick="clearSentence('${item.id}')">🔄 Reiniciar Frase</button>
+                        <button class="btn" id="btn-${item.id}" onclick="validateSentence('${item.id}', '${item.answer}')">Validar Oración</button>
+                    </div>
+                    <div class="feedback-msg" id="feed-${item.id}"></div>
+                `;
+            }
+            div.innerHTML = html;
+            return div;
+        }
+
+        // Lógica interactiva para Oraciones
+        let sentenceMemory = {};
+
+        function selectWord(actId, word, btnId) {
+            let btn = document.getElementById(btnId);
+            if(btn.classList.contains('selected')) return; 
+            
+            btn.classList.add('selected'); 
+            if(!sentenceMemory[actId]) sentenceMemory[actId] = [];
+            sentenceMemory[actId].push(word);
+            
+            renderSentenceBuilder(actId);
+        }
+
+        function clearSentence(actId) {
+            sentenceMemory[actId] = [];
+            renderSentenceBuilder(actId);
+            let bank = document.getElementById(`bank-${actId}`);
+            let btns = bank.querySelectorAll('.word-btn');
+            btns.forEach(b => b.classList.remove('selected'));
+        }
+
+        function renderSentenceBuilder(actId) {
+            let builder = document.getElementById(`builder-${actId}`);
+            let arr = sentenceMemory[actId] || [];
+            builder.innerHTML = arr.map(w => `<span class="word-btn" style="background:var(--rojo-calor); color:white; border-color:var(--rojo-calor); cursor:default; pointer-events:none;">${w}</span>`).join('');
+        }
+
+        // --- 6. PILAR 3 Y 4: GAMIFICACIÓN Y VALIDACIONES INDEPENDIENTES ---
+        function processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl) {
+            let state = gameState.activities[id];
+            
+            if (isCorrect) {
+                state.solved = true;
+                let points = 0; let medal = '';
+                
+                // Puntajes Dinámicos
+                if(state.attempts === 0) { points = 5; medal = 'Au'; }
+                else if(state.attempts === 1) { points = 3; medal = 'Ag'; }
+                else if(state.attempts === 2) { points = 1.5; medal = 'Fe'; }
+
+                state.medal = medal;
+                gameState.score += points;
+                
+                cardEl.classList.add('solved');
+                feedEl.style.color = 'var(--verde-megadiverso)';
+                feedEl.textContent = `¡Respuesta Correcta! Sumas +${points} pts (Medalla de ${medal}).`;
+                btnEl.disabled = true;
+                cardEl.insertAdjacentHTML('afterbegin', getMedalHTML(medal));
+                
+                // Refrescar el DOM de la actividad para bloquearla visualmente
+                setTimeout(renderContent, 1800); 
+
+            } else {
+                state.attempts++;
+                let remaining = 3 - state.attempts;
+                attEl.textContent = `Intentos restantes: ${remaining}`;
+                
+                if (state.attempts >= 3) {
+                    state.solved = true;
+                    state.medal = 'Failed';
+                    cardEl.classList.add('failed');
+                    btnEl.disabled = true;
+                    feedEl.style.color = 'var(--rojo-error)';
+                    feedEl.textContent = `Límite de intentos superado. La actividad se ha bloqueado.`;
+                    setTimeout(renderContent, 2500);
+                } else {
+                    feedEl.style.color = 'var(--rojo-error)';
+                    feedEl.textContent = `Error en la respuesta. Analiza la pista y vuelve a intentarlo.`;
+                    
+                    // Efecto de vibración (Feedback visual)
+                    cardEl.style.transform = 'translateX(6px)';
+                    setTimeout(()=> cardEl.style.transform = 'translateX(-6px)', 100);
+                    setTimeout(()=> cardEl.style.transform = 'translateX(6px)', 200);
+                    setTimeout(()=> cardEl.style.transform = 'translateX(0)', 300);
+                }
+            }
+            saveState(); 
+        }
+
+        // Validación Anagramas
+        function validateAnagram(id, correctAnswer) {
+            let state = getActState(id);
+            if(state.solved || state.attempts >= 3) return;
+
+            let inputEl = document.getElementById(`inp-${id}`);
+            let feedEl = document.getElementById(`feed-${id}`);
+            let attEl = document.getElementById(`att-${id}`);
+            let cardEl = document.getElementById(`card-${id}`);
+            let btnEl = document.getElementById(`btn-${id}`);
+
+            let userVal = inputEl.value.trim().toUpperCase();
+            if(userVal === '') return;
+
+            // Normalizar acentos para evitar errores de digitación comunes
+            const normalize = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            let isCorrect = (normalize(userVal) === normalize(correctAnswer.toUpperCase()));
+            processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl);
+        }
+
+        // Validación Oraciones
+        function validateSentence(id, correctAnswer) {
+            let state = getActState(id);
+            if(state.solved || state.attempts >= 3) return;
+
+            let feedEl = document.getElementById(`feed-${id}`);
+            let attEl = document.getElementById(`att-${id}`);
+            let cardEl = document.getElementById(`card-${id}`);
+            let btnEl = document.getElementById(`btn-${id}`);
+
+            let currentArr = sentenceMemory[id] || [];
+            if(currentArr.length === 0) return;
+
+            let userVal = currentArr.join(' ');
+            
+            // Normalizamos para comparar sin importar tildes (útil si hay variaciones)
+            const normalize = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            let isCorrect = (normalize(userVal.toLowerCase()) === normalize(correctAnswer.toLowerCase()));
+            
+            processResult(id, isCorrect, cardEl, feedEl, attEl, btnEl);
+            if(!isCorrect && state.attempts < 3) {
+                clearSentence(id); // Limpia para facilitar el siguiente intento
+            }
+        }
+
+        // --- SISTEMA ANTI-FRAUDE ---
+        function configurarAntiFraudeInputs() {
+            const inputs = document.querySelectorAll('.anti-fraud');
+            inputs.forEach(inp => {
+                // Bloqueo de copia, pegado y arrastre 
+                inp.addEventListener('paste', e => { e.preventDefault(); alert("Laboratorio restringido: Prohibido pegar respuestas."); });
+                inp.addEventListener('drop', e => { e.preventDefault(); });
+                inp.addEventListener('contextmenu', e => { e.preventDefault(); });
+
+                // Detección de cadencia de tipeo (Prevención de Scripts/Bots)
+                let keyTimes = [];
+                inp.addEventListener('keydown', e => {
+                    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'v')) {
+                        e.preventDefault(); return;
+                    }
+                    if(e.key.length > 1) return; 
+                    
+                    const now = Date.now();
+                    keyTimes.push(now);
+                    if(keyTimes.length > 4) keyTimes.shift();
+
+                    if(keyTimes.length === 4) {
+                        let totalDiff = 0;
+                        for(let i=1; i<keyTimes.length; i++){ totalDiff += (keyTimes[i] - keyTimes[i-1]); }
+                        let avg = totalDiff / 3;
+                        
+                        if(avg < 25) { 
+                            inp.value = ""; keyTimes = [];
+                            alert("¡Aviso de Integridad! Sistema automatizado de tecleo detectado. Campo borrado.");
+                            e.preventDefault();
+                        }
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

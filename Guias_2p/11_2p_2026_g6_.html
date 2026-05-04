@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Los que no tienen voz - Tráfico de Fauna y Flora (Quimbaya)</title>
+    <style>
+        /* =========================================
+           PALETA DE COLORES (PCC Y ECOSISTEMA)
+           ========================================= */
+        :root {
+            --cafe-oscuro: #3E2723;
+            --verde-bosque: #1B5E20;
+            --verde-hoja: #4CAF50;
+            --naranja-citrico: #E65100;
+            --amarillo-barranquero: #FFB300;
+            --rojo-alerta: #D32F2F;
+            --crema-fondo: #F1F8E9;
+            --blanco: #FFFFFF;
+            --gris-texto: #263238;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--crema-fondo);
+            color: var(--gris-texto);
+            line-height: 1.7;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* =========================================
+           SISTEMA DE AUTENTICACIÓN
+           ========================================= */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, var(--verde-hoja), var(--cafe-oscuro));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.6s ease;
+        }
+
+        .login-box {
+            background: var(--blanco);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border-top: 6px solid var(--naranja-citrico);
+        }
+
+        .login-box h1 {
+            color: var(--verde-bosque);
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        .login-box p {
+            font-size: 0.95em;
+            margin-bottom: 25px;
+            color: #555;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--cafe-oscuro);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #C8E6C9;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--verde-bosque);
+            outline: none;
+        }
+
+        .btn {
+            background-color: var(--naranja-citrico);
+            color: var(--blanco);
+            border: none;
+            padding: 14px 25px;
+            border-radius: 6px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.1s;
+            width: 100%;
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            background-color: #BF360C;
+            transform: translateY(-2px);
+        }
+
+        /* =========================================
+           INTERFAZ PRINCIPAL Y GAMIFICACIÓN
+           ========================================= */
+        #main-app { display: none; }
+
+        header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background: var(--blanco);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+            z-index: 500;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--verde-bosque);
+        }
+
+        .user-info {
+            font-weight: 700;
+            color: var(--cafe-oscuro);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stats-container {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .unlockables {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-unlock {
+            width: 28px; height: 28px;
+            fill: #E0E0E0;
+            transition: fill 0.5s, transform 0.3s;
+        }
+        .icon-unlock.unlocked { 
+            fill: var(--amarillo-barranquero); 
+            transform: scale(1.1);
+            filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.2));
+        }
+
+        .points-badge {
+            background: var(--verde-bosque);
+            color: var(--blanco);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .progress-wrapper { text-align: right; }
+        .progress-title { font-size: 0.75em; color: var(--cafe-oscuro); font-weight: bold; text-transform: uppercase; margin-bottom: 3px;}
+        .progress-container {
+            width: 250px; background: #E0E0E0; border-radius: 8px; height: 12px; overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%; background: var(--naranja-citrico); width: 0%; transition: width 0.6s ease;
+        }
+
+        main { max-width: 960px; margin: 90px auto 50px auto; padding: 20px; }
+
+        /* =========================================
+           ESTRUCTURA DE CONTENIDO
+           ========================================= */
+        section {
+            background: var(--blanco);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 6px; height: 100%;
+            background: var(--verde-bosque);
+            border-radius: 12px 0 0 12px;
+        }
+
+        h2 {
+            color: var(--verde-bosque);
+            border-bottom: 2px solid var(--naranja-citrico);
+            padding-bottom: 8px;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        h3 { color: var(--cafe-oscuro); margin-top: 30px; margin-bottom: 12px; font-size: 1.3em;}
+        p { margin-bottom: 18px; text-align: justify; font-size: 1.05em; }
+
+        .highlight {
+            background-color: #FFF3E0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--naranja-citrico);
+        }
+
+        /* =========================================
+           CUADROS COMPARATIVOS
+           ========================================= */
+        .table-responsive { overflow-x: auto; margin: 25px 0; }
+        table {
+            width: 100%; border-collapse: collapse; min-width: 600px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        th, td { padding: 14px 18px; border: 1px solid #E0E0E0; text-align: left; }
+        th { background-color: var(--cafe-oscuro); color: var(--blanco); font-size: 1.05em; }
+        tr:nth-child(even) { background-color: #F9FBE7; }
+        td strong { color: var(--verde-bosque); }
+
+        /* =========================================
+           PAUSAS ACTIVAS
+           ========================================= */
+        .pausa-activa {
+            background: #E8F5E9;
+            border: 2px dashed var(--verde-hoja);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 10px;
+        }
+        .pausa-activa h4 { color: var(--verde-bosque); margin-bottom: 12px; font-size: 1.2em;}
+        .pausa-activa ul { margin-left: 20px; margin-bottom: 20px; }
+        .pausa-activa li { margin-bottom: 8px; }
+        
+        .btn-pausa {
+            background: transparent;
+            border: 2px solid var(--verde-bosque);
+            color: var(--verde-bosque);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-pausa:hover { background: #C8E6C9; }
+        .btn-pausa.done {
+            background: var(--verde-bosque);
+            color: var(--blanco);
+            border-color: var(--verde-bosque);
+        }
+
+        /* =========================================
+           JUEGOS DRAG & DROP
+           ========================================= */
+        .game-container {
+            background: #FAFAFA;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+            border: 1px solid #CFD8DC;
+            text-align: center;
+        }
+        .game-title { color: var(--naranja-citrico); font-weight: bold; margin-bottom: 10px; }
+
+        .draggable-area {
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+            margin-bottom: 25px; min-height: 60px;
+        }
+
+        .drop-area {
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+            background: #ECEFF1; padding: 20px; border-radius: 8px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .drag-item {
+            background: var(--verde-bosque); color: var(--blanco);
+            padding: 12px 22px; border-radius: 6px; cursor: grab;
+            user-select: none; font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            transition: transform 0.1s;
+        }
+        .drag-item:active { cursor: grabbing; transform: scale(0.95); }
+        .drag-item.letter { padding: 12px 18px; font-size: 1.3em; background: var(--cafe-oscuro); }
+
+        .drop-slot {
+            width: auto; min-width: 80px; height: 50px;
+            border: 2px dashed #90A4AE; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--blanco); transition: background 0.2s;
+        }
+        .drop-slot.letter-slot { min-width: 50px; }
+        .drop-slot.hovered { background: #CFD8DC; border-color: var(--naranja-citrico); }
+
+        .game-status {
+            margin-top: 18px; font-weight: bold; color: var(--naranja-citrico); height: 24px; font-size: 1.1em;
+        }
+
+        /* =========================================
+           ANIMACIÓN CANVAS Y SVG GRÁFICAS
+           ========================================= */
+        .canvas-container {
+            width: 100%; background: #E1F5FE; border-radius: 12px; overflow: hidden;
+            position: relative; box-shadow: 0 6px 15px rgba(0,0,0,0.15); margin: 25px 0;
+            border: 2px solid #B3E5FC;
+        }
+        canvas { display: block; width: 100%; height: 450px; }
+
+        .svg-container {
+            width: 100%; background: var(--blanco); border: 1px solid #E0E0E0;
+            border-radius: 12px; padding: 20px; margin: 25px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* =========================================
+           EVALUACIÓN Y ANTI-FRAUDE
+           ========================================= */
+        .question-block {
+            margin-bottom: 28px; padding: 20px; background: #F5F5F5;
+            border-radius: 8px; border-left: 4px solid var(--naranja-citrico);
+        }
+        .question-block label { display: block; margin-bottom: 10px; cursor: pointer; font-size: 1.05em; }
+        .question-block input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+
+        textarea.anti-fraud {
+            width: 100%; height: 120px; padding: 12px; border: 2px solid #B0BEC5;
+            border-radius: 6px; resize: vertical; font-family: inherit; font-size: 1.05em;
+        }
+        textarea.anti-fraud:focus { border-color: var(--naranja-citrico); outline: none; }
+
+        .alert-fraud {
+            color: var(--rojo-alerta); font-size: 0.95em; font-weight: bold;
+            display: none; margin-top: 8px; background: #FFEBEE; padding: 8px; border-radius: 4px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         PANTALLA DE INGRESO
+         ========================================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>Los que no tienen voz</h1>
+            <p>Laboratorio Virtual: Tráfico de Fauna y Flora<br><strong>Vereda Pueblo Rico, Quimbaya (Quindío)</strong></p>
+            <div class="input-group">
+                <label for="inp-apellidos">Apellidos:</label>
+                <input type="text" id="inp-apellidos" placeholder="Tus apellidos" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="inp-nombres">Nombres:</label>
+                <input type="text" id="inp-nombres" placeholder="Tus nombres" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar">Iniciar Recorrido Ecológico</button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         INTERFAZ PRINCIPAL
+         ========================================= -->
+    <div id="main-app">
+        <header>
+            <div class="user-info">
+                <!-- Icono Estudiante -->
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="var(--verde-bosque)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span id="display-name">Estudiante</span>
+            </div>
+            
+            <div class="stats-container">
+                <!-- Iconos Desbloqueables (Flora y Fauna de Quimbaya) -->
+                <div class="unlockables">
+                    <!-- Orquídea -->
+                    <svg class="icon-unlock" id="icon-flora" viewBox="0 0 24 24"><path d="M12 2C9.5 2 7 4.5 7 7.5C7 9.8 8.4 11.8 10.5 12.6C10 13.5 9 15 7.5 15C5.5 15 4 13.5 4 11.5C4 9 2 9 2 11.5C2 15 4.5 17.5 7.5 17.5C9.6 17.5 11.3 16.3 12 14.6C12.7 16.3 14.4 17.5 16.5 17.5C19.5 17.5 22 15 22 11.5C22 9 20 9 20 11.5C20 13.5 18.5 15 16.5 15C15 15 14 13.5 13.5 12.6C15.6 11.8 17 9.8 17 7.5C17 4.5 14.5 2 12 2M12 4C13.7 4 15 5.3 15 7C15 8.7 13.7 10 12 10C10.3 10 9 8.7 9 7C9 5.3 10.3 4 12 4Z"/></svg>
+                    <!-- Ave (Barranquero) -->
+                    <svg class="icon-unlock" id="icon-fauna" viewBox="0 0 24 24"><path d="M20.5 3C20.5 3 18.5 3.5 17 5C15.5 6.5 15 8.5 15 8.5L16 11L14 13L10 10L4 12L6 14L8 13L12 17L14 15L16 18L19 14.5C19 14.5 21.5 11.5 22.5 8C23.5 4.5 20.5 3 20.5 3M19.5 7C19 7 18.5 6.5 18.5 6C18.5 5.5 19 5 19.5 5C20 5 20.5 5.5 20.5 6C20.5 6.5 20 7 19.5 7M6.5 18.5C5.7 18.5 5 19.2 5 20C5 20.8 5.7 21.5 6.5 21.5C7.3 21.5 8 20.8 8 20C8 19.2 7.3 18.5 6.5 18.5M2 20C2 21.1 2.9 22 4 22C5.1 22 6 21.1 6 20C6 18.9 5.1 18 4 18C2.9 18 2 18.9 2 20Z"/></svg>
+                </div>
+
+                <div class="points-badge">
+                    <span>★</span>
+                    <span id="display-points">0</span> / 5 Pts
+                </div>
+                
+                <div class="progress-wrapper">
+                    <div class="progress-title">Progreso del Módulo</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- 1. OBJETIVO Y PRE-SABERES -->
+            <section id="sec-inicio">
+                <h2>1. Explorando el Territorio</h2>
+                <p><strong>Objetivo de Aprendizaje (Grado 11):</strong> Analizar las implicaciones biológicas, económicas y legales del tráfico de fauna y flora silvestre, promoviendo el reconocimiento y protección de las especies endémicas en los sistemas productivos de la Vereda Pueblo Rico, Quimbaya.</p>
+                <p>Antes de adentrarnos en los relictos boscosos de nuestra vereda, evaluemos tus conocimientos previos:</p>
+                
+                <div class="question-block">
+                    <p><strong>Pre-saber 1:</strong> ¿Qué diferencia a la "Fauna Silvestre" de los animales domésticos (como vacas o perros)?</p>
+                    <label><input type="radio" name="pre1" value="a" onchange="saveAnswer('pre1', this.value)"> a) La fauna silvestre no ha sido sometida a procesos de domesticación ni alteración genética por el humano.</label>
+                    <label><input type="radio" name="pre1" value="b" onchange="saveAnswer('pre1', this.value)"> b) La fauna silvestre solo se encuentra en zoológicos.</label>
+                    <label><input type="radio" name="pre1" value="c" onchange="saveAnswer('pre1', this.value)"> c) No hay ninguna diferencia biológica.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>Pre-saber 2:</strong> En biología de la conservación, ¿Qué significa que una especie sea "Endémica"?</p>
+                    <label><input type="radio" name="pre2" value="a" onchange="saveAnswer('pre2', this.value)"> a) Que está extinta a nivel mundial.</label>
+                    <label><input type="radio" name="pre2" value="b" onchange="saveAnswer('pre2', this.value)"> b) Que es una plaga traída de otro país.</label>
+                    <label><input type="radio" name="pre2" value="c" onchange="saveAnswer('pre2', this.value)"> c) Que su distribución geográfica está restringida exclusivamente a una zona o región específica del mundo.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>Pre-saber 3:</strong> ¿Cómo impacta el turismo irresponsable a la biodiversidad local?</p>
+                    <label><input type="radio" name="pre3" value="a" onchange="saveAnswer('pre3', this.value)"> a) Mejora la genética de las plantas al pisarlas.</label>
+                    <label><input type="radio" name="pre3" value="b" onchange="saveAnswer('pre3', this.value)"> b) Incrementa la demanda y compra de animales exóticos y plantas raras como "recuerdos".</label>
+                    <label><input type="radio" name="pre3" value="c" onchange="saveAnswer('pre3', this.value)"> c) Disminuye la temperatura global de la región cafetera.</label>
+                </div>
+            </section>
+
+            <!-- 2. CUERPO INDUCTIVO -->
+            <section id="sec-inductivo">
+                <h2>2. El Ecosistema de Pueblo Rico: Un Equilibrio Frágil</h2>
+                <p>La <strong>Vereda Pueblo Rico</strong>, ubicada en el municipio de Quimbaya, posee una geografía privilegiada. Sus ricos suelos de origen volcánico sostienen una mezcla vibrante de cultivos de café, plantaciones de cítricos (naranjas y mandarinas), potreros para la ganadería y valiosos fragmentos de bosque andino. Estos parches de bosque no son simples adornos del paisaje; albergan una biodiversidad excepcional y actúan como corredores biológicos conectados con reservas cercanas como Bremen-La Popa. Aquí habitan especies fascinantes como el Mono Aullador, coloridas orquídeas y el emblemático Barranquero (<em>Momotus aequatorialis</em>). La salud de las fincas productoras depende directamente de esta naturaleza silvestre circundante.</p>
+
+                <p>Existe una profunda simbiosis ecológica que sostiene la economía local. Las aves insectívoras actúan como controladores biológicos, cazando plagas que de otro modo destruirían los cultivos de café y cítricos. Los murciélagos y otros mamíferos nocturnos polinizan flores y dispersan semillas, garantizando la regeneración forestal. Por su parte, las plantas epífitas, como las bromelias y las orquídeas que crecen sobre los árboles, capturan la humedad ambiental (H<sub>2</sub>O). Al retener el agua, mantienen los microclimas templados y húmedos que son estrictamente necesarios para producir el café de alta calidad por el que el Quindío es reconocido mundialmente. La ganadería también se beneficia, pues los árboles de sombra y la regulación hídrica de los bosques aseguran pasturas verdes incluso en épocas de sequía.</p>
+
+                <p>Sin embargo, este paraíso enfrenta una amenaza silenciosa y devastadora. El tráfico ilegal de flora y fauna se define como la extracción, transporte y comercialización no autorizada de especies silvestres. En Pueblo Rico, el auge del turismo ha traído prosperidad, pero también un lado oscuro: la demanda insaciable de visitantes que buscan "mascotas exóticas" o "plantas raras" para decorar sus hogares urbanos. Los traficantes buscan los pichones de aves más vistosas, crías de mamíferos y orquídeas florecidas. A esta práctica destructiva se le conoce científicamente como <span class="highlight">Extracción Selectiva</span>, un proceso donde solo se retiran los individuos más jóvenes, bellos o aptos, alterando drásticamente la estructura poblacional de la especie.</p>
+
+                <p>Las consecuencias de la extracción selectiva son exponenciales. Si los traficantes extraen a los machos del ave Barranquero por su hermoso plumaje, la reproducción local se desploma. Al desaparecer esta ave insectívora, las poblaciones de la broca del café o del minador de los cítricos estallan sin control natural. <span class="highlight">El tráfico ilegal rompe el equilibrio ecológico</span>. Frente a la plaga, el agricultor quindiano se ve obligado a comprar costosos agroquímicos, lo que incrementa los costos de producción y contamina las fuentes de agua subterráneas. Por tanto, el robo de una sola especie de la fauna silvestre golpea directamente el bolsillo de toda la comunidad agrícola.</p>
+
+                <p>El verdadero valor del Paisaje Cultural Cafetero radica en su ecosistema vivo e interconectado. Un ave enjaulada en una ciudad o una orquídea arrancada de su árbol nativo pierden instantáneamente su función ecológica. La comunidad de Pueblo Rico debe liderar una transición hacia un modelo de turismo contemplativo. Los visitantes deben pagar por <em>observar</em> y fotografiar la naturaleza en su hábitat natural, transformando la biodiversidad protegida en un motor de desarrollo económico sostenible, en lugar de permitir que se convierta en una mina de recursos para la extracción ilícita.</p>
+
+                <h3>Cuadro Comparativo: Modelos de Interacción con la Biodiversidad</h3>
+                <div class="table-responsive">
+                    <table>
+                        <tr>
+                            <th>Sector Productivo</th>
+                            <th>Conservación Activa (Bosque Sano)</th>
+                            <th>Impacto del Tráfico Ilegal de Especies</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Café y Cítricos</strong></td>
+                            <td>Aves y murciélagos controlan plagas naturalmente. Alta humedad por epífitas.</td>
+                            <td><strong>Aumento de plagas</strong> por falta de depredadores. Mayor uso de pesticidas químicos.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ganadería</strong></td>
+                            <td>Fuentes de agua reguladas por el bosque. Sombra natural para el ganado.</td>
+                            <td><strong>Sequías prolongadas</strong> al perderse la flora que retiene el agua y da sombra.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Turismo (PCC)</strong></td>
+                            <td>Ingresos sostenibles por avistamiento de aves y ecoturismo.</td>
+                            <td><strong>Pérdida de atractivo</strong> turístico. Ecosistemas empobrecidos y silenciosos.</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- ACTIVIDAD 1: ORDENAR LETRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 1: Concepto de Daño Poblacional</div>
+                    <p>Arrastra las letras para formar el concepto que describe el retiro de individuos específicos (jóvenes/vistosos) alterando la especie (Mencionado en el párrafo 3):</p>
+                    <div class="draggable-area" id="drag-area-1"></div>
+                    <!-- Palabra: SELECTIVA -->
+                    <div class="drop-area" id="drop-area-1" data-word="SELECTIVA" data-type="letters"></div>
+                    <div class="game-status" id="status-game-1"></div>
+                </div>
+
+                <!-- ACTIVIDAD 2: ORDENAR PALABRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 2: Principio Ecológico Fundamental</div>
+                    <p>Ordena la frase exacta, mencionada en el texto, sobre el efecto devastador del tráfico en la naturaleza:</p>
+                    <div class="draggable-area" id="drag-area-2"></div>
+                    <!-- Frase: El tráfico ilegal rompe el equilibrio ecológico -->
+                    <div class="drop-area" id="drop-area-2" data-word="El tráfico ilegal rompe el equilibrio ecológico" data-type="words"></div>
+                    <div class="game-status" id="status-game-2"></div>
+                </div>
+
+                <!-- PAUSAS ACTIVAS 1-5 -->
+                <div class="pausa-activa">
+                    <h4>Pausas Activas (Cuaderno de Ciencias Naturales)</h4>
+                    <p>Desarrolla los siguientes retos en tu cuaderno físico. Luego, haz clic en el botón inferior.</p>
+                    <ul>
+                        <li><strong>1. Reflexión:</strong> Explica con tus propias palabras por qué extraer una orquídea afecta la humedad de un cultivo de café.</li>
+                        <li><strong>2. Dibujo de Proceso:</strong> Ilustra el ciclo: "El Barranquero se come a la broca -> El cafeto crece sano -> El humano cosecha".</li>
+                        <li><strong>3. Cuadro Comparativo:</strong> Copia el cuadro de "Modelos de Interacción" en tu cuaderno.</li>
+                        <li><strong>4. Entrevista imaginaria:</strong> Escribe 2 preguntas que le harías a un traficante de fauna para hacerle entender el daño que causa a la economía de Quimbaya.</li>
+                        <li><strong>5. Definición:</strong> Define "Extracción Selectiva" basándote en el texto.</li>
+                    </ul>
+                    <button class="btn-pausa" id="btn-pausa-1" onclick="togglePausa(1)">Registrar Actividad Realizada</button>
+                </div>
+            </section>
+
+            <!-- 3. PREGUNTA ICFES CON GRÁFICA SVG -->
+            <section id="sec-icfes">
+                <h2>3. Análisis Científico de Datos Poblacionales</h2>
+                <p>La siguiente gráfica ilustra un estudio de caso en una finca de la vereda. Muestra cómo varía la población de una plaga del café (La Broca) en relación con la población de un ave nativa insectívora durante un periodo de 10 años. En el año 4, se detectó una red de tráfico ilegal de aves en la zona.</p>
+                
+                <div class="svg-container">
+                    <svg viewBox="0 0 700 350" width="100%" height="100%">
+                        <!-- Ejes -->
+                        <line x1="60" y1="300" x2="650" y2="300" stroke="#263238" stroke-width="2"/>
+                        <line x1="60" y1="30" x2="60" y2="300" stroke="#263238" stroke-width="2"/>
+                        <!-- Etiquetas Ejes -->
+                        <text x="350" y="340" text-anchor="middle" fill="#263238" font-weight="bold">Tiempo (Años)</text>
+                        <text x="20" y="165" transform="rotate(-90 20,165)" text-anchor="middle" fill="#263238" font-weight="bold">Cantidad de Individuos (Población)</text>
+                        
+                        <!-- Marcas Eje X -->
+                        <text x="60" y="320" text-anchor="middle" font-size="12">0</text>
+                        <text x="160" y="320" text-anchor="middle" font-size="12">Año 2</text>
+                        <text x="260" y="320" text-anchor="middle" font-size="12" fill="var(--rojo-alerta)" font-weight="bold">Año 4</text>
+                        <text x="360" y="320" text-anchor="middle" font-size="12">Año 6</text>
+                        <text x="460" y="320" text-anchor="middle" font-size="12">Año 8</text>
+                        <text x="560" y="320" text-anchor="middle" font-size="12">Año 10</text>
+
+                        <!-- Línea Población AVE (Azul) -->
+                        <!-- Estable (alta) hasta año 4, cae en picada por tráfico, se mantiene baja -->
+                        <polyline points="60,100 160,110 260,105 360,250 460,260 560,265" fill="none" stroke="#1976D2" stroke-width="4" />
+                        <circle cx="260" cy="105" r="5" fill="#1976D2" />
+                        <circle cx="560" cy="265" r="5" fill="#1976D2" />
+                        
+                        <!-- Línea Población PLAGA (Rojo) -->
+                        <!-- Estable (baja) hasta año 4, se dispara exponencialmente ante la falta del ave -->
+                        <polyline points="60,260 160,255 260,260 360,120 460,50 560,40" fill="none" stroke="var(--rojo-alerta)" stroke-width="4" />
+                        <circle cx="260" cy="260" r="5" fill="var(--rojo-alerta)" />
+                        <circle cx="560" cy="40" r="5" fill="var(--rojo-alerta)" />
+
+                        <!-- Línea punteada de evento Año 4 -->
+                        <line x1="260" y1="30" x2="260" y2="300" stroke="#90A4AE" stroke-width="2" stroke-dasharray="5,5" />
+                        <text x="265" y="50" font-size="12" fill="#546E7A" font-weight="bold">Inicio del Tráfico</text>
+
+                        <!-- Leyenda -->
+                        <rect x="450" y="50" width="15" height="15" fill="#1976D2" />
+                        <text x="475" y="62" font-size="13" font-weight="bold">Población Aves</text>
+                        <rect x="450" y="75" width="15" height="15" fill="var(--rojo-alerta)" />
+                        <text x="475" y="87" font-size="13" font-weight="bold">Población Plaga (Broca)</text>
+                    </svg>
+                </div>
+
+                <div class="question-block">
+                    <p><strong>Competencia: Indagar (Análisis de gráficas)</strong></p>
+                    <p>Con base en la gráfica y los principios del ecosistema de Pueblo Rico, ¿qué conclusión biológica explica la curva de la plaga entre los años 4 y 10?</p>
+                    <label><input type="radio" name="icfes1" value="a" onchange="saveAnswer('icfes1', this.value)"> a) Las plagas aprendieron a esconderse de los agroquímicos a partir del año 4.</label>
+                    <label><input type="radio" name="icfes1" value="b" onchange="saveAnswer('icfes1', this.value)"> b) La drástica reducción del ave debido al tráfico ilegal eliminó a su depredador natural, permitiendo el crecimiento exponencial de la plaga de la broca.</label>
+                    <label><input type="radio" name="icfes1" value="c" onchange="saveAnswer('icfes1', this.value)"> c) El ave se transformó biológicamente en la plaga debido al estrés ambiental.</label>
+                    <label><input type="radio" name="icfes1" value="d" onchange="saveAnswer('icfes1', this.value)"> d) La población de aves aumentó, empujando a la plaga a reproducirse más rápido.</label>
+                </div>
+            </section>
+
+            <!-- 4. CUERPO DEDUCTIVO Y ANIMACIÓN -->
+            <section id="sec-deductivo">
+                <h2>4. Genética, Cascadas Tróficas y Legalidad</h2>
+                <p>Para dimensionar el daño biológico, debemos observar el ADN. Cuando los traficantes sustraen una gran porción de una especie silvestre de Pueblo Rico, la población restante experimenta un fenómeno genético conocido como <span class="highlight">Cuello de Botella Genético</span>. Esto significa que la diversidad genética (la variedad de genes dentro de la especie) se reduce drásticamente. Al emparejarse entre parientes cercanos (endogamia), los animales o plantas sobrevivientes se vuelven extremadamente vulnerables a nuevas enfermedades virales o a los cambios climáticos. Su código genético pierde la "biblioteca de soluciones" evolutivas construida durante milenios, empujando a la población local directo hacia la extinción.</p>
+
+                <p>A nivel del ecosistema, la extracción de una especie desencadena un efecto dominó aterrador. En ecología, a este colapso en cadena se le denomina <span class="highlight">Cascada Trófica</span>. Si el humano retira a un depredador superior o a un dispersor primario de semillas, toda la red alimentaria se desmorona. <span class="highlight">La cascada trófica altera toda la cadena alimenticia</span>. Por ejemplo, sin aves frugívoras (que comen frutos), las semillas de los grandes árboles maderables nativos no pueden dispersarse. Al no nacer nuevos árboles, el bosque envejece y muere, las fuentes de agua subterránea se secan por falta de raíces, y las fincas ganaderas vecinas enfrentan sequías mortales.</p>
+
+                <p>Sumado al desastre ecológico, la crueldad física del tráfico es alarmante. Las condiciones de transporte clandestino son brutales: hacinamiento en cajas, falta de oxígeno y mutilaciones. Este estrés extremo produce en el animal niveles letales de una hormona llamada Cortisol (C<sub>21</sub>H<sub>30</sub>O<sub>5</sub>), la cual deprime severamente su sistema inmunológico. A causa de esto, 9 de cada 10 animales traficados mueren antes de ser vendidos. Además, estos animales estresados liberan virus activos, creando un altísimo riesgo biológico de <span class="highlight">Zoonosis</span>, que es la transmisión de enfermedades de la fauna silvestre a los humanos o al ganado doméstico, amenazando la salud pública de la vereda.</p>
+
+                <p>El tráfico de flora obedece a dinámicas igualmente tristes. Las orquídeas, las principales víctimas botánicas en el Quindío, poseen un requerimiento biológico estricto: sus semillas microscópicas solo germinan y absorben nutrientes si establecen una asociación simbiótica con hongos micorrízicos específicos presentes en la corteza de los árboles de su bosque natal. Cuando un turista arranca una orquídea de su árbol para llevarla a una matera urbana, corta microscópicamente esta red de hongos. La planta, aunque tarde meses, morirá de inanición. Al extraer flora, también se roban los microhábitats donde insectos benéficos ponen sus huevos.</p>
+
+                <p>Frente a esta crisis, la respuesta debe ser integral. En el marco legal colombiano (como la Ley 2111 de 2021), el tráfico, transporte y comercialización de fauna y flora silvestre es un delito ambiental penalizado con cárcel. Sin embargo, la ley más efectiva es la educación. Los estudiantes de grado 11 son la futura autoridad ambiental y productiva de Quimbaya. Proteger a "los que no tienen voz" no es solo un acto de empatía romántica; es una obligación biológica y económica estricta para garantizar la supervivencia a largo plazo de las fincas cafeteras, citrícolas y ganaderas del Paisaje Cultural Cafetero.</p>
+
+                <!-- ANIMACIÓN CANVAS (Simulación de Cascada Trófica) -->
+                <h3>Simulación: La Cascada Trófica en el Cafetal</h3>
+                <p>Observa el cafetal (plano inferior) y el parche de bosque (plano superior). A las aves (azules) las acecha una "red" de tráfico (cuadro negro controlado por tu <strong>mouse o tocando la pantalla</strong>). Si capturas las aves, observa cómo la plaga de la broca (puntos rojos) se multiplica y devora las hojas del café (los arbustos verdes se vuelven cafés).</p>
+                <div class="canvas-container">
+                    <canvas id="ecoCanvas"></canvas>
+                </div>
+
+                <!-- ACTIVIDAD 3: ORDENAR LETRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 3: Concepto de Salud Pública</div>
+                    <p>Forma la palabra (mencionada en el texto) que define la transmisión de enfermedades de la fauna silvestre a los humanos o al ganado debido al estrés del cautiverio:</p>
+                    <div class="draggable-area" id="drag-area-3"></div>
+                    <!-- Palabra: ZOONOSIS -->
+                    <div class="drop-area" id="drop-area-3" data-word="ZOONOSIS" data-type="letters"></div>
+                    <div class="game-status" id="status-game-3"></div>
+                </div>
+
+                <!-- ACTIVIDAD 4: ORDENAR PALABRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 4: Síntesis de Colapso Ecológico</div>
+                    <p>Ordena la frase biológica sobre el efecto dominó que ocurre al extraer una sola especie del ecosistema:</p>
+                    <div class="draggable-area" id="drag-area-4"></div>
+                    <!-- Frase: La cascada trófica altera toda la cadena alimenticia -->
+                    <div class="drop-area" id="drop-area-4" data-word="La cascada trófica altera toda la cadena alimenticia" data-type="words"></div>
+                    <div class="game-status" id="status-game-4"></div>
+                </div>
+
+                <!-- PAUSAS ACTIVAS 6-10 -->
+                <div class="pausa-activa">
+                    <h4>Pausas Activas (Cuaderno de Trabajo)</h4>
+                    <ul>
+                        <li><strong>6. Mapa Conceptual:</strong> Crea un mapa vinculando: Tráfico ilegal -> Cuello de Botella Genético -> Extinción.</li>
+                        <li><strong>7. Cálculo Matemático:</strong> Si los traficantes capturan 250 Barranqueros en Quimbaya, y la tasa de mortalidad por estrés en el transporte es de 9 de cada 10. ¿Cuántas aves mueren en el camino y cuántas llegan vivas al comprador?</li>
+                        <li><strong>8. Dibujo Biológico:</strong> Dibuja la simbiosis entre las raíces de la Orquídea y los hongos micorrízicos en la corteza de un árbol.</li>
+                        <li><strong>9. Análisis Bioquímico:</strong> Escribe la fórmula química del Cortisol (mencionada en el texto) y explica qué efecto tiene en el sistema inmunológico del animal traficado.</li>
+                        <li><strong>10. Propuesta Ciudadana:</strong> Escribe 1 lema publicitario corto para que los turistas no compren orquídeas arrancadas del bosque.</li>
+                    </ul>
+                    <button class="btn-pausa" id="btn-pausa-2" onclick="togglePausa(2)">Registrar Actividad Realizada</button>
+                </div>
+            </section>
+
+            <!-- 5. EVALUACIÓN FINAL -->
+            <section id="sec-evaluacion">
+                <h2>5. Evaluación Final de Competencias</h2>
+                <p>Demuestra tu dominio conceptual. Recuerda: las preguntas abiertas tienen un avanzado <strong style="color:var(--rojo-alerta);">sistema anti-fraude</strong>. Responde redactando con tus propias palabras basándote únicamente en la información de este OVA.</p>
+                
+                <form id="form-evaluacion" onsubmit="event.preventDefault(); finalizarOVA();">
+                    
+                    <h3>A. Selección Múltiple (Opción Única)</h3>
+                    
+                    <div class="question-block">
+                        <p>1. ¿Por qué extraer una orquídea silvestre de Pueblo Rico para sembrarla en una ciudad casi siempre resulta en la muerte de la planta?</p>
+                        <label><input type="radio" name="eval_m1" value="a" required> a) Porque extraña el clima de la región cafetera.</label>
+                        <label><input type="radio" name="eval_m1" value="b" required> b) Porque se rompe su asociación biológica y simbiótica con los hongos micorrízicos necesarios para alimentarse.</label>
+                        <label><input type="radio" name="eval_m1" value="c" required> c) Porque las plantas en las ciudades absorben demasiado CO2.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>2. El "Cuello de Botella Genético" ocurre cuando:</p>
+                        <label><input type="radio" name="eval_m2" value="a" required> a) La población se reduce tanto que pierde gran parte de su diversidad genética, haciéndola vulnerable a enfermedades.</label>
+                        <label><input type="radio" name="eval_m2" value="b" required> b) Las aves no encuentran comida por el cambio climático.</label>
+                        <label><input type="radio" name="eval_m2" value="c" required> c) Los animales son introducidos en cajas estrechas para el contrabando.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>3. Económicamente, ¿cómo afecta directamente el tráfico de aves insectívoras a un caficultor de la vereda?</p>
+                        <label><input type="radio" name="eval_m3" value="a" required> a) Le genera ingresos extra si el caficultor vende las plumas.</label>
+                        <label><input type="radio" name="eval_m3" value="b" required> b) No lo afecta económicamente, solo es un daño visual.</label>
+                        <label><input type="radio" name="eval_m3" value="c" required> c) Aumentan las plagas (como la broca) obligando al campesino a gastar dinero en agroquímicos costosos.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>4. La "Cascada Trófica" se puede definir como:</p>
+                        <label><input type="radio" name="eval_m4" value="a" required> a) El efecto dominó destructivo en toda la red alimentaria causado por la remoción de una especie clave.</label>
+                        <label><input type="radio" name="eval_m4" value="b" required> b) El sonido que hacen los monos aulladores cerca a las quebradas de Quimbaya.</label>
+                        <label><input type="radio" name="eval_m4" value="c" required> c) Un método de riego agrícola para cítricos.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>5. ¿Cuál es el riesgo biológico asociado a los altos niveles de Cortisol (C<sub>21</sub>H<sub>30</sub>O<sub>5</sub>) en los animales traficados?</p>
+                        <label><input type="radio" name="eval_m5" value="a" required> a) Hace que sus plumas sean más brillantes.</label>
+                        <label><input type="radio" name="eval_m5" value="b" required> b) Deprime el sistema inmunológico, provocando altas tasas de mortalidad y facilitando la liberación de virus (Zoonosis).</label>
+                        <label><input type="radio" name="eval_m5" value="c" required> c) Convierte al animal en una plaga para los cultivos.</label>
+                    </div>
+
+                    <h3>B. Preguntas Abiertas (Análisis Crítico)</h3>
+                    <p style="font-size:0.85em; color:#757575;">Evita pegar textos externos. Usa el teclado a tu propio ritmo.</p>
+                    
+                    <div class="question-block">
+                        <label>6. Explica con tus palabras qué es la "Extracción Selectiva" y por qué daña gravemente a una especie silvestre.</label>
+                        <textarea id="eval_o1" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o1"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>7. Teniendo en cuenta la lectura de la sección 2, ¿Por qué las epífitas (orquídeas/bromelias) son vitales para la calidad de las cosechas de café en Quimbaya?</label>
+                        <textarea id="eval_o2" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o2"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>8. Basado en el concepto de Zoonosis, argumenta por qué tener monos o aves silvestres como mascotas es un peligro para la salud pública de tu familia.</label>
+                        <textarea id="eval_o3" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o3"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>9. ¿Cómo propones que el turismo en el Paisaje Cultural Cafetero se transforme para combatir el tráfico ilegal (qué deberían pagar por hacer los turistas)?</label>
+                        <textarea id="eval_o4" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o4"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>10. Conclusión Ética: Como futuro ciudadano/a del Quindío, ¿por qué la flora y la fauna "no tienen voz" y por qué es tu responsabilidad ser esa voz legal y biológica?</label>
+                        <textarea id="eval_o5" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o5"></div>
+                    </div>
+
+                    <button type="submit" class="btn">Procesar y Evaluar Respuestas</button>
+                </form>
+            </section>
+
+            <!-- 6. RESULTADOS Y DESCARGA -->
+            <section id="sec-resultados" style="display:none; text-align:center;">
+                <h2>Reporte Ecológico y Ruta de Fortalecimiento</h2>
+                <div id="feedback-content" style="font-size: 1.25em; margin-bottom: 20px; color: var(--cafe-oscuro);"></div>
+                <div id="ruta-content" style="text-align: left; background:#E8F5E9; padding: 25px; border-radius:12px; border: 1px solid #A5D6A7;"></div>
+                
+                <button class="btn" id="btn-descargar" onclick="descargarResultados()" style="margin-top: 35px; background-color: var(--verde-bosque);">
+                    Descargar Mi Reporte de Estudiante (.txt)
+                </button>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- =========================================
+         LÓGICA JAVASCRIPT (VANILLA)
+         ========================================= -->
+    <script>
+        // --- 1. ESTADO GLOBAL Y LOCALSTORAGE ---
+        const LOCAL_KEY = 'ova_quimbaya_trafico_11_state';
+        let state = {
+            apellidos: '', nombres: '',
+            points: 0, progress: 0, unlocked: [],
+            answers: {}, texts: {}, pausas: [false, false], gamesDone: []
+        };
+
+        // --- 2. INICIALIZACIÓN ---
+        document.addEventListener("DOMContentLoaded", () => {
+            loadState();
+            configurarAntiFraude();
+            initDragAndDrop();
+            initEcoCanvas(); // Iniciar simulacion 60fps
+        });
+
+        document.getElementById('btn-iniciar').addEventListener('click', () => {
+            const apellidos = document.getElementById('inp-apellidos').value.trim();
+            const nombres = document.getElementById('inp-nombres').value.trim();
+            
+            if(apellidos === '' || nombres === '') {
+                alert("Para el control ambiental, requerimos Nombres y Apellidos.");
+                return;
+            }
+            state.apellidos = apellidos; state.nombres = nombres;
+            saveState(); mostrarApp();
+        });
+
+        function loadState() {
+            const saved = localStorage.getItem(LOCAL_KEY);
+            if(saved) {
+                state = JSON.parse(saved);
+                if(state.nombres !== '') mostrarApp();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(state));
+            updateUI();
+        }
+
+        function mostrarApp() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                restaurarDOM(); updateUI();
+            }, 600);
+        }
+
+        function updateUI() {
+            document.getElementById('display-name').textContent = `${state.nombres} ${state.apellidos}`;
+            document.getElementById('display-points').textContent = state.points;
+            
+            // Calc Progress (Aprox: 4 juegos + 2 pausas + 4 forms (pre1,2,3,icfes)) = 10 ítems
+            let items = state.gamesDone.length + state.pausas.filter(p=>p).length + Object.keys(state.answers).length;
+            let percent = Math.min((items / 10) * 100, 100);
+            document.getElementById('progress-bar').style.width = percent + '%';
+
+            // Unlocks por puntos
+            if(state.points >= 2 && !state.unlocked.includes('flora')) state.unlocked.push('flora');
+            if(state.points >= 4 && !state.unlocked.includes('fauna')) state.unlocked.push('fauna');
+
+            if(state.unlocked.includes('flora')) document.getElementById('icon-flora').classList.add('unlocked');
+            if(state.unlocked.includes('fauna')) document.getElementById('icon-fauna').classList.add('unlocked');
+        }
+
+        function restaurarDOM() {
+            for(let key in state.answers) {
+                let radio = document.querySelector(`input[name="${key}"][value="${state.answers[key]}"]`);
+                if(radio) radio.checked = true;
+            }
+            for(let key in state.texts) {
+                let t = document.getElementById(key);
+                if(t) t.value = state.texts[key];
+            }
+            if(state.pausas[0]) {
+                let b = document.getElementById('btn-pausa-1');
+                b.classList.add('done'); b.textContent = "¡Actividades Registradas! ✓";
+            }
+            if(state.pausas[1]) {
+                let b = document.getElementById('btn-pausa-2');
+                b.classList.add('done'); b.textContent = "¡Actividades Registradas! ✓";
+            }
+            state.gamesDone.forEach(gId => {
+                let st = document.getElementById(`status-game-${gId}`);
+                if(st) st.textContent = "¡Concepto Dominado! (+1 Punto ★)";
+                let dropArea = document.getElementById(`drop-area-${gId}`);
+                if(dropArea) dropArea.style.pointerEvents = 'none';
+            });
+        }
+
+        function saveAnswer(key, val) {
+            state.answers[key] = val; saveState();
+        }
+
+        function togglePausa(index) {
+            let i = index - 1;
+            if(!state.pausas[i]) {
+                state.pausas[i] = true;
+                let b = document.getElementById(`btn-pausa-${index}`);
+                b.classList.add('done'); b.textContent = "¡Actividades Registradas! ✓";
+                saveState();
+            }
+        }
+
+        // --- 3. SISTEMA ANTI-FRAUDE ---
+        function configurarAntiFraude() {
+            const textareas = document.querySelectorAll('.anti-fraud');
+            textareas.forEach(ta => {
+                ta.addEventListener('paste', e => { e.preventDefault(); alertFraud(ta, "Bloqueo de seguridad: El pegado de texto no está permitido."); });
+                ta.addEventListener('drop', e => { e.preventDefault(); alertFraud(ta, "Bloqueo de seguridad: Arrastrar texto bloqueado."); });
+                ta.addEventListener('contextmenu', e => e.preventDefault());
+
+                let keyTimes = [];
+                ta.addEventListener('keydown', e => {
+                    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'v')) {
+                        e.preventDefault(); alertFraud(ta, "Atajo de teclado bloqueado."); return;
+                    }
+                    if(e.key.length > 1) return; // Ignore Shift, Ctrl, etc.
+                    
+                    const now = Date.now();
+                    keyTimes.push(now);
+                    if(keyTimes.length > 8) keyTimes.shift();
+
+                    if(keyTimes.length === 8) {
+                        let totalDiff = 0;
+                        for(let i=1; i<keyTimes.length; i++){ totalDiff += (keyTimes[i] - keyTimes[i-1]); }
+                        let avg = totalDiff / 7;
+                        // Humanos tipean aprox a >60ms por tecla. Bots/Scripts pegan instantáneamente.
+                        if(avg < 30) {
+                            ta.value = ""; keyTimes = [];
+                            alertFraud(ta, "¡ALERTA DE FRAUDE! Cadencia de escritura inhumana detectada (Uso de IA o inyección de texto). Se ha vaciado el campo.");
+                            e.preventDefault();
+                        }
+                    }
+                });
+
+                ta.addEventListener('input', () => { state.texts[ta.id] = ta.value; saveState(); });
+            });
+        }
+
+        function alertFraud(element, msg) {
+            let alertBox = document.getElementById('alert-' + element.id);
+            alertBox.textContent = msg; alertBox.style.display = 'block';
+            setTimeout(() => { alertBox.style.display = 'none'; }, 5000);
+        }
+
+        // --- 4. SISTEMA DRAG & DROP ---
+        function initDragAndDrop() {
+            const games = [
+                {id: 1, type: 'letters', word: 'SELECTIVA'},
+                {id: 2, type: 'words', word: 'El tráfico ilegal rompe el equilibrio ecológico'},
+                {id: 3, type: 'letters', word: 'ZOONOSIS'},
+                {id: 4, type: 'words', word: 'La cascada trófica altera toda la cadena alimenticia'}
+            ];
+
+            games.forEach(game => {
+                if(state.gamesDone.includes(game.id)) return;
+
+                let items = [];
+                if(game.type === 'letters') items = game.word.split('');
+                if(game.type === 'words') items = game.word.split(' ');
+                
+                let shuffled = [...items].sort(() => Math.random() - 0.5);
+
+                const dragArea = document.getElementById(`drag-area-${game.id}`);
+                const dropArea = document.getElementById(`drop-area-${game.id}`);
+
+                shuffled.forEach((item, index) => {
+                    let div = document.createElement('div');
+                    div.className = `drag-item ${game.type === 'letters' ? 'letter' : ''}`;
+                    div.draggable = true; div.id = `drag-${game.id}-${index}`;
+                    div.textContent = item; div.dataset.val = item;
+                    div.addEventListener('dragstart', dragStart);
+                    dragArea.appendChild(div);
+                });
+
+                items.forEach((item) => {
+                    let slot = document.createElement('div');
+                    slot.className = `drop-slot ${game.type === 'letters' ? 'letter-slot' : ''}`;
+                    slot.dataset.targetId = game.id;
+                    slot.addEventListener('dragover', dragOver);
+                    slot.addEventListener('dragenter', dragEnter);
+                    slot.addEventListener('dragleave', dragLeave);
+                    slot.addEventListener('drop', dropEvent);
+                    dropArea.appendChild(slot);
+                });
+            });
+        }
+
+        let draggedElement = null;
+        function dragStart(e) { draggedElement = e.target; e.dataTransfer.effectAllowed = 'move'; }
+        function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+        function dragEnter(e) { e.preventDefault(); this.classList.add('hovered'); }
+        function dragLeave(e) { this.classList.remove('hovered'); }
+
+        function dropEvent(e) {
+            e.preventDefault(); this.classList.remove('hovered');
+            if(this.children.length > 0) {
+                let oldChild = this.children[0];
+                let gameId = this.dataset.targetId;
+                document.getElementById(`drag-area-${gameId}`).appendChild(oldChild);
+            }
+            this.appendChild(draggedElement);
+            checkGameCompletion(this.dataset.targetId);
+        }
+
+        function checkGameCompletion(gameId) {
+            const dropArea = document.getElementById(`drop-area-${gameId}`);
+            const slots = dropArea.querySelectorAll('.drop-slot');
+            const targetWord = dropArea.dataset.word;
+            const type = dropArea.dataset.type;
+            
+            let currentStr = ''; let allFilled = true;
+
+            slots.forEach(slot => {
+                if(slot.children.length === 0) allFilled = false;
+                else currentStr += slot.children[0].dataset.val + (type==='words' ? ' ' : '');
+            });
+
+            currentStr = currentStr.trim();
+
+            if(allFilled) {
+                if(currentStr === targetWord) {
+                    document.getElementById(`status-game-${gameId}`).textContent = "¡Concepto Dominado! (+1 Punto ★)";
+                    document.getElementById(`status-game-${gameId}`).style.color = "var(--verde-bosque)";
+                    dropArea.style.pointerEvents = 'none';
+                    state.points += 1; state.gamesDone.push(parseInt(gameId)); saveState();
+                } else {
+                    document.getElementById(`status-game-${gameId}`).textContent = "Orden incorrecto biológicamente. Revisa y corrige.";
+                }
+            }
+        }
+
+        // --- 5. ANIMACIÓN HTML5 CANVAS (60 FPS CASCADA TRÓFICA) ---
+        function initEcoCanvas() {
+            const canvas = document.getElementById('ecoCanvas');
+            const ctx = canvas.getContext('2d');
+            let bounds = canvas.getBoundingClientRect();
+            
+            function resize() {
+                bounds = canvas.parentElement.getBoundingClientRect();
+                canvas.width = bounds.width; canvas.height = 450;
+            }
+            window.addEventListener('resize', resize); resize();
+
+            // Variables de simulación
+            let birds = [];
+            let bugs = [];
+            let net = { x: canvas.width/2, y: 100, radius: 40, active: false };
+            let coffeeHealth = 100; // 0 a 100
+
+            // Seguimiento del mouse/touch para la red traficante
+            canvas.addEventListener('mousemove', e => {
+                let rect = canvas.getBoundingClientRect();
+                net.x = e.clientX - rect.left;
+                net.y = e.clientY - rect.top;
+            });
+            canvas.addEventListener('touchmove', e => {
+                e.preventDefault();
+                let rect = canvas.getBoundingClientRect();
+                net.x = e.touches[0].clientX - rect.left;
+                net.y = e.touches[0].clientY - rect.top;
+            });
+
+            class Bird {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * 200 + 50;
+                    this.vx = (Math.random() - 0.5) * 4;
+                    this.vy = (Math.random() - 0.5) * 2;
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if(this.y < 20 || this.y > 250) this.vy *= -1;
+                }
+                draw() {
+                    ctx.fillStyle = '#1976D2'; // Ave Azul
+                    ctx.beginPath(); ctx.arc(this.x, this.y, 6, 0, Math.PI*2); ctx.fill();
+                    // Alas
+                    ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.x-10, this.y-5); ctx.lineTo(this.x, this.y+2); ctx.fill();
+                }
+            }
+
+            class Bug {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * 150 + 280; // Zona baja (cultivos)
+                }
+                update() {
+                    this.x += (Math.random() - 0.5) * 2;
+                    this.y += (Math.random() - 0.5) * 2;
+                }
+                draw() {
+                    ctx.fillStyle = '#D32F2F'; // Broca Roja
+                    ctx.beginPath(); ctx.arc(this.x, this.y, 2.5, 0, Math.PI*2); ctx.fill();
+                }
+            }
+
+            // Inicializar población
+            for(let i=0; i<8; i++) birds.push(new Bird());
+            for(let i=0; i<15; i++) bugs.push(new Bug());
+
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Dibujar paisaje fondo (Bosque)
+                ctx.fillStyle = '#A5D6A7';
+                ctx.fillRect(0, 0, canvas.width, 250);
+
+                // Dibujar cultivos de café que cambian de color según salud
+                // Saludable = verde brillante. Enfermo (comido) = café oscuro
+                let r = Math.floor(129 + (coffeeHealth<50 ? (50-coffeeHealth)*2 : 0)); // #81C784 to #795548 mix
+                let g = Math.floor(199 - (100-coffeeHealth)); 
+                let b = Math.floor(132 - (100-coffeeHealth));
+                ctx.fillStyle = `rgb(${r},${g},${b})`;
+                ctx.fillRect(0, 250, canvas.width, 200);
+                
+                ctx.fillStyle = '#4A3B32'; ctx.font = "bold 16px Arial";
+                ctx.fillText(`Salud del Cafetal: ${Math.max(0, Math.floor(coffeeHealth))}%`, 20, 430);
+
+                // Lógica de depredación Aves -> Plagas
+                if (Math.random() < (birds.length * 0.05) && bugs.length > 0) {
+                    bugs.pop(); // Ave come insecto
+                }
+
+                // Lógica de reproducción de plagas (depende de cuántas aves hay)
+                // Si hay pocas aves, la plaga crece rápido (Cascada trófica)
+                let pestGrowthRate = birds.length < 3 ? 0.2 : 0.01; 
+                if(Math.random() < pestGrowthRate && bugs.length < 300) {
+                    bugs.push(new Bug());
+                }
+
+                // Daño al cultivo por plagas
+                if (bugs.length > 30) coffeeHealth -= 0.1;
+                if (coffeeHealth < 0) coffeeHealth = 0;
+                
+                // Regeneración cultivo si hay pocas plagas
+                if (bugs.length < 20 && coffeeHealth < 100) coffeeHealth += 0.05;
+
+                // Captura de aves por el Mouse (La Red)
+                for(let i=birds.length-1; i>=0; i--) {
+                    let d = Math.hypot(birds[i].x - net.x, birds[i].y - net.y);
+                    if(d < net.radius) {
+                        birds.splice(i, 1); // Extraída!
+                    }
+                }
+
+                // Dibujar
+                bugs.forEach(b => { b.update(); b.draw(); });
+                birds.forEach(b => { b.update(); b.draw(); });
+
+                // Dibujar La Red de tráfico
+                ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath(); ctx.arc(net.x, net.y, net.radius, 0, Math.PI*2); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.font = "12px Arial"; ctx.textAlign="center";
+                ctx.fillText("Traficante (Atrapa aves)", net.x, net.y + 55);
+
+                // UI Status
+                ctx.fillStyle = '#263238'; ctx.font = "bold 18px Arial"; ctx.textAlign="left";
+                ctx.fillText(`Población Aves: ${birds.length}`, 20, 30);
+                ctx.fillStyle = '#D32F2F';
+                ctx.fillText(`Plaga (Broca): ${bugs.length}`, 20, 60);
+
+                if(birds.length === 0) {
+                    ctx.fillStyle = '#D32F2F'; ctx.font = "bold 24px Arial"; ctx.textAlign="center";
+                    ctx.fillText("¡CASCADA TRÓFICA! Extinción de aves lograda.", canvas.width/2, 100);
+                }
+
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        // --- 6. EVALUACIÓN Y CIERRE ---
+        function finalizarOVA() {
+            let m1 = document.querySelector('input[name="eval_m1"]:checked');
+            let m2 = document.querySelector('input[name="eval_m2"]:checked');
+            let m3 = document.querySelector('input[name="eval_m3"]:checked');
+            let m4 = document.querySelector('input[name="eval_m4"]:checked');
+            let m5 = document.querySelector('input[name="eval_m5"]:checked');
+
+            if(!m1 || !m2 || !m3 || !m4 || !m5) {
+                alert("Debes seleccionar una respuesta para todas las preguntas de selección múltiple."); return;
+            }
+
+            // Calificación (Respuestas correctas: b, a, c, a, b)
+            let correctas = 0;
+            if(m1.value === 'b') correctas++;
+            if(m2.value === 'a') correctas++;
+            if(m3.value === 'c') correctas++;
+            if(m4.value === 'a') correctas++;
+            if(m5.value === 'b') correctas++;
+
+            let notaFinal = (correctas / 5) * 5.0;
+
+            document.getElementById('form-evaluacion').style.display = 'none';
+            document.getElementById('sec-resultados').style.display = 'block';
+
+            let feed = document.getElementById('feedback-content');
+            let ruta = document.getElementById('ruta-content');
+
+            feed.innerHTML = `<strong>Calificación Competencia Técnica:</strong> ${notaFinal.toFixed(1)} / 5.0<br>
+                              <strong>Estrellas de Interacción:</strong> ${state.points} / 5<br>`;
+
+            let sugerencias = "<h3>Ruta de Fortalecimiento Personalizada:</h3><ul>";
+            if(notaFinal === 5.0) {
+                sugerencias += "<li>¡Sobresaliente! Has comprendido la profunda conexión entre la biología de poblaciones, las leyes y la economía local. Eres apto para educar a otros en Pueblo Rico.</li>";
+            } else {
+                if(m1.value !== 'b') sugerencias += "<li><strong>Repasa:</strong> La simbiosis botánica. Sección 4 (El papel de los hongos micorrízicos en la supervivencia de orquídeas).</li>";
+                if(m2.value !== 'a') sugerencias += "<li><strong>Repasa:</strong> El concepto genético de 'Cuello de Botella' en la Sección 4, y cómo la pérdida de diversidad acerca la extinción.</li>";
+                if(m3.value !== 'c') sugerencias += "<li><strong>Repasa:</strong> El análisis económico de la plaga. Sección 2 y la gráfica del ICFES (Aves vs Broca).</li>";
+                if(m4.value !== 'a') sugerencias += "<li><strong>Repasa:</strong> El efecto dominó ecológico ('Cascada Trófica') explicado en la Sección 4 y en la simulación interactiva.</li>";
+                if(m5.value !== 'b') sugerencias += "<li><strong>Repasa:</strong> Fisiología del estrés (Cortisol) y los riesgos de Zoonosis, detallado en la Sección 4.</li>";
+            }
+            sugerencias += "</ul>";
+            ruta.innerHTML = sugerencias;
+
+            state.notaFinal = notaFinal; saveState();
+        }
+
+        function descargarResultados() {
+            let o1 = document.getElementById('eval_o1').value.replace(/\n/g, ' ');
+            let o2 = document.getElementById('eval_o2').value.replace(/\n/g, ' ');
+            let o3 = document.getElementById('eval_o3').value.replace(/\n/g, ' ');
+            let o4 = document.getElementById('eval_o4').value.replace(/\n/g, ' ');
+            let o5 = document.getElementById('eval_o5').value.replace(/\n/g, ' ');
+
+            let content = `================================================
+REPORTE ACADÉMICO - ESTUDIANTE GRADO 11
+OVA: "Los que no tienen voz" - Tráfico de Biodiversidad
+Vereda Pueblo Rico, Quimbaya
+================================================
+Estudiante: ${state.nombres} ${state.apellidos}
+Fecha de Emisión: ${new Date().toLocaleDateString()}
+------------------------------------------------
+GAMIFICACIÓN:
+Puntos Estrella (Minijuegos Completados): ${state.points} / 5
+------------------------------------------------
+CALIFICACIÓN SELECCIÓN MÚLTIPLE: ${state.notaFinal} / 5.0
+------------------------------------------------
+RESPUESTAS ABIERTAS (Análisis Anti-Fraude Superado):
+P6 (Extracción Selectiva): ${o1}
+P7 (Epífitas y Café): ${o2}
+P8 (Riesgo Zoonosis Pública): ${o3}
+P9 (Transformación del Turismo): ${o4}
+P10 (Conclusión Ética y Legal): ${o5}
+================================================
+* Documento electrónico generado automáticamente con integridad verificada. El fraude o copia invalida este instrumento ecológico. *`;
+
+            let blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement("a");
+            a.href = url;
+            a.download = `Reporte_Biologia11_${state.apellidos}_${state.nombres}.txt`;
+            document.body.appendChild(a);
+            a.click(); document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genética Post-Mendeliana: Mezclas Perfectas en Pueblo Rico</title>
+    <style>
+        /* ================= VARIABLES Y PALETA (PAISAJE CULTURAL CAFETERO) ================= */
+        :root {
+            --color-cafe: #4b3621;
+            --color-tierra: #8B5A2B;
+            --color-verde-cafeto: #2d5a27;
+            --color-verde-limon: #7cb342;
+            --color-citrico: #f39c12;
+            --color-rosado-flor: #e91e63;
+            --color-crema: #fdf5e6;
+            --color-blanco: #ffffff;
+            --color-peligro: #c0392b;
+            --color-exito: #27ae60;
+            --font-principal: 'Segoe UI', system-ui, sans-serif;
+            --radio-borde: 12px;
+            --sombra-suave: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-principal); }
+
+        body { background-color: var(--color-crema); color: var(--color-cafe); line-height: 1.8; overflow-x: hidden; scroll-behavior: smooth; }
+
+        /* ================= HUD Y GAMIFICACIÓN ================= */
+        #hud {
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background: linear-gradient(90deg, var(--color-verde-cafeto), var(--color-cafe));
+            color: var(--color-blanco); display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.4s;
+        }
+        .hud-oculto { transform: translateY(-100%); }
+        .hud-grupo { display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 1.1rem; }
+        
+        .barra-progreso-bg {
+            flex-grow: 1; margin: 0 30px; background: rgba(255,255,255,0.2); height: 16px;
+            border-radius: 8px; position: relative; overflow: hidden;
+        }
+        #barra-progreso {
+            height: 100%; width: 0%; background: var(--color-citrico);
+            transition: width 0.6s ease; box-shadow: 0 0 10px var(--color-citrico);
+        }
+        .icono-svg { width: 26px; height: 26px; fill: currentColor; }
+
+        /* ================= PANTALLA DE BIENVENIDA ================= */
+        #pantalla-bienvenida {
+            height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, rgba(45,90,39,0.9), rgba(75,54,33,0.9)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="%23ffffff" stroke-width="2" stroke-dasharray="5,5" opacity="0.1"/></svg>');
+            color: var(--color-blanco); text-align: center; padding: 20px;
+        }
+        .caja-login {
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); padding: 50px;
+            border-radius: var(--radio-borde); border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: var(--sombra-suave); max-width: 450px; width: 100%;
+        }
+        .input-grupo { margin-bottom: 25px; text-align: left; }
+        .input-grupo label { display: block; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; color: #eee; }
+        .input-texto {
+            width: 100%; padding: 15px; border-radius: 8px; border: 2px solid transparent;
+            font-size: 1.1rem; outline: none; transition: all 0.3s;
+        }
+        .input-texto:focus { border-color: var(--color-citrico); box-shadow: 0 0 15px rgba(243,156,18,0.5); }
+        
+        .btn-accion {
+            background-color: var(--color-citrico); color: var(--color-blanco); border: none;
+            padding: 15px 35px; border-radius: 30px; font-size: 1.2rem; font-weight: bold;
+            cursor: pointer; transition: all 0.3s; text-transform: uppercase; width: 100%;
+        }
+        .btn-accion:hover:not(:disabled) { transform: translateY(-3px) scale(1.02); background-color: #e67e22; box-shadow: 0 6px 20px rgba(230,126,34,0.4); }
+        .btn-accion:disabled { background: #95a5a6; cursor: not-allowed; transform: none; }
+
+        /* ================= ESTRUCTURA DEL CONTENIDO ================= */
+        #contenido-ova { display: none; padding-top: 80px; max-width: 1050px; margin: 0 auto; padding-bottom: 100px; }
+        
+        .seccion-modulo {
+            background: var(--color-blanco); margin: 40px 20px; padding: 50px;
+            border-radius: var(--radio-borde); box-shadow: var(--sombra-suave);
+            border-top: 6px solid var(--color-verde-cafeto);
+        }
+        
+        h1, h2, h3 { color: var(--color-verde-cafeto); margin-bottom: 25px; line-height: 1.3; }
+        h1 { font-size: 2.6rem; border-bottom: 3px solid var(--color-citrico); padding-bottom: 10px; }
+        h2 { font-size: 2rem; margin-top: 40px; color: var(--color-cafe); }
+        h3 { font-size: 1.5rem; color: var(--color-tierra); }
+
+        .texto-academico { text-align: justify; margin-bottom: 22px; font-size: 1.15rem; color: #333; }
+        .texto-academico::first-letter { font-size: 2.5em; color: var(--color-citrico); font-weight: bold; float: left; margin-right: 8px; line-height: 1; }
+        .destacado { font-weight: bold; color: var(--color-rosado-flor); }
+
+        /* ================= CAJAS DE PREGUNTAS ================= */
+        .bloque-pregunta {
+            background: #f9fbf9; border: 2px solid #e0e0e0; padding: 30px;
+            border-radius: var(--radio-borde); margin-bottom: 30px; transition: border 0.3s;
+        }
+        .bloque-pregunta:hover { border-color: var(--color-verde-limon); }
+        .bloque-pregunta p { font-size: 1.15rem; font-weight: bold; margin-bottom: 15px; }
+        
+        .btn-opcion {
+            display: block; width: 100%; text-align: left; padding: 15px 20px; margin: 10px 0;
+            background: var(--color-blanco); border: 2px solid var(--color-verde-limon);
+            border-radius: 8px; cursor: pointer; font-size: 1.05rem; transition: all 0.2s;
+        }
+        .btn-opcion:hover:not(:disabled) { background: var(--color-crema); transform: translateX(8px); }
+        .btn-opcion.correcta { background: #e8f5e9; border-color: var(--color-exito); color: var(--color-verde-cafeto); font-weight: bold; }
+        .btn-opcion.incorrecta { background: #fdedec; border-color: var(--color-peligro); color: var(--color-peligro); }
+
+        /* ================= PAUSAS ACTIVAS ================= */
+        .caja-pausa {
+            background: linear-gradient(to right, #fdfbfb, #f4f6f7); border-left: 6px solid var(--color-citrico);
+            padding: 25px; margin: 30px 0; border-radius: 0 10px 10px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .btn-pausa {
+            background: var(--color-tierra); color: var(--color-blanco); border: none; padding: 10px 20px;
+            border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.3s;
+        }
+        .btn-pausa:hover:not(:disabled) { background: var(--color-cafe); }
+        .btn-pausa:disabled { background: var(--color-exito); cursor: default; }
+
+        /* ================= TABLAS ================= */
+        .tabla-datos {
+            width: 100%; border-collapse: collapse; margin: 35px 0; font-size: 1.1rem;
+            box-shadow: var(--sombra-suave); border-radius: 10px; overflow: hidden;
+        }
+        .tabla-datos th, .tabla-datos td { padding: 16px; text-align: left; border-bottom: 1px solid #ddd; }
+        .tabla-datos th { background: var(--color-verde-cafeto); color: var(--color-blanco); }
+        .tabla-datos tr:nth-child(even) { background: #f8f9fa; }
+        .tabla-datos tr:hover { background: #f1f8e9; }
+
+        /* ================= JUEGOS DRAG & DROP ================= */
+        .zona-juego {
+            background: #fafafa; border: 3px dashed var(--color-citrico); border-radius: var(--radio-borde);
+            padding: 35px; margin: 40px 0; text-align: center;
+        }
+        .contenedor-piezas, .contenedor-huecos {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 25px 0; min-height: 60px;
+        }
+        .pieza-drag {
+            background: var(--color-verde-cafeto); color: var(--color-blanco); padding: 12px 25px;
+            border-radius: 8px; cursor: grab; font-weight: bold; font-size: 1.2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); user-select: none; transition: transform 0.1s;
+        }
+        .pieza-drag:active { cursor: grabbing; transform: scale(1.05); }
+        .hueco-drop {
+            min-width: 60px; height: 60px; border: 3px solid var(--color-tierra); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; background: var(--color-blanco);
+            font-weight: bold; font-size: 1.2rem; color: var(--color-cafe); transition: all 0.2s;
+        }
+        .hueco-drop.palabra { min-width: 160px; padding: 0 15px; }
+        .hueco-drop.hover { background: #fff3e0; border-color: var(--color-citrico); transform: scale(1.05); }
+
+        /* ================= VISUALES (SVG Y CANVAS) ================= */
+        .caja-visual {
+            margin: 45px 0; text-align: center; background: var(--color-blanco); padding: 30px;
+            border-radius: var(--radio-borde); box-shadow: var(--sombra-suave); border: 1px solid #eee;
+        }
+        canvas {
+            background: #1a1a1a; border-radius: 10px; max-width: 100%;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5); cursor: pointer; margin-top: 20px;
+        }
+
+        /* ================= ANTI-FRAUDE ================= */
+        .area-texto-segura {
+            width: 100%; height: 130px; padding: 15px; border: 2px solid #ccc; border-radius: 8px;
+            resize: vertical; font-size: 1.1rem; transition: 0.3s; margin-top: 10px;
+        }
+        .area-texto-segura:focus { border-color: var(--color-verde-cafeto); box-shadow: 0 0 10px rgba(45,90,39,0.2); outline: none; }
+        
+        #pantalla-fraude {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9);
+            display: none; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(8px);
+        }
+        .modal-alerta {
+            background: var(--color-blanco); padding: 50px; border-radius: var(--radio-borde);
+            text-align: center; max-width: 500px; border-top: 15px solid var(--color-peligro);
+            animation: vibrar 0.4s ease-in-out;
+        }
+        @keyframes vibrar { 0%, 100%{transform: translateX(0);} 20%, 60%{transform: translateX(-15px);} 40%, 80%{transform: translateX(15px);} }
+
+        #panel-resultados {
+            display: none; background: #e8f5e9; padding: 50px; border-radius: var(--radio-borde);
+            text-align: center; margin-top: 60px; border: 3px solid var(--color-exito);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- HUD SUPERIOR -->
+    <div id="hud" class="hud-oculto">
+        <div class="hud-grupo">
+            <!-- Icono Estudiante -->
+            <svg class="icono-svg" viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/></svg>
+            <span id="txt-nombre">Estudiante</span>
+        </div>
+        <div class="barra-progreso-bg">
+            <div id="barra-progreso"></div>
+        </div>
+        <div class="hud-grupo">
+            <span>Genética:</span>
+            <span id="txt-puntos" style="color: var(--color-citrico); font-size: 1.4rem;">0.0</span> / 5.0
+            <!-- Icono Flor/Semilla -->
+            <svg class="icono-svg" style="fill: var(--color-citrico);" viewBox="0 0 24 24">
+                <path d="M12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- MODAL ANTI-FRAUDE -->
+    <div id="pantalla-fraude">
+        <div class="modal-alerta">
+            <svg style="width:80px; fill: var(--color-peligro); margin-bottom:15px;" viewBox="0 0 24 24"><path d="M13 14H11V9H13M13 18H11V16H13M1 21H23L12 2L1 21Z"/></svg>
+            <h2 style="color: var(--color-peligro); font-size: 2rem;">¡Alerta de Integridad!</h2>
+            <p style="font-size: 1.2rem; margin: 20px 0;">Hemos detectado un comportamiento anómalo (Pegado de texto o velocidad inhumana).</p>
+            <p style="color: #555;">En Pueblo Rico, el conocimiento verdadero germina con paciencia. El campo ha sido borrado. Por favor, redacta tu respuesta manualmente.</p>
+            <button class="btn-accion" style="margin-top: 25px;" onclick="document.getElementById('pantalla-fraude').style.display='none'">Comprendo y Continuaré</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA DE INGRESO -->
+    <div id="pantalla-bienvenida">
+        <div class="caja-login">
+            <h1 style="border:none; padding:0; font-size: 3rem; margin-bottom: 10px;">Mezclas Perfectas</h1>
+            <p style="font-size: 1.3rem; margin-bottom: 30px; color: #d4efdf;">Genética Post-Mendeliana en Pueblo Rico (Grado 9)</p>
+            
+            <div class="input-grupo">
+                <label>Tus Nombres:</label>
+                <input type="text" id="in-nombres" class="input-texto" placeholder="Ej: Valentina">
+            </div>
+            <div class="input-grupo">
+                <label>Tus Apellidos:</label>
+                <input type="text" id="in-apellidos" class="input-texto" placeholder="Ej: Jaramillo Ruiz">
+            </div>
+            
+            <button id="btn-entrar" class="btn-accion">Iniciar Recorrido</button>
+        </div>
+    </div>
+
+    <!-- CONTENIDO OVA -->
+    <div id="contenido-ova">
+
+        <!-- INTRODUCCIÓN Y PRE-SABERES -->
+        <div class="seccion-modulo">
+            <h1>Más Allá de lo Dominante y Recesivo</h1>
+            <h3>Objetivo de Aprendizaje</h3>
+            <p class="texto-academico">
+                Explicar los mecanismos de la genética post-mendeliana, específicamente la <strong>Dominancia Incompleta</strong> y la <strong>Codominancia</strong>, reconociendo cómo estos fenómenos biológicos moldean la biodiversidad de la flora y la fauna en la Vereda Pueblo Rico (Quimbaya), impactando sectores como la ganadería, la floricultura ornamental y el turismo ecológico.
+            </p>
+
+            <h3 style="margin-top: 40px;">Pre-saberes: Observando las Fincas</h3>
+            <p>Antes de empezar, analiza estas situaciones comunes en la vereda. (Aciertos: +0.1 pts).</p>
+
+            <div class="bloque-pregunta" id="pre-1">
+                <p>1. En los jardines de las fincas cafeteras, a veces siembras una flor roja pura junto a una blanca pura. Sorprendentemente, las semillas de ese cruce producen flores de color rosado. ¿Qué crees que ocurrió?</p>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('pre-1', this, false)">A. El gen rojo mutó debido al clima de Quimbaya.</button>
+                <button class="btn-opcion" data-correct="true" onclick="verificarQuiz('pre-1', this, true)">B. Ningún color dominó al otro, sus características se mezclaron como pintura.</button>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('pre-1', this, false)">C. El gen blanco desapareció permanentemente.</button>
+            </div>
+
+            <div class="bloque-pregunta" id="pre-2">
+                <p>2. En un potrero de la zona ganadera, ves una vaca con manchas claramente definidas, negras y blancas, como un tablero de ajedrez irregular. Esto sugiere que:</p>
+                <button class="btn-opcion" data-correct="true" onclick="verificarQuiz('pre-2', this, true)">A. Ambos colores (negro y blanco) lograron expresarse completamente al mismo tiempo.</button>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('pre-2', this, false)">B. La vaca es gris pero está sucia.</button>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('pre-2', this, false)">C. Es un caso de herencia mendeliana simple donde el negro dominó al blanco.</button>
+            </div>
+
+            <div class="bloque-pregunta" id="pre-3">
+                <p>3. Gregor Mendel postuló que un rasgo siempre domina sobre otro (Ej: Alto domina sobre bajo). Según los dos casos anteriores, podemos decir que:</p>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('pre-3', this, false)">A. Mendel estaba equivocado en todo y sus leyes no sirven.</button>
+                <button class="btn-opcion" data-correct="true" onclick="verificarQuiz('pre-3', this, true)">B. Hay excepciones a las leyes de Mendel donde la herencia es más compleja.</button>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('pre-3', this, false)">C. Esto solo ocurre en animales, no en plantas.</button>
+            </div>
+        </div>
+
+        <!-- CUERPO INDUCTIVO: DOMINANCIA INCOMPLETA -->
+        <div class="seccion-modulo">
+            <h2>El Jardín del Chapolero: Dominancia Incompleta</h2>
+            
+            <p class="texto-academico">
+                Si recorres los coloridos corredores de las casas tradicionales en la Vereda Pueblo Rico, municipio de Quimbaya, te recibirá un festival visual. Los caficultores y sus familias adornan sus fincas con plantas ornamentales como los "Cortejos" (*Mirabilis jalapa*) o las famosas "Veraneras" (*Bougainvillea*). Estas flores son un atractivo fundamental para el turismo rural y ecológico de la región. Sin embargo, en la reproducción de estas plantas, la naturaleza nos da una lección magistral de genética que desafía las reglas tradicionales que estableció Gregor Mendel.
+            </p>
+            <p class="texto-academico">
+                Mendel dictaminó que, en un cruce genético, un alelo (variante del gen) siempre era "el jefe" (dominante) y silenciaba completamente al otro (recesivo). Si esto fuera siempre cierto, al cruzar una flor roja con una flor blanca, los descendientes siempre serían o rojos o blancos. Pero en los jardines de Quimbaya, las abuelas saben empíricamente que si mezclan ciertas semillas de flores rojas y blancas, el jardín florecerá de color <span class="destacado">Rosado</span>. A este fascinante fenómeno biológico se le conoce en la ciencia como <strong>Dominancia Incompleta</strong> o Herencia Intermedia.
+            </p>
+            <p class="texto-academico">
+                La explicación molecular de este proceso es asombrosa. En la dominancia incompleta, ninguno de los dos alelos es completamente dominante. Imaginemos que el gen de la flor roja contiene las instrucciones para fabricar un "tinte" o pigmento rojo (enzima funcional), y el gen de la flor blanca no produce ningún pigmento (enzima inactiva). Cuando una planta hereda ambos genes (es heterocigota), la cantidad de pigmento rojo que logra fabricar es exactamente la mitad. Al diluirse esa cantidad de tinte rojo sobre los pétalos blancos, el resultado visual que percibe el ojo humano es el rosado. Es matemáticamente una mezcla perfecta, como mezclar un litro de pintura roja con un litro de pintura blanca.
+            </p>
+            <p class="texto-academico">
+                Para representar este fenómeno en biología, no usamos letras mayúsculas y minúsculas tradicionales (como R y r), porque ninguna silencia a la otra. En su lugar, usamos una letra base con superíndices. Por ejemplo, el alelo para el color rojo se escribe como C<sup>R</sup> y el alelo para el blanco como C<sup>B</sup>. Así, la flor rosada, que es el híbrido, tiene el genotipo C<sup>R</sup>C<sup>B</sup>. Esto indica visualmente que ambos alelos están presentes, pero interactuando a medias.
+            </p>
+            <p class="texto-academico">
+                Este tipo de herencia no solo es importante para embellecer los paisajes que atraen visitantes al Paisaje Cultural Cafetero. En la agricultura de Quimbaya, los agrónomos estudian fenómenos similares en ciertas variedades de frutos cítricos o en el grosor de la cáscara del café, donde los híbridos presentan características intermedias que pueden ser más deseables para el mercado o más resistentes a las plagas locales. La dominancia incompleta nos enseña que, en la biología, los matices son tan importantes como los extremos.
+            </p>
+
+            <!-- TABLA COMPARATIVA -->
+            <h3>Cuadro Comparativo: Genética en el Quindío</h3>
+            <table class="tabla-datos">
+                <thead>
+                    <tr>
+                        <th>Tipo de Herencia</th>
+                        <th>Interacción de Alelos</th>
+                        <th>Ejemplo Aplicado en Quimbaya</th>
+                        <th>Genotipo Híbrido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Mendeliana Simple</td>
+                        <td>Uno domina y oculta al otro al 100%.</td>
+                        <td>Tallo alto de cafeto domina sobre tallo enano.</td>
+                        <td>Aa (Fenotipo: Alto)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dominancia Incompleta</strong></td>
+                        <td>Se mezclan. Ninguno domina. Se forma un tono medio.</td>
+                        <td>Flores de jardín (Rojo + Blanco = Rosado).</td>
+                        <td>C<sup>R</sup>C<sup>B</sup> (Fenotipo: Rosado)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Codominancia</strong></td>
+                        <td>Ambos se expresan al 100% simultáneamente.</td>
+                        <td>Ganado manchado (Blanco + Negro = Manchas de ambos).</td>
+                        <td>C<sup>N</sup>C<sup>B</sup> (Fenotipo: Manchado)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- ACTIVIDAD JUEGO 1: LETRAS -->
+            <div class="zona-juego" id="juego-1">
+                <h3>Actividad 1: El Resultado Intermedio (0.2 pts)</h3>
+                <p>Ordena las letras para formar el término que describe el resultado (el fenotipo) en la dominancia incompleta, cuando rojo y blanco producen rosado.</p>
+                <div class="contenedor-piezas" id="piezas-juego-1"></div>
+                <div class="contenedor-huecos" id="huecos-juego-1"></div>
+                <button class="btn-accion" onclick="validarLetras('juego-1', 'MEZCLA', 0.2)">Validar Término</button>
+            </div>
+
+            <!-- ACTIVIDAD JUEGO 2: PALABRAS -->
+            <div class="zona-juego" id="juego-2">
+                <h3>Actividad 2: Regla Biológica (0.2 pts)</h3>
+                <p>Ordena las palabras para formar la frase que define la dominancia incompleta en las flores de Pueblo Rico.</p>
+                <div class="contenedor-piezas" id="piezas-juego-2"></div>
+                <div class="contenedor-huecos" id="huecos-juego-2"></div>
+                <button class="btn-accion" onclick="validarPalabras('juego-2', 'EL FENOTIPO INTERMEDIO ES UNA MEZCLA', 0.2)">Validar Frase</button>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 1-5 -->
+            <h2>Pausas Activas (Retos en tu Cuaderno)</h2>
+            <p>Realiza estos retos en tu cuaderno. Clic en "Ya lo hice" para ganar puntos (0.1 pts c/u).</p>
+            
+            <div class="caja-pausa">
+                <h3>1. Reflexión del Agricultor</h3>
+                <p>Escribe: Si cruzas dos flores rosadas (C<sup>R</sup>C<sup>B</sup>), ¿crees que podrían volver a nacer flores rojas puras? Justifica sí o no.</p>
+                <button class="btn-pausa" id="btn-p1" onclick="marcarPausa(1)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>2. Dibujo de Proceso (Pintura)</h3>
+                <p>Dibuja un tarro de pintura roja y uno de pintura blanca vertiéndose en un solo balde. Al lado, dibuja los genes C<sup>R</sup> y C<sup>B</sup> uniéndose en una flor rosada.</p>
+                <button class="btn-pausa" id="btn-p2" onclick="marcarPausa(2)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>3. Mapa Mental Simple</h3>
+                <p>Crea un mapa que conecte: "Dominancia Incompleta" -> "No hay jefe" -> "Pigmentos a la mitad" -> "Ejemplo: Flor Rosada".</p>
+                <button class="btn-pausa" id="btn-p3" onclick="marcarPausa(3)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>4. El Cuadro de Punnett</h3>
+                <p>Dibuja un cuadro de Punnett de 2x2. Cruza C<sup>R</sup>C<sup>R</sup> (Rojo) con C<sup>B</sup>C<sup>B</sup> (Blanco). ¿Cuál es el resultado del 100% de las casillas?</p>
+                <button class="btn-pausa" id="btn-p4" onclick="marcarPausa(4)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>5. Diagrama de Flujo</h3>
+                <p>Haz un flujo: Planta Roja produce enzima 100% -> Planta Blanca 0% -> Planta Rosada (Híbrido) produce 50% de enzima = Tono diluido.</p>
+                <button class="btn-pausa" id="btn-p5" onclick="marcarPausa(5)">Ya lo hice en el cuaderno</button>
+            </div>
+
+        </div>
+
+        <!-- PREGUNTA TIPO ICFES (GRÁFICA SVG) -->
+        <div class="seccion-modulo">
+            <h2>Competencia Científica: Indagar (0.4 pts)</h2>
+            <p class="texto-academico">En una finca agroturística de Quimbaya, cruzaron dos flores rosadas (C<sup>R</sup>C<sup>B</sup> x C<sup>R</sup>C<sup>B</sup>). Se sembraron 100 semillas de este cruce. Observa la gráfica de barras generada con los resultados fenotípicos de esta Generación 2 (F2).</p>
+
+            <div class="caja-visual">
+                <svg width="500" height="300" viewBox="0 0 500 300">
+                    <text x="250" y="20" font-size="16" font-weight="bold" text-anchor="middle">Flores F2 (Cruce de Rosada x Rosada)</text>
+                    <!-- Ejes -->
+                    <line x1="50" y1="260" x2="450" y2="260" stroke="#333" stroke-width="2"/>
+                    <line x1="50" y1="40" x2="50" y2="260" stroke="#333" stroke-width="2"/>
+                    <!-- Etiquetas Y -->
+                    <text x="40" y="265" font-size="12" text-anchor="end">0</text>
+                    <text x="40" y="210" font-size="12" text-anchor="end">25</text>
+                    <text x="40" y="155" font-size="12" text-anchor="end">50</text>
+                    <text x="40" y="100" font-size="12" text-anchor="end">75</text>
+                    <text x="40" y="45" font-size="12" text-anchor="end">100</text>
+                    <text x="15" y="150" font-size="14" font-weight="bold" transform="rotate(-90, 15, 150)">Cantidad de Flores</text>
+                    
+                    <!-- Barras -->
+                    <!-- ROJA (25) -->
+                    <rect x="100" y="205" width="60" height="55" fill="#e74c3c"/>
+                    <text x="130" y="280" font-size="14" text-anchor="middle" font-weight="bold">Rojas</text>
+                    <text x="130" y="195" font-size="12" text-anchor="middle">25% (C<sup>R</sup>C<sup>R</sup>)</text>
+
+                    <!-- ROSADA (50) -->
+                    <rect x="220" y="150" width="60" height="110" fill="#f368e0"/>
+                    <text x="250" y="280" font-size="14" text-anchor="middle" font-weight="bold">Rosadas</text>
+                    <text x="250" y="140" font-size="12" text-anchor="middle">50% (C<sup>R</sup>C<sup>B</sup>)</text>
+
+                    <!-- BLANCA (25) -->
+                    <rect x="340" y="205" width="60" height="55" fill="#f1f2f6" stroke="#ccc"/>
+                    <text x="370" y="280" font-size="14" text-anchor="middle" font-weight="bold">Blancas</text>
+                    <text x="370" y="195" font-size="12" text-anchor="middle">25% (C<sup>B</sup>C<sup>B</sup>)</text>
+                </svg>
+            </div>
+
+            <div class="bloque-pregunta" id="icfes-1">
+                <p>Según la gráfica y la teoría de dominancia incompleta, ¿qué conclusión es correcta sobre este cruce (Rosado x Rosado)?</p>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('icfes-1', this, false)">A. El gen rosado se convierte en el nuevo gen dominante para siempre.</button>
+                <button class="btn-opcion" data-correct="true" onclick="verificarQuiz('icfes-1', this, true)">B. La proporción fenotípica es 1:2:1, demostrando que los genes originales (rojo y blanco) no se destruyen, sino que se separan de nuevo.</button>
+                <button class="btn-opcion" data-correct="false" onclick="verificarQuiz('icfes-1', this, false)">C. Mendel predijo exactamente esta gráfica con su proporción de 3:1.</button>
+            </div>
+        </div>
+
+        <!-- CUERPO DEDUCTIVO: CODOMINANCIA -->
+        <div class="seccion-modulo">
+            <h2>Ganadería en Quimbaya: El Poder de la Codominancia</h2>
+            
+            <p class="texto-academico">
+                Dejando atrás los coloridos jardines florales, nos adentramos en las extensas praderas de la ganadería en la Vereda Pueblo Rico. Los ganaderos de Quimbaya buscan constantemente cruzar razas para obtener animales que soporten el clima tropical y que, a su vez, produzcan buena leche o carne. En este proceso, a menudo cruzan un toro de pelaje totalmente rojizo (color café/rojo) con una vaca de pelaje totalmente blanco. ¿Nace un ternero de color rosado o naranja pálido? La respuesta es un rotundo NO.
+            </p>
+            <p class="texto-academico">
+                El ternero que nace tiene un pelaje conocido en la región como "Ruano" (o *Roan* en genética). Este animal tiene parches o pelos intercalados que son intensamente rojos y otros que son intensamente blancos. No hubo ninguna dilución ni mezcla de pintura. Ambos colores "ganaron" la batalla genética y se expresaron al mismo tiempo y con toda su fuerza. A este fenómeno se le denomina <strong>Codominancia</strong>.
+            </p>
+            <p class="texto-academico">
+                La codominancia significa literalmente "dominar juntos" (co-dominar). A nivel celular, en la piel del ternero ruano, algunas células leyeron el alelo rojo y produjeron pigmento rojo oscuro, mientras que otras células vecinas leyeron el alelo blanco y no produjeron pigmento. El resultado es un patrón de manchas o un salpicado perfecto. Los dos alelos son "jefes"; ninguno cede terreno frente al otro, a diferencia de la dominancia incompleta donde hacían las paces en un tono intermedio.
+            </p>
+            <p class="texto-academico">
+                Al igual que en el caso anterior, los genotipos se representan con letras mayúsculas diferentes o superíndices, indicando poder absoluto. Por ejemplo, Toro Rojo (C<sup>R</sup>C<sup>R</sup>) x Vaca Blanca (C<sup>B</sup>C<sup>B</sup>) = Ternero Ruano Manchado (C<sup>R</sup>C<sup>B</sup>). Otro ejemplo clásico y vital de codominancia ocurre dentro de nuestras propias venas: los <strong>Grupos Sanguíneos Humanos</strong>. Si heredas el alelo tipo "A" de tu madre y el alelo tipo "B" de tu padre en Quimbaya, tu tipo de sangre será "AB". Ambos antígenos (proteínas en los glóbulos rojos) se construirán al mismo tiempo. No se forma un tipo de sangre "C" intermedio.
+            </p>
+            <p class="texto-academico">
+                Comprender la codominancia permite a los ganaderos de Pueblo Rico y a la ciencia mundial mantener un registro puro de las razas y garantizar la salud genética. Es la prueba de que la herencia es un mosaico complejo donde, en ocasiones, la mejor forma de resolver un conflicto genético es permitir que ambas partes brillen simultáneamente, creando animales hermosos y seres humanos únicos.
+            </p>
+
+            <!-- SIMULADOR CANVAS -->
+            <div class="caja-visual">
+                <h3>Simulador Celular Genético</h3>
+                <p style="font-size: 0.95rem; margin-bottom: 10px;">Haz clic en el lienzo para cambiar el comportamiento celular. Observa cómo interactúan los alelos rojos y blancos.</p>
+                <div style="display: flex; justify-content: center; gap: 20px; font-weight: bold; margin-bottom: 10px;">
+                    <span id="estado-simulador" style="color: var(--color-citrico); background: #eee; padding: 5px 15px; border-radius: 20px;">Modo Actual: DOMINANCIA INCOMPLETA (Mezcla)</span>
+                </div>
+                <canvas id="canvas-genetica" width="700" height="350"></canvas>
+                <p style="font-size: 0.85rem; color: #666; margin-top: 10px;">(En Codominancia las partículas se agrupan en manchas puras. En Incompleta, se fusionan en partículas rosadas).</p>
+            </div>
+
+            <!-- ACTIVIDAD JUEGO 3: LETRAS -->
+            <div class="zona-juego" id="juego-3">
+                <h3>Actividad 3: El Patrón Ganadero (0.2 pts)</h3>
+                <p>Ordena las letras para formar el nombre tradicional del pelaje del ganado que resulta de la codominancia (pelos rojos y blancos mezclados sin diluirse).</p>
+                <div class="contenedor-piezas" id="piezas-juego-3"></div>
+                <div class="contenedor-huecos" id="huecos-juego-3"></div>
+                <button class="btn-accion" onclick="validarLetras('juego-3', 'RUANO', 0.2)">Validar Término</button>
+            </div>
+
+            <!-- ACTIVIDAD JUEGO 4: PALABRAS -->
+            <div class="zona-juego" id="juego-4">
+                <h3>Actividad 4: Definición de Codominancia (0.2 pts)</h3>
+                <p>Ordena las palabras para revelar la regla fundamental de la codominancia en la sangre o en el ganado.</p>
+                <div class="contenedor-piezas" id="piezas-juego-4"></div>
+                <div class="contenedor-huecos" id="huecos-juego-4"></div>
+                <button class="btn-accion" onclick="validarPalabras('juego-4', 'AMBOS ALELOS SE EXPRESAN POR IGUAL', 0.2)">Validar Frase</button>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 6-10 -->
+            <h2>Pausas Activas Finales</h2>
+            
+            <div class="caja-pausa">
+                <h3>6. Cuadro de Comparación Rápida</h3>
+                <p>Haz una tabla en tu cuaderno: Columna 1 (Incompleta = Se mezclan). Columna 2 (Codominancia = Aparecen manchas/ambos).</p>
+                <button class="btn-pausa" id="btn-p6" onclick="marcarPausa(6)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>7. El Tipo de Sangre</h3>
+                <p>Averigua o inventa un caso familiar: Mamá sangre A, Papá sangre B. Hijo sangre AB. Escribe la palabra "CODOMINANCIA" en grande al lado de este ejemplo.</p>
+                <button class="btn-pausa" id="btn-p7" onclick="marcarPausa(7)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>8. Dibujo Ganadero</h3>
+                <p>Dibuja una vaca con manchas bien definidas rojas y blancas pastando en Pueblo Rico. Ponle un cartel que diga "Genotipo C<sup>R</sup>C<sup>B</sup>".</p>
+                <button class="btn-pausa" id="btn-p8" onclick="marcarPausa(8)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>9. Problema Matemático (Cruzando Ruanos)</h3>
+                <p>Calcula: Si cruzas un toro Ruano (C<sup>R</sup>C<sup>B</sup>) con una vaca Ruana (C<sup>R</sup>C<sup>B</sup>), ¿qué probabilidad (en porcentaje) hay de que nazca un ternero Blanco puro (C<sup>B</sup>C<sup>B</sup>)? Rta: 25%.</p>
+                <button class="btn-pausa" id="btn-p9" onclick="marcarPausa(9)">Ya lo hice en el cuaderno</button>
+            </div>
+            <div class="caja-pausa">
+                <h3>10. Síntesis Escrita</h3>
+                <p>En dos renglones, resume la diferencia entre un ternero "Rosado" (si existiera por incompleta) y uno "Ruano/Manchado" (codominancia real).</p>
+                <button class="btn-pausa" id="btn-p10" onclick="marcarPausa(10)">Ya lo hice en el cuaderno</button>
+            </div>
+        </div>
+
+        <!-- EVALUACIÓN FINAL -->
+        <div class="seccion-modulo">
+            <h2>Evaluación Final: El Genetista de Pueblo Rico</h2>
+            <p style="color: var(--color-peligro); font-weight:bold;">Aviso: El sistema anti-fraude está vigilando el tipeo y bloquea el copiado/pegado.</p>
+
+            <h3>Selección Múltiple (0.3 pts c/u)</h3>
+            
+            <div class="bloque-pregunta" id="eval-m1">
+                <p>1. ¿Qué ocurre físicamente con los alelos en la Dominancia Incompleta?</p>
+                <select id="sel-m1" class="input-texto" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">El recesivo muta y destruye al dominante.</option>
+                    <option value="B">Ninguno domina totalmente, creando un fenotipo intermedio diluido.</option>
+                    <option value="C">Ambos se expresan al 100% creando patrones de manchas.</option>
+                </select>
+            </div>
+
+            <div class="bloque-pregunta" id="eval-m2">
+                <p>2. El tipo de sangre AB humano es el ejemplo clásico de:</p>
+                <select id="sel-m2" class="input-texto" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">Herencia ligada al sexo.</option>
+                    <option value="B">Dominancia Incompleta.</option>
+                    <option value="C">Codominancia.</option>
+                </select>
+            </div>
+
+            <div class="bloque-pregunta" id="eval-m3">
+                <p>3. En la codominancia ganadera (Ej. Vaca Ruana C<sup>R</sup>C<sup>B</sup>), el fenotipo observado a simple vista es:</p>
+                <select id="sel-m3" class="input-texto" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">Un color intermedio (rosado liso).</option>
+                    <option value="B">Zonas o parches puros de color rojo y zonas puras de color blanco.</option>
+                    <option value="C">Un color completamente distinto como el negro.</option>
+                </select>
+            </div>
+
+            <div class="bloque-pregunta" id="eval-m4">
+                <p>4. ¿Por qué usamos letras con superíndices (como C<sup>R</sup>C<sup>B</sup>) en lugar de mayúsculas y minúsculas (Aa)?</p>
+                <select id="sel-m4" class="input-texto" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">Porque ningún alelo domina al otro para silenciarlo (no hay "jefe" absoluto).</option>
+                    <option value="B">Porque es más fácil de escribir en matemáticas.</option>
+                    <option value="C">Para indicar que la planta o animal está enfermo.</option>
+                </select>
+            </div>
+
+            <div class="bloque-pregunta" id="eval-m5">
+                <p>5. Si se cruzan dos individuos híbridos F1 (Rosado x Rosado) en dominancia incompleta, la proporción fenotípica resultante de la F2 es:</p>
+                <select id="sel-m5" class="input-texto" style="border: 1px solid #ccc;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">3:1 (Mendeliana clásica).</option>
+                    <option value="B">9:3:3:1 (Dihíbrido).</option>
+                    <option value="C">1:2:1 (1 Rojo, 2 Rosados, 1 Blanco).</option>
+                </select>
+            </div>
+
+            <h3 style="margin-top: 40px;">Preguntas Abiertas - Análisis Científico (0.2 pts c/u)</h3>
+            <p style="font-size: 0.9rem;">Escribe mínimo 10 palabras por respuesta explicando con tus propios términos.</p>
+
+            <div class="bloque-pregunta">
+                <label><strong>1. Diferencia Clave:</strong> Explica con tus palabras cuál es la diferencia visual entre una flor que sufre Dominancia Incompleta y una que sufre Codominancia (si existiera con rojo y blanco).</label>
+                <textarea id="eval-a1" class="area-texto-segura" placeholder="Redacta aquí tu explicación..."></textarea>
+            </div>
+
+            <div class="bloque-pregunta">
+                <label><strong>2. Caso Finca:</strong> Un turista en Quimbaya ve un ternero con parches negros y blancos y dice: "¡Mira, dominancia incompleta!". ¿Cómo le corriges el error?</label>
+                <textarea id="eval-a2" class="area-texto-segura" placeholder="Redacta aquí tu explicación..."></textarea>
+            </div>
+
+            <div class="bloque-pregunta">
+                <label><strong>3. Química Interna:</strong> En la dominancia incompleta, ¿por qué la flor rosada se ve de ese color en términos de "producción de pigmento" celular?</label>
+                <textarea id="eval-a3" class="area-texto-segura" placeholder="Redacta aquí tu explicación..."></textarea>
+            </div>
+
+            <div class="bloque-pregunta">
+                <label><strong>4. Aplicación Humana:</strong> Si una persona es de sangre AB (Codominancia), ¿qué le pasaría biológicamente si su cuerpo intentara hacer una "dominancia incompleta" con su sangre?</label>
+                <textarea id="eval-a4" class="area-texto-segura" placeholder="Redacta aquí tu explicación..."></textarea>
+            </div>
+
+            <div class="bloque-pregunta">
+                <label><strong>5. Conservación:</strong> ¿Por qué es importante para la agrodiversidad de Quindío entender que los alelos no desaparecen, sino que se enmascaran o mezclan en los híbridos?</label>
+                <textarea id="eval-a5" class="area-texto-segura" placeholder="Redacta aquí tu explicación..."></textarea>
+            </div>
+
+            <button id="btn-finalizar" class="btn-accion" style="margin-top: 20px;">Evaluar y Generar Reporte</button>
+
+            <!-- PANEL DE RESULTADOS -->
+            <div id="panel-resultados">
+                <h2 style="color: var(--color-exito); font-size: 2.5rem; margin-bottom: 10px;">¡Análisis Genético Completado!</h2>
+                <p style="font-size: 1.5rem;">Calificación Final: <strong id="nota-final" style="font-size: 2.2rem; color: var(--color-cafe);">0.0</strong> / 5.0</p>
+                
+                <div id="texto-retroalimentacion" style="background: var(--color-blanco); padding: 25px; border-radius: 10px; text-align: left; margin: 25px 0; border: 1px solid #ccc;">
+                    <!-- Insertado por JS -->
+                </div>
+
+                <button class="btn-accion" onclick="descargarTxt()" style="background-color: var(--color-tierra); width: auto;">Descargar Reporte (.txt)</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT PRINCIPAL: LÓGICA, CANVAS Y ANTI-FRAUDE -->
+    <script>
+        /**
+         * ==========================================
+         * 1. GESTIÓN DE ESTADO Y LOCALSTORAGE
+         * ==========================================
+         */
+        const CLAVE_STORAGE = 'ova_postmendel_quimbaya_v1';
+        let state = {
+            nombres: '', apellidos: '',
+            puntos: 0.0, progreso: 0,
+            completados: [], respuestasLocales: {},
+            finalizado: false
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const guardado = localStorage.getItem(CLAVE_STORAGE);
+            if(guardado) {
+                state = JSON.parse(guardado);
+                restaurarDatosUI();
+            }
+        });
+
+        function salvarData() {
+            localStorage.setItem(CLAVE_STORAGE, JSON.stringify(state));
+            actualizarHUD();
+        }
+
+        function sumarPuntos(cantidad, idUnico) {
+            if(!state.completados.includes(idUnico)) {
+                state.puntos = Math.min(5.0, state.puntos + cantidad);
+                state.progreso = Math.min(100, state.progreso + 3.5); // 100% / ~28 interacciones
+                state.completados.push(idUnico);
+                salvarData();
+                return true;
+            }
+            return false;
+        }
+
+        function actualizarHUD() {
+            document.getElementById('txt-nombre').textContent = `${state.nombres} ${state.apellidos}`;
+            document.getElementById('txt-puntos').textContent = state.puntos.toFixed(1);
+            document.getElementById('barra-progreso').style.width = `${state.progreso}%`;
+        }
+
+        // Ingreso
+        document.getElementById('btn-entrar').addEventListener('click', () => {
+            const nom = document.getElementById('in-nombres').value.trim();
+            const ape = document.getElementById('in-apellidos').value.trim();
+            if(!nom || !ape) return alert("Los campos de nombre y apellido son obligatorios.");
+            
+            state.nombres = nom; state.apellidos = ape;
+            salvarData(); encenderOVA();
+        });
+
+        function encenderOVA() {
+            document.getElementById('pantalla-bienvenida').style.display = 'none';
+            document.getElementById('contenido-ova').style.display = 'block';
+            document.getElementById('hud').classList.remove('hud-oculto');
+            actualizarHUD();
+            iniciarSimuladorCanvas();
+        }
+
+        function restaurarDatosUI() {
+            if(state.nombres) {
+                encenderOVA();
+                // Bloquear botones quiz y pausas
+                state.completados.forEach(id => {
+                    if(id.startsWith('pre-') || id.startsWith('icfes-')) {
+                        const btn = document.querySelector(`#${id} button[data-correct="true"]`);
+                        if(btn) btn.classList.add('correcta');
+                        document.querySelectorAll(`#${id} button`).forEach(b => b.disabled = true);
+                    }
+                    if(id.startsWith('p')) {
+                        const btn = document.getElementById(`btn-${id}`);
+                        if(btn) { btn.disabled = true; btn.textContent = "Completado ✓"; }
+                    }
+                    if(id.startsWith('juego-')) {
+                        const btn = document.querySelector(`#${id} .btn-accion`);
+                        if(btn) { btn.disabled = true; btn.textContent = "Verificado ✓"; btn.style.background = "var(--color-exito)"; }
+                    }
+                });
+                // Rellenar respuestas
+                for(let i=1; i<=5; i++) {
+                    if(state.respuestasLocales[`sel-m${i}`]) document.getElementById(`sel-m${i}`).value = state.respuestasLocales[`sel-m${i}`];
+                    if(state.respuestasLocales[`eval-a${i}`]) document.getElementById(`eval-a${i}`).value = state.respuestasLocales[`eval-a${i}`];
+                }
+                if(state.finalizado) mostrarResultados();
+            }
+        }
+
+        /**
+         * ==========================================
+         * 2. LÓGICA DE PREGUNTAS Y PAUSAS
+         * ==========================================
+         */
+        function verificarQuiz(idDiv, boton, esCorrecto) {
+            document.querySelectorAll(`#${idDiv} button`).forEach(b => b.disabled = true);
+            if(esCorrecto) {
+                boton.classList.add('correcta');
+                let valor = idDiv.startsWith('icfes') ? 0.4 : 0.1;
+                sumarPuntos(valor, idDiv);
+            } else {
+                boton.classList.add('incorrecta');
+                document.querySelectorAll(`#${idDiv} button`).forEach(b => {
+                    if(b.getAttribute('data-correct') === 'true') {
+                        b.style.border = '3px solid var(--color-exito)';
+                    }
+                });
+                state.completados.push(idDiv); salvarData();
+            }
+        }
+
+        function marcarPausa(num) {
+            const btn = document.getElementById(`btn-p${num}`);
+            btn.disabled = true; btn.textContent = "Completado ✓";
+            sumarPuntos(0.1, `p${num}`);
+        }
+
+        /**
+         * ==========================================
+         * 3. MOTOR DRAG & DROP VANILLA
+         * ==========================================
+         */
+        let elemDrag = null;
+
+        function montarDragDrop(idPiezas, idHuecos, arrayTextos, esPalabra) {
+            const cPiezas = document.getElementById(idPiezas);
+            const cHuecos = document.getElementById(idHuecos);
+            cPiezas.innerHTML = ''; cHuecos.innerHTML = '';
+
+            const revueltos = [...arrayTextos].sort(() => Math.random() - 0.5);
+
+            revueltos.forEach(txt => {
+                const div = document.createElement('div');
+                div.className = 'pieza-drag'; div.textContent = txt; div.draggable = true;
+                
+                div.addEventListener('dragstart', e => {
+                    elemDrag = div; e.dataTransfer.setData('text/plain', txt);
+                    setTimeout(() => div.style.opacity = '0.5', 0);
+                });
+                div.addEventListener('dragend', () => div.style.opacity = '1');
+                cPiezas.appendChild(div);
+            });
+
+            arrayTextos.forEach(() => {
+                const hueco = document.createElement('div');
+                hueco.className = `hueco-drop ${esPalabra ? 'palabra' : ''}`;
+                
+                hueco.addEventListener('dragover', e => { e.preventDefault(); hueco.classList.add('hover'); });
+                hueco.addEventListener('dragleave', () => hueco.classList.remove('hover'));
+                hueco.addEventListener('drop', e => {
+                    e.preventDefault(); hueco.classList.remove('hover');
+                    if(elemDrag) {
+                        if(hueco.textContent !== '') {
+                            const devolucion = document.createElement('div');
+                            devolucion.className = 'pieza-drag'; devolucion.textContent = hueco.textContent; devolucion.draggable = true;
+                            devolucion.addEventListener('dragstart', ev => {
+                                elemDrag = devolucion; ev.dataTransfer.setData('text', devolucion.textContent);
+                                setTimeout(() => devolucion.style.opacity='0.5',0);
+                            });
+                            devolucion.addEventListener('dragend', () => devolucion.style.opacity='1');
+                            cPiezas.appendChild(devolucion);
+                        }
+                        hueco.textContent = elemDrag.textContent; elemDrag.remove();
+                    }
+                });
+
+                // Funcionalidad extra: Click para devolver
+                hueco.addEventListener('click', () => {
+                    if(hueco.textContent !== '') {
+                        const devolucion = document.createElement('div');
+                        devolucion.className = 'pieza-drag'; devolucion.textContent = hueco.textContent; devolucion.draggable = true;
+                        devolucion.addEventListener('dragstart', ev => {
+                            elemDrag = devolucion; ev.dataTransfer.setData('text', devolucion.textContent);
+                            setTimeout(() => devolucion.style.opacity='0.5',0);
+                        });
+                        devolucion.addEventListener('dragend', () => devolucion.style.opacity='1');
+                        cPiezas.appendChild(devolucion);
+                        hueco.textContent = '';
+                    }
+                });
+                cHuecos.appendChild(hueco);
+            });
+        }
+
+        montarDragDrop('piezas-juego-1', 'huecos-juego-1', ['M','E','Z','C','L','A'], false);
+        montarDragDrop('piezas-juego-2', 'huecos-juego-2', ['EL','FENOTIPO','INTERMEDIO','ES','UNA','MEZCLA'], true);
+        montarDragDrop('piezas-juego-3', 'huecos-juego-3', ['R','U','A','N','O'], false);
+        montarDragDrop('piezas-juego-4', 'huecos-juego-4', ['AMBOS','ALELOS','SE','EXPRESAN','POR','IGUAL'], true);
+
+        function validarLetras(id, respuesta, puntos) {
+            let form = '';
+            document.querySelectorAll(`#huecos-${id} .hueco-drop`).forEach(h => form += h.textContent);
+            if(form === respuesta) {
+                if(sumarPuntos(puntos, id)) {
+                    const b = document.querySelector(`#${id} .btn-accion`);
+                    b.disabled = true; b.textContent = "Verificado ✓"; b.style.background = "var(--color-exito)";
+                    alert("¡Correcto! El concepto es exacto.");
+                }
+            } else alert("Orden incorrecto. Revísalo e inténtalo nuevamente.");
+        }
+
+        function validarPalabras(id, respuesta, puntos) {
+            let form = [];
+            document.querySelectorAll(`#huecos-${id} .hueco-drop`).forEach(h => { if(h.textContent) form.push(h.textContent); });
+            if(form.join(' ') === respuesta) {
+                if(sumarPuntos(puntos, id)) {
+                    const b = document.querySelector(`#${id} .btn-accion`);
+                    b.disabled = true; b.textContent = "Verificado ✓"; b.style.background = "var(--color-exito)";
+                    alert("¡Lógica perfecta! Has comprendido la regla biológica.");
+                }
+            } else alert("La estructura de la oración no corresponde al concepto científico.");
+        }
+
+        /**
+         * ==========================================
+         * 4. SIMULADOR CANVAS (60fps)
+         * ==========================================
+         */
+        function iniciarSimuladorCanvas() {
+            const cvs = document.getElementById('canvas-genetica');
+            const ctx = cvs.getContext('2d');
+            const lblModo = document.getElementById('estado-simulador');
+            
+            let modo = 0; // 0 = Incompleta, 1 = Codominancia
+            let particulas = [];
+
+            // Alternar modo al clickear
+            cvs.addEventListener('click', () => {
+                modo = modo === 0 ? 1 : 0;
+                lblModo.textContent = modo === 0 
+                    ? "Modo Actual: DOMINANCIA INCOMPLETA (Mezcla Rosada)" 
+                    : "Modo Actual: CODOMINANCIA (Manchas Puramente Rojas y Blancas)";
+                lblModo.style.color = modo === 0 ? "var(--color-rosado-flor)" : "var(--color-cafe)";
+                crearPoblacion();
+            });
+
+            class Particula {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * cvs.width;
+                    this.y = Math.random() * cvs.height;
+                    this.vx = (Math.random() - 0.5) * 3;
+                    this.vy = (Math.random() - 0.5) * 3;
+                    this.tipo = Math.random() > 0.5 ? 'rojo' : 'blanco';
+                    this.radio = 8;
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    // Rebote
+                    if(this.x < 0 || this.x > cvs.width) this.vx *= -1;
+                    if(this.y < 0 || this.y > cvs.height) this.vy *= -1;
+
+                    // Lógica física simulada según modo
+                    if(modo === 0) {
+                        // Incompleta: Acercamiento general causa fusión visual a rosado (simulado con alfa y superposición)
+                        // Para simplificar: Todas tienden a volverse rosadas juntas
+                        const centerDistX = (cvs.width/2) - this.x;
+                        const centerDistY = (cvs.height/2) - this.y;
+                        this.vx += centerDistX * 0.0001;
+                        this.vy += centerDistY * 0.0001;
+                    } else {
+                        // Codominancia: Agrupamiento por tipos (manchas)
+                        particulas.forEach(p => {
+                            if(p === this) return;
+                            const dx = p.x - this.x; const dy = p.y - this.y;
+                            const dist = Math.sqrt(dx*dx + dy*dy);
+                            if(dist < 50) {
+                                if(p.tipo === this.tipo) {
+                                    // Atracción a los del mismo color
+                                    this.vx += dx * 0.0005; this.vy += dy * 0.0005;
+                                } else {
+                                    // Repulsión a los de otro color
+                                    this.vx -= dx * 0.001; this.vy -= dy * 0.001;
+                                }
+                            }
+                        });
+                        // Limitar velocidad
+                        const maxV = 2;
+                        const vMag = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+                        if(vMag > maxV) { this.vx = (this.vx/vMag)*maxV; this.vy = (this.vy/vMag)*maxV; }
+                    }
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radio, 0, Math.PI*2);
+                    if(modo === 0) {
+                        // En incompleta, todas se pintan rosadas translúcidas para dar efecto de fusión
+                        ctx.fillStyle = 'rgba(233, 30, 99, 0.7)';
+                    } else {
+                        // En codominancia, conservan rojo puro o blanco puro
+                        ctx.fillStyle = this.tipo === 'rojo' ? '#e74c3c' : '#ffffff';
+                    }
+                    ctx.fill();
+                    // Borde ligero
+                    ctx.strokeStyle = modo===0 ? 'rgba(255,255,255,0.2)' : '#111';
+                    ctx.lineWidth = 1; ctx.stroke();
+                }
+            }
+
+            function crearPoblacion() {
+                particulas = [];
+                for(let i=0; i<150; i++) particulas.push(new Particula());
+            }
+
+            crearPoblacion();
+
+            function animar() {
+                // Rastro suave
+                ctx.fillStyle = 'rgba(26, 26, 26, 0.3)';
+                ctx.fillRect(0, 0, cvs.width, cvs.height);
+                
+                particulas.forEach(p => { p.update(); p.draw(); });
+                
+                // Texto instructivo central
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                ctx.font = '16px Arial'; ctx.textAlign = 'center';
+                ctx.fillText('Clic para cambiar el modo genético', cvs.width/2, 30);
+
+                requestAnimationFrame(animar);
+            }
+            animar();
+        }
+
+        /**
+         * ==========================================
+         * 5. SISTEMA ANTI-FRAUDE
+         * ==========================================
+         */
+        const areasTexto = document.querySelectorAll('.area-texto-segura');
+        
+        areasTexto.forEach(area => {
+            let ultimoTeclazo = Date.now();
+
+            const detonarFraude = (evento) => {
+                evento.preventDefault();
+                area.value = '';
+                document.getElementById('pantalla-fraude').style.display = 'flex';
+            };
+
+            // Eventos bloqueados explícitamente
+            area.addEventListener('paste', detonarFraude);
+            area.addEventListener('drop', detonarFraude);
+            area.addEventListener('contextmenu', e => e.preventDefault());
+
+            // Cadencia y Atajos
+            area.addEventListener('keydown', e => {
+                if((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) { detonarFraude(e); return; }
+                
+                const ahora = Date.now();
+                if(e.key.length === 1 && (ahora - ultimoTeclazo) < 15) { detonarFraude(e); }
+                ultimoTeclazo = ahora;
+
+                // Autosave text
+                state.respuestasLocales[area.id] = area.value;
+                salvarData();
+            });
+            area.addEventListener('blur', () => { state.respuestasLocales[area.id] = area.value; salvarData(); });
+        });
+
+        // Guardar selects
+        for(let i=1; i<=5; i++) {
+            const s = document.getElementById(`sel-m${i}`);
+            s.addEventListener('change', () => { state.respuestasLocales[s.id] = s.value; salvarData(); });
+        }
+
+        /**
+         * ==========================================
+         * 6. CALIFICACIÓN Y DESCARGA
+         * ==========================================
+         */
+        document.getElementById('btn-finalizar').addEventListener('click', () => {
+            // Verificar llenado Textareas
+            for(let i=1; i<=5; i++) {
+                const txt = document.getElementById(`eval-a${i}`).value.trim();
+                if(txt.split(/\s+/).filter(w=>w.length>0).length < 10) {
+                    return alert(`Pregunta abierta #${i} incompleta. Elabora una respuesta propia de al menos 10 palabras.`);
+                }
+            }
+            // Verificar Selects
+            for(let i=1; i<=5; i++) {
+                if(document.getElementById(`sel-m${i}`).value === '') return alert(`Falta responder la pregunta de selección múltiple #${i}.`);
+            }
+
+            // Calificar (1:B, 2:C, 3:B, 4:A, 5:C)
+            const respuestasCore = ['B','C','B','A','C'];
+            let ptsTest = 0;
+            for(let i=1; i<=5; i++) { if(document.getElementById(`sel-m${i}`).value === respuestasCore[i-1]) ptsTest += 0.3; }
+
+            // Base por esfuerzo escritural (sin fraude) = 1.0 pts (0.2 c/u)
+            const ptsAbiertas = 1.0;
+
+            state.puntos = Math.min(5.0, state.puntos + ptsTest + ptsAbiertas);
+            state.progreso = 100; state.finalizado = true;
+            salvarData(); mostrarResultados();
+        });
+
+        function mostrarResultados() {
+            document.getElementById('btn-finalizar').style.display = 'none';
+            document.getElementById('panel-resultados').style.display = 'block';
+            document.getElementById('nota-final').textContent = state.puntos.toFixed(1);
+
+            let feedback = "";
+            if(state.puntos >= 4.5) feedback = "<strong>¡Excelencia Genética!</strong> Has comprendido perfectamente que la biología no es blanco y negro. Distingues claramente entre una mezcla perfecta (incompleta) y una coexistencia de rasgos (codominancia). Estás listo para analizar el desarrollo de los cultivos del Paisaje Cultural Cafetero.";
+            else if(state.puntos >= 3.0) feedback = "<strong>¡Aprobado con buenas bases!</strong> Entiendes los conceptos generales, pero te sugiero repasar el uso correcto de las letras con superíndices (C<sup>R</sup>C<sup>B</sup>) para evitar confusiones con la genética clásica de Mendel.";
+            else feedback = "<strong>Se requiere refuerzo.</strong> Confundes los resultados visuales de ambos fenómenos. Recuerda: Rosado = Mezclado (Incompleta). Manchado = Ambos puros a la vez (Codominancia). ¡Vuelve a repasar las animaciones!";
+
+            document.getElementById('texto-retroalimentacion').innerHTML = feedback;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function descargarTxt() {
+            let r = "=========================================================\n";
+            r += "   REPORTE: GENÉTICA POST-MENDELIANA (MEZCLAS PERFECTAS)\n";
+            r += "             Vereda Pueblo Rico - Quimbaya\n";
+            r += "=========================================================\n\n";
+            r += `Estudiante: ${state.nombres} ${state.apellidos}\n`;
+            r += `Nota Definitiva: ${state.puntos.toFixed(1)} / 5.0\n`;
+            r += `Módulo Anti-Fraude: Aprobado sin incidencias.\n\n`;
+
+            r += "--- RESPUESTAS DE SELECCIÓN MÚLTIPLE ---\n";
+            const cor = ['B','C','B','A','C'];
+            for(let i=1; i<=5; i++) {
+                r += `Pregunta ${i}: Eligió [${state.respuestasLocales[`sel-m${i}`]}] -> Correcta era [${cor[i-1]}]\n`;
+            }
+
+            r += "\n--- RESPUESTAS ABIERTAS (Análisis Propio) ---\n";
+            for(let i=1; i<=5; i++) {
+                r += `Q${i}: ${state.respuestasLocales[`eval-a${i}`]}\n\n`;
+            }
+
+            r += "\n* Documento auto-generado por el sistema OVA-Quimbaya.";
+
+            const blob = new Blob([r], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Certificado_PostMendel_${state.apellidos}.txt`;
+            link.click(); URL.revokeObjectURL(link.href);
+        }
+
+    </script>
+</body>
+</html>

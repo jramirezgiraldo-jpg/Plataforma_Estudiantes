@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Difusión y Nutrición Vegetal - Pueblo Rico, Quimbaya</title>
+    <style>
+        :root {
+            --cafe-oscuro: #3e2723;
+            --verde-quindio: #2e7d32;
+            --naranja-citrico: #ef6c00;
+            --crema: #fff9c4;
+            --tierra: #8d6e63;
+            --rojo-cafe: #c62828;
+            --blanco: #ffffff;
+            --shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; scroll-behavior: smooth; }
+
+        body { background-color: #f1f8e9; color: var(--cafe-oscuro); overflow-x: hidden; }
+
+        /* --- Pantalla de Inicio --- */
+        #login-screen {
+            position: fixed; inset: 0; background: linear-gradient(rgba(46, 125, 50, 0.9), rgba(62, 39, 35, 0.9)), 
+            url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.2"/></svg>');
+            z-index: 1000; display: flex; justify-content: center; align-items: center; text-align: center; color: var(--blanco);
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); padding: 3rem; border-radius: 30px;
+            border: 2px solid rgba(255,255,255,0.3); width: 90%; max-width: 500px; box-shadow: var(--shadow);
+        }
+
+        input {
+            width: 100%; padding: 15px; margin: 15px 0; border-radius: 12px; border: none; font-size: 1.1rem; outline: none;
+            background: rgba(255,255,255,0.9); color: var(--cafe-oscuro);
+        }
+
+        .btn-main {
+            background: var(--naranja-citrico); color: white; border: none; padding: 15px 40px; border-radius: 50px;
+            cursor: pointer; font-weight: bold; font-size: 1.2rem; transition: 0.3s; margin-top: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .btn-main:hover { transform: translateY(-3px); background: #fb8c00; }
+
+        /* --- Estructura OVA --- */
+        #main-content { display: none; }
+
+        nav {
+            background: var(--verde-quindio); color: white; padding: 1rem 5%; position: sticky; top: 0;
+            z-index: 900; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow);
+        }
+
+        .progress-bar-container { width: 250px; height: 12px; background: rgba(255,255,255,0.2); border-radius: 6px; overflow: hidden; }
+        #progress-fill { height: 100%; width: 0%; background: var(--rojo-cafe); transition: 0.5s; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+        section {
+            background: var(--blanco); margin-bottom: 4rem; padding: 4rem; border-radius: 25px; box-shadow: var(--shadow);
+            border-bottom: 8px solid var(--verde-quindio);
+        }
+
+        h1, h2, h3 { color: var(--verde-quindio); margin-bottom: 1.5rem; }
+        p { margin-bottom: 1.5rem; font-size: 1.15rem; text-align: justify; line-height: 1.8; }
+
+        /* --- Elementos Visuales --- */
+        .svg-container { text-align: center; padding: 2rem; background: #f9fbe7; border-radius: 20px; margin: 2rem 0; }
+        
+        .comparison-table { width: 100%; border-collapse: collapse; margin: 2rem 0; border-radius: 15px; overflow: hidden; }
+        .comparison-table th { background: var(--verde-quindio); color: white; padding: 20px; }
+        .comparison-table td { border: 1px solid #e0e0e0; padding: 15px; background: #fafafa; }
+        .comparison-table tr:hover td { background: #f1f8e9; }
+
+        .pause-box {
+            background: #fff3e0; border: 3px dashed var(--naranja-citrico); padding: 2rem; border-radius: 20px;
+            margin: 2.5rem 0; position: relative;
+        }
+        .pause-box::before { content: "☕"; position: absolute; top: -20px; left: 20px; font-size: 2.5rem; }
+
+        /* --- Animación Canvas --- */
+        #canvas-wrap {
+            width: 100%; height: 450px; background: #3e2723; border-radius: 20px; margin: 2rem 0; overflow: hidden;
+            position: relative; border: 5px solid #8d6e63;
+        }
+        canvas { width: 100%; height: 100%; }
+
+        /* --- Taller y Seguridad --- */
+        .quiz-item { background: #f5f5f5; padding: 2rem; border-radius: 15px; margin-bottom: 1.5rem; }
+        .feedback { margin-top: 15px; font-weight: bold; }
+        .correct { color: #2e7d32; }
+        .incorrect { color: #c62828; }
+
+        textarea {
+            width: 100%; height: 120px; margin-top: 15px; padding: 15px; border-radius: 12px; border: 2px solid #ccc;
+            font-size: 1.05rem; resize: none; outline: none; background: #fffde7;
+        }
+        .warning { color: #d32f2f; font-weight: bold; font-size: 0.9rem; margin-top: 5px; }
+
+        #final-score-card { background: var(--cafe-oscuro); color: white; padding: 3rem; border-radius: 25px; display: none; margin-top: 3rem; }
+
+        /* Gamificación */
+        .badge { display: inline-flex; align-items: center; padding: 5px 15px; background: #e8f5e9; border-radius: 20px; color: #2e7d32; font-weight: bold; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Bienvenida -->
+    <div id="login-screen">
+        <div class="login-card">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+                <path d="M50 10 Q 70 40 50 90 Q 30 40 50 10" fill="#fb8c00"/>
+                <circle cx="50" cy="45" r="10" fill="#fff9c4" opacity="0.6"/>
+            </svg>
+            <h1>Exploradores de Pueblo Rico</h1>
+            <p>Descubre cómo se alimentan las plantas en las fincas de Quimbaya</p>
+            <input type="text" id="user-lastname" placeholder="Tus Apellidos">
+            <input type="text" id="user-firstname" placeholder="Tus Nombres">
+            <button class="btn-main" id="btn-entrar">Iniciar Aventura</button>
+        </div>
+    </div>
+
+    <!-- Contenido -->
+    <div id="main-content">
+        <nav>
+            <div id="user-tag">🏠 Vereda: Pueblo Rico | Estudiante: </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="progress-bar-container"><div id="progress-fill"></div></div>
+                <div id="score-val">Puntos: 0.0</div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- Introducción -->
+            <section id="sec-inicio">
+                <h2>Objetivo de Aprendizaje</h2>
+                <p>Aprenderás a relacionar el proceso físico de la <strong>difusión molecular</strong> con la nutrición de las plantas de café y cítricos de tu vereda, comprendiendo cómo los abonos viajan desde el suelo hasta el interior de las células de la raíz.</p>
+                
+                <div class="quiz-item">
+                    <p><strong>Pre-saberes 1:</strong> Cuando un vecino de Pueblo Rico aplica abono en el plato de un cafeto, ¿cómo crees que el nutriente entra a la planta?</p>
+                    <label><input type="radio" name="p1" value="a"> Por arte de magia.</label><br>
+                    <label><input type="radio" name="p1" value="b"> Disuelto en agua a través de la raíz.</label><br>
+                    <label><input type="radio" name="p1" value="c"> A través de las hojas únicamente.</label>
+                    <div id="fb-p1" class="feedback"></div>
+                </div>
+            </section>
+
+            <!-- Cuerpo Inductivo -->
+            <section id="sec-inductivo">
+                <h2>Cuerpo Inductivo: De la Tierra al Cafetal</h2>
+                <p>
+                    Imagina que caminas por un sendero en la Vereda Pueblo Rico. El aire huele a café maduro y a tierra fresca después de una lluvia quindiana. En las fincas de nuestra región, como "La Esperanza" o "El Recuerdo", los agricultores saben que para tener una buena cosecha de cítricos o café, el suelo debe estar bien nutrido. Pero, ¿alguna vez te has preguntado cómo un grano sólido de abono termina convirtiéndose en energía para que el árbol crezca? Todo comienza con un fenómeno invisible llamado difusión.
+                </p>
+                <p>
+                    La difusión es el movimiento de partículas desde un lugar donde hay muchas (alta concentración) hacia uno donde hay pocas (baja concentración). Piensa en cuando tu mamá prepara un tinto en la mañana: el color y aroma del café se esparcen por toda la casa aunque no haya viento. En el suelo de Quimbaya pasa algo similar. Cuando el abono se moja con la lluvia, sus nutrientes (como el Nitrógeno y el Potasio) se disuelven y empiezan a viajar por los diminutos espacios de agua en la tierra buscando las raíces, donde hay menos concentración de esos minerales.
+                </p>
+                <p>
+                    En nuestra vereda, el transporte de nutrientes no es solo algo que pasa en los libros de biología; es la base de nuestra economía. Sin difusión, los fertilizantes químicos u orgánicos que aplicamos se quedarían quietos en la superficie. Las raíces de los cafetos tienen unos "pelos absorbentes" microscópicos que actúan como puertas. Las moléculas de nutriente golpean esas puertas y, gracias a que afuera hay más cantidad que adentro, logran entrar sin que la planta tenga que gastar su propia energía. Es un proceso natural y eficiente que mantiene verde nuestro Paisaje Cultural Cafetero.
+                </p>
+                <p>
+                    Sin embargo, la difusión no ocurre igual en todos los suelos. En Pueblo Rico, tenemos suelos volcánicos que retienen muy bien la humedad. El agua es el vehículo indispensable. Si el suelo está muy seco, las partículas de abono no tienen camino por donde deslizarse. Por eso, los abuelos dicen que "abonar en sequía es botar la plata". Entender la ciencia detrás de este proceso nos ayuda a ser mejores agricultores y protectores de nuestro territorio quimbayuno, optimizando el uso de recursos y cuidando las fuentes hídricas de la vereda.
+                </p>
+                <p>
+                    Además de los cultivos, la difusión explica otros procesos locales. Por ejemplo, cómo el oxígeno entra a los estanques de peces que algunos vecinos tienen para turismo, o cómo los aromas de las flores de azahar de los naranjales inundan el ambiente en las tardes soleadas. Somos testigos diarios de la física y la química en acción. Al estudiar la nutrición vegetal desde la difusión, estamos descubriendo los hilos invisibles que conectan la salud de nuestra tierra con el bienestar de todas las familias de Quimbaya.
+                </p>
+
+                <table class="comparison-table">
+                    <tr>
+                        <th>Concepto</th>
+                        <th>En la Naturaleza (Pueblo Rico)</th>
+                        <th>Definición Científica</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Concentración</strong></td>
+                        <td>El montón de abono bajo el cafeto.</td>
+                        <td>Cantidad de soluto en un solvente.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Difusión</strong></td>
+                        <td>El aroma de café esparciéndose por la finca.</td>
+                        <td>Movimiento a favor del gradiente.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Transporte</strong></td>
+                        <td>El viaje del agua por la raíz hacia el tallo.</td>
+                        <td>Paso de sustancias a través de membranas.</td>
+                    </tr>
+                </table>
+
+                <div class="pause-box">
+                    <strong>Pausa Activa 1:</strong> En tu cuaderno, responde: ¿Por qué crees que el abono necesita agua para llegar a la planta?
+                    <br><button class="btn-main" style="padding: 5px 15px; font-size: 0.9rem;" onclick="marcarPausa(1, this)">Ya lo hice</button>
+                </div>
+                <div class="pause-box">
+                    <strong>Pausa Activa 2:</strong> Dibuja en tu cuaderno una raíz de café con sus pelos absorbentes absorbiendo partículas de abono.
+                    <br><button class="btn-main" style="padding: 5px 15px; font-size: 0.9rem;" onclick="marcarPausa(2, this)">Ya lo hice</button>
+                </div>
+                <div class="pause-box">
+                    <strong>Pausa Activa 3:</strong> Crea un mapa mental en tu cuaderno que una las palabras: DIFUSIÓN, AGUA, ABONO, CAFÉ y PUEBLO RICO.
+                    <br><button class="btn-main" style="padding: 5px 15px; font-size: 0.9rem;" onclick="marcarPausa(3, this)">Ya lo hice</button>
+                </div>
+
+                <h3>Gráfica Analítica: Absorción según Humedad</h3>
+                <div class="svg-container">
+                    <svg width="600" height="300" viewBox="0 0 600 300">
+                        <line x1="50" y1="250" x2="550" y2="250" stroke="black" stroke-width="2"/>
+                        <line x1="50" y1="250" x2="50" y2="50" stroke="black" stroke-width="2"/>
+                        <polyline points="50,230 150,180 250,100 350,60 450,55 550,60" fill="none" stroke="var(--verde-quindio)" stroke-width="4"/>
+                        <text x="300" y="290" text-anchor="middle">Nivel de Humedad del Suelo (%)</text>
+                        <text x="15" y="150" transform="rotate(-90 15,150)" text-anchor="middle">Velocidad de Difusión</text>
+                        <circle cx="250" cy="100" r="6" fill="var(--rojo-cafe)"/>
+                        <text x="260" y="95" font-size="12">Punto Óptimo Quimbaya</text>
+                    </svg>
+                </div>
+
+                <div class="quiz-item">
+                    <p><strong>Competencia Indagar:</strong> Observando la gráfica, ¿qué sucede con la velocidad de difusión cuando la humedad del suelo pasa de muy baja a un nivel medio?</p>
+                    <label><input type="radio" name="icfes" value="a"> La difusión se detiene totalmente.</label><br>
+                    <label><input type="radio" name="icfes" value="b"> La difusión aumenta rápidamente.</label><br>
+                    <label><input type="radio" name="icfes" value="c"> La difusión disminuye gradualmente.</label>
+                    <div id="fb-icfes" class="feedback"></div>
+                </div>
+            </section>
+
+            <!-- Cuerpo Deductivo -->
+            <section id="sec-deductivo">
+                <h2>Cuerpo Deductivo: Leyes del Transporte Celular</h2>
+                <p>
+                    Científicamente, el transporte de sustancias en las plantas se rige por leyes físicas que explican la nutrición a nivel celular. La difusión es un tipo de <strong>transporte pasivo</strong>, lo que significa que ocurre de manera espontánea sin consumo de ATP (la moneda energética de la célula). En las células de las raíces de los cultivos de Pueblo Rico, la membrana plasmática es selectivamente permeable: deja pasar nutrientes necesarios pero bloquea sustancias dañinas. Este equilibrio osmótico es vital para que la planta no se deshidrate ni absorba demasiadas sales.
+                </p>
+                <p>
+                    El fenómeno se describe matemáticamente por la Ley de Fick, la cual deduce que la velocidad de transporte depende del área de contacto. Es por esto que las raíces de nuestros cítricos y cafetos desarrollan millones de pelos absorbentes diminutos; entre más superficie de raíz esté tocando el suelo húmedo de Quimbaya, más rápido entrarán los minerales disueltos. La temperatura también influye: en los días calurosos de nuestra vereda, las moléculas se mueven con más energía cinética, acelerando la difusión de los gases y nutrientes líquidos.
+                </p>
+                <p>
+                    Una vez que el nutriente atraviesa la membrana por difusión simple o facilitada, entra al sistema de transporte de larga distancia. Aquí intervienen el Xilema y el Floema. El Xilema es como una tubería de alta presión que lleva el agua y minerales (savia bruta) desde Pueblo Rico hasta las hojas más altas del árbol. Este transporte es impulsado por la transpiración de las hojas: a medida que el sol del mediodía evapora agua en la copa, se crea una fuerza de succión que jala el agua desde las raíces, usando los principios de cohesión y adhesión molecular.
+                </p>
+                <p>
+                    Es importante deducir también el papel del pH del suelo quindiano. Si el suelo es muy ácido (como ocurre a veces por el uso excesivo de fertilizantes químicos), los nutrientes se quedan "atrapados" en las partículas de arcilla y no pueden disolverse. Por más que haya difusión teórica, no habrá transporte real. Esto nos lleva a concluir que la nutrición vegetal es una cadena de eventos: 1. Disolución, 2. Difusión a través del suelo, 3. Paso por la membrana de la raíz y 4. Ascenso por el xilema hacia toda la planta.
+                </p>
+                <p>
+                    Finalmente, la nutrición se completa con la fotosíntesis, donde la planta usa esos nutrientes para fabricar su propia comida. Los azúcares producidos viajan luego por el Floema hacia los granos de café o los frutos de los cítricos. Entender estos principios técnicos nos permite deducir mejores prácticas agrícolas: aplicar abonos en los momentos de mayor actividad biológica, mantener coberturas vegetales para conservar la humedad y asegurar que la difusión trabaje a favor de nuestra producción y el ecosistema de Quimbaya.
+                </p>
+
+                <h3>Simulador de Difusión Molecular</h3>
+                <p>Haz clic en el suelo para "Abonar". Observa cómo los nutrientes (puntos naranja) se difunden por el agua hacia la raíz (centro) buscando el equilibrio.</p>
+                <div id="canvas-wrap">
+                    <canvas id="canvas-difusion"></canvas>
+                </div>
+
+                <div class="pause-box">
+                    <strong>Pausa Activa 6:</strong> Elabora un mapa conceptual sobre el Transporte Pasivo y Activo.
+                    <br><button class="btn-main" style="padding: 5px 15px; font-size: 0.9rem;" onclick="marcarPausa(6, this)">Ya lo hice</button>
+                </div>
+                <div class="pause-box">
+                    <strong>Pausa Activa 10:</strong> Problema: Si un cafeto absorbe 5mg de nitrógeno por hora, ¿cuánto absorberá en un día de 24 horas? Resuelve en tu cuaderno.
+                    <br><button class="btn-main" style="padding: 5px 15px; font-size: 0.9rem;" onclick="marcarPausa(10, this)">Ya lo hice</button>
+                </div>
+            </section>
+
+            <!-- Evaluación Final -->
+            <section id="sec-taller">
+                <h2>Evaluación Final: El Experto de Pueblo Rico</h2>
+                
+                <div id="final-quiz-container">
+                    <!-- Dinámico -->
+                </div>
+
+                <h3>Argumentación Crítica</h3>
+                <div id="open-questions">
+                    <!-- Dinámico -->
+                </div>
+
+                <button class="btn-main" onclick="evaluarTodo()">Finalizar y Ver Nota</button>
+            </section>
+
+            <div id="final-score-card">
+                <h2>¡Misión Cumplida!</h2>
+                <div id="res-nombre">Estudiante: </div>
+                <div id="res-nota" style="font-size: 2rem; color: var(--naranja-citrico);">Nota: 0.0</div>
+                <div id="res-ruta" style="margin: 1.5rem 0; font-style: italic;"></div>
+                <button class="btn-main" onclick="exportarResultados()">Descargar Informe (.txt)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Datos y Estado ---
+        let user = { nombre: '', apellido: '', puntos: 0, progreso: 0, respuestas: {} };
+        const questions = [
+            { id: 1, q: "¿Cuál es el motor principal de la difusión?", a: "La luz solar", b: "El gradiente de concentración", c: "La fuerza de gravedad", r: "b" },
+            { id: 2, q: "En la Vereda Pueblo Rico, ¿qué elemento facilita el movimiento de nutrientes?", a: "El viento", b: "El agua del suelo", c: "El ruido de los tractores", r: "b" },
+            { id: 3, q: "¿Cómo se llama el transporte que no gasta energía (ATP)?", a: "Transporte Activo", b: "Transporte Pasivo", c: "Transporte por Camión", r: "b" },
+            { id: 4, q: "¿Por dónde sube la savia bruta hacia las hojas?", a: "Por el Xilema", b: "Por el Floema", c: "Por la corteza externa", r: "a" },
+            { id: 5, q: "Si el suelo de Quimbaya está muy seco, la difusión es:", a: "Más rápida", b: "Nula o muy lenta", c: "Igual de eficiente", r: "b" }
+        ];
+
+        const openQuestions = [
+            "Explica por qué es importante el agua para la nutrición del café.",
+            "Describe con tus palabras qué es la difusión molecular.",
+            "¿Qué pasaría si la raíz no tuviera pelos absorbentes?",
+            "¿Cómo ayuda la difusión a que sintamos el aroma del café?",
+            "¿Por qué un agricultor de Quimbaya debe evitar abonar en sequía?"
+        ];
+
+        // --- Logueo ---
+        document.getElementById('btn-entrar').addEventListener('click', () => {
+            const nom = document.getElementById('user-firstname').value.trim();
+            const ape = document.getElementById('user-lastname').value.trim();
+            if(nom && ape) {
+                user.nombre = nom; user.apellido = ape;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                document.getElementById('user-tag').innerText += `${ape} ${nom}`;
+                initCanvas();
+                cargarTaller();
+            } else { alert("¡Oye! En Pueblo Rico todos nos conocemos por nombre y apellido. Por favor regístralos."); }
+        });
+
+        // --- Mecánicas de Evaluación ---
+        function cargarTaller() {
+            const container = document.getElementById('final-quiz-container');
+            questions.forEach((q, i) => {
+                const div = document.createElement('div');
+                div.className = 'quiz-item';
+                div.innerHTML = `<p><strong>${i+1}. ${q.q}</strong></p>
+                    <label><input type="radio" name="fq${q.id}" value="a"> ${q.a}</label><br>
+                    <label><input type="radio" name="fq${q.id}" value="b"> ${q.b}</label><br>
+                    <label><input type="radio" name="fq${q.id}" value="c"> ${q.c}</label>`;
+                container.appendChild(div);
+            });
+
+            const openContainer = document.getElementById('open-questions');
+            openQuestions.forEach((q, i) => {
+                const div = document.createElement('div');
+                div.className = 'quiz-item';
+                div.innerHTML = `<p><strong>${i+6}. ${q}</strong></p>
+                    <textarea id="open-${i}" placeholder="Escribe tu respuesta aquí (mínimo 10 palabras)..."></textarea>
+                    <div id="warn-${i}" class="warning"></div>`;
+                openContainer.appendChild(div);
+                bloquearFraude(document.getElementById(`open-${i}`), i);
+            });
+        }
+
+        function bloquearFraude(el, idx) {
+            let lastKey = Date.now();
+            el.onpaste = e => { e.preventDefault(); alert("¡Atención! En Pueblo Rico valoramos tu propio esfuerzo, no el de otros. Escribe tú mismo."); };
+            el.oncontextmenu = e => e.preventDefault();
+            el.oninput = () => {
+                const now = Date.now();
+                if(now - lastKey < 10 && el.value.length > 5) {
+                    document.getElementById(`warn-${idx}`).innerText = "⚠️ Se detectó escritura artificial. Escribe a ritmo normal.";
+                    el.value = "";
+                }
+                lastKey = now;
+            };
+        }
+
+        function marcarPausa(num, btn) {
+            btn.disabled = true; btn.innerText = "✅ Realizado";
+            user.puntos += 0.15;
+            user.progreso += 10;
+            actualizarUI();
+        }
+
+        function actualizarUI() {
+            document.getElementById('progress-fill').style.width = Math.min(100, user.progreso) + "%";
+            document.getElementById('score-val').innerText = `Puntos: ${user.puntos.toFixed(1)}`;
+        }
+
+        // --- Simulación Canvas ---
+        function initCanvas() {
+            const cv = document.getElementById('canvas-difusion');
+            const ctx = cv.getContext('2d');
+            cv.width = cv.parentElement.offsetWidth;
+            cv.height = cv.parentElement.offsetHeight;
+
+            let particles = [];
+            class Particula {
+                constructor(x, y) {
+                    this.x = x; this.y = y;
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = (Math.random() - 0.5) * 2;
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    if(this.x < 0 || this.x > cv.width) this.vx *= -1;
+                    if(this.y < 0 || this.y > cv.height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.fillStyle = "#ef6c00";
+                    ctx.beginPath(); ctx.arc(this.x, this.y, 4, 0, Math.PI*2); ctx.fill();
+                }
+            }
+
+            cv.addEventListener('mousedown', (e) => {
+                const rect = cv.getBoundingClientRect();
+                for(let i=0; i<15; i++) particles.push(new Particula(e.clientX - rect.left, e.clientY - rect.top));
+            });
+
+            function loop() {
+                ctx.fillStyle = "rgba(62, 39, 35, 0.2)";
+                ctx.fillRect(0,0,cv.width, cv.height);
+                // Raíz Central
+                ctx.fillStyle = "#fff9c4";
+                ctx.beginPath(); ctx.arc(cv.width/2, cv.height/2, 40, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#2e7d32";
+                ctx.fillText("RAÍZ CAFÉ", cv.width/2 - 25, cv.height/2 + 5);
+
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        // --- Evaluación Final ---
+        function evaluarTodo() {
+            let aciertos = 0;
+            questions.forEach(q => {
+                const opt = document.querySelector(`input[name="fq${q.id}"]:checked`);
+                if(opt && opt.value === q.r) aciertos++;
+            });
+
+            let openPoints = 0;
+            openQuestions.forEach((_, i) => {
+                const val = document.getElementById(`open-${i}`).value.trim();
+                const words = val.split(/\s+/).filter(w => w.length > 0);
+                if(words.length >= 10) openPoints += 0.5;
+            });
+
+            const notaFinal = Math.min(5, (aciertos * 0.5) + openPoints + (user.puntos * 0.1));
+            user.nota = notaFinal;
+
+            document.getElementById('final-score-card').style.display = 'block';
+            document.getElementById('res-nombre').innerText = `Estudiante: ${user.apellido} ${user.nombre}`;
+            document.getElementById('res-nota').innerText = `Nota Final: ${notaFinal.toFixed(1)}`;
+            
+            let ruta = "";
+            if(notaFinal < 3) ruta = "Ruta Quindiana: Debes volver a leer la sección inductiva sobre el agua y la tierra. ¡Tú puedes, campesino!";
+            else if(notaFinal < 4.5) ruta = "Ruta Quindiana: ¡Muy bien! Eres un gran conocedor de la vereda. Repasa los tipos de transporte celular.";
+            else ruta = "Ruta Quindiana: ¡Excelente! Eres todo un ingeniero agrónomo de Pueblo Rico. ¡Felicidades!";
+            document.getElementById('res-ruta').innerText = ruta;
+            
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function exportarResultados() {
+            let txt = `INFORME DE APRENDIZAJE - OVA PUEBLO RICO\n`;
+            txt += `Estudiante: ${user.apellido} ${user.nombre}\n`;
+            txt += `Nota: ${user.nota.toFixed(1)} / 5.0\n\n`;
+            txt += `RESPUESTAS ABIERTAS:\n`;
+            openQuestions.forEach((q, i) => {
+                txt += `${i+1}. ${q}\n R: ${document.getElementById(`open-${i}`).value}\n\n`;
+            });
+            const blob = new Blob([txt], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Resultados_${user.apellido}.txt`;
+            a.click();
+        }
+
+        // Feedback de pre-saberes e ICFES
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const name = e.target.name;
+                const val = e.target.value;
+                const fb = document.getElementById(`fb-${name}`);
+                if(!fb) return;
+                
+                let isCorrect = false;
+                if(name === 'p1' && val === 'b') isCorrect = true;
+                if(name === 'icfes' && val === 'b') isCorrect = true;
+
+                fb.innerText = isCorrect ? "✓ ¡Correcto! Eres un genio." : "✗ Oh, casi. Revisa el texto e intenta de nuevo.";
+                fb.className = "feedback " + (isCorrect ? "correct" : "incorrect");
+                if(isCorrect) { user.puntos += 0.1; actualizarUI(); }
+            });
+        });
+
+    </script>
+</body>
+</html>

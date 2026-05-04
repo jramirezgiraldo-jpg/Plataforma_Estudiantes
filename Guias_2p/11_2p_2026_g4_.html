@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Nomenclatura IUPAC en Pueblo Rico, Quimbaya</title>
+    <style>
+        /* =========================================
+           VARIABLES Y PALETA DE COLORES (Paisaje Cultural Cafetero)
+           ========================================= */
+        :root {
+            --cafe-oscuro: #3E2723;
+            --cafe-medio: #5D4037;
+            --cafe-claro: #D7CCC8;
+            --verde-hoja: #2E7D32;
+            --verde-claro: #81C784;
+            --naranja-citrico: #E65100;
+            --amarillo-sol: #FBC02D;
+            --fondo-papel: #FDFBF7;
+            --texto-principal: #212121;
+            --blanco: #FFFFFF;
+            --rojo-alerta: #C62828;
+            --gris-borde: #BDBDBD;
+        }
+
+        /* =========================================
+           RESET Y TIPOGRAFÍA
+           ========================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--fondo-papel);
+            color: var(--texto-principal);
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        /* =========================================
+           PANTALLA DE BIENVENIDA (LOGIN)
+           ========================================= */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, var(--verde-hoja), var(--cafe-oscuro));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.8s ease;
+        }
+
+        .login-card {
+            background: var(--blanco);
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border-top: 5px solid var(--naranja-citrico);
+        }
+
+        .login-card h1 {
+            color: var(--cafe-oscuro);
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+
+        .login-card p {
+            margin-bottom: 2rem;
+            color: var(--cafe-medio);
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: var(--verde-hoja);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--cafe-claro);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--naranja-citrico);
+        }
+
+        .btn {
+            background-color: var(--naranja-citrico);
+            color: var(--blanco);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, background-color 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: #BF360C;
+            transform: scale(1.02);
+        }
+
+        /* =========================================
+           BARRA DE NAVEGACIÓN Y GAMIFICACIÓN
+           ========================================= */
+        #main-nav {
+            position: sticky;
+            top: 0;
+            background: var(--cafe-oscuro);
+            color: var(--blanco);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .user-info { font-weight: bold; font-size: 1.1rem; }
+
+        .gamification {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-container {
+            width: 150px;
+            height: 10px;
+            background: var(--cafe-medio);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--amarillo-sol);
+            transition: width 0.5s ease;
+        }
+
+        .points-display { font-weight: bold; color: var(--amarillo-sol); }
+
+        .unlockables { display: flex; gap: 5px; }
+        .unlock-icon {
+            width: 30px; height: 30px;
+            fill: var(--cafe-medio); /* Locked state */
+            transition: fill 0.5s ease, transform 0.5s;
+        }
+        .unlock-icon.unlocked { fill: var(--amarillo-sol); transform: scale(1.1); }
+
+        /* =========================================
+           ESTRUCTURA DEL CONTENIDO
+           ========================================= */
+        #content-wrapper {
+            display: none; /* Hidden until login */
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        section {
+            background: var(--blanco);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 3rem;
+            border-left: 5px solid var(--verde-hoja);
+        }
+
+        h2 { color: var(--verde-hoja); margin-bottom: 1.5rem; font-size: 2rem; border-bottom: 2px solid var(--cafe-claro); padding-bottom: 0.5rem;}
+        h3 { color: var(--cafe-oscuro); margin-top: 1.5rem; margin-bottom: 1rem; font-size: 1.5rem; }
+        p { margin-bottom: 1.2rem; text-align: justify; font-size: 1.05rem; }
+        .intro-text { font-style: italic; color: var(--cafe-medio); border-left: 4px solid var(--naranja-citrico); padding-left: 15px; }
+
+        /* =========================================
+           PRE-SABERES & PREGUNTAS
+           ========================================= */
+        .question-block {
+            background: var(--fondo-papel);
+            border: 1px solid var(--cafe-claro);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .options { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .option-btn {
+            background: var(--blanco); border: 2px solid var(--verde-claro);
+            padding: 10px; border-radius: 5px; cursor: pointer; text-align: left;
+            transition: background 0.2s;
+        }
+        .option-btn:hover { background: #E8F5E9; }
+        .option-btn.correct { background: #C8E6C9; border-color: var(--verde-hoja); color: var(--verde-hoja); font-weight: bold;}
+        .option-btn.incorrect { background: #FFCDD2; border-color: var(--rojo-alerta); color: var(--rojo-alerta); }
+        .feedback { margin-top: 10px; font-size: 0.9rem; font-weight: bold; display: none; }
+
+        /* =========================================
+           CUADROS COMPARATIVOS
+           ========================================= */
+        .table-responsive { overflow-x: auto; margin: 2rem 0; }
+        table {
+            width: 100%; border-collapse: collapse; min-width: 600px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { padding: 12px 15px; border: 1px solid var(--cafe-claro); text-align: left; }
+        th { background-color: var(--verde-hoja); color: var(--blanco); font-weight: bold; }
+        tr:nth-child(even) { background-color: #F5F5F5; }
+        tr:hover { background-color: #E8F5E9; }
+
+        /* =========================================
+           PAUSAS ACTIVAS
+           ========================================= */
+        .pausa-activa {
+            background: linear-gradient(to right, #FFF3E0, var(--blanco));
+            border-left: 5px solid var(--amarillo-sol);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .pausa-activa h4 { color: var(--naranja-citrico); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; }
+        .btn-done {
+            background: var(--cafe-medio); color: var(--blanco); border: none;
+            padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;
+        }
+        .btn-done.completed { background: var(--verde-hoja); cursor: default; }
+
+        /* =========================================
+           GRÁFICA SVG Y CANVAS
+           ========================================= */
+        .svg-container, .canvas-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+            background: var(--blanco);
+            border: 1px solid var(--cafe-claro);
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+        svg { max-width: 100%; height: auto; }
+        canvas { max-width: 100%; background: #212121; border-radius: 8px; }
+
+        /* =========================================
+           EVALUACIÓN Y ANTI-FRAUDE
+           ========================================= */
+        .open-question { margin-bottom: 1.5rem; }
+        .open-question textarea {
+            width: 100%; height: 80px; padding: 10px; border: 2px solid var(--cafe-claro);
+            border-radius: 8px; resize: vertical; font-size: 1rem;
+        }
+        .word-count { font-size: 0.85rem; color: var(--cafe-medio); text-align: right; display: block; }
+        .fraud-alert { color: var(--rojo-alerta); font-weight: bold; font-size: 0.85rem; display: none; }
+        
+        #feedback-final {
+            background: #E3F2FD; border-left: 5px solid #1565C0; padding: 1.5rem;
+            border-radius: 8px; margin-top: 2rem; display: none;
+        }
+        
+        .btn-download {
+            background-color: var(--verde-hoja); margin-top: 2rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================
+         PANTALLA DE BIENVENIDA
+         ========================================== -->
+    <div id="login-screen">
+        <div class="login-card">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="var(--naranja-citrico)">
+                <path d="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M11,19.93C7.05,19.43 4,16.04 4,12C4,7.96 7.05,4.57 11,4.07V19.93M13,4.07C16.95,4.57 20,7.96 20,12C20,16.04 16.95,19.43 13,19.93V4.07Z" />
+            </svg>
+            <h1>Laboratorio Virtual Quimbaya</h1>
+            <p>Nomenclatura IUPAC en el Paisaje Cultural Cafetero. Ingresa tus datos para comenzar tu investigación en la Vereda Pueblo Rico.</p>
+            
+            <div class="input-group">
+                <label for="nombres">Nombres:</label>
+                <input type="text" id="nombres" placeholder="Ej. Carlos Andrés" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="apellidos">Apellidos:</label>
+                <input type="text" id="apellidos" placeholder="Ej. Montoya Ríos" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar">Comenzar Exploración</button>
+            <p id="login-error" style="color: var(--rojo-alerta); font-size: 0.85rem; margin-top: 10px; display: none;">Por favor, ingresa nombres y apellidos válidos.</p>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         BARRA DE NAVEGACIÓN
+         ========================================== -->
+    <nav id="main-nav">
+        <div class="user-info">
+            Investigador: <span id="display-name">---</span>
+        </div>
+        <div class="gamification">
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="points-display"><span id="points">0</span>/5 Pts</div>
+            <div class="unlockables">
+                <!-- Icono 1: Grano de Café -->
+                <svg class="unlock-icon" id="icon-1" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/><path d="M12 5c-3.9 0-7 3.1-7 7s3.1 7 7 7 7-3.1 7-7-3.1-7-7-7zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/></svg>
+                <!-- Icono 2: Cítrico (Naranja) -->
+                <svg class="unlock-icon" id="icon-2" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6V18A6,6 0 0,0 18,12A6,6 0 0,0 12,6Z"/></svg>
+                <!-- Icono 3: Vaca (Ganadería) -->
+                <svg class="unlock-icon" id="icon-3" viewBox="0 0 24 24"><path d="M7 19h2v-2H7v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zm-8-4h10v-2H7v2zm-2-4h14v-2H5v2zm2-4h10V5H7v2z"/></svg>
+                <!-- Icono 4: Jeep Willys -->
+                <svg class="unlock-icon" id="icon-4" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+                <!-- Icono 5: Taza de Café -->
+                <svg class="unlock-icon" id="icon-5" viewBox="0 0 24 24"><path d="M2,21H20V19H2M20,8H18V5H20M20,3H4V13A4,4 0 0,0 8,17H14A4,4 0 0,0 18,13V10H20A2,2 0 0,0 22,8V5C22,3.89 21.1,3 20,3M16,13A2,2 0 0,1 14,15H8A2,2 0 0,1 6,13V5H16Z"/></svg>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ==========================================
+         CONTENIDO PRINCIPAL
+         ========================================== -->
+    <div id="content-wrapper">
+
+        <!-- SECCIÓN 1: INICIO Y PRE-SABERES -->
+        <section id="intro">
+            <h2>Fase 1: Reconocimiento del Terreno</h2>
+            <p class="intro-text">Objetivo de Aprendizaje: Relacionar la Nomenclatura Química IUPAC y las reacciones químicas con los procesos productivos de la Vereda Pueblo Rico (Quimbaya), desarrollando competencias científicas de indagación y explicación de fenómenos.</p>
+            
+            <h3>¿Qué sabemos antes de iniciar? (Pre-saberes)</h3>
+            
+            <div class="question-block" id="pre-1">
+                <p><strong>1.</strong> En las fincas de Pueblo Rico se utiliza gas natural para el secado mecánico del café. El componente principal de este gas es el hidrocarburo más simple, formado por un átomo de carbono. Su fórmula es CH<sub>4</sub>. ¿Cuál es su nombre común y sistemático?</p>
+                <div class="options">
+                    <button class="option-btn" data-correct="false">A. Etano</button>
+                    <button class="option-btn" data-correct="true">B. Metano</button>
+                    <button class="option-btn" data-correct="false">C. Propano</button>
+                    <button class="option-btn" data-correct="false">D. Amoníaco</button>
+                </div>
+                <div class="feedback"></div>
+            </div>
+
+            <div class="question-block" id="pre-2">
+                <p><strong>2.</strong> Durante la fermentación prolongada del mucílago del café, los azúcares se transforman en alcoholes. ¿Qué sufijo utiliza la IUPAC para nombrar a los compuestos orgánicos que contienen el grupo hidroxilo (-OH)?</p>
+                <div class="options">
+                    <button class="option-btn" data-correct="false">A. -oico</button>
+                    <button class="option-btn" data-correct="false">B. -ona</button>
+                    <button class="option-btn" data-correct="true">C. -ol</button>
+                    <button class="option-btn" data-correct="false">D. -al</button>
+                </div>
+                <div class="feedback"></div>
+            </div>
+
+            <div class="question-block" id="pre-3">
+                <p><strong>3.</strong> Para mejorar la acidez de los suelos en los cultivos de cítricos en Quimbaya, los agricultores aplican cal agrícola (Carbonato de Calcio, CaCO<sub>3</sub>). Esta es una sal inorgánica. ¿Qué elementos componen esta fórmula?</p>
+                <div class="options">
+                    <button class="option-btn" data-correct="false">A. Carbono, Cobalto, Oxígeno</button>
+                    <button class="option-btn" data-correct="true">B. Calcio, Carbono, Oxígeno</button>
+                    <button class="option-btn" data-correct="false">C. Cobre, Carbono, Osmio</button>
+                    <button class="option-btn" data-correct="false">D. Calcio, Cloro, Oxígeno</button>
+                </div>
+                <div class="feedback"></div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: CUERPO INDUCTIVO -->
+        <section id="inductive">
+            <h2>Fase 2: La Química Oculta en el Paisaje Quindiano</h2>
+            
+            <div id="inductive-text">
+                <p>Caminar por la Vereda Pueblo Rico en Quimbaya al amanecer es una experiencia intensamente sensorial. La niebla que desciende por las montañas trae consigo aromas complejos que definen la identidad del Paisaje Cultural Cafetero. Sin embargo, más allá de la poesía del entorno, cada fragancia, cada sabor cítrico y cada proceso agrícola que sostiene la economía de las familias quindianas está fundamentado en una rigurosa arquitectura molecular. La química no es una ciencia aislada en laboratorios de paredes blancas; es el lenguaje silencioso que dicta desde la calidad de una taza de café tipo exportación hasta la fertilidad de los suelos ganaderos.</p>
+                
+                <p>Comencemos nuestro análisis con el motor económico de la región: el cultivo del café. Cuando un caficultor recolecta la cereza roja, está manipulando un biorreactor natural. El grano está recubierto por el mucílago, una capa rica en azúcares que debe ser degradada. Durante el beneficio húmedo, microorganismos naturales inician un proceso de fermentación donde la glucosa (C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>) se descompone en etanol y dióxido de carbono. Si este proceso se extiende demasiado debido a las altas temperaturas de Quimbaya, el etanol sufre una oxidación, transformándose en ácido acético, lo que le otorga un defecto avinagrado o "reposado" a la bebida final. Además, el grano contiene alcaloides como la cafeína (1,3,7-trimetilxantina, C<sub>8</sub>H<sub>10</sub>N<sub>4</sub>O<sub>2</sub>) y una matriz de ácidos clorogénicos que, al tostarse, se rompen en cientos de compuestos volátiles responsables del aroma característico.</p>
+                
+                <p>Pero la finca tradicional no vive solo del café. Los cultivos de cítricos, como las naranjas y mandarinas que bordean los cafetales para dar sombra o diversificar ingresos, albergan su propia riqueza química. Al exprimir la cáscara de una mandarina, liberamos aceites esenciales cuyo componente principal es el limoneno (1-metil-4-(prop-1-en-2-il)ciclohex-1-eno), un hidrocarburo cíclico de la familia de los terpenos. El sabor ácido de la pulpa se debe al ácido cítrico (ácido 2-hidroxipropano-1,2,3-tricarboxílico). Si un agricultor desea exportar extractos de estos aceites o formular bio-insecticidas naturales, no puede simplemente llamarlos "jugo de cáscara"; necesita emplear un lenguaje estandarizado que un comprador en Japón o Alemania comprenda a la perfección.</p>
+                
+                <p>Asimismo, los sectores ganadero y porcino, comunes en las zonas más planas de la vereda, introducen variables químicas cruciales para el equilibrio ecológico. El estiércol y los residuos animales son ricos en compuestos nitrogenados como la urea (CO(NH<sub>2</sub>)<sub>2</sub>). Cuando estos desechos se descomponen en ausencia de oxígeno (condiciones anaerobias), bacterias metanogénicas producen metano (CH<sub>4</sub>). Este gas, aunque es un potente contribuyente al efecto invernadero si se libera a la atmósfera, puede ser capturado en biodigestores artesanales construidos en las fincas para generar biogás, sustituyendo la leña y reduciendo la deforestación local. Identificar que el "gas de los cerdos" es el mismo hidrocarburo que el "gas natural" requiere una comprensión de la estructura de las moléculas carbonadas.</p>
+                
+                <p>Es aquí donde se hace indispensable la intervención de la IUPAC (Unión Internacional de Química Pura y Aplicada). La IUPAC actúa como la Real Academia de la Lengua para los químicos. Proporciona un sistema de nomenclatura que permite deducir la estructura tridimensional exacta de una molécula a partir de su nombre, y viceversa. Entender este sistema no es solo memorizar prefijos y sufijos; es adquirir la capacidad de leer las instrucciones de la naturaleza. Para el estudiante de grado 11 de Quimbaya, dominar la nomenclatura IUPAC significa tener las herramientas para tecnificar su agro, comprender los fertilizantes que aplica a su tierra, evitar mezclas tóxicas de agroquímicos y proyectar los productos de su región hacia la innovación científica y el turismo especializado.</p>
+            </div>
+
+            <h3>Cuadro Comparativo: Moléculas Clave de la Vereda Pueblo Rico</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sector</th>
+                            <th>Compuesto Común</th>
+                            <th>Fórmula Estructural / Molecular</th>
+                            <th>Nombre Sistemático (IUPAC)</th>
+                            <th>Función Principal / Impacto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Café</td>
+                            <td>Alcohol Etílico (en fermentación)</td>
+                            <td>CH<sub>3</sub>-CH<sub>2</sub>-OH</td>
+                            <td>Etanol</td>
+                            <td>Subproducto deseable en la primera fase de fermentación del mucílago.</td>
+                        </tr>
+                        <tr>
+                            <td>Café</td>
+                            <td>Ácido Acético (sobrefermentación)</td>
+                            <td>CH<sub>3</sub>-COOH</td>
+                            <td>Ácido Etanoico</td>
+                            <td>Genera notas avinagradas; defecto grave en taza (café sobrefermentado).</td>
+                        </tr>
+                        <tr>
+                            <td>Cítricos</td>
+                            <td>Limoneno</td>
+                            <td>C<sub>10</sub>H<sub>16</sub> (Ciclohexeno derivado)</td>
+                            <td>1-metil-4-(1-metiletenil)ciclohexeno</td>
+                            <td>Aceite esencial, olor a cítrico. Usado como repelente natural.</td>
+                        </tr>
+                        <tr>
+                            <td>Ganadería</td>
+                            <td>Gas Metano (Biogás)</td>
+                            <td>CH<sub>4</sub></td>
+                            <td>Metano</td>
+                            <td>Combustible generado en biodigestores a partir de estiércol.</td>
+                        </tr>
+                        <tr>
+                            <td>Suelos</td>
+                            <td>Urea (Fertilizante)</td>
+                            <td>CO(NH<sub>2</sub>)<sub>2</sub></td>
+                            <td>Diaminometanal</td>
+                            <td>Aporte crítico de Nitrógeno para el desarrollo foliar del cafeto.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 1 A 5 -->
+            <h3>Retos de Campo (Cuaderno Físico)</h3>
+            <div class="pausa-activa">
+                <h4>Pausa Activa 1: Reflexión Territorial</h4>
+                <p>Escribe un párrafo en tu cuaderno respondiendo: ¿Por qué crees que un error en la fermentación (generación de ácido etanoico) puede afectar el precio que recibe tu familia por la carga de pergamino seco?</p>
+                <button class="btn-done btn-pausa" data-id="1">Ya lo hice en mi cuaderno</button>
+            </div>
+            
+            <div class="pausa-activa">
+                <h4>Pausa Activa 2: Dibujo de Observación</h4>
+                <p>Dibuja el proceso de beneficio de café de tu finca (o una conocida). Señala con flechas rojas el lugar exacto donde crees que la Glucosa se convierte en Etanol (CH<sub>3</sub>-CH<sub>2</sub>-OH).</p>
+                <button class="btn-done btn-pausa" data-id="2">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>Pausa Activa 3: Mapa Mental Organoléptico</h4>
+                <p>Construye un mapa mental donde el centro sea "Olores de mi Finca" y ramifica hacia los nombres IUPAC mencionados (Etanol, Ácido Etanoico, Limoneno, Metano).</p>
+                <button class="btn-done btn-pausa" data-id="3">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>Pausa Activa 4: Extrapolación de Cuadro</h4>
+                <p>Añade dos filas nuevas en tu cuaderno al cuadro comparativo anterior investigando (o preguntando en casa) sobre dos agroquímicos usados en la zona (ej. Glifosato, Clorpirifos).</p>
+                <button class="btn-done btn-pausa" data-id="4">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>Pausa Activa 5: Diagrama de Flujo</h4>
+                <p>Diseña un diagrama de flujo simple del biodigestor: Entrada (Estiércol) -> Proceso (Bacterias) -> Salida (CH<sub>4</sub> y Bioabono).</p>
+                <button class="btn-done btn-pausa" data-id="5">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <!-- ANÁLISIS DE GRÁFICA Y PREGUNTA TIPO ICFES -->
+            <h3>Análisis de Datos: Fermentación Controlada</h3>
+            <p>La siguiente gráfica ilustra la evolución de la concentración de tres ácidos orgánicos durante 48 horas de fermentación del café en un tanque tradicional en Pueblo Rico. Analiza el comportamiento de las curvas.</p>
+            
+            <div class="svg-container">
+                <!-- Gráfica SVG creada con código puro -->
+                <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
+                    <!-- Fondo y ejes -->
+                    <rect width="100%" height="100%" fill="#FAFAFA" rx="8" />
+                    <line x1="50" y1="350" x2="750" y2="350" stroke="#212121" stroke-width="2" />
+                    <line x1="50" y1="50" x2="50" y2="350" stroke="#212121" stroke-width="2" />
+                    
+                    <!-- Cuadrícula -->
+                    <line x1="50" y1="275" x2="750" y2="275" stroke="#E0E0E0" stroke-width="1" />
+                    <line x1="50" y1="200" x2="750" y2="200" stroke="#E0E0E0" stroke-width="1" />
+                    <line x1="50" y1="125" x2="750" y2="125" stroke="#E0E0E0" stroke-width="1" />
+                    <line x1="50" y1="50" x2="750" y2="50" stroke="#E0E0E0" stroke-width="1" />
+                    
+                    <!-- Eje Y etiquetas (Concentración g/L) -->
+                    <text x="40" y="355" font-size="12" text-anchor="end">0</text>
+                    <text x="40" y="280" font-size="12" text-anchor="end">1</text>
+                    <text x="40" y="205" font-size="12" text-anchor="end">2</text>
+                    <text x="40" y="130" font-size="12" text-anchor="end">3</text>
+                    <text x="40" y="55" font-size="12" text-anchor="end">4</text>
+                    <text x="20" y="200" font-size="14" font-weight="bold" transform="rotate(-90 20,200)" text-anchor="middle">Concentración (g/L)</text>
+                    
+                    <!-- Eje X etiquetas (Tiempo horas) -->
+                    <text x="50" y="370" font-size="12" text-anchor="middle">0h</text>
+                    <text x="225" y="370" font-size="12" text-anchor="middle">12h</text>
+                    <text x="400" y="370" font-size="12" text-anchor="middle">24h</text>
+                    <text x="575" y="370" font-size="12" text-anchor="middle">36h</text>
+                    <text x="750" y="370" font-size="12" text-anchor="middle">48h</text>
+                    <text x="400" y="390" font-size="14" font-weight="bold" text-anchor="middle">Tiempo de Fermentación (Horas)</text>
+
+                    <!-- Curva 1: Ácido Cítrico (Naranja) - Disminuye -->
+                    <path d="M 50 100 Q 225 150 400 250 T 750 320" fill="none" stroke="#E65100" stroke-width="3" />
+                    <!-- Curva 2: Ácido Láctico (Azul) - Sube y se estabiliza -->
+                    <path d="M 50 340 Q 225 330 400 150 T 750 140" fill="none" stroke="#1976D2" stroke-width="3" />
+                    <!-- Curva 3: Ácido Acético (Rojo) - Sube drásticamente al final -->
+                    <path d="M 50 345 Q 400 340 575 250 T 750 60" fill="none" stroke="#C62828" stroke-width="3" />
+
+                    <!-- Leyenda -->
+                    <rect x="600" y="60" width="15" height="15" fill="#E65100" />
+                    <text x="625" y="73" font-size="12">Ác. Cítrico</text>
+                    <rect x="600" y="85" width="15" height="15" fill="#1976D2" />
+                    <text x="625" y="98" font-size="12">Ác. Láctico</text>
+                    <rect x="600" y="110" width="15" height="15" fill="#C62828" />
+                    <text x="625" y="123" font-size="12">Ác. Acético</text>
+                </svg>
+            </div>
+
+            <div class="question-block" id="icfes-1">
+                <p><strong>Pregunta ICFES (Competencia: Indagación):</strong> De acuerdo con la gráfica de fermentación en la finca de Pueblo Rico, a las 48 horas ocurre un pico dramático en la concentración de un ácido que genera el defecto "avinagrado" en el café. Si este compuesto tiene 2 carbonos en su cadena principal, ¿cuál es su nombre IUPAC correcto deducido de la gráfica?</p>
+                <div class="options">
+                    <button class="option-btn" data-correct="false">A. Ácido Metanoico</button>
+                    <button class="option-btn" data-correct="true">B. Ácido Etanoico</button>
+                    <button class="option-btn" data-correct="false">C. Ácido Propanoico</button>
+                    <button class="option-btn" data-correct="false">D. Etanol</button>
+                </div>
+                <div class="feedback"></div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: CUERPO DEDUCTIVO Y ANIMACIÓN -->
+        <section id="deductive">
+            <h2>Fase 3: Las Reglas de Juego (Sintaxis Molecular)</h2>
+            
+            <div id="deductive-text">
+                <p>Para no perderse en la inmensidad de los millones de compuestos químicos posibles, la IUPAC estableció una sintaxis, un sistema estructurado similar a armar bloques de Lego. Todo nombre químico orgánico sistemático consta de tres partes fundamentales: un prefijo, una raíz y un sufijo. Entender esta anatomía es la clave para deducir estructuras. La raíz nos indica la longitud de la cadena principal de carbonos (met- para 1, et- para 2, prop- para 3, but- para 4, y así sucesivamente). El sufijo nos indica la familia o grupo funcional principal (alcanos terminan en -ano, alcoholes en -ol, cetonas en -ona, ácidos carboxílicos en ácido ...-oico). Finalmente, el prefijo detalla los sustituyentes, aquellas "ramas" que cuelgan del tronco principal, indicando su posición con números (localizadores).</p>
+                
+                <p>Apliquemos esta lógica a los derivados de los hidrocarburos, compuestos fundamentales en los disolventes agrícolas y combustibles de la maquinaria pesada usada en Quimbaya. Tomemos los alcanos, que poseen enlaces simples entre carbonos. El gas propano, usado en las estufas de muchas casas veredales, se compone de 3 carbonos (prop-) y enlaces simples (-ano), dándonos la fórmula C<sub>3</sub>H<sub>8</sub>. Si en una cadena larga existe una ramificación, la IUPAC dicta que debemos numerar la cadena desde el extremo más cercano a la ramificación para otorgarle el número más bajo posible. Por ejemplo, el 2-metilhexano nos indica una cadena de seis carbonos (hexano) que en su posición número dos tiene un grupo metilo (un CH<sub>3</sub> colgante).</p>
+                
+                <p>La complejidad aumenta hermosamente cuando introducimos átomos diferentes al carbono y al hidrógeno, como el oxígeno. Estos son los grupos funcionales y tienen jerarquías. Si recordamos el mucílago del café, la fermentación genera alcoholes. El grupo hidroxilo (-OH) es el protagonista. Si tenemos una cadena de dos carbonos (et-) con un grupo hidroxilo y enlaces simples (-an-), obtenemos el etanol (CH<sub>3</sub>-CH<sub>2</sub>-OH). Sin embargo, si ese mismo alcohol entra en contacto prolongado con el oxígeno del aire en las tolvas de beneficio, se oxida. El carbono del extremo pierde hidrógenos y forma un doble enlace con un oxígeno y un enlace simple con un hidroxilo, creando el grupo carboxilo (-COOH). La jerarquía de la IUPAC indica que los ácidos carboxílicos mandan sobre los alcoholes. Así, el etanol se transforma en ácido etanoico (CH<sub>3</sub>-COOH).</p>
+                
+                <p>Para representar estos cambios, utilizamos las ecuaciones químicas, que son frases completas en este idioma universal. Los reactivos (lo que tenemos al inicio) se ubican a la izquierda, seguidos de una flecha que indica "produce", y los productos (lo que se forma) a la derecha. Por ejemplo, la reacción de neutralización en los suelos de cultivo. Si un suelo está muy ácido, el caficultor aplica Carbonato de Calcio (CaCO<sub>3</sub>), un compuesto inorgánico. Al reaccionar con un ácido en el suelo, digamos el ácido clorhídrico (HCl) presente a veces en fertilizantes sintéticos, se produce Cloruro de Calcio, Agua y Dióxido de Carbono: CaCO<sub>3</sub> + 2HCl → CaCl<sub>2</sub> + H<sub>2</sub>O + CO<sub>2</sub>. Esta ecuación debe estar balanceada, respetando la ley de conservación de la masa.</p>
+                
+                <p>Dominar esta nomenclatura y la representación de reacciones no es un mero ejercicio académico. Le permite al agrónomo, al turista especializado o al hijo del caficultor leer las etiquetas de los pesticidas (como los organofosforados), comprender el tiempo de carencia, calcular la dosis exacta de fertilizante nitrogenado e incluso experimentar con la fermentación controlada para obtener tazas de café con perfiles "afrutados" (presencia de ésteres) en lugar de "fermentos" (ácidos carboxílicos excesivos). La química, escrita a través de la IUPAC, es el manual de instrucciones para potenciar el Paisaje Cultural Cafetero de manera sostenible.</p>
+            </div>
+
+            <h3>Simulador de Reacciones: Oxidación en el Beneficio del Café</h3>
+            <p>Observa en tiempo real (60fps) cómo las moléculas de Etanol colisionan con el Oxígeno en el tanque de lavado para producir Ácido Etanoico (Acético) y Agua, dañando la calidad del café si no se controla el tiempo.</p>
+            <ul>
+                <li><span style="color: #1976D2;">● Azul: Etanol (C<sub>2</sub>H<sub>5</sub>OH)</span></li>
+                <li><span style="color: #D32F2F;">● Rojo: Oxígeno Molecular (O<sub>2</sub>)</span></li>
+                <li><span style="color: #388E3C;">● Verde: Ácido Etanoico (CH<sub>3</sub>COOH)</span></li>
+                <li><span style="color: #00BCD4;">● Celeste: Agua (H<sub>2</sub>O)</span></li>
+            </ul>
+            <div class="canvas-container">
+                <canvas id="chemCanvas" width="800" height="400"></canvas>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 6 A 10 -->
+            <h3>Retos de Síntesis (Cuaderno Físico)</h3>
+            <div class="pausa-activa">
+                <h4>Pausa Activa 6: Mapa Conceptual Estructural</h4>
+                <p>Crea un mapa conceptual explicando la jerarquía: Ácidos Carboxílicos > Cetonas > Alcoholes > Alcanos. Incluye un ejemplo para cada uno basado en el texto.</p>
+                <button class="btn-done btn-pausa" data-id="6">Ya lo hice en mi cuaderno</button>
+            </div>
+            
+            <div class="pausa-activa">
+                <h4>Pausa Activa 7: Tabla de Prefijos</h4>
+                <p>Haz una tabla en tu cuaderno con los prefijos IUPAC del 1 al 10 carbonos (Met, Et, Prop, But, Pent, Hex, Hept, Oct, Non, Dec).</p>
+                <button class="btn-done btn-pausa" data-id="7">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>Pausa Activa 8: Dibujo Esquemático Molecular</h4>
+                <p>Dibuja la estructura de Lewis o de esqueleto del Ácido Etanoico (CH<sub>3</sub>-COOH). Identifica claramente el grupo funcional carboxilo.</p>
+                <button class="btn-done btn-pausa" data-id="8">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>Pausa Activa 9: Síntesis Escrita</h4>
+                <p>Resume en dos líneas por qué el balanceo de una ecuación química respeta la ley de conservación de la masa en el contexto de la aplicación de fertilizantes.</p>
+                <button class="btn-done btn-pausa" data-id="9">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h4>Pausa Activa 10: Reto de Ecuación</h4>
+                <p>Escribe en tu cuaderno la ecuación de la respiración celular de las bacterias metanogénicas de la vaca: C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> -> 3CH<sub>4</sub> + 3CO<sub>2</sub>. ¿Está balanceada?</p>
+                <button class="btn-done btn-pausa" data-id="10">Ya lo hice en mi cuaderno</button>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: EVALUACIÓN FINAL Y EXPORTACIÓN -->
+        <section id="evaluation">
+            <h2>Fase 4: Evaluación y Reporte Técnico</h2>
+            <p>Es hora de demostrar tus competencias como investigador de la vereda Pueblo Rico. Completa el siguiente taller. <strong>Advertencia:</strong> Las preguntas abiertas cuentan con sistema de seguridad anti-copia e IA. Redacta con tus propias palabras (10 a 15 palabras por respuesta).</p>
+
+            <h3>I. Selección Múltiple</h3>
+            
+            <div class="question-block eval-multi" id="eval-m1">
+                <p>1. ¿Cuál es el sufijo IUPAC correspondiente a un compuesto orgánico con un grupo funcional cetona?</p>
+                <select id="sel-m1" style="padding: 5px; width: 100%; max-width: 300px; font-size: 1rem;">
+                    <option value="">Seleccione...</option>
+                    <option value="A">-ol</option>
+                    <option value="B">-al</option>
+                    <option value="C">-ona</option>
+                    <option value="D">-oico</option>
+                </select>
+            </div>
+
+            <div class="question-block eval-multi" id="eval-m2">
+                <p>2. Según la jerarquía IUPAC, si una molécula tiene un grupo alcohol (-OH) y un grupo ácido carboxílico (-COOH), ¿cuál tiene prioridad para nombrar el compuesto base?</p>
+                <select id="sel-m2" style="padding: 5px; width: 100%; max-width: 300px; font-size: 1rem;">
+                    <option value="">Seleccione...</option>
+                    <option value="A">El Alcohol</option>
+                    <option value="B">El Ácido Carboxílico</option>
+                    <option value="C">Tienen igual prioridad</option>
+                    <option value="D">Depende de los carbonos</option>
+                </select>
+            </div>
+
+            <div class="question-block eval-multi" id="eval-m3">
+                <p>3. El prefijo "But-" indica que la cadena principal de carbonos tiene una longitud de:</p>
+                <select id="sel-m3" style="padding: 5px; width: 100%; max-width: 300px; font-size: 1rem;">
+                    <option value="">Seleccione...</option>
+                    <option value="A">2 carbonos</option>
+                    <option value="B">3 carbonos</option>
+                    <option value="C">4 carbonos</option>
+                    <option value="D">5 carbonos</option>
+                </select>
+            </div>
+
+            <div class="question-block eval-multi" id="eval-m4">
+                <p>4. En la ecuación CaCO<sub>3</sub> + 2HCl → CaCl<sub>2</sub> + H<sub>2</sub>O + CO<sub>2</sub>, los números grandes (como el 2 antes del HCl) se llaman coeficientes estequiométricos. ¿Para qué sirven?</p>
+                <select id="sel-m4" style="padding: 5px; width: 100%; max-width: 300px; font-size: 1rem;">
+                    <option value="">Seleccione...</option>
+                    <option value="A">Indican la carga iónica</option>
+                    <option value="B">Balancear la cantidad de átomos (Ley de conservación)</option>
+                    <option value="C">Indicar el estado físico (sólido, líquido)</option>
+                    <option value="D">Indicar la velocidad de reacción</option>
+                </select>
+            </div>
+
+            <div class="question-block eval-multi" id="eval-m5">
+                <p>5. El principal compuesto que da el aroma característico a las mandarinas en Pueblo Rico es un hidrocarburo cíclico llamado:</p>
+                <select id="sel-m5" style="padding: 5px; width: 100%; max-width: 300px; font-size: 1rem;">
+                    <option value="">Seleccione...</option>
+                    <option value="A">Etanol</option>
+                    <option value="B">Metano</option>
+                    <option value="C">Limoneno</option>
+                    <option value="D">Ácido Acético</option>
+                </select>
+            </div>
+
+            <h3>II. Respuestas Abiertas (Anti-Fraude Activado)</h3>
+            <p>Responde estrictamente entre 10 y 15 palabras basándote en lo aprendido.</p>
+
+            <div class="open-question">
+                <label>6. Explica con tus palabras: ¿Qué indica la raíz "Et-" en el nombre Etanol?</label>
+                <textarea id="open-1" class="anti-fraud" autocomplete="off"></textarea>
+                <span class="word-count" id="wc-1">Palabras: 0/15</span>
+                <span class="fraud-alert" id="fa-1"></span>
+            </div>
+
+            <div class="open-question">
+                <label>7. ¿Por qué es perjudicial la presencia excesiva de Ácido Etanoico en el café?</label>
+                <textarea id="open-2" class="anti-fraud" autocomplete="off"></textarea>
+                <span class="word-count" id="wc-2">Palabras: 0/15</span>
+                <span class="fraud-alert" id="fa-2"></span>
+            </div>
+
+            <div class="open-question">
+                <label>8. Menciona la importancia de la IUPAC para un agricultor exportador de Quimbaya.</label>
+                <textarea id="open-3" class="anti-fraud" autocomplete="off"></textarea>
+                <span class="word-count" id="wc-3">Palabras: 0/15</span>
+                <span class="fraud-alert" id="fa-3"></span>
+            </div>
+
+            <div class="open-question">
+                <label>9. ¿Cuál es la diferencia estructural principal entre un alcano y un alqueno?</label>
+                <textarea id="open-4" class="anti-fraud" autocomplete="off"></textarea>
+                <span class="word-count" id="wc-4">Palabras: 0/15</span>
+                <span class="fraud-alert" id="fa-4"></span>
+            </div>
+
+            <div class="open-question">
+                <label>10. ¿De dónde proviene principalmente el gas Metano en una finca ganadera?</label>
+                <textarea id="open-5" class="anti-fraud" autocomplete="off"></textarea>
+                <span class="word-count" id="wc-5">Palabras: 0/15</span>
+                <span class="fraud-alert" id="fa-5"></span>
+            </div>
+
+            <button class="btn" id="btn-evaluar">Finalizar y Evaluar</button>
+
+            <div id="feedback-final">
+                <h3 id="nota-final">Nota: ---</h3>
+                <p id="feedback-text"></p>
+                <button class="btn btn-download" id="btn-descargar">Descargar Resultados (.txt)</button>
+            </div>
+
+        </section>
+    </div>
+
+    <!-- ==========================================
+         LÓGICA JAVASCRIPT VANILLA
+         ========================================== -->
+    <script>
+        // ESTADO GLOBAL
+        const state = {
+            nombres: '',
+            apellidos: '',
+            puntos: 0,
+            progresoPausas: 0,
+            preSaberesCompletos: false,
+            pausasInductivasCompletas: false,
+            icfesRespondido: false,
+            pausasDeductivasCompletas: false,
+            evaluacionCompleta: false
+        };
+
+        // REFERENCIAS DOM
+        const ui = {
+            loginScreen: document.getElementById('login-screen'),
+            contentWrapper: document.getElementById('content-wrapper'),
+            btnIniciar: document.getElementById('btn-iniciar'),
+            inputNombres: document.getElementById('nombres'),
+            inputApellidos: document.getElementById('apellidos'),
+            displayName: document.getElementById('display-name'),
+            loginError: document.getElementById('login-error'),
+            pointsDisplay: document.getElementById('points'),
+            progressBar: document.getElementById('progress-bar'),
+            icons: [
+                document.getElementById('icon-1'),
+                document.getElementById('icon-2'),
+                document.getElementById('icon-3'),
+                document.getElementById('icon-4'),
+                document.getElementById('icon-5')
+            ]
+        };
+
+        // ==========================================
+        // GESTIÓN DE USUARIO (LOGIN)
+        // ==========================================
+        ui.btnIniciar.addEventListener('click', () => {
+            const nom = ui.inputNombres.value.trim();
+            const ape = ui.inputApellidos.value.trim();
+            
+            if(nom.length > 2 && ape.length > 2) {
+                state.nombres = nom;
+                state.apellidos = ape;
+                ui.displayName.innerText = `${nom} ${ape}`;
+                ui.loginScreen.style.opacity = '0';
+                setTimeout(() => {
+                    ui.loginScreen.style.display = 'none';
+                    ui.contentWrapper.style.display = 'block';
+                    window.scrollTo(0,0);
+                    initCanvas(); // Iniciar animación al cargar contenido
+                }, 800);
+            } else {
+                ui.loginError.style.display = 'block';
+            }
+        });
+
+        // ==========================================
+        // SISTEMA DE PUNTOS Y GAMIFICACIÓN
+        // ==========================================
+        function addPoint(reasonIndex) {
+            if(state.puntos < 5) {
+                state.puntos++;
+                ui.pointsDisplay.innerText = state.puntos;
+                ui.icons[reasonIndex].classList.add('unlocked');
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            // El progreso es un % de interacciones totales (3 pre + 10 pausas + 1 icfes + eval = 15 items)
+            // Para simplificar, la barra crece con los puntos.
+            const percentage = (state.puntos / 5) * 100;
+            ui.progressBar.style.width = `${percentage}%`;
+        }
+
+        // ==========================================
+        // PRE-SABERES (Opción múltiple interactiva)
+        // ==========================================
+        let preRespuestas = 0;
+        document.querySelectorAll('.question-block .option-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const parent = this.closest('.question-block');
+                const isIcfes = parent.id === 'icfes-1';
+                
+                // Si ya fue respondida, ignorar
+                if(parent.classList.contains('answered')) return;
+                
+                parent.classList.add('answered');
+                const isCorrect = this.getAttribute('data-correct') === 'true';
+                
+                this.classList.add(isCorrect ? 'correct' : 'incorrect');
+                const feedback = parent.querySelector('.feedback');
+                feedback.style.display = 'block';
+                
+                if(isCorrect) {
+                    feedback.style.color = 'var(--verde-hoja)';
+                    feedback.innerText = '¡Correcto! Excelente análisis.';
+                } else {
+                    feedback.style.color = 'var(--rojo-alerta)';
+                    feedback.innerText = 'Incorrecto. Revisa el concepto planteado en el texto.';
+                    // Marcar la correcta para retroalimentación
+                    parent.querySelector('[data-correct="true"]').classList.add('correct');
+                }
+
+                if(!isIcfes) {
+                    preRespuestas++;
+                    if(preRespuestas === 3 && !state.preSaberesCompletos) {
+                        state.preSaberesCompletos = true;
+                        addPoint(0); // Desbloquea Grano de Café
+                    }
+                } else {
+                    if(!state.icfesRespondido) {
+                        state.icfesRespondido = true;
+                        addPoint(2); // Desbloquea Vaca (3er icono, punto 3)
+                    }
+                }
+            });
+        });
+
+        // ==========================================
+        // PAUSAS ACTIVAS
+        // ==========================================
+        document.querySelectorAll('.btn-pausa').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if(this.classList.contains('completed')) return;
+                
+                this.classList.add('completed');
+                this.innerText = '✓ Completado';
+                state.progresoPausas++;
+
+                if(state.progresoPausas === 5 && !state.pausasInductivasCompletas) {
+                    state.pausasInductivasCompletas = true;
+                    addPoint(1); // Desbloquea Cítrico
+                }
+                if(state.progresoPausas === 10 && !state.pausasDeductivasCompletas) {
+                    state.pausasDeductivasCompletas = true;
+                    addPoint(3); // Desbloquea Jeep
+                }
+            });
+        });
+
+        // ==========================================
+        // SISTEMA ANTI-FRAUDE (RESPUESTAS ABIERTAS)
+        // ==========================================
+        const openInputs = document.querySelectorAll('.anti-fraud');
+        openInputs.forEach((input, index) => {
+            let startTime = 0;
+            const wcDisplay = document.getElementById(`wc-${index+1}`);
+            const alertDisplay = document.getElementById(`fa-${index+1}`);
+
+            // Prevenir pegado, drop y menu contextual
+            input.addEventListener('paste', e => { 
+                e.preventDefault(); 
+                showFraudAlert(alertDisplay, "Acción bloqueada: No se permite pegar texto.");
+            });
+            input.addEventListener('drop', e => { 
+                e.preventDefault(); 
+                showFraudAlert(alertDisplay, "Acción bloqueada: No se permite arrastrar texto.");
+            });
+            input.addEventListener('contextmenu', e => e.preventDefault());
+            
+            // Cadencia y combinaciones
+            input.addEventListener('keydown', (e) => {
+                if(startTime === 0) startTime = Date.now();
+                if(e.ctrlKey && (e.key === 'v' || e.key === 'V')) e.preventDefault();
+                if(e.metaKey && (e.key === 'v' || e.key === 'V')) e.preventDefault(); // Mac
+            });
+
+            // Conteo de palabras y validación de cadencia
+            input.addEventListener('input', (e) => {
+                const text = e.target.value.trim();
+                const words = text.length === 0 ? 0 : text.split(/\s+/).length;
+                wcDisplay.innerText = `Palabras: ${words}/15`;
+                
+                if(words >= 10 && words <= 15) {
+                    wcDisplay.style.color = 'var(--verde-hoja)';
+                } else {
+                    wcDisplay.style.color = 'var(--cafe-medio)';
+                }
+
+                // Check cadencia solo si hay texto significativo (>20 chars)
+                if(text.length > 20) {
+                    const duration = (Date.now() - startTime) / 1000; // segundos
+                    const charsPerSecond = text.length / duration;
+                    // Un humano rápido teclea ~5-8 caracteres por segundo. Si es > 25, es bot/paste inyectado.
+                    if(charsPerSecond > 25) {
+                        showFraudAlert(alertDisplay, "Velocidad de escritura inhumana detectada. Por favor, digita tú mismo la respuesta.");
+                        e.target.value = '';
+                        startTime = Date.now(); // reset
+                        wcDisplay.innerText = `Palabras: 0/15`;
+                    }
+                }
+            });
+        });
+
+        function showFraudAlert(element, message) {
+            element.innerText = message;
+            element.style.display = 'block';
+            setTimeout(() => { element.style.display = 'none'; }, 4000);
+        }
+
+        // ==========================================
+        // ANIMACIÓN CANVAS (COLISIONES A 60FPS)
+        // ==========================================
+        let canvas, ctx, particles = [];
+        const numParticles = 30; // 15 Etanol, 15 O2
+
+        class Particle {
+            constructor(type, x, y) {
+                this.type = type; // 'etanol' o 'oxigeno' o 'acetico' o 'agua'
+                this.radius = type === 'etanol' ? 12 : 8;
+                this.x = x || Math.random() * (canvas.width - this.radius * 2) + this.radius;
+                this.y = y || Math.random() * (canvas.height - this.radius * 2) + this.radius;
+                this.vx = (Math.random() - 0.5) * 3;
+                this.vy = (Math.random() - 0.5) * 3;
+                this.mass = this.radius;
+                this.setColor();
+            }
+
+            setColor() {
+                if(this.type === 'etanol') this.color = '#1976D2'; // Azul
+                else if(this.type === 'oxigeno') this.color = '#D32F2F'; // Rojo
+                else if(this.type === 'acetico') this.color = '#388E3C'; // Verde
+                else if(this.type === 'agua') this.color = '#00BCD4'; // Celeste
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.closePath();
+                
+                // Texto indicador
+                ctx.fillStyle = "#FFF";
+                ctx.font = "10px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                let lbl = "";
+                if(this.type === 'etanol') lbl = "Et";
+                if(this.type === 'oxigeno') lbl = "O2";
+                if(this.type === 'acetico') lbl = "Ac";
+                if(this.type === 'agua') lbl = "H2O";
+                ctx.fillText(lbl, this.x, this.y);
+            }
+
+            update() {
+                // Rebote en paredes
+                if(this.x + this.radius > canvas.width || this.x - this.radius < 0) this.vx = -this.vx;
+                if(this.y + this.radius > canvas.height || this.y - this.radius < 0) this.vy = -this.vy;
+
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+        }
+
+        function resolveCollision(p1, p2) {
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < p1.radius + p2.radius) {
+                // Reacción química al chocar Etanol y Oxígeno
+                if((p1.type === 'etanol' && p2.type === 'oxigeno') || (p1.type === 'oxigeno' && p2.type === 'etanol')) {
+                    p1.type = 'acetico';
+                    p1.radius = 14;
+                    p1.setColor();
+                    
+                    p2.type = 'agua';
+                    p2.radius = 6;
+                    p2.setColor();
+                }
+
+                // Física de rebote elástico simple
+                const normalX = dx / distance;
+                const normalY = dy / distance;
+
+                const relVelX = p1.vx - p2.vx;
+                const relVelY = p1.vy - p2.vy;
+
+                const velAlongNormal = relVelX * normalX + relVelY * normalY;
+
+                if (velAlongNormal > 0) return;
+
+                const e = 1; // Restitución
+                const j = -(1 + e) * velAlongNormal / (1/p1.mass + 1/p2.mass);
+
+                const impulseX = j * normalX;
+                const impulseY = j * normalY;
+
+                p1.vx += impulseX / p1.mass;
+                p1.vy += impulseY / p1.mass;
+                p2.vx -= impulseX / p2.mass;
+                p2.vy -= impulseY / p2.mass;
+            }
+        }
+
+        function initCanvas() {
+            canvas = document.getElementById('chemCanvas');
+            ctx = canvas.getContext('2d');
+            
+            for(let i=0; i<numParticles/2; i++) {
+                particles.push(new Particle('etanol'));
+                particles.push(new Particle('oxigeno'));
+            }
+
+            requestAnimationFrame(animateCanvas);
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid de fondo sutil
+            ctx.strokeStyle = "rgba(255,255,255,0.05)";
+            for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+            for(let i=0; i<canvas.height; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                
+                for (let j = i + 1; j < particles.length; j++) {
+                    resolveCollision(particles[i], particles[j]);
+                }
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+
+
+        // ==========================================
+        // EVALUACIÓN FINAL Y DESCARGA
+        // ==========================================
+        const respuestasCorrectasM = { 'sel-m1': 'C', 'sel-m2': 'B', 'sel-m3': 'C', 'sel-m4': 'B', 'sel-m5': 'C' };
+
+        document.getElementById('btn-evaluar').addEventListener('click', () => {
+            let correctasMulti = 0;
+            let validadasAbiertas = 0;
+            let feedback = "Ruta de Fortalecimiento:\n";
+
+            // Validar Selección Múltiple
+            for(let key in respuestasCorrectasM) {
+                const select = document.getElementById(key);
+                if(select.value === respuestasCorrectasM[key]) {
+                    correctasMulti++;
+                    select.style.borderColor = 'var(--verde-hoja)';
+                } else {
+                    select.style.borderColor = 'var(--rojo-alerta)';
+                    feedback += `- Repasar la regla de jerarquía y balanceo evaluada en la pregunta ${key.replace('sel-m','')}.\n`;
+                }
+            }
+
+            // Validar Abiertas (longitud de palabras)
+            let textosAbiertos = [];
+            for(let i=1; i<=5; i++) {
+                const textarea = document.getElementById(`open-${i}`);
+                const words = textarea.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+                textosAbiertos.push(`P${i+5}: ${textarea.value.trim()}`);
+                
+                if(words >= 10 && words <= 15) {
+                    validadasAbiertas++;
+                    textarea.style.borderColor = 'var(--verde-hoja)';
+                } else {
+                    textarea.style.borderColor = 'var(--rojo-alerta)';
+                    feedback += `- Pregunta ${i+5}: No cumple el criterio de extensión (10-15 palabras). Tienes ${words}.\n`;
+                }
+            }
+
+            const notaBase = (correctasMulti * 1) + (validadasAbiertas * 1); // Sobre 10 puntos totales
+
+            document.getElementById('nota-final').innerText = `Nota Final: ${notaBase} / 10`;
+            if(notaBase === 10) feedback = "¡Excelente trabajo! Has demostrado dominio total de la nomenclatura IUPAC aplicada al entorno de Pueblo Rico.";
+            
+            document.getElementById('feedback-text').innerText = feedback;
+            document.getElementById('feedback-final').style.display = 'block';
+            
+            if(!state.evaluacionCompleta) {
+                state.evaluacionCompleta = true;
+                addPoint(4); // Desbloquea Taza de Café
+            }
+
+            // Preparar data para descarga
+            window.reportData = `REPORTE TÉCNICO - LABORATORIO VIRTUAL QUIMBAYA
+--------------------------------------------------
+Investigador: ${state.nombres} ${state.apellidos}
+Puntaje Gamificación: ${state.puntos}/5
+Nota Evaluación: ${notaBase}/10
+
+Observaciones y Retroalimentación:
+${feedback}
+
+Respuestas Abiertas Entregadas:
+${textosAbiertos.join('\n')}
+--------------------------------------------------
+Generado desde OVA Local - Cero Dependencias.
+`;
+        });
+
+        document.getElementById('btn-descargar').addEventListener('click', () => {
+            if(!window.reportData) return;
+            const blob = new Blob([window.reportData], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Reporte_${state.apellidos}_Quimbaya.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+    </script>
+</body>
+</html>

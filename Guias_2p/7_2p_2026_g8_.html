@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Respiración Celular - Vereda Pueblo Rico</title>
+    <style>
+        :root {
+            --verde-quindio: #1b5e20;
+            --cafe-suave: #4e342e;
+            --naranja-citrico: #e65100;
+            --amarillo-maiz: #fbc02d;
+            --blanco-crema: #fdfdf5;
+            --rojo-corazon: #c62828;
+            --shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0eee2; 
+            color: #2c2c2c;
+            line-height: 1.6;
+        }
+
+        /* Pantalla de Inicio */
+        #welcome-screen {
+            position: fixed; inset: 0; background: linear-gradient(135deg, var(--verde-quindio), var(--cafe-suave));
+            z-index: 2000; display: flex; align-items: center; justify-content: center; color: white;
+        }
+
+        .login-card {
+            background: white; color: #333; padding: 40px; border-radius: 20px;
+            width: 90%; max-width: 450px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center;
+        }
+
+        input[type="text"] {
+            width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;
+        }
+
+        /* Barra de Navegación */
+        nav {
+            position: fixed; top: 0; width: 100%; background: var(--verde-quindio);
+            color: white; padding: 10px 5%; display: flex; justify-content: space-between;
+            align-items: center; z-index: 1000; box-shadow: var(--shadow);
+        }
+
+        .progress-container { display: flex; align-items: center; gap: 15px; }
+        .progress-bar { width: 150px; height: 10px; background: rgba(255,255,255,0.3); border-radius: 5px; overflow: hidden; }
+        #progress-fill { width: 0%; height: 100%; background: var(--amarillo-maiz); transition: 0.4s; }
+
+        /* Contenido Principal */
+        .content { max-width: 1000px; margin: 100px auto; padding: 20px; display: none; }
+        section { background: white; padding: 40px; border-radius: 15px; margin-bottom: 40px; box-shadow: var(--shadow); border-left: 8px solid var(--verde-quindio); }
+
+        h1, h2 { color: var(--verde-quindio); margin-bottom: 20px; }
+        .intro-text { font-size: 1.1rem; text-align: justify; margin-bottom: 20px; }
+
+        /* Estética SVG */
+        .svg-container { text-align: center; margin: 30px 0; }
+        
+        /* Pausas Activas */
+        .pause-box {
+            background: #e8f5e9; border: 2px dashed var(--verde-quindio);
+            padding: 20px; border-radius: 12px; margin: 20px 0; display: flex;
+            align-items: center; gap: 20px;
+        }
+
+        .btn-action {
+            background: var(--verde-quindio); color: white; border: none;
+            padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.3s;
+        }
+        .btn-action:hover { background: var(--cafe-suave); }
+        .btn-action:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Quiz */
+        .option-btn {
+            display: block; width: 100%; text-align: left; padding: 15px;
+            margin: 10px 0; border: 1px solid #ddd; border-radius: 8px;
+            background: #fff; cursor: pointer; transition: 0.2s;
+        }
+        .option-btn:hover { background: #f1f8e9; border-color: var(--verde-quindio); }
+        .correct { background: #c8e6c9 !important; border-color: #2e7d32 !important; }
+        .wrong { background: #ffcdd2 !important; border-color: #c62828 !important; }
+
+        /* Canvas */
+        #canvas-wrap { position: relative; background: #000; border-radius: 15px; margin: 30px 0; overflow: hidden; }
+        canvas { width: 100%; height: 400px; display: block; }
+        .canvas-label { position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; }
+
+        /* Anti-Fraude */
+        textarea { width: 100%; height: 100px; padding: 15px; border-radius: 10px; border: 2px solid #ddd; resize: none; font-family: inherit; }
+        .fraud-alert { color: var(--rojo-corazon); font-size: 0.8rem; display: none; font-weight: bold; }
+
+        /* Gamificación Icons */
+        .badge { font-size: 1.5rem; }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: var(--verde-quindio); color: white; }
+
+        footer { text-align: center; padding: 40px; color: #777; }
+    </style>
+</head>
+<body>
+
+<div id="welcome-screen">
+    <div class="login-card">
+        <h2 style="color: var(--verde-quindio)">¡Bienvenido, Investigador!</h2>
+        <p>Vereda Pueblo Rico, Quimbaya</p>
+        <div style="margin-top: 20px;">
+            <input type="text" id="user-lastnames" placeholder="Apellidos completos">
+            <input type="text" id="user-names" placeholder="Nombres completos">
+            <button class="btn-action" style="width: 100%; margin-top: 10px;" id="start-btn">ENTRAR A LA CÉLULA</button>
+        </div>
+    </div>
+</div>
+
+<nav>
+    <div id="nav-user">Explorador: ---</div>
+    <div class="progress-container">
+        <span id="score-display">Puntos: 0.0</span>
+        <div class="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+</nav>
+
+<div class="content" id="main-content">
+    
+    <!-- INICIO: OBJETIVO Y PRESABERES -->
+    <section>
+        <h1>El Motor de la Vida en Pueblo Rico</h1>
+        <p class="intro-text">
+            <strong>Objetivo:</strong> Comprender cómo la respiración celular transforma los nutrientes de los alimentos locales en la energía necesaria para las actividades cotidianas en el Quindío.
+        </p>
+
+        <div id="presaberes">
+            <h3>Preguntas de Exploración</h3>
+            <div class="quiz-item" data-id="pre1">
+                <p>1. Cuando corres en la cancha de la vereda y sientes que te falta el aire, ¿qué crees que están pidiendo tus células?</p>
+                <button class="option-btn" onclick="checkPre(this, true)">Oxígeno para producir energía</button>
+                <button class="option-btn" onclick="checkPre(this, false)">Agua para sudar</button>
+                <button class="option-btn" onclick="checkPre(this, false)">Dióxido de carbono</button>
+            </div>
+            <div class="quiz-item" data-id="pre2" style="margin-top:20px;">
+                <p>2. ¿Cuál es la principal fuente de glucosa (azúcar) que consumimos en un desayuno típico de nuestra vereda?</p>
+                <button class="option-btn" onclick="checkPre(this, false)">La sal de la carne</button>
+                <button class="option-btn" onclick="checkPre(this, true)">El maíz de la arepa y el azúcar de la aguapanela</button>
+                <button class="option-btn" onclick="checkPre(this, false)">El agua pura de la quebrada</button>
+            </div>
+            <div class="quiz-item" data-id="pre3" style="margin-top:20px;">
+                <p>3. ¿En qué parte de la célula ocurre la liberación masiva de energía?</p>
+                <button class="option-btn" onclick="checkPre(this, false)">En la pared celular</button>
+                <button class="option-btn" onclick="checkPre(this, false)">En la vacuola</button>
+                <button class="option-btn" onclick="checkPre(this, true)">En la mitocondria</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CUERPO INDUCTIVO -->
+    <section>
+        <h2>Inducción: De la Arepa a la Carrera</h2>
+        <div class="intro-text">
+            <p>Imagínate un lunes por la mañana en la Vereda Pueblo Rico. El sol apenas asoma tras las fincas cafeteras y tú te preparas para ir a la escuela. Has desayunado una arepa de maíz bien caliente y una taza de aguapanela con queso. Al llegar a la escuela, en la clase de educación física, el profesor te pide correr tres vueltas a la cancha. A la segunda vuelta, notas que tu corazón late con fuerza y que tu respiración se vuelve profunda y rápida. ¿Qué está pasando realmente dentro de ti? No solo estás moviendo los pies; estás activando billones de "motores" microscópicos en cada uno de tus músculos.</p>
+            
+            <p>La respiración celular es el proceso bioquímico por el cual las células transforman la energía química de los alimentos (como la glucosa del maíz) en una forma de energía que el cuerpo puede usar, llamada ATP (Adenosín Trifosfato). En el sector productivo de nuestra vereda, vemos esto en todas partes: en el recolector de café que sube la ladera con un bulto al hombro, en las vacas que pastan en los potreros para producir leche, y hasta en los árboles de mandarina que necesitan energía para madurar sus frutos. Todos los seres vivos de Quimbaya respiramos celularmente para existir.</p>
+
+            <p>Cuando corres en la cancha, tus músculos demandan energía inmediata. El oxígeno que inhalas viaja por tu sangre hasta las mitocondrias de tus células musculares. Allí, como si fuera una pequeña caldera de una finca antigua, el oxígeno reacciona con la glucosa de tu desayuno. El resultado de esta "combustión" controlada es la liberación de energía, pero también se producen desechos: agua (que sale como sudor y vapor) y dióxido de carbono (CO<sub>2</sub>), que expulsas al exhalar. Es un ciclo perfecto de intercambio con el entorno de Pueblo Rico.</p>
+
+            <p>En nuestra vereda, la ganadería también depende de esto. Una vaca de alta producción lechera necesita procesar grandes cantidades de pasto para obtener glucosa. Si la respiración celular de la vaca falla por falta de oxígeno o mala alimentación, la producción de leche en la finca caerá drásticamente. Lo mismo sucede con los cítricos; las células de la naranja respiran para crecer. La ciencia no está en los libros lejanos, está en el latido de tu corazón mientras ves el paisaje cafetero desde la parte alta de la vereda.</p>
+
+            <p>Finalmente, entender la respiración celular es entender por qué nos cansamos. Si corres demasiado rápido, el oxígeno no llega a tiempo y la célula tiene que buscar formas alternativas (fermentación), lo que produce ese dolorcito llamado "baño" o fatiga muscular. Por eso, un buen deportista de Quimbaya sabe que respirar bien es la clave para que sus mitocondrias trabajen a toda marcha, convirtiendo ese desayuno de Pueblo Rico en una energía imparable que le permita cumplir con todas sus labores del día.</p>
+        </div>
+
+        <div class="svg-container">
+            <svg viewBox="0 0 400 200" width="100%" style="max-width:500px">
+                <rect x="10" y="10" width="380" height="180" rx="20" fill="#f1f8e9" stroke="#1b5e20" stroke-width="3"/>
+                <text x="50%" y="40" text-anchor="middle" font-weight="bold" fill="#1b5e20">PROCESO EN PUEBLO RICO</text>
+                <g transform="translate(40,70)">
+                    <rect width="80" height="40" rx="5" fill="#fbc02d"/>
+                    <text x="40" y="25" text-anchor="middle" font-size="12">Glucosa</text>
+                    <text x="40" y="55" text-anchor="middle" font-size="10" fill="#666">(Arepa/Maíz)</text>
+                </g>
+                <text x="145" y="95" font-size="24" font-weight="bold">+</text>
+                <g transform="translate(170,70)">
+                    <rect width="80" height="40" rx="5" fill="#81d4fa"/>
+                    <text x="40" y="25" text-anchor="middle" font-size="12">Oxígeno</text>
+                    <text x="40" y="55" text-anchor="middle" font-size="10" fill="#666">(Aire puro)</text>
+                </g>
+                <text x="270" y="95" font-size="24" font-weight="bold">→</text>
+                <g transform="translate(300,70)">
+                    <rect width="70" height="40" rx="5" fill="#ff7043"/>
+                    <text x="35" y="25" text-anchor="middle" font-size="12" fill="white">ATP</text>
+                    <text x="35" y="55" text-anchor="middle" font-size="10" fill="#666">(Energía)</text>
+                </g>
+            </svg>
+        </div>
+
+        <!-- PAUSAS 1-5 -->
+        <div class="pause-box">
+            <span class="badge">☕</span>
+            <div><strong>Pausa 1:</strong> En tu cuaderno, describe qué sentiste exactamente en tu corazón después de correr en la cancha hoy.</div>
+            <button class="btn-action" onclick="markTask(1)">Ya lo hice</button>
+        </div>
+        <div class="pause-box">
+            <span class="badge">🍊</span>
+            <div><strong>Pausa 2:</strong> Dibuja un esquema de cómo el aire entra por tu nariz y viaja hasta una célula de tu pierna.</div>
+            <button class="btn-action" onclick="markTask(2)">Ya lo hice</button>
+        </div>
+        <div class="pause-box">
+            <span class="badge">🗺️</span>
+            <div><strong>Pausa 3:</strong> Crea un mapa mental que conecte el Desayuno -> Digestión -> Mitocondria -> Salto.</div>
+            <button class="btn-action" onclick="markTask(3)">Ya lo hice</button>
+        </div>
+        <div class="pause-box">
+            <span class="badge">📊</span>
+            <div><strong>Pausa 4:</strong> Haz un cuadro comparativo entre un motor de una pulpa de café y la mitocondria.</div>
+            <button class="btn-action" onclick="markTask(4)">Ya lo hice</button>
+        </div>
+        <div class="pause-box">
+            <span class="badge">🌊</span>
+            <div><strong>Pausa 5:</strong> Diseña un diagrama de flujo de lo que le pasa a la glucosa desde que muerdes la arepa.</div>
+            <button class="btn-action" onclick="markTask(5)">Ya lo hice</button>
+        </div>
+    </section>
+
+    <!-- PREGUNTA ICFES -->
+    <section>
+        <h2>Análisis de Eficiencia Energética</h2>
+        <p>Observa la siguiente gráfica de producción de ATP vs Disponibilidad de Oxígeno en un habitante de la Vereda Pueblo Rico realizando labores agrícolas:</p>
+        <div class="svg-container">
+            <svg viewBox="0 0 500 200" style="background:#fafafa; border:1px solid #ddd; border-radius:10px;">
+                <!-- Ejes -->
+                <line x1="50" y1="170" x2="450" y2="170" stroke="#333" stroke-width="2"/>
+                <line x1="50" y1="170" x2="50" y2="30" stroke="#333" stroke-width="2"/>
+                <!-- Curva -->
+                <path d="M50 170 Q150 160 250 100 T450 50" fill="none" stroke="#e65100" stroke-width="4"/>
+                <text x="250" y="190" text-anchor="middle" font-size="12">Intensidad del Ejercicio (Cancha)</text>
+                <text x="30" y="100" text-anchor="middle" font-size="12" transform="rotate(-90 30,100)">Producción ATP</text>
+                <circle cx="250" cy="100" r="6" fill="#1b5e20"/>
+                <text x="260" y="95" font-size="10" fill="#1b5e20">Punto de Fatiga</text>
+            </svg>
+        </div>
+        <div class="quiz-item">
+            <p><strong>Pregunta tipo ICFES:</strong> Si un estudiante de la vereda corre tan rápido que sus pulmones no logran captar suficiente oxígeno, ¿qué ocurrirá con la gráfica de producción de energía eficiente?</p>
+            <button class="option-btn" onclick="checkIcfes(this, false)">A. La producción de ATP seguirá subiendo infinitamente.</button>
+            <button class="option-btn" onclick="checkIcfes(this, true)">B. La producción bajará y la célula entrará en proceso de fermentación.</button>
+            <button class="option-btn" onclick="checkIcfes(this, false)">C. El corazón dejará de latir instantáneamente por falta de glucosa.</button>
+            <button class="option-btn" onclick="checkIcfes(this, false)">D. La arepa del desayuno se convertirá en oxígeno automáticamente.</button>
+        </div>
+    </section>
+
+    <!-- CUERPO DEDUCTIVO -->
+    <section>
+        <h2>Deducción: Las Leyes de la Energía Celular</h2>
+        <div class="intro-text">
+            <p>A nivel técnico, la respiración celular es un conjunto de reacciones catabólicas. Esto significa que moléculas grandes y complejas se rompen para liberar la energía contenida en sus enlaces químicos. El proceso se divide principalmente en tres etapas: la Glucólisis (que ocurre en el citoplasma), el Ciclo de Krebs y la Cadena de Transporte de Electrones (ambas dentro de la mitocondria). Para un campesino de Quimbaya, esto se traduce en eficiencia: cuanta más salud tengan sus mitocondrias, más trabajo podrá realizar sin fatigarse.</p>
+
+            <p>Un principio fundamental es la Ley de Conservación de la Energía: la energía de la arepa no se crea de la nada, se transforma. La glucosa (C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>) reacciona con 6 moléculas de Oxígeno (O<sub>2</sub>) para dar 6 de CO<sub>2</sub>, 6 de H<sub>2</sub>O y, lo más importante, 36 a 38 moléculas de ATP. Si comparamos esto con el sector productivo de cítricos, una planta que no recibe suficiente sol no podrá fabricar suficiente glucosa (fotosíntesis), por lo tanto, no tendrá qué respirar y el fruto será pequeño y sin jugo. Todo está conectado por la energía celular.</p>
+
+            <p>En el clima cálido-templado de nuestra Vereda Pueblo Rico, la temperatura influye en la velocidad de estas reacciones. Si hace demasiado calor, las enzimas que ayudan en la respiración celular pueden trabajar más lento o dañarse. Esto lo vemos cuando el ganado de la vereda busca la sombra de los árboles de café en las tardes calurosas; lo hacen para regular su temperatura y permitir que sus mitocondrias sigan funcionando con eficiencia para producir leche.</p>
+
+            <p>La respiración aeróbica (con oxígeno) es mucho más eficiente que la anaeróbica. Mientras la aeróbica produce casi 38 ATP por cada molécula de glucosa, la anaeróbica solo produce 2 ATP. Por eso, cuando subes la cuesta hacia la finca "La Esperanza" y sientes que te ahogas, tu cuerpo está perdiendo eficiencia energética. La ciencia nos enseña que el entrenamiento físico en la vereda mejora nuestra capacidad de transporte de oxígeno, haciendo que cada célula sea una central eléctrica de alta tecnología.</p>
+
+            <p>Finalmente, debemos valorar la importancia de una nutrición balanceada en el campo. Comer solo carbohidratos no es suficiente; las mitocondrias necesitan vitaminas y minerales (que encontramos en las frutas y verduras de la zona) para que la "cadena de transporte de electrones" funcione correctamente. Sin estos ayudantes, la energía de la arepa se quedaría "atrapada" y no podríamos disfrutar de la vida activa en nuestra hermosa Vereda Pueblo Rico.</p>
+        </div>
+
+        <div id="canvas-wrap">
+            <div class="canvas-label">Simulador Mitocondrial: Liberación de ATP (60fps)</div>
+            <canvas id="mitochondria-sim"></canvas>
+            <div style="padding:15px; background:#fff; display:flex; gap:10px; align-items:center;">
+                <label>Intensidad de ejercicio:</label>
+                <input type="range" id="sim-intensity" min="1" max="10" value="2">
+                <span id="int-val">Baja</span>
+            </div>
+        </div>
+
+        <!-- PAUSAS 6-10 -->
+        <div class="pause-box">
+            <span class="badge">🧠</span>
+            <div><strong>Pausa 6:</strong> Construye un mapa conceptual sobre las 3 etapas de la respiración celular.</div>
+            <button class="btn-action" onclick="markTask(6)">Ya lo hice</button>
+        </div>
+        <div class="pause-box">
+            <span class="badge">📋</span>
+            <div><strong>Pausa 7:</strong> Elabora una tabla de datos: ¿Cuántas veces respiras por minuto sentado vs. después de saltar?</div>
+            <button class="btn-action" onclick="markTask(7)">Ya lo hice</button>
+        </div>
+        <div class="pause-box">
+            <span class="badge">📐</span>
+            <div><strong>Pausa 8:</strong> Dibuja técnicamente una mitocondria con sus crestas y matriz mitocondrial.</div>
+            <button class="btn-action" onclick="markTask(8)">Ya lo hice</button>
+        </div>
+        <div class="pause-box">
+            <span class="badge">✍️</span>
+            <div><strong>Pausa 9:</strong> Escribe una síntesis: ¿Por qué el oxígeno es el "limpiador" final del proceso?</div>
+            <button class="btn-action" onclick="markTask(9)">Ya lo hice</button>
+        </div>
+        <div class="pause-box">
+            <span class="badge">🐄</span>
+            <div><strong>Pausa 10:</strong> Problema: Si una vaca necesita 100 unidades de ATP para caminar 10 metros, ¿cuánta glucosa mínima requiere?</div>
+            <button class="btn-action" onclick="markTask(10)">Ya lo hice</button>
+        </div>
+    </section>
+
+    <!-- EVALUACIÓN FINAL -->
+    <section>
+        <h2>Evaluación Final: Maestro en Bioenergía</h2>
+        
+        <div id="final-test">
+            <h3>Selección Múltiple</h3>
+            <div class="quiz-item" style="margin-bottom:20px;">
+                <p>1. ¿Cuál es el residuo gaseoso que expulsas al aire de Pueblo Rico tras la respiración celular?</p>
+                <button class="option-btn" onclick="finalCheck(this, true)">Dióxido de Carbono (CO<sub>2</sub>)</button>
+                <button class="option-btn" onclick="finalCheck(this, false)">Oxígeno (O<sub>2</sub>)</button>
+                <button class="option-btn" onclick="finalCheck(this, false)">Nitrógeno</button>
+            </div>
+            <!-- Repetir lógica para 5 preguntas -->
+            
+            <h3 style="margin-top:40px;">Preguntas Abiertas (Análisis Crítico)</h3>
+            <p><small>El sistema detectará si copias y pegas texto. Escribe con tu propia voz.</small></p>
+            
+            <div style="margin-top:20px;">
+                <p>1. Explica con tus palabras cómo el sol de Quimbaya termina dándole energía a tus piernas a través de la arepa.</p>
+                <textarea id="open-1" onkeyup="antiFraud(this)"></textarea>
+                <div class="fraud-alert">⚠️ Ritmo de escritura sospechoso detectado. Por favor, sé honesto.</div>
+            </div>
+
+            <div style="margin-top:20px;">
+                <p>2. ¿Por qué es importante proteger el aire puro de la vereda para la salud de nuestras células?</p>
+                <textarea id="open-2" onkeyup="antiFraud(this)"></textarea>
+                <div class="fraud-alert">⚠️ Ritmo de escritura sospechoso detectado. Por favor, sé honesto.</div>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:40px;">
+            <button class="btn-action" style="font-size:1.2rem; padding:15px 40px;" onclick="finishOVA()">FINALIZAR Y DESCARGAR RESULTADOS</button>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    © 2024 OVA Autocontenido - Especialista en Pedagogía Digital - Vereda Pueblo Rico, Quimbaya.
+</footer>
+
+<script>
+    // ESTADO DEL OVA
+    let state = {
+        names: "",
+        lastnames: "",
+        score: 0,
+        progress: 0,
+        tasks: [],
+        typingLog: {},
+        startTime: Date.now()
+    };
+
+    // GESTIÓN DE USUARIO
+    document.getElementById('start-btn').addEventListener('click', () => {
+        const n = document.getElementById('user-names').value.trim();
+        const l = document.getElementById('user-lastnames').value.trim();
+        
+        if(n === "" || l === "") {
+            alert("Por favor ingresa tus datos para continuar.");
+            return;
+        }
+        
+        state.names = n;
+        state.lastnames = l;
+        document.getElementById('nav-user').innerText = `Explorador: ${n} ${l}`;
+        document.getElementById('welcome-screen').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        initCanvas();
+    });
+
+    // SISTEMA DE PUNTOS Y PROGRESO
+    function updateProg() {
+        const total = 18; // 3 presaberes + 10 pausas + 5 evaluación (simplificado)
+        const percent = (state.progress / total) * 100;
+        document.getElementById('progress-fill').style.width = percent + "%";
+        document.getElementById('score-display').innerText = `Puntos: ${(state.score).toFixed(1)}/5.0`;
+    }
+
+    function checkPre(btn, isCorrect) {
+        if(btn.parentElement.classList.contains('locked')) return;
+        btn.parentElement.classList.add('locked');
+        if(isCorrect) {
+            btn.classList.add('correct');
+            state.score += 0.2;
+        } else {
+            btn.classList.add('wrong');
+        }
+        state.progress++;
+        updateProg();
+    }
+
+    function markTask(id) {
+        if(state.tasks.includes(id)) return;
+        state.tasks.push(id);
+        const btn = event.target;
+        btn.disabled = true;
+        btn.innerText = "¡Completado!";
+        state.score += 0.25;
+        state.progress++;
+        updateProg();
+    }
+
+    function checkIcfes(btn, isCorrect) {
+        if(btn.parentElement.classList.contains('locked')) return;
+        btn.parentElement.classList.add('locked');
+        if(isCorrect) {
+            btn.classList.add('correct');
+            state.score += 0.5;
+        } else {
+            btn.classList.add('wrong');
+        }
+        state.progress++;
+        updateProg();
+    }
+
+    function finalCheck(btn, isCorrect) {
+        if(btn.parentElement.classList.contains('locked')) return;
+        btn.parentElement.classList.add('locked');
+        if(isCorrect) {
+            btn.classList.add('correct');
+            state.score += 0.3;
+        } else {
+            btn.classList.add('wrong');
+        }
+        updateProg();
+    }
+
+    // ANTI-FRAUDE (Detección de cadencia)
+    function antiFraud(el) {
+        const id = el.id;
+        const now = Date.now();
+        if(!state.typingLog[id]) state.typingLog[id] = [];
+        
+        state.typingLog[id].push(now);
+        
+        if(state.typingLog[id].length > 5) {
+            const times = state.typingLog[id].slice(-5);
+            const avg = (times[4] - times[0]) / 4;
+            // Si el promedio de tecleo es menor a 40ms por caracter, es sospechoso (paste o IA)
+            if(avg < 40) {
+                el.nextElementSibling.style.display = 'block';
+                el.style.borderColor = 'red';
+            } else {
+                el.nextElementSibling.style.display = 'none';
+                el.style.borderColor = '#ddd';
+            }
+        }
+    }
+
+    // Bloqueos de seguridad
+    const areas = document.querySelectorAll('textarea');
+    areas.forEach(a => {
+        a.addEventListener('paste', e => e.preventDefault());
+        a.addEventListener('drop', e => e.preventDefault());
+        a.addEventListener('contextmenu', e => e.preventDefault());
+    });
+
+    // ANIMACIÓN CANVAS (Mitocondria dinámica)
+    const canvas = document.getElementById('mitochondria-sim');
+    const ctx = canvas.getContext('2d');
+    let atpParticles = [];
+
+    function initCanvas() {
+        resizeCanvas();
+        animate();
+    }
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = 400;
+    }
+
+    class ATP {
+        constructor() {
+            this.reset();
+        }
+        reset() {
+            this.x = canvas.width / 2;
+            this.y = canvas.height / 2;
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 3 + 2;
+            this.vx = Math.cos(angle) * speed;
+            this.vy = Math.sin(angle) * speed;
+            this.life = 100;
+            this.color = `hsl(${Math.random()*40 + 20}, 100%, 50%)`;
+        }
+        update(intensity) {
+            this.x += this.vx * (intensity/2);
+            this.y += this.vy * (intensity/2);
+            this.life -= 0.5;
+            if(this.life <= 0 || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                this.reset();
+            }
+        }
+        draw() {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 4, 0, Math.PI*2);
+            ctx.fill();
+            // Brillo
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = this.color;
+        }
+    }
+
+    function animate() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Dibujar Mitocondria (Fija)
+        ctx.strokeStyle = '#1b5e20';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.ellipse(canvas.width/2, canvas.height/2, 120, 180, Math.PI/2, 0, Math.PI*2);
+        ctx.stroke();
+        
+        const intensity = document.getElementById('sim-intensity').value;
+        document.getElementById('int-val').innerText = intensity > 7 ? 'Muy Alta (Carrera)' : (intensity > 4 ? 'Media (Caminata)' : 'Baja (Reposo)');
+        
+        // Generar partículas según intensidad
+        if(atpParticles.length < intensity * 20) atpParticles.push(new ATP());
+
+        atpParticles.forEach(p => {
+            p.update(intensity);
+            p.draw();
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    // FINALIZACIÓN
+    function finishOVA() {
+        const a1 = document.getElementById('open-1').value;
+        const a2 = document.getElementById('open-2').value;
+
+        if(a1.length < 15 || a2.length < 15) {
+            alert("Por favor completa las respuestas abiertas con análisis de al menos 15 palabras.");
+            return;
+        }
+
+        const report = `
+REPORTES DE APRENDIZAJE: RESPIRACIÓN CELULAR
+Vereda Pueblo Rico, Quimbaya (Quindío)
+-------------------------------------------
+ESTUDIANTE: ${state.names} ${state.lastnames}
+PUNTAJE FINAL: ${state.score.toFixed(2)} / 5.0
+TIEMPO ESTIMADO: ${Math.round((Date.now() - state.startTime)/60000)} minutos
+
+RESPUESTAS ANALÍTICAS:
+1. Sobre la Arepa y Energía:
+${a1}
+
+2. Sobre el Aire de la Vereda:
+${a2}
+
+RUTA DE FORTALECIMIENTO:
+${state.score > 4 ? "¡Excelente! Eres un experto en el motor biológico." : "Se recomienda repasar el Ciclo de Krebs y la importancia del Oxígeno."}
+-------------------------------------------
+        `;
+
+        const blob = new Blob([report], {type: 'text/plain'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Resultado_${state.lastnames}.txt`;
+        link.click();
+
+        alert("¡Felicidades! Has terminado el OVA. Se ha descargado tu reporte.");
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+</script>
+
+</body>
+</html>

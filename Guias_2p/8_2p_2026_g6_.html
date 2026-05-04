@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Sistema Excretor - El Agua de Vida en Pueblo Rico</title>
+    <style>
+        :root {
+            --pcc-green: #1b5e20;
+            --pcc-brown: #4e342e;
+            --pcc-gold: #fbc02d;
+            --pcc-blue: #0288d1;
+            --pcc-bg: #f1f8e9;
+            --white: #ffffff;
+            --accent: #ff7043;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--pcc-bg);
+            color: #333;
+            line-height: 1.6;
+            user-select: none;
+        }
+
+        /* Login */
+        #login-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, var(--pcc-green), var(--pcc-brown));
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-box {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        button {
+            background: var(--pcc-green);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            width: 100%;
+        }
+
+        button:hover { background: var(--pcc-blue); transform: scale(1.02); }
+
+        /* Navbar */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255,255,255,0.95);
+            padding: 10px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .user-info { font-weight: bold; color: var(--pcc-green); }
+
+        .progress-wrapper { display: flex; align-items: center; gap: 15px; width: 50%; }
+        .progress-track { flex-grow: 1; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; }
+        #progress-bar { width: 0%; height: 100%; background: var(--pcc-blue); transition: 0.5s; }
+
+        /* Content */
+        main { max-width: 1000px; margin: 100px auto 50px; padding: 20px; display: none; }
+
+        section {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        h1, h2, h3 { color: var(--pcc-green); margin-bottom: 20px; }
+        .text-inductivo, .text-deductivo { text-align: justify; font-size: 1.1rem; }
+        .highlight { color: var(--pcc-blue); font-weight: bold; }
+
+        /* Canvas & Visuals */
+        #canvas-container {
+            width: 100%;
+            height: 400px;
+            background: #111;
+            border-radius: 15px;
+            margin: 30px 0;
+            position: relative;
+        }
+        canvas { width: 100%; height: 100%; border-radius: 15px; }
+
+        .table-responsive { overflow-x: auto; margin: 30px 0; }
+        table { width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden; }
+        th { background: var(--pcc-green); color: white; padding: 15px; }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+        tr:nth-child(even) { background: #f9f9f9; }
+
+        /* Quiz UI */
+        .quiz-option {
+            display: block;
+            padding: 15px;
+            background: #f5f5f5;
+            margin: 10px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+        .quiz-option:hover { border-color: var(--pcc-blue); background: #e3f2fd; }
+        .quiz-option.correct { background: #c8e6c9; border-color: #4caf50; }
+        .quiz-option.wrong { background: #ffcdd2; border-color: #f44336; }
+
+        .pausa-activa {
+            background: #fff3e0;
+            border-left: 8px solid var(--accent);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            font-size: 1rem;
+            margin: 10px 0;
+            font-family: inherit;
+        }
+
+        .fraud-warning { color: red; font-weight: bold; display: none; margin-bottom: 10px; }
+
+        .svg-container { text-align: center; margin: 30px 0; }
+
+        .btn-check {
+            background: var(--accent);
+            width: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h2>Bienvenido Estudiante</h2>
+        <p>Vereda Pueblo Rico - Quimbaya</p>
+        <input type="text" id="user-last" placeholder="Apellidos">
+        <input type="text" id="user-first" placeholder="Nombres">
+        <button id="btn-login">Empezar Laboratorio</button>
+    </div>
+</div>
+
+<nav>
+    <div class="user-info">
+        <span id="nav-name">Cargando...</span> | <span id="nav-points">Puntos: 0.0</span>
+    </div>
+    <div class="progress-wrapper">
+        <div class="progress-track"><div id="progress-bar"></div></div>
+        <span id="label-progress">0%</span>
+    </div>
+</nav>
+
+<main id="main-content">
+    <!-- SECCIÓN INICIO -->
+    <section>
+        <h1>Filtrando el Agua de Vida</h1>
+        <p><strong>Objetivo:</strong> Comprender la función del sistema excretor humano y su importancia en la homeostasis, comparándolo con los sistemas de filtración y equilibrio hídrico presentes en las fincas de la vereda Pueblo Rico.</p>
+        
+        <hr style="margin: 20px 0;">
+        
+        <h3>Pre-Saberes</h3>
+        <div id="pre-quiz">
+            <div class="q-group" data-qid="p1">
+                <p>1. En las fincas de Quimbaya, ¿qué sucede si un tanque de reserva de agua no tiene un sistema de rebose o salida?</p>
+                <div class="quiz-option" onclick="evalSimple(this, true, 'p1')">Se desborda y genera daños en la estructura.</div>
+                <div class="quiz-option" onclick="evalSimple(this, false, 'p1')">El agua se purifica automáticamente.</div>
+                <div class="quiz-option" onclick="evalSimple(this, false, 'p1')">No sucede nada relevante.</div>
+            </div>
+            <div class="q-group" data-qid="p2" style="margin-top: 20px;">
+                <p>2. ¿Cuál es el órgano principal encargado de filtrar la sangre en el cuerpo humano?</p>
+                <div class="quiz-option" onclick="evalSimple(this, false, 'p2')">Los pulmones.</div>
+                <div class="quiz-option" onclick="evalSimple(this, true, 'p2')">Los riñones.</div>
+                <div class="quiz-option" onclick="evalSimple(this, false, 'p2')">El corazón.</div>
+            </div>
+            <div class="q-group" data-qid="p3" style="margin-top: 20px;">
+                <p>3. ¿Cómo elimina el cuerpo el exceso de agua y sales cuando hace mucho calor en la vereda?</p>
+                <div class="quiz-option" onclick="evalSimple(this, true, 'p3')">A través del sudor y la orina.</div>
+                <div class="quiz-option" onclick="evalSimple(this, false, 'p3')">A través de la digestión de cítricos.</div>
+                <div class="quiz-option" onclick="evalSimple(this, false, 'p3')">No los elimina, los acumula.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN INDUCTIVA -->
+    <section>
+        <h2>El Ciclo del Equilibrio en Pueblo Rico</h2>
+        <div class="text-inductivo">
+            <p>Caminar por la <span class="highlight">Vereda Pueblo Rico</span> en Quimbaya es entender que la vida depende del manejo inteligente de los fluidos. Imaginemos por un momento la finca "La Esperanza". Allí, el caficultor debe gestionar el agua para el beneficio del café: el agua entra, limpia el grano y luego debe ser tratada para no contaminar las quebradas locales. De manera asombrosa, nuestro cuerpo realiza una tarea idéntica cada segundo a través del <span class="highlight">Sistema Excretor</span>.</p>
+            
+            <p>Nuestro organismo es como una finca cafetera de alta tecnología. La sangre llega a los riñones cargada de productos de desecho del metabolismo, similar a como el agua de lavado del café sale cargada de mucílago. Los riñones, actuando como potentes filtros biológicos de precisión, deciden qué sustancias deben permanecer en la circulación para nutrirnos y cuáles deben ser expulsadas para evitar que el "terreno" (nuestras células) se sature de toxinas. Este proceso es vital para mantener el equilibrio de líquidos, algo que en ciencia llamamos <span class="highlight">homeostasis</span>.</p>
+            
+            <p>En el sector ganadero de nuestra vereda, vemos cómo las vacas requieren un equilibrio constante de sales y agua para producir leche de calidad. Si una vaca no elimina el exceso de minerales, enferma rápidamente. Nosotros funcionamos igual; si el sistema excretor falla, la presión arterial se descontrola, igual que cuando una manguera de riego se tapa y la presión aumenta hasta reventar la conexión. El riñón no solo filtra, sino que regula la cantidad de agua que conservamos según el clima de Quimbaya: si el sol está fuerte y sudamos, el riñón produce menos orina para protegernos de la deshidratación.</p>
+            
+            <p>El turismo en nuestra zona también nos da ejemplos. Los hoteles rurales de Pueblo Rico utilizan sistemas de filtración por capas para sus piscinas y aguas servidas. El <span class="highlight">nefrón</span>, la unidad funcional del riñón, es un sistema de micro-tuberías y membranas mucho más sofisticado que cualquier filtro industrial. En él, el agua y las sales viajan por túbulos donde se decide, molécula por molécula, qué es "oro hídrico" y qué es residuo. Es una ingeniería microscópica que garantiza que nuestra "sangre de vida" fluya limpia.</p>
+            
+            <p>Finalmente, debemos valorar que este sistema es una joya de la evolución. Al igual que cuidamos los nacimientos de agua en la vereda para que la finca siga produciendo, debemos cuidar nuestros riñones evitando el exceso de sal y bebiendo agua pura. En esta lección, descubriremos cómo cada gota de orina es el resultado de un proceso de selección magistral que ocurre en silencio mientras disfrutamos del paisaje cafetero.</p>
+        </div>
+
+        <div class="table-responsive">
+            <h3>Comparativa: Ingeniería de la Finca vs. Biología Humana</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Elemento de la Finca</th>
+                        <th>Función Técnica</th>
+                        <th>Análogo en el Sistema Excretor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Filtro de beneficio</td>
+                        <td>Separa sólidos del agua de lavado.</td>
+                        <td><strong>Glomérulo:</strong> Filtra la sangre.</td>
+                    </tr>
+                    <tr>
+                        <td>Tanque de rebose</td>
+                        <td>Mantiene el nivel de agua constante.</td>
+                        <td><strong>Vejiga:</strong> Almacena y regula volumen.</td>
+                    </tr>
+                    <tr>
+                        <td>Mangueras de riego</td>
+                        <td>Transportan fluidos por la finca.</td>
+                        <td><strong>Uréteres:</strong> Conducen la orina.</td>
+                    </tr>
+                    <tr>
+                        <td>Válvula de presión</td>
+                        <td>Controla la fuerza del flujo.</td>
+                        <td><strong>Hormona Antidiurética (ADH):</strong> Controla el agua.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAUSAS ACTIVAS 1-5 -->
+        <div class="pausa-activa">
+            <h4>Pausa Activa 1: Reflexión Hídrica</h4>
+            <p>¿Qué pasaría con la quebrada que pasa cerca de tu casa si la finca de arriba no filtra sus desechos? Responde en tu cuaderno.</p>
+            <button class="btn-check" onclick="markActive(1)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <h4>Pausa Activa 2: Dibujo de Observación</h4>
+            <p>Dibuja en tu cuaderno el sistema de eliminación de residuos de una finca que conozcas (compostera o pozo séptico).</p>
+            <button class="btn-check" onclick="markActive(2)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <h4>Pausa Activa 3: Mapa Mental</h4>
+            <p>Crea un mapa mental que conecte las palabras: Sangre, Riñón, Orina, Agua, Equilibrio.</p>
+            <button class="btn-check" onclick="markActive(3)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <h4>Pausa Activa 4: Cuadro Comparativo</h4>
+            <p>Elabora un cuadro en tu cuaderno comparando el sudor y la orina: ¿En qué se parecen y en qué son diferentes?</p>
+            <button class="btn-check" onclick="markActive(4)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <h4>Pausa Activa 5: Diagrama de Flujo</h4>
+            <p>Diseña un diagrama de flujo que muestre el camino del agua desde que la bebes en un jugo de naranja hasta que sale del cuerpo.</p>
+            <button class="btn-check" onclick="markActive(5)">Ya lo hice</button>
+        </div>
+
+        <!-- PREGUNTA ANALÍTICA SVG -->
+        <div class="svg-container">
+            <h3>Gráfica de Filtración por Hora</h3>
+            <svg width="400" height="250" viewBox="0 0 400 250">
+                <rect width="400" height="250" fill="#fcfcfc" />
+                <line x1="40" y1="200" x2="380" y2="200" stroke="#333" stroke-width="2" />
+                <line x1="40" y1="200" x2="40" y2="20" stroke="#333" stroke-width="2" />
+                <!-- Datos simulación de filtración bajo diferentes consumos de sal -->
+                <path d="M 40 180 L 100 160 L 160 120 L 220 70 L 280 40 L 340 20" fill="none" stroke="red" stroke-width="3" />
+                <text x="200" y="240" text-anchor="middle">Consumo de Sal (g)</text>
+                <text x="20" y="120" text-anchor="middle" transform="rotate(-90, 20, 120)">Esfuerzo Renal (%)</text>
+                <text x="350" y="40" fill="red" font-size="12">Carga Renal</text>
+            </svg>
+            <div class="q-group" style="text-align: left; padding: 20px;">
+                <p><strong>Pregunta ICFES:</strong> Según la gráfica analizada en la vereda, si un trabajador de la zona consume alimentos muy salados continuamente, ¿cuál es la consecuencia directa para sus nefrones?</p>
+                <div class="quiz-option" onclick="evalSimple(this, true, 'g1')">El esfuerzo renal aumenta exponencialmente, pudiendo causar agotamiento de los filtros.</div>
+                <div class="quiz-option" onclick="evalSimple(this, false, 'g1')">Los riñones dejan de filtrar agua para ahorrar energía.</div>
+                <div class="quiz-option" onclick="evalSimple(this, false, 'g1')">La filtración se detiene y la sal se convierte en azúcar.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN DEDUCTIVA -->
+    <section>
+        <h2>Leyes Biológicas: La Micro-Arquitectura Renal</h2>
+        <div class="text-deductivo">
+            <p>Para profundizar, debemos estudiar las leyes físicas que gobiernan el riñón. La filtración ocurre por <span class="highlight">Presión Hidrostática</span>. Imaginen una manguera de las que usamos en los cítricos de Quimbaya: si apretamos un extremo, el agua sale por los poros con más fuerza. En el <span class="highlight">Glomérulo</span>, la sangre entra con tal presión que el plasma atraviesa las paredes capilares hacia la cápsula de Bowman, dejando atrás las proteínas y células sanguíneas que son demasiado grandes para pasar, como si fueran piedras en una zaranda de café.</p>
+            
+            <p>Una vez el filtrado está en los túbulos, entra en juego la <span class="highlight">Reabsorción Selectiva</span>. Este proceso obedece a gradientes químicos. El cuerpo no puede permitirse perder glucosa o aminoácidos esenciales. Por ello, el 99% del filtrado regresa a la sangre. Es como si en la cosecha recogiéramos todos los granos del suelo, pero luego una máquina separara solo los granos de alta calidad para devolverlos al saco principal y desechara los dañados.</p>
+            
+            <p>El equilibrio se regula mediante hormonas. La <span class="highlight">Vasopresina</span> actúa como el capataz de la finca que decide cuándo cerrar las llaves de paso. Cuando el cerebro detecta que la sangre está muy espesa (por ejemplo, después de una caminata larga por las pendientes de la vereda), envía la orden de recuperar más agua, resultando en orina concentrada. Si bebemos mucha limonada quindiana, la hormona disminuye y el riñón libera el exceso, produciendo orina clara. Esto es termodinámica biológica aplicada.</p>
+            
+            <p>La excreción también cumple un rol en el equilibrio ácido-base. El pH de nuestra sangre debe ser tan preciso como el pH del suelo necesario para un cultivo de naranja valencia exitoso. Los riñones eliminan iones de hidrógeno para evitar que nuestra sangre se vuelva ácida, garantizando que todas las enzimas del cuerpo funcionen a la perfección. Sin este control químico, la vida se detendría por una "acidosis" metabólica.</p>
+            
+            <p>En conclusión, el sistema excretor es el garante de la pureza interna. Relacionar este sistema con el flujo de líquidos en Pueblo Rico nos permite entender que la salud no es otra cosa que un flujo constante y equilibrado de materia. El nefrón no es solo un filtro; es un sensor inteligente que responde al entorno de Quimbaya, permitiéndonos vivir en armonía con nuestro paisaje cultural cafetero.</p>
+        </div>
+
+        <h3>Laboratorio de Simulación: Presión de Filtrado</h3>
+        <p>Ajusta la presión del flujo y observa cómo los solutos pequeños atraviesan la membrana mientras los grandes permanecen en la sangre. Haz clic en el canvas para aumentar la presión.</p>
+        <div id="canvas-container">
+            <canvas id="renalCanvas"></canvas>
+            <div style="position: absolute; bottom: 10px; right: 10px; color: white; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px;">
+                Presión actual: <span id="press-val">Normal</span>
+            </div>
+        </div>
+
+        <!-- PAUSAS ACTIVAS 6-10 -->
+        <div class="pausa-activa">
+            <h4>Pausa Activa 6: Mapa Conceptual</h4>
+            <p>Realiza un mapa conceptual sobre la formación de la orina (Filtración, Reabsorción, Secreción).</p>
+            <button class="btn-check" onclick="markActive(6)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <h4>Pausa Activa 7: Tabla de Datos</h4>
+            <p>Mide cuántos vasos de agua tomas hoy en la vereda y regístralo en una tabla. ¿Es suficiente?</p>
+            <button class="btn-check" onclick="markActive(7)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <h4>Pausa Activa 8: Dibujo Técnico</h4>
+            <p>Dibuja un nefrón y señala sus partes principales (Glomérulo, Asa de Henle, Túbulos).</p>
+            <button class="btn-check" onclick="markActive(8)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <h4>Pausa Activa 9: Síntesis</h4>
+            <p>Escribe un párrafo resumiendo cómo el riñón ayuda a controlar la presión arterial.</p>
+            <button class="btn-check" onclick="markActive(9)">Ya lo hice</button>
+        </div>
+        <div class="pausa-activa">
+            <h4>Pausa Activa 10: Reto Matemático</h4>
+            <p>Si los riñones filtran 180 litros de sangre al día pero solo expulsamos 1.5 litros de orina, ¿qué porcentaje de líquido se reabsorbe?</p>
+            <button class="btn-check" onclick="markActive(10)">Ya lo hice</button>
+        </div>
+    </section>
+
+    <!-- EVALUACIÓN FINAL -->
+    <section id="evaluacion">
+        <h2>Taller de Evaluación Final</h2>
+        
+        <div id="final-quiz">
+            <div class="q-group" data-fid="f1">
+                <p>1. ¿Cuál es la unidad funcional del riñón?</p>
+                <div class="quiz-option" onclick="evalFinal(this, true, 'f1')">El Nefrón</div>
+                <div class="quiz-option" onclick="evalFinal(this, false, 'f1')">La Neurona</div>
+                <div class="quiz-option" onclick="evalFinal(this, false, 'f1')">El Alvéolo</div>
+            </div>
+            <div class="q-group" data-fid="f2" style="margin-top:20px;">
+                <p>2. ¿Por qué el proceso de reabsorción es vital?</p>
+                <div class="quiz-option" onclick="evalFinal(this, false, 'f2')">Porque elimina la sangre del cuerpo.</div>
+                <div class="quiz-option" onclick="evalFinal(this, true, 'f2')">Porque evita la pérdida de nutrientes y agua necesaria.</div>
+                <div class="quiz-option" onclick="evalFinal(this, false, 'f2')">Porque le da el color amarillo a la orina.</div>
+            </div>
+            <!-- Mas preguntas según estructura... -->
+
+            <h3 style="margin-top: 40px;">Preguntas Abiertas (Análisis Crítico)</h3>
+            <p class="fraud-warning" id="fw1">¡Alerta! No se permite copiar y pegar. Escribe manualmente.</p>
+            
+            <p>3. ¿Cómo se relaciona el equilibrio de líquidos en una finca de Pueblo Rico con la salud renal de sus trabajadores?</p>
+            <textarea id="open1" class="secure-text" placeholder="Escribe al menos 15 palabras..."></textarea>
+
+            <p>4. Explica con tus palabras qué es la presión hidrostática y cómo ayuda a filtrar la sangre.</p>
+            <textarea id="open2" class="secure-text" placeholder="Escribe al menos 15 palabras..."></textarea>
+
+            <p>5. ¿Qué importancia tiene la excreción para un deportista que compite en el clima de Quimbaya?</p>
+            <textarea id="open3" class="secure-text" placeholder="Escribe al menos 15 palabras..."></textarea>
+        </div>
+
+        <button onclick="generarInforme()" style="margin-top: 30px; background: var(--pcc-blue);">Descargar Resultados (.txt)</button>
+    </section>
+
+</main>
+
+<script>
+    // ESTADO DEL OVA
+    const state = {
+        user: { first: '', last: '', points: 0, progress: 0 },
+        activities: new Set(),
+        answered: new Set(),
+        typingData: {},
+        startTime: Date.now()
+    };
+
+    // LOGIN
+    document.getElementById('btn-login').addEventListener('click', () => {
+        const f = document.getElementById('user-first').value.trim();
+        const l = document.getElementById('user-last').value.trim();
+        if(f && l) {
+            state.user.first = f;
+            state.user.last = l;
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('nav-name').innerText = `${f} ${l}`;
+            initCanvas();
+            updateProgress(5);
+        } else {
+            alert("Por favor completa tus datos.");
+        }
+    });
+
+    // SISTEMA DE PUNTOS Y PROGRESO
+    function updateProgress(val) {
+        state.user.progress = Math.min(100, state.user.progress + val);
+        document.getElementById('progress-bar').style.width = state.user.progress + '%';
+        document.getElementById('label-progress').innerText = Math.round(state.user.progress) + '%';
+    }
+
+    function addPoints(val) {
+        state.user.points = Math.min(5.0, state.user.points + val);
+        document.getElementById('nav-points').innerText = `Puntos: ${state.user.points.toFixed(1)}`;
+    }
+
+    // EVALUACIÓN SIMPLE
+    function evalSimple(el, isCorrect, qid) {
+        if(state.answered.has(qid)) return;
+        state.answered.add(qid);
+        
+        const parent = el.parentElement;
+        const options = parent.querySelectorAll('.quiz-option');
+        options.forEach(opt => opt.style.pointerEvents = 'none');
+
+        if(isCorrect) {
+            el.classList.add('correct');
+            addPoints(0.2);
+            updateProgress(3);
+        } else {
+            el.classList.add('wrong');
+        }
+    }
+
+    function evalFinal(el, isCorrect, qid) {
+        if(state.answered.has(qid)) return;
+        state.answered.add(qid);
+        if(isCorrect) {
+            el.classList.add('correct');
+            addPoints(0.4);
+            updateProgress(5);
+        } else {
+            el.classList.add('wrong');
+        }
+    }
+
+    // PAUSAS ACTIVAS
+    function markActive(id) {
+        if(!state.activities.has(id)) {
+            state.activities.add(id);
+            addPoints(0.1);
+            updateProgress(4);
+            const btn = event.target;
+            btn.innerText = "✓ Completado";
+            btn.style.background = "#8bc34a";
+            btn.disabled = true;
+        }
+    }
+
+    // CANVAS ANIMATION (FILTRACIÓN)
+    let canvas, ctx, particles = [];
+    let pressure = 1;
+
+    function initCanvas() {
+        canvas = document.getElementById('renalCanvas');
+        ctx = canvas.getContext('2d');
+        resizeCanvas();
+        
+        for(let i=0; i<60; i++) particles.push(new Particle());
+        
+        canvas.addEventListener('mousedown', () => {
+            pressure = 3;
+            document.getElementById('press-val').innerText = "¡ALTA!";
+            setTimeout(() => { pressure = 1; document.getElementById('press-val').innerText = "Normal"; }, 1000);
+        });
+
+        animate();
+    }
+
+    function resizeCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }
+
+    class Particle {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * (canvas.width/2);
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() > 0.8 ? 8 : 2; // Grandes (proteinas) vs Pequeñas (toxinas)
+            this.speed = (Math.random() * 2 + 1) * pressure;
+            this.color = this.size > 5 ? '#f44336' : '#ffeb3b';
+            this.passed = false;
+        }
+        update() {
+            this.x += this.speed * pressure;
+            // Membrana en la mitad
+            if(!this.passed && this.x > canvas.width/2) {
+                if(this.size > 5) {
+                    this.x = canvas.width/2 - 2; // Rebotan
+                    this.speed *= -1;
+                } else {
+                    this.passed = true;
+                }
+            }
+            if(this.x > canvas.width || this.x < 0) this.reset();
+        }
+        draw() {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+            ctx.fill();
+        }
+    }
+
+    function animate() {
+        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+        
+        // Membrana
+        ctx.strokeStyle = '#2196f3';
+        ctx.setLineDash([5, 15]);
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(canvas.width/2, 0);
+        ctx.lineTo(canvas.width/2, canvas.height);
+        ctx.stroke();
+
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+    }
+
+    // ANTI-FRAUDE LOGIC
+    const secureAreas = document.querySelectorAll('.secure-text');
+    secureAreas.forEach(area => {
+        area.addEventListener('paste', e => {
+            e.preventDefault();
+            document.getElementById('fw1').style.display = 'block';
+        });
+
+        area.addEventListener('keydown', function(e) {
+            const now = Date.now();
+            if(!state.typingData[this.id]) state.typingData[this.id] = [];
+            state.typingData[this.id].push(now);
+
+            // Verificar cadencia inhumana (pegar texto vía scripts)
+            if(state.typingData[this.id].length > 5) {
+                const lastFive = state.typingData[this.id].slice(-5);
+                const avg = (lastFive[4] - lastFive[0]) / 5;
+                if(avg < 15) { // Menos de 15ms por tecla es imposible para un humano
+                    document.getElementById('fw1').style.display = 'block';
+                    this.value = "";
+                }
+            }
+        });
+    });
+
+    // EXPORTACIÓN
+    function generarInforme() {
+        const open1 = document.getElementById('open1').value;
+        const open2 = document.getElementById('open2').value;
+        const open3 = document.getElementById('open3').value;
+
+        if(open1.length < 20 || open2.length < 20 || open3.length < 20) {
+            alert("Por favor completa las preguntas abiertas con suficiente análisis.");
+            return;
+        }
+
+        let contenido = `INFORME DE EVALUACIÓN - OVA SISTEMA EXCRETOR
+--------------------------------------------------
+ESTUDIANTE: ${state.user.last} ${state.user.first}
+VEREDA: Pueblo Rico, Quimbaya (Quindío)
+FECHA: ${new Date().toLocaleDateString()}
+--------------------------------------------------
+RESULTADOS CUANTITATIVOS:
+Puntaje Final: ${state.user.points.toFixed(2)} / 5.0
+Progreso del OVA: ${state.user.progress}%
+--------------------------------------------------
+RESPUESTAS ANALÍTICAS:
+
+Q1: ${open1}
+
+Q2: ${open2}
+
+Q3: ${open3}
+
+--------------------------------------------------
+SISTEMA DE RETROALIMENTACIÓN INTELIGENTE:
+${state.user.points >= 4 ? 
+    "Excelente nivel. Relacionas perfectamente los conceptos técnicos con el entorno de Quimbaya. Ruta: Fortalecimiento en bioingeniería." : 
+    "Nivel básico. Se sugiere repasar la analogía entre la filtración del café y el nefrón. Ruta: Refuerzo en fisiología renal."}
+--------------------------------------------------
+Fin del documento.`;
+
+        const blob = new Blob([contenido], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Resultados_Excretor_${state.user.last}.txt`;
+        a.click();
+    }
+
+    window.onresize = resizeCanvas;
+</script>
+
+</body>
+</html>

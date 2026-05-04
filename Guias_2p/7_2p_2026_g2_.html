@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA · Productores y Consumidores · Red de vida</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #e1f0d4;  /* verde campo suave */
+            color: #1f4f2b;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+        /* login */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #2a6b3cdd;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .login-card {
+            background: #fdfaec;
+            border-radius: 3rem 1rem 3rem 1rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 20px 30px #174d1e, inset 0 0 0 4px #b3d9a0;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        .login-card h1 {
+            font-size: 2.2rem;
+            color: #2b6e3b;
+            border-bottom: 4px solid #9fcc8b;
+            display: inline-block;
+            padding-bottom: 6px;
+        }
+        .login-card input {
+            display: block;
+            width: 100%;
+            margin: 1.4rem 0;
+            padding: 1rem 1.2rem;
+            border: 2px solid #b1d49e;
+            border-radius: 40px;
+            background: #f5ffe7;
+            font-size: 1.1rem;
+        }
+        .login-card input:focus {
+            outline: none;
+            border-color: #3c8d4c;
+        }
+        .login-card button {
+            background: #4c8b5c;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.4rem;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            border-bottom: 5px solid #235f2e;
+            cursor: pointer;
+            width: 100%;
+        }
+        .login-card button:hover {
+            background: #63aa76;
+        }
+        /* contenido principal */
+        #mainContent {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+        /* header fijo */
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            background: #d3e8c0;
+            border-radius: 0 0 40px 40px;
+            padding: 0.8rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 12px #487a4b66;
+            z-index: 100;
+            border: 2px solid #86b883;
+            backdrop-filter: blur(4px);
+            margin-bottom: 2.5rem;
+        }
+        .user-name {
+            background: #317a44;
+            color: #f3ffe3;
+            padding: 0.4rem 1.4rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .progress-area {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        .barra-wrapper {
+            width: 220px;
+            height: 22px;
+            background: #b7d9a8;
+            border-radius: 30px;
+            border: 2px solid #2c7840;
+            overflow: hidden;
+        }
+        #progresoFill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #efb34b, #74b72e);
+        }
+        .tabla-puntos {
+            display: flex;
+            gap: 8px;
+        }
+        .elem {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #95af8c;
+            color: #1d4a1d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.3rem;
+            box-shadow: inset 0 -4px 0 #4d724d;
+            border: 2px solid #2b6b2b;
+            transition: 0.2s;
+        }
+        .elem.unlocked {
+            background: #f5c542;
+            box-shadow: 0 0 15px #f5b041, inset 0 -4px 0 #b37b2e;
+            border-color: #d4a259;
+        }
+        /* secciones */
+        .seccion {
+            background: #fafff2;
+            border-radius: 50px 20px 50px 20px;
+            padding: 2.2rem;
+            margin-bottom: 3rem;
+            box-shadow: 15px 15px 0 #95b88d;
+            border: 2px solid #6fa868;
+        }
+        h2 {
+            font-size: 2.2rem;
+            color: #1f6b2f;
+            border-left: 16px solid #ffb74d;
+            padding-left: 1.3rem;
+            margin-bottom: 1.8rem;
+        }
+        button {
+            background: #5f9c6b;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            border-bottom: 4px solid #2d7242;
+            cursor: pointer;
+            margin: 0.4rem 0;
+        }
+        button:hover {
+            background: #7cb87e;
+        }
+        .pausa-box {
+            background: #e4f2da;
+            border-radius: 30px;
+            padding: 1.2rem 1.8rem;
+            margin: 2rem 0;
+            border-left: 12px solid #fb9c3e;
+        }
+        .pregunta {
+            background: #edf8e5;
+            padding: 1.5rem;
+            border-radius: 25px;
+            margin: 1.2rem 0;
+        }
+        .feedback {
+            margin-top: 0.6rem;
+            padding: 0.6rem;
+            border-radius: 20px;
+        }
+        .correcto { background: #c6e9b5; color: #1f6b1f; }
+        .incorrecto { background: #fad7cf; color: #a0371e; }
+        canvas {
+            display: block;
+            margin: 2rem auto;
+            border-radius: 40px;
+            background: #2b5a3b;  /* fondo bosque */
+            box-shadow: 0 12px 0 #3f7640, 0 20px 22px #1f4a1f55;
+            max-width: 100%;
+            border: 3px solid #f5b342;
+        }
+        .svg-ecosistema {
+            width: 100%;
+            background: #cfe6c0;
+            border-radius: 40px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .word-counter {
+            font-size: 0.95rem;
+        }
+        .valido { color: #1f731f; font-weight: bold; }
+        .invalido { color: #b33; }
+        .ruta-card {
+            background: #daefcf;
+            border-radius: 30px;
+            padding: 1.5rem;
+            border: 3px dashed #5b9e5b;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN Apellidos y Nombres -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <h1>🌿 Productores y Consumidores</h1>
+            <p style="color:#2f7842;">red de vida en la vereda</p>
+            <input type="text" id="apellidosInput" placeholder="Apellidos" autocomplete="off">
+            <input type="text" id="nombresInput" placeholder="Nombres" autocomplete="off">
+            <button id="btnIngresar">🌱 Entrar al ecosistema</button>
+            <p style="margin-top:1.8rem; background:#d9eacb; border-radius:40px; padding:0.5rem;">Apellidos luego Nombres</p>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="mainContent">
+        <!-- header fijo con nombre, barra y elementos químicos -->
+        <div class="fixed-header">
+            <span class="user-name" id="headerNombre">Cargando...</span>
+            <div class="progress-area">
+                <div class="barra-wrapper">
+                    <div id="progresoFill"></div>
+                </div>
+                <div class="tabla-puntos" id="tablaPuntos">
+                    <span class="elem" id="elem1">H</span>
+                    <span class="elem" id="elem2">He</span>
+                    <span class="elem" id="elem3">Li</span>
+                    <span class="elem" id="elem4">Be</span>
+                    <span class="elem" id="elem5">B</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- INICIO: objetivo y pre-saberes -->
+        <section class="seccion">
+            <h2>🎯 Objetivo: Comprender la nutrición autótrofa y heterótrofa</h2>
+            <p style="font-size:1.3rem;"><strong>Explicar quiénes producen su propio alimento (productores) y quiénes dependen de otros (consumidores).</strong> En nuestra vereda, las plantas son productoras, los animales consumidores. También reflexionaremos sobre lo que producimos (ideas, ayuda) y lo que consumimos de los demás.</p>
+            <h3>📝 Pre-saberes: lo que ya sabemos</h3>
+            <div class="pregunta" id="presaber1">
+                <p>1. ¿Qué organismos fabrican su propio alimento usando la luz del sol?</p>
+                <label><input type="radio" name="pre1" value="a"> a) Los animales</label><br>
+                <label><input type="radio" name="pre1" value="b"> b) Las plantas</label><br>
+                <label><input type="radio" name="pre1" value="c"> c) Los hongos</label><br>
+                <div class="feedback" id="feedPre1"></div>
+            </div>
+            <div class="pregunta" id="presaber2">
+                <p>2. ¿Cómo se llaman los organismos que deben comer a otros para obtener energía?</p>
+                <label><input type="radio" name="pre2" value="a"> a) Autótrofos</label><br>
+                <label><input type="radio" name="pre2" value="b"> b) Heterótrofos</label><br>
+                <label><input type="radio" name="pre2" value="c"> c) Descomponedores</label><br>
+                <div class="feedback" id="feedPre2"></div>
+            </div>
+            <div class="pregunta" id="presaber3">
+                <p>3. En una cadena alimenticia, el primer eslabón siempre es:</p>
+                <label><input type="radio" name="pre3" value="a"> a) Un consumidor</label><br>
+                <label><input type="radio" name="pre3" value="b"> b) Un productor</label><br>
+                <label><input type="radio" name="pre3" value="c"> c) Un depredador</label><br>
+                <div class="feedback" id="feedPre3"></div>
+            </div>
+        </section>
+
+        <!-- CUERPO INDUCTIVO (texto extenso + 5 pausas) -->
+        <section class="seccion">
+            <h2>🌱 Camino inductivo: la vereda y sus seres</h2>
+            <div>
+                <p>En la vereda El Porvenir, doña Marta tiene una huerta con matas de tomate, cilantro y lechuga. Todos los días riega y quita las malas hierbas. Las plantas, sin moverse, toman agua, sales minerales y, con ayuda del sol, fabrican su comida mediante la fotosíntesis. Son <strong>productores</strong>. También hay gallinas que picotean el suelo comiendo granos, insectos y pasto. Ellas no fabrican su comida, la buscan: son <strong>consumidoras</strong>.</p>
+                <p>Si observamos un potrero, vemos vacas pastando. La vaca come hierba (productor) y la transforma en leche y carne. Nosotros, los humanos, también somos consumidores: comemos vegetales (productores) y carne de otros animales (consumidores). Pero en la vereda también hay seres que no vemos: bacterias y hongos en el suelo, que descomponen la hojarasca y los restos de animales, devolviendo nutrientes a la tierra. Se llaman <strong>descomponedores</strong>.</p>
+                <p>La historia de la nutrición autótrofa y heterótrofa se remonta a los inicios de la vida. Las primeras células eran heterótrofas y consumían moléculas orgánicas del caldo primitivo. Luego aparecieron organismos capaces de usar la luz solar, como las cianobacterias, que empezaron a producir oxígeno. Ese evento cambió la Tierra. Hoy, todos los ecosistemas dependen de los productores, que convierten la energía solar en energía química.</p>
+                <p>En la escuela, los niños de grado séptimo hicieron un experimento: pusieron un frasco con agua, algas y caracoles. Observaron que las algas (productoras) liberaban burbujas de oxígeno con la luz, y los caracoles (consumidores) respiraban ese oxígeno. Además, los caracoles comían algas. Así comprobaron la interdependencia. En la vereda, si talan muchos árboles (productores), los animales se quedan sin comida y refugio.</p>
+                <p>Pero no solo hablamos de biología. En nuestra comunidad también hay productores de ideas, de ayuda, de comida. Por ejemplo, un campesino produce café, y nosotros lo consumimos. Un vecino produce abono orgánico y lo compartimos. Reconocer qué producimos y qué consumimos nos hace más conscientes del valor del trabajo y la colaboración. Así como en la naturaleza, necesitamos equilibrar dar y recibir.</p>
+            </div>
+            <!-- 5 pausas inductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 1: Dibuja en tu cuaderno una planta y escribe qué necesita para fabricar su alimento.</p><button class="pausa-btn" data-id="0">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 2: Observa tu casa y anota tres cosas que consumes y que provienen de plantas.</p><button class="pausa-btn" data-id="1">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 3: Pregunta a un familiar qué cultiva en su huerta o jardín. Escríbelo.</p><button class="pausa-btn" data-id="2">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 4: Clasifica estos seres de la vereda en productor o consumidor: pasto, gallina, gusano, árbol de aguacate.</p><button class="pausa-btn" data-id="3">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 5: Reflexiona: ¿qué produces tú en tu familia (alegría, ayuda, ideas) y qué consumes de los demás?</p><button class="pausa-btn" data-id="4">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- PREGUNTA TIPO ICFES con SVG -->
+        <section class="seccion">
+            <h2>🔬 Pregunta ICFES (Indagar)</h2>
+            <div class="svg-ecosistema">
+                <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- árbol productor -->
+                    <rect x="50" y="120" width="20" height="50" fill="#8b5a2b" />
+                    <circle cx="60" cy="100" r="25" fill="#3f9e4d" />
+                    <circle cx="90" cy="80" r="20" fill="#3f9e4d" />
+                    <circle cx="30" cy="80" r="18" fill="#3f9e4d" />
+                    <!-- vaca consumidora -->
+                    <rect x="200" y="140" width="50" height="30" fill="#d9b382" rx="8" />
+                    <circle cx="220" cy="130" r="12" fill="#d9b382" />
+                    <circle cx="250" cy="130" r="12" fill="#d9b382" />
+                    <!-- flecha -->
+                    <line x1="120" y1="110" x2="180" y2="130" stroke="#d45d1e" stroke-width="3" marker-end="url(#arrow)" />
+                    <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#d45d1e" /></marker></defs>
+                    <text x="250" y="80" fill="#1d5e1d">productor → consumidor</text>
+                </svg>
+            </div>
+            <p>En el esquema, la flecha indica la dirección del flujo de energía. ¿Qué organismo es el productor y cuál el consumidor?</p>
+            <div class="pregunta">
+                <label><input type="radio" name="icfes" value="a"> a) La vaca es productor, el árbol consumidor</label><br>
+                <label><input type="radio" name="icfes" value="b"> b) El árbol es productor, la vaca consumidor</label><br>
+                <label><input type="radio" name="icfes" value="c"> c) Ambos son productores</label><br>
+                <label><input type="radio" name="icfes" value="d"> d) Ambos son consumidores</label><br>
+                <button id="revisarIcfes">Revisar</button>
+                <div id="feedIcfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <!-- CUERPO DEDUCTIVO (con canvas central) -->
+        <section class="seccion">
+            <h2>⚙️ Camino deductivo: cadenas y redes</h2>
+            <p><strong>Autótrofos:</strong> Organismos que sintetizan su propio alimento a partir de sustancias inorgánicas, usando luz (fotosíntesis) o reacciones químicas (quimiosíntesis). Las plantas, algas y algunas bacterias son autótrofas. En la fotosíntesis, convierten CO<sub>2</sub> y agua en glucosa, liberando O<sub>2</sub>. La ecuación es: 6 CO<sub>2</sub> + 6 H<sub>2</sub>O + luz → C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> + 6 O<sub>2</sub>.</p>
+            <p><strong>Heterótrofos:</strong> No pueden producir su alimento; dependen de materia orgánica ya elaborada. Se dividen en consumidores primarios (herbívoros), secundarios (carnívoros) y terciarios. También están los omnívoros, que comen de todo. Los descomponedores (hongos, bacterias) son un tipo especial de heterótrofos que degradan restos y devuelven nutrientes al suelo.</p>
+            <p>Las cadenas tróficas representan quién come a quién. Por ejemplo: pasto (productor) → saltamontes (consumidor primario) → rana (secundario) → culebra (terciario). En realidad, las relaciones son más complejas y forman redes. Cada nivel transfiere solo el 10% de la energía al siguiente; el resto se pierde en calor. Por eso hay pocos depredadores tope.</p>
+            <p>En un ecosistema, la biomasa de productores siempre es mayor que la de consumidores. Si eliminamos a los productores, todo colapsa. Si eliminamos a un consumidor, puede haber sobrepoblación de su presa. Por eso el equilibrio es delicado. En nuestra vereda, cuando los campesinos usan venenos, matan insectos y también afectan aves que se alimentan de ellos.</p>
+            <p>La producción no es solo biológica. En la sociedad, producimos bienes, servicios, cultura. Consumimos lo que otros producen. Reconocer nuestra interdependencia nos lleva a valorar el trabajo ajeno y a cuidar los recursos. Así como los productores sostienen la cadena, nuestras acciones sostienen la comunidad.</p>
+            <p>La fotosíntesis ocurre en los cloroplastos, dentro de las células vegetales. Allí, la clorofila captura fotones y genera ATP y NADPH para fijar carbono. Este proceso es la base de la vida. Sin productores, no habría oxígeno ni materia orgánica. Los consumidores, incluidos nosotros, dependemos totalmente de ellos.</p>
+
+            <!-- CANVAS: simulación de red trófica interactiva -->
+            <canvas id="canvasRed" width="700" height="300"></canvas>
+            <p style="text-align:center;">Mueve el ratón: aparecen más productores (verdes) o consumidores (rojos) según la posición. Las partículas interactúan: los consumidores persiguen productores.</p>
+
+            <!-- 5 pausas deductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 6: Escribe una cadena trófica de 4 eslabones que encuentres en tu región.</p><button class="pausa-btn" data-id="5">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 7: ¿Por qué los productores son más abundantes que los consumidores? Explica en tu cuaderno.</p><button class="pausa-btn" data-id="6">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 8: Investiga qué es un descomponedor y da dos ejemplos.</p><button class="pausa-btn" data-id="7">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 9: Dibuja una red trófica simple con al menos cinco seres.</p><button class="pausa-btn" data-id="8">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 10: Reflexiona: ¿qué producto o servicio ofreces tú a tu comunidad? ¿Cuál consumes con frecuencia?</p><button class="pausa-btn" data-id="9">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- EVALUACIÓN FINAL (TALLER) -->
+        <section class="seccion">
+            <h2>📋 Taller: ¿Productor o consumidor?</h2>
+            <h3>Selección múltiple (autocalifica)</h3>
+            <div><p>1. Los organismos que fabrican su propio alimento se llaman:</p>
+                <label><input type="radio" name="m1" value="0"> a) Heterótrofos</label><br>
+                <label><input type="radio" name="m1" value="1"> b) Autótrofos</label><br>
+                <label><input type="radio" name="m1" value="2"> c) Descomponedores</label><br>
+                <label><input type="radio" name="m1" value="3"> d) Omnívoros</label><br></div>
+            <div><p>2. ¿Cuál de estos es un productor?</p>
+                <label><input type="radio" name="m2" value="0"> a) Vaca</label><br>
+                <label><input type="radio" name="m2" value="1"> b) Pasto</label><br>
+                <label><input type="radio" name="m2" value="2"> c) Hongo</label><br>
+                <label><input type="radio" name="m2" value="3"> d) Perro</label><br></div>
+            <div><p>3. La energía del sol entra a los ecosistemas a través de:</p>
+                <label><input type="radio" name="m3" value="0"> a) Consumidores primarios</label><br>
+                <label><input type="radio" name="m3" value="1"> b) Productores</label><br>
+                <label><input type="radio" name="m3" value="2"> c) Descomponedores</label><br>
+                <label><input type="radio" name="m3" value="3"> d) Depredadores</label><br></div>
+            <div><p>4. Un consumidor secundario se alimenta de:</p>
+                <label><input type="radio" name="m4" value="0"> a) Productores</label><br>
+                <label><input type="radio" name="m4" value="1"> b) Consumidores primarios</label><br>
+                <label><input type="radio" name="m4" value="2"> c) Descomponedores</label><br>
+                <label><input type="radio" name="m4" value="3"> d) Solo plantas</label><br></div>
+            <div><p>5. ¿Qué proceso realizan las plantas para producir alimento?</p>
+                <label><input type="radio" name="m5" value="0"> a) Digestión</label><br>
+                <label><input type="radio" name="m5" value="1"> b) Fotosíntesis</label><br>
+                <label><input type="radio" name="m5" value="2"> c) Respiración</label><br>
+                <label><input type="radio" name="m5" value="3"> d) Fermentación</label><br></div>
+            <button id="calificarMultiple">Calificar múltiple</button>
+            <div id="resultadoMultiple"></div>
+
+            <h3>Preguntas abiertas (10-15 palabras c/u)</h3>
+            <div>
+                <p>1. ¿Cuál es la diferencia entre autótrofo y heterótrofo?</p>
+                <textarea id="open1" rows="2"></textarea><div class="word-counter" id="wc1">0 palabras</div>
+                <p>2. Nombra un productor y un consumidor de tu vereda.</p>
+                <textarea id="open2" rows="2"></textarea><div class="word-counter" id="wc2">0 palabras</div>
+                <p>3. ¿Qué papel cumplen los descomponedores en el ecosistema?</p>
+                <textarea id="open3" rows="2"></textarea><div class="word-counter" id="wc3">0 palabras</div>
+                <p>4. Explica qué es una cadena alimenticia.</p>
+                <textarea id="open4" rows="2"></textarea><div class="word-counter" id="wc4">0 palabras</div>
+                <p>5. ¿Qué produces tú en tu familia? ¿Qué consumes?</p>
+                <textarea id="open5" rows="2"></textarea><div class="word-counter" id="wc5">0 palabras</div>
+                <button id="validarAbiertas">Validar respuestas</button> <span id="msgAbiertas"></span>
+            </div>
+
+            <!-- Ruta de fortalecimiento -->
+            <div style="margin:2rem 0">
+                <h3>🧭 Ruta de fortalecimiento personalizada</h3>
+                <button id="generarRuta">Analizar debilidades</button>
+                <div id="rutaTexto" class="ruta-card" style="margin-top:1rem;"></div>
+            </div>
+
+            <!-- descarga -->
+            <footer>
+                <button id="descargarResultados">📥 Descargar resultados (.txt)</button>
+            </footer>
+        </section>
+    </div>
+
+    <script>
+        (function(){
+            // Estado global
+            let usuario = { apellidos: '', nombres: '' };
+            let pausasHechas = new Array(10).fill(false);
+            let respuestasMulti = [null, null, null, null, null];
+            const correctasMulti = [1, 1, 1, 1, 1]; // según opciones (base 0)
+            let respuestasAbiertas = ['','','','',''];
+            let notaMultiple = 0;
+
+            // Elementos
+            const loginScreen = document.getElementById('loginScreen');
+            const mainContent = document.getElementById('mainContent');
+            const btnIngresar = document.getElementById('btnIngresar');
+            const apellidosInput = document.getElementById('apellidosInput');
+            const nombresInput = document.getElementById('nombresInput');
+            const headerNombre = document.getElementById('headerNombre');
+            const progresoFill = document.getElementById('progresoFill');
+            const elementos = ['elem1','elem2','elem3','elem4','elem5'].map(id => document.getElementById(id));
+
+            // Funciones de progreso y elementos
+            function actualizarProgresoElementos() {
+                const totalHechas = pausasHechas.filter(v => v).length;
+                const porcentaje = (totalHechas / 10) * 100;
+                progresoFill.style.width = porcentaje + '%';
+                const elementosDesbloqueados = Math.min(5, Math.floor(totalHechas / 2)); // cada 2 pausas desbloquea un elemento
+                for (let i = 0; i < 5; i++) {
+                    if (i < elementosDesbloqueados) elementos[i].classList.add('unlocked');
+                    else elementos[i].classList.remove('unlocked');
+                }
+                guardarLocal();
+            }
+
+            // localStorage
+            function guardarLocal() {
+                if (!usuario.apellidos) return;
+                const data = {
+                    apellidos: usuario.apellidos,
+                    nombres: usuario.nombres,
+                    pausas: pausasHechas,
+                    abiertas: respuestasAbiertas,
+                    multi: respuestasMulti
+                };
+                localStorage.setItem('ova_productores', JSON.stringify(data));
+            }
+
+            function cargarLocal() {
+                const saved = localStorage.getItem('ova_productores');
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        usuario = { apellidos: data.apellidos || '', nombres: data.nombres || '' };
+                        pausasHechas = data.pausas || new Array(10).fill(false);
+                        respuestasAbiertas = data.abiertas || ['','','','',''];
+                        respuestasMulti = data.multi || [null,null,null,null,null];
+                        // restaurar textareas
+                        document.getElementById('open1').value = respuestasAbiertas[0] || '';
+                        document.getElementById('open2').value = respuestasAbiertas[1] || '';
+                        document.getElementById('open3').value = respuestasAbiertas[2] || '';
+                        document.getElementById('open4').value = respuestasAbiertas[3] || '';
+                        document.getElementById('open5').value = respuestasAbiertas[4] || '';
+                        // restaurar radios multiple
+                        for (let i=1; i<=5; i++) {
+                            const val = respuestasMulti[i-1];
+                            if (val !== null) {
+                                const radio = document.querySelector(`input[name="m${i}"][value="${val}"]`);
+                                if (radio) radio.checked = true;
+                            }
+                        }
+                        if (usuario.apellidos && usuario.nombres) {
+                            loginScreen.style.display = 'none';
+                            mainContent.style.display = 'block';
+                            headerNombre.innerText = `${usuario.apellidos} ${usuario.nombres}`;
+                            actualizarProgresoElementos();
+                            actualizarTodosWordCount();
+                        }
+                        // deshabilitar pausas ya hechas
+                        pausasHechas.forEach((h, idx) => {
+                            if (h) {
+                                const btn = document.querySelector(`.pausa-btn[data-id="${idx}"]`);
+                                if (btn) { btn.disabled = true; btn.innerText = '✔️ Hecho'; }
+                            }
+                        });
+                    } catch (e) {}
+                }
+            }
+
+            // contador de palabras
+            function contarPalabras(t) {
+                return t.trim().split(/\s+/).filter(p => p.length>0).length;
+            }
+            function actualizarWordCount(taId, ctId) {
+                const ta = document.getElementById(taId);
+                const num = contarPalabras(ta.value);
+                document.getElementById(ctId).innerText = num + ' palabras';
+                return num;
+            }
+            function actualizarTodosWordCount() {
+                for (let i=1; i<=5; i++) {
+                    actualizarWordCount(`open${i}`, `wc${i}`);
+                }
+            }
+
+            // LOGIN
+            btnIngresar.addEventListener('click', (e) => {
+                e.preventDefault();
+                const ap = apellidosInput.value.trim();
+                const nom = nombresInput.value.trim();
+                if (!ap || !nom) { alert('Completa ambos campos'); return; }
+                usuario.apellidos = ap; usuario.nombres = nom;
+                headerNombre.innerText = `${ap} ${nom}`;
+                loginScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                if (!localStorage.getItem('ova_productores')) {
+                    pausasHechas = new Array(10).fill(false);
+                } else {
+                    cargarLocal();
+                }
+                actualizarProgresoElementos();
+                guardarLocal();
+            });
+
+            // PAUSAS
+            document.querySelectorAll('.pausa-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'), 10);
+                    if (!isNaN(id) && id>=0 && id<10 && !pausasHechas[id]) {
+                        pausasHechas[id] = true;
+                        e.target.disabled = true;
+                        e.target.innerText = '✔️ Hecho';
+                        actualizarProgresoElementos();
+                    }
+                });
+            });
+
+            // Pre-saberes
+            function configPre(ind, correctVal, feedId) {
+                document.querySelectorAll(`input[name="pre${ind}"]`).forEach(r => {
+                    r.addEventListener('change', function() {
+                        const f = document.getElementById(feedId);
+                        if (this.value === correctVal) {
+                            f.innerText = '✅ Correcto.';
+                            f.className = 'feedback correcto';
+                        } else {
+                            f.innerText = '❌ Vuelve a intentar.';
+                            f.className = 'feedback incorrecto';
+                        }
+                    });
+                });
+            }
+            configPre(1, 'b', 'feedPre1');
+            configPre(2, 'b', 'feedPre2');
+            configPre(3, 'b', 'feedPre3');
+
+            // ICFES
+            document.getElementById('revisarIcfes').addEventListener('click', () => {
+                const selec = document.querySelector('input[name="icfes"]:checked');
+                const feed = document.getElementById('feedIcfes');
+                if (!selec) { feed.innerText = 'Elige una opción'; return; }
+                if (selec.value === 'b') {
+                    feed.innerText = '✅ ¡Correcto! El árbol (productor) fabrica su alimento, la vaca (consumidor) se alimenta del árbol.';
+                    feed.className = 'feedback correcto';
+                } else {
+                    feed.innerText = '❌ No es correcto. Recuerda que los productores son las plantas, los consumidores los animales.';
+                    feed.className = 'feedback incorrecto';
+                }
+            });
+
+            // Múltiple
+            document.getElementById('calificarMultiple').addEventListener('click', () => {
+                let aciertos = 0;
+                for (let i=1; i<=5; i++) {
+                    const radios = document.getElementsByName(`m${i}`);
+                    let val = null;
+                    for (let r of radios) if (r.checked) { val = r.value; break; }
+                    if (val !== null) {
+                        respuestasMulti[i-1] = parseInt(val,10);
+                        if (respuestasMulti[i-1] === correctasMulti[i-1]) aciertos++;
+                    } else respuestasMulti[i-1] = null;
+                }
+                notaMultiple = aciertos;
+                document.getElementById('resultadoMultiple').innerText = `Obtuviste ${aciertos}/5 correctas.`;
+                guardarLocal();
+            });
+
+            // Abiertas
+            ['open1','open2','open3','open4','open5'].forEach((id, idx) => {
+                document.getElementById(id).addEventListener('input', function() {
+                    actualizarWordCount(id, 'wc'+(idx+1));
+                    respuestasAbiertas[idx] = this.value;
+                    guardarLocal();
+                });
+            });
+            document.getElementById('validarAbiertas').addEventListener('click', () => {
+                let ok = true;
+                for (let i=1; i<=5; i++) {
+                    const num = contarPalabras(document.getElementById(`open${i}`).value);
+                    if (num<10 || num>15) ok = false;
+                }
+                document.getElementById('msgAbiertas').innerText = ok ? '✅ Todas entre 10-15 palabras.' : '❌ Revisa el contador de palabras (deben ser 10-15).';
+            });
+
+            // Ruta fortalecimiento
+            document.getElementById('generarRuta').addEventListener('click', () => {
+                // inductivas: preguntas 1,2 / deductivas: 3,4,5 (aproximadamente)
+                let indAc=0, indTot=0, dedAc=0, dedTot=0;
+                for (let i=0; i<5; i++) {
+                    if (respuestasMulti[i] !== null) {
+                        if (i<2) { indTot++; if (respuestasMulti[i]===correctasMulti[i]) indAc++; }
+                        else { dedTot++; if (respuestasMulti[i]===correctasMulti[i]) dedAc++; }
+                    }
+                }
+                let msg = '';
+                if (indTot>0 && indAc/indTot < 0.6) msg += '🌿 Fortalece lo inductivo: repasa los ejemplos de la vereda y la clasificación. ';
+                if (dedTot>0 && dedAc/dedTot < 0.6) msg += '🔬 Refuerza conceptos deductivos: cadenas tróficas y niveles. ';
+                if (msg === '') msg = '🌟 ¡Excelente! Sigues entendiendo el flujo de energía y materia.';
+                document.getElementById('rutaTexto').innerText = msg;
+            });
+
+            // CANVAS animación (red trófica con partículas)
+            const canvas = document.getElementById('canvasRed');
+            const ctx = canvas.getContext('2d');
+            let mouseX = 350; // influye en población de productores/consumidores
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+            });
+
+            let particulas = [];
+            function initParticulas() {
+                for (let i=0; i<40; i++) {
+                    particulas.push({
+                        x: Math.random()*700,
+                        y: Math.random()*300,
+                        vx: (Math.random()-0.5)*1,
+                        vy: (Math.random()-0.5)*1,
+                        tipo: i < 25 ? 'productor' : 'consumidor' // 25 productores, 15 consumidores iniciales
+                    });
+                }
+            }
+            initParticulas();
+
+            function actualizarCanvas() {
+                // ajustar población según mouse: izquierda más productores, derecha más consumidores
+                let targetProd = 20 + Math.floor((1 - mouseX/700) * 30);
+                let targetCons = 10 + Math.floor((mouseX/700) * 30);
+                let total = particulas.length;
+
+                // balancear
+                let prodCount = particulas.filter(p => p.tipo === 'productor').length;
+                let consCount = particulas.filter(p => p.tipo === 'consumidor').length;
+
+                if (prodCount < targetProd && total < 70) {
+                    particulas.push({ x: Math.random()*700, y: Math.random()*300, vx: (Math.random()-0.5)*1, vy: (Math.random()-0.5)*1, tipo: 'productor' });
+                }
+                if (consCount < targetCons && total < 70) {
+                    particulas.push({ x: Math.random()*700, y: Math.random()*300, vx: (Math.random()-0.5)*1, vy: (Math.random()-0.5)*1, tipo: 'consumidor' });
+                }
+                if (prodCount > targetProd+5) {
+                    let idx = particulas.findIndex(p => p.tipo === 'productor');
+                    if (idx !== -1) particulas.splice(idx,1);
+                }
+                if (consCount > targetCons+5) {
+                    let idx = particulas.findIndex(p => p.tipo === 'consumidor');
+                    if (idx !== -1) particulas.splice(idx,1);
+                }
+
+                // mover y simular interacción simple: consumidor come productor si cerca
+                for (let i=0; i<particulas.length; i++) {
+                    let p = particulas[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x<0 || p.x>700) p.vx *= -1;
+                    if (p.y<0 || p.y>300) p.vy *= -1;
+
+                    if (p.tipo === 'consumidor') {
+                        for (let j=0; j<particulas.length; j++) {
+                            if (particulas[j].tipo === 'productor') {
+                                let dx = p.x - particulas[j].x;
+                                let dy = p.y - particulas[j].y;
+                                if (Math.sqrt(dx*dx+dy*dy) < 12) {
+                                    // consumidor come productor
+                                    particulas.splice(j,1);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                ctx.clearRect(0,0,700,300);
+                // fondo
+                ctx.fillStyle = '#1f4f2b';
+                ctx.fillRect(0,0,700,300);
+
+                // dibujar partículas
+                for (let p of particulas) {
+                    ctx.beginPath();
+                    if (p.tipo === 'productor') {
+                        ctx.fillStyle = '#7ed957'; // verde
+                    } else {
+                        ctx.fillStyle = '#ff6b6b'; // rojo
+                    }
+                    ctx.arc(p.x, p.y, 6, 0, 2*Math.PI);
+                    ctx.fill();
+                }
+
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillStyle = '#fcf9ea';
+                ctx.fillText('← más productores', 50, 50);
+                ctx.fillText('más consumidores →', 500, 50);
+                requestAnimationFrame(actualizarCanvas);
+            }
+            actualizarCanvas();
+
+            // Descarga resultados
+            document.getElementById('descargarResultados').addEventListener('click', () => {
+                const nombre = `${usuario.apellidos} ${usuario.nombres}`;
+                const elemIndex = Math.min(5, Math.floor(pausasHechas.filter(v=>v).length / 2));
+                const elemento = ['H','He','Li','Be','B'][elemIndex-1] || 'Ninguno';
+                const multiStr = respuestasMulti.map((v,i)=>`P${i+1}:${v!==null?v:'-'}`).join(' ');
+                const abiertasStr = respuestasAbiertas.map((t,i)=>`A${i+1}:${t.substring(0,30)}`).join(' | ');
+                const contenido = `Nombre: ${nombre}\nNota final múltiple: ${notaMultiple}/5\nElemento químico: ${elemento}\nRespuestas: ${multiStr}\nAbiertas: ${abiertasStr}`;
+                const blob = new Blob([contenido], {type:'text/plain'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `productores_${usuario.apellidos}.txt`;
+                a.click();
+            });
+
+            window.addEventListener('load', () => {
+                cargarLocal();
+                actualizarTodosWordCount();
+            });
+        })();
+    </script>
+</body>
+</html>

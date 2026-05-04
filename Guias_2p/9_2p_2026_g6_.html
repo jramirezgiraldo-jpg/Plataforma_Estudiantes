@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tercera Ley: La Independencia Genética en Pueblo Rico</title>
+    <style>
+        /* ================= VARIABLES Y TIPOGRAFÍA ================= */
+        :root {
+            --color-cafe-oscuro: #3B2A1A;
+            --color-cafe-tostado: #7B4B2A;
+            --color-verde-quindio: #2E5C25;
+            --color-verde-claro: #8CB87A;
+            --color-naranja-citrico: #E67E22;
+            --color-amarillo-sol: #F1C40F;
+            --color-crema: #FDFBF7;
+            --color-peligro: #C0392B;
+            --font-principal: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-principal);
+        }
+
+        body {
+            background-color: var(--color-crema);
+            color: var(--color-cafe-oscuro);
+            line-height: 1.7;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* ================= HUD Y GAMIFICACIÓN ================= */
+        #hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(90deg, var(--color-cafe-oscuro) 0%, var(--color-verde-quindio) 100%);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.4s ease;
+        }
+
+        .hud-oculto { transform: translateY(-100%); }
+
+        .hud-item { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 1.1rem; }
+
+        .barra-progreso-contenedor {
+            flex-grow: 1;
+            margin: 0 40px;
+            background-color: rgba(255,255,255,0.2);
+            height: 14px;
+            border-radius: 7px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #barra-progreso {
+            height: 100%;
+            width: 0%;
+            background-color: var(--color-amarillo-sol);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px var(--color-amarillo-sol);
+        }
+
+        .icono-svg { width: 28px; height: 28px; fill: white; }
+
+        /* ================= PANTALLA DE BIENVENIDA ================= */
+        #pantalla-bienvenida {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, var(--color-verde-quindio) 0%, #1A3614 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .fondo-patron {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.05; pointer-events: none;
+            background-image: radial-gradient(circle at 10px 10px, white 2px, transparent 0);
+            background-size: 30px 30px;
+        }
+
+        .caja-ingreso {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 50px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 450px;
+            width: 100%;
+            z-index: 2;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .input-group { margin-bottom: 25px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 1rem; color: #E0E0E0; font-weight: bold;}
+        
+        .input-estilizado {
+            width: 100%; padding: 15px; border-radius: 10px; border: 2px solid transparent;
+            background: rgba(255,255,255,0.95); color: var(--color-cafe-oscuro);
+            font-size: 1.1rem; outline: none; transition: all 0.3s;
+        }
+        .input-estilizado:focus { border-color: var(--color-naranja-citrico); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(230, 126, 34, 0.3); }
+
+        .btn-principal {
+            background-color: var(--color-naranja-citrico); color: white; border: none;
+            padding: 15px 30px; border-radius: 30px; font-size: 1.2rem; font-weight: 800;
+            cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 1.5px;
+            display: inline-block; width: 100%; box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4);
+        }
+        .btn-principal:hover:not(:disabled) { transform: translateY(-3px) scale(1.02); background-color: #D35400; box-shadow: 0 8px 20px rgba(211, 84, 0, 0.6); }
+        .btn-principal:disabled { background-color: #95A5A6; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        /* ================= ESTRUCTURA PRINCIPAL ================= */
+        #contenido-ova {
+            display: none; padding-top: 90px; max-width: 1000px; margin: 0 auto; padding-bottom: 120px;
+        }
+
+        .seccion {
+            background: white; margin: 40px 20px; padding: 50px; border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05); border-top: 6px solid var(--color-verde-quindio);
+            position: relative;
+        }
+
+        h1, h2, h3 { color: var(--color-verde-quindio); margin-bottom: 25px; line-height: 1.3;}
+        h1 { font-size: 2.5rem; border-bottom: 3px solid var(--color-naranja-citrico); padding-bottom: 15px;}
+        h2 { font-size: 2rem; margin-top: 40px;}
+        h3 { font-size: 1.5rem; color: var(--color-cafe-tostado); }
+
+        .texto-narrativo { text-align: justify; margin-bottom: 20px; font-size: 1.1rem; color: #444; }
+        .texto-narrativo::first-letter { font-size: 250%; color: var(--color-naranja-citrico); font-weight: bold; float: left; margin-right: 8px; line-height: 1; }
+
+        /* ================= CUESTIONARIOS Y PRE-SABERES ================= */
+        .caja-pregunta {
+            background: #F8FAF8; border: 2px solid #EAEAEA; padding: 25px; border-radius: 12px; margin-bottom: 25px;
+            transition: border-color 0.3s;
+        }
+        .caja-pregunta:hover { border-color: var(--color-verde-claro); }
+        
+        .opcion-btn {
+            display: block; width: 100%; text-align: left; padding: 15px; margin: 10px 0;
+            background: white; border: 2px solid var(--color-verde-claro); border-radius: 8px;
+            cursor: pointer; transition: all 0.2s; font-size: 1.05rem; color: var(--color-cafe-oscuro);
+        }
+        .opcion-btn:hover:not(:disabled) { background: var(--color-crema); transform: translateX(5px); }
+        .opcion-btn.correcta { background: #E8F5E9; border-color: #2ECC71; color: #27AE60; font-weight: bold; }
+        .opcion-btn.incorrecta { background: #FDEDEC; border-color: #E74C3C; color: #C0392B; }
+
+        /* ================= PAUSAS ACTIVAS ================= */
+        .pausa-activa {
+            background: linear-gradient(135deg, #FDFBF7 0%, #F4F1EA 100%); border-left: 6px solid var(--color-amarillo-sol);
+            padding: 25px; margin: 35px 0; border-radius: 0 12px 12px 0; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        }
+        .btn-completar {
+            background: var(--color-cafe-tostado); color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: all 0.2s;
+        }
+        .btn-completar:hover:not(:disabled) { background: var(--color-cafe-oscuro); transform: scale(1.05); }
+        .btn-completar:disabled { background: #27AE60; cursor: default; }
+
+        /* ================= TABLAS RESPONSIVAS ================= */
+        .tabla-responsiva {
+            width: 100%; border-collapse: collapse; margin: 30px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 10px; overflow: hidden; font-size: 1.05rem;
+        }
+        .tabla-responsiva th, .tabla-responsiva td { padding: 18px; text-align: left; border-bottom: 1px solid #EEE; }
+        .tabla-responsiva th { background-color: var(--color-verde-quindio); color: white; font-weight: 600; }
+        .tabla-responsiva tr:nth-child(even) { background-color: #F9F9F9; }
+        .tabla-responsiva tr:hover { background-color: #F1F8E9; }
+
+        /* ================= DRAG AND DROP (JUEGOS) ================= */
+        .actividad-dd {
+            background: #FAFAFA; border: 3px dashed var(--color-naranja-citrico); border-radius: 15px;
+            padding: 30px; margin: 40px 0; text-align: center;
+        }
+        .contenedor-items, .contenedor-zonas { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 25px; min-height: 60px; }
+        
+        .item-arrastrable {
+            background: var(--color-verde-quindio); color: white; padding: 12px 25px; border-radius: 8px;
+            cursor: grab; user-select: none; font-weight: bold; font-size: 1.2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: transform 0.1s;
+        }
+        .item-arrastrable:active { cursor: grabbing; transform: scale(1.05); }
+        
+        .zona-drop {
+            min-width: 60px; height: 60px; border: 3px solid var(--color-cafe-claro, #A07855); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; background: white;
+            font-weight: bold; font-size: 1.2rem; color: var(--color-cafe-oscuro); transition: all 0.2s;
+        }
+        .zona-drop.palabra { min-width: 150px; padding: 0 15px; }
+        .zona-drop.hover { background-color: #FFF3E0; border-color: var(--color-naranja-citrico); transform: scale(1.05); }
+
+        /* ================= VISUALES (SVG Y CANVAS) ================= */
+        .contenedor-visual {
+            margin: 40px 0; text-align: center; background: #FFF; padding: 20px; border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); border: 1px solid #E0E0E0;
+        }
+        canvas {
+            background-color: #111; border-radius: 10px; max-width: 100%;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4); cursor: crosshair; margin-top: 15px;
+        }
+        .controles-canvas { margin-top: 20px; display: flex; justify-content: center; gap: 20px; }
+
+        /* ================= ANTI-FRAUDE Y TEXTAREAS ================= */
+        .textarea-controlado {
+            width: 100%; height: 120px; padding: 15px; border: 2px solid #CCC; border-radius: 10px;
+            resize: vertical; font-size: 1.1rem; transition: border-color 0.3s; margin-top: 10px;
+        }
+        .textarea-controlado:focus { border-color: var(--color-verde-quindio); outline: none; box-shadow: 0 0 10px rgba(46, 92, 37, 0.2); }
+        
+        #modal-fraude {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+            display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(5px);
+        }
+        .caja-fraude {
+            background: white; padding: 50px; border-radius: 15px; text-align: center; max-width: 450px;
+            border-top: 15px solid var(--color-peligro); animation: sacudida 0.4s ease-in-out;
+        }
+
+        @keyframes sacudida {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-15px); }
+            40%, 80% { transform: translateX(15px); }
+        }
+
+        #resultado-final {
+            display: none; background: #E8F5E9; padding: 40px; border-radius: 15px;
+            text-align: center; margin-top: 50px; border: 3px solid #2ECC71;
+        }
+
+        /* Utilidades científicas */
+        .genotipo { font-family: monospace; font-size: 1.2rem; background: #EEE; padding: 2px 6px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <!-- HUD SUPERIOR -->
+    <div id="hud" class="hud-oculto">
+        <div class="hud-item">
+            <svg class="icono-svg" viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/></svg>
+            <span id="hud-nombre">Estudiante</span>
+        </div>
+        <div class="barra-progreso-contenedor">
+            <div id="barra-progreso"></div>
+        </div>
+        <div class="hud-item">
+            <span>Puntos:</span>
+            <span id="hud-puntos" style="color: var(--color-amarillo-sol); font-size: 1.4rem;">0.0</span> / 5.0
+            <svg class="icono-svg" style="fill: var(--color-amarillo-sol);" viewBox="0 0 24 24">
+                <path d="M12,2C17.52,2 22,6.48 22,12C22,17.52 17.52,22 12,22C6.48,22 2,17.52 2,12C2,6.48 6.48,2 12,2M12,20C16.42,20 20,16.42 20,12C20,7.58 16.42,4 12,4C7.58,4 4,7.58 4,12C4,16.42 7.58,20 12,20M12,6C13.5,6 14.88,6.58 15.93,7.5C14.07,9.1 12.87,11.41 12.87,14C12.87,14.71 13,15.4 13.23,16.03C12.84,16.09 12.43,16.13 12,16.13C9.72,16.13 7.85,14.26 7.85,11.98C7.85,9.7 9.72,7.83 12,7.83M12,8.83C10.27,8.83 8.85,10.25 8.85,11.98C8.85,13.71 10.27,15.13 12,15.13C12.16,15.13 12.31,15.11 12.46,15.09C12.06,14.28 11.87,13.38 11.87,12.44C11.87,10.74 12.67,9.23 13.92,8.27C13.33,8.04 12.68,7.83 12,7.83Z"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- MODAL ANTI-FRAUDE -->
+    <div id="modal-fraude">
+        <div class="caja-fraude">
+            <svg style="width:70px; fill: var(--color-peligro); margin-bottom:15px;" viewBox="0 0 24 24"><path d="M12 2L1 21H23M12 6L19.53 19H4.47M11 10V14H13V10M11 16V18H13V16"/></svg>
+            <h2 style="color: var(--color-peligro); font-size: 1.8rem; margin-bottom:15px;">¡Alerta de Fraude Académico!</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 20px;">El sistema detectó una anomalía en tu patrón de escritura (Copiar/Pegar o uso de asistentes externos).</p>
+            <p style="font-size: 1.1rem; color: #555;"><strong>En Quimbaya, cosechamos con esfuerzo y honestidad.</strong> El campo ha sido borrado. Escribe con tus propias palabras.</p>
+            <button class="btn-principal" style="margin-top: 25px;" onclick="cerrarModalFraude()">Aceptar y Continuar</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA DE BIENVENIDA -->
+    <div id="pantalla-bienvenida">
+        <div class="fondo-patron"></div>
+        <div class="caja-ingreso">
+            <h1 style="color: white; border: none; padding: 0; font-size: 2.8rem; margin-bottom: 10px;">La Herencia Quindiana</h1>
+            <p style="margin-bottom: 35px; font-size: 1.2rem; color: #D4EFDF;">Tercera Ley de Mendel en Pueblo Rico (Grado 9)</p>
+            
+            <div class="input-group">
+                <label for="nombres">Tus Nombres:</label>
+                <input type="text" id="nombres" class="input-estilizado" placeholder="Ej: Santiago">
+            </div>
+            
+            <div class="input-group">
+                <label for="apellidos">Tus Apellidos:</label>
+                <input type="text" id="apellidos" class="input-estilizado" placeholder="Ej: Giraldo Botero">
+            </div>
+            
+            <button id="btn-ingresar" class="btn-principal">Ingresar a la Finca</button>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL OVA -->
+    <div id="contenido-ova">
+        
+        <!-- SECCIÓN 1: INTRODUCCIÓN Y PRE-SABERES -->
+        <div class="seccion" id="sec-inicio">
+            <h1>Cruzando Fronteras Genéticas</h1>
+            <h3>Objetivo de Aprendizaje</h3>
+            <p class="texto-narrativo">
+                Comprender y aplicar la Tercera Ley de Mendel (Principio de la Distribución Independiente) diseñando cruces genéticos con dos o más características simultáneas. Analizaremos cómo se heredan rasgos vitales en los cultivos de café, cítricos y en la ganadería de la Vereda Pueblo Rico, Quimbaya.
+            </p>
+
+            <h3 style="margin-top: 40px;">Pre-saberes: La Genética en tu Entorno</h3>
+            <p>Responde basándote en lo que observas en las fincas. Cada acierto suma <strong>0.1 puntos</strong>.</p>
+
+            <div class="caja-pregunta" id="pre-1">
+                <p><strong>1.</strong> En una finca ganadera de Pueblo Rico, hay vacas lecheras que producen mucha leche y otras poca. También hay vacas con cuernos y sin cuernos. Si cruzamos dos vacas, ¿Crees que todas las vacas que dan mucha leche tendrán obligatoriamente cuernos?</p>
+                <button class="opcion-btn" data-correct="false" onclick="verificarOpcion('pre-1', this, false)">A. Sí, las características buenas siempre se heredan juntas.</button>
+                <button class="opcion-btn" data-correct="true" onclick="verificarOpcion('pre-1', this, true)">B. No, la producción de leche y la presencia de cuernos se pueden heredar por separado.</button>
+                <button class="opcion-btn" data-correct="false" onclick="verificarOpcion('pre-1', this, false)">C. Depende exclusivamente del clima en Quimbaya.</button>
+            </div>
+
+            <div class="caja-pregunta" id="pre-2">
+                <p><strong>2.</strong> Cuando hablamos de características observables a simple vista en un cultivo de cítricos, como naranjas dulces o naranjas ácidas, nos referimos a su:</p>
+                <button class="opcion-btn" data-correct="true" onclick="verificarOpcion('pre-2', this, true)">A. Fenotipo</button>
+                <button class="opcion-btn" data-correct="false" onclick="verificarOpcion('pre-2', this, false)">B. Genotipo</button>
+                <button class="opcion-btn" data-correct="false" onclick="verificarOpcion('pre-2', this, false)">C. Alelo recesivo</button>
+            </div>
+
+            <div class="caja-pregunta" id="pre-3">
+                <p><strong>3.</strong> Para representar los genes dominantes y recesivos en biología, comúnmente utilizamos:</p>
+                <button class="opcion-btn" data-correct="false" onclick="verificarOpcion('pre-3', this, false)">A. Números positivos y negativos.</button>
+                <button class="opcion-btn" data-correct="true" onclick="verificarOpcion('pre-3', this, true)">B. Letras mayúsculas (dominante) y minúsculas (recesivo).</button>
+                <button class="opcion-btn" data-correct="false" onclick="verificarOpcion('pre-3', this, false)">C. Símbolos matemáticos (+ y -).</button>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: CUERPO INDUCTIVO -->
+        <div class="seccion" id="sec-inductivo">
+            <h2>El Reto del Caficultor en Pueblo Rico</h2>
+            
+            <p class="texto-narrativo">
+                Si recorres los caminos de la Vereda Pueblo Rico en el municipio de Quimbaya, notarás que las laderas están tapizadas de cafetales, matizadas con sembrados de cítricos y salpicadas por potreros ganaderos. Detrás de este paisaje de postal turística, existe una constante lucha científica y agrícola. Los caficultores locales no siembran cualquier semilla; buscan el "árbol perfecto". Históricamente, la región enfrentó el terrible hongo de la roya, que devastaba las hojas del cafeto. Para sobrevivir, se introdujeron variedades resistentes. Sin embargo, no bastaba con que la planta resistiera la enfermedad; el mercado del Paisaje Cultural Cafetero exige también un grano de gran tamaño y calidad ("Supremo"). 
+            </p>
+            <p class="texto-narrativo">
+                Aquí nace el verdadero reto genético. Tenemos dos características distintas: <strong>Resistencia a la Roya</strong> y <strong>Tamaño del Grano</strong>. Un agricultor inexperto podría pensar que si cruza una planta resistente (pero de grano pequeño) con una susceptible (pero de grano grande), todos los hijos saldrán defectuosos o perfectos. Lo que realmente ocurre es que la naturaleza "baraja" estas características. Esto significa que la resistencia a la roya no está amarrada genéticamente al tamaño del grano. Esta separación mágica que permite que surjan nuevas combinaciones (plantas resistentes Y de grano grande) es el pilar de la biodiversidad agrícola de nuestra región.
+            </p>
+            <p class="texto-narrativo">
+                Este fenómeno no se limita al café. Pensemos en el sector ganadero, vital para la economía de Quimbaya. Las fincas lecheras necesitan animales que produzcan mucha leche, pero que además soporten el intenso calor y las garrapatas del trópico. Una raza europea (como la Holstein) produce mucha leche pero sufre con el clima; una raza cebú (como la Gyr) soporta el clima pero produce menos leche. Al cruzarlas, los criadores observan que en la segunda generación (F<sub>2</sub>), las características se mezclan independientemente. Aparecen vacas que heredan la alta producción lechera de su abuela europea y la tolerancia al calor de su abuelo cebú. 
+            </p>
+            <p class="texto-narrativo">
+                De igual manera, en las fincas citrícolas que ofrecen turismo experiencial, los visitantes buscan naranjas que sean dulces (característica 1) y de cáscara delgada para pelar fácil (característica 2). Para obtener este árbol ideal, los agrónomos estudian cómo se transmiten estos dos genes simultáneamente. Al observar miles de cruces, descubren un patrón matemático exacto en la descendencia. No es azar descontrolado; es una ley biológica estricta que dictamina cómo los cromosomas se reparten durante la formación del polen y el óvulo en la flor del naranjo.
+            </p>
+            <p class="texto-narrativo">
+                A este cruce, donde evaluamos dos características al mismo tiempo, la ciencia lo llama <strong>Cruce Dihíbrido</strong>. Entenderlo fue la obra maestra del monje Gregor Mendel en 1865, y hoy, más de siglo y medio después, es la misma ciencia que permite a un caficultor en Pueblo Rico certificar su finca con semillas mejoradas. Veremos a continuación cómo estas observaciones locales encajan perfectamente en las proporciones matemáticas de la Tercera Ley de Mendel.
+            </p>
+
+            <!-- TABLA COMPARATIVA -->
+            <h3>Cuadro Comparativo: Características Dihíbridas en Quimbaya</h3>
+            <table class="tabla-responsiva">
+                <thead>
+                    <tr>
+                        <th>Cultivo / Sector</th>
+                        <th>Característica A (Ej. Gen 1)</th>
+                        <th>Característica B (Ej. Gen 2)</th>
+                        <th>El "Fenotipo Ideal" Buscado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Café</strong></td>
+                        <td>Resistencia a Roya (R)</td>
+                        <td>Tamaño del Grano (G)</td>
+                        <td>Resistente y Grano Grande (<span class="genotipo">R_G_</span>)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ganadería</strong></td>
+                        <td>Producción Lechera (L)</td>
+                        <td>Tolerancia al Calor (T)</td>
+                        <td>Alta Producción y Alta Tolerancia (<span class="genotipo">L_T_</span>)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cítricos (Naranjas)</strong></td>
+                        <td>Sabor de la pulpa (D)</td>
+                        <td>Grosor de Cáscara (C)</td>
+                        <td>Dulce y Cáscara Delgada (<span class="genotipo">D_cc</span>)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- ACTIVIDAD 1: ORDENAR LETRAS -->
+            <div class="actividad-dd" id="act-1">
+                <h3>Actividad Interactiva 1: Concepto Clave (0.2 pts)</h3>
+                <p>Ordena las letras para formar el término científico que usamos cuando cruzamos dos individuos observando <strong>dos características</strong> a la vez (Ej: Tamaño y Resistencia).</p>
+                <div class="contenedor-items" id="items-act-1"></div>
+                <div class="contenedor-zonas" id="zonas-act-1"></div>
+                <button class="btn-principal" onclick="validarLetras('act-1', 'DIHIBRIDO', 0.2)">Verificar Término</button>
+            </div>
+
+            <!-- ACTIVIDAD 2: ORDENAR PALABRAS -->
+            <div class="actividad-dd" id="act-2">
+                <h3>Actividad Interactiva 2: La Observación en la Finca (0.2 pts)</h3>
+                <p>Ordena las palabras para formar la frase que explica qué pasa con las características (como el tamaño del café y su resistencia) al pasar de padres a hijos.</p>
+                <div class="contenedor-items" id="items-act-2"></div>
+                <div class="contenedor-zonas" id="zonas-act-2"></div>
+                <button class="btn-principal" onclick="validarPalabras('act-2', 'LOS RASGOS SE HEREDAN INDEPENDIENTEMENTE', 0.2)">Verificar Frase</button>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 1-5 -->
+            <h2>Pausas Activas (Retos en tu Cuaderno)</h2>
+            <p>Realiza estos ejercicios físicos y analíticos. Clic en el botón para guardar el progreso (0.1 pts c/u).</p>
+            
+            <div class="pausa-activa">
+                <h3>1. Reflexión Cafetera</h3>
+                <p>Escribe: Si cruzas un cafeto Alto y Resistente con uno Bajo y Susceptible. ¿Crees que la altura afecta la resistencia a la roya? Justifica.</p>
+                <button class="btn-completar" id="btn-pausa-1" onclick="completarPausa(1)">Ya lo hice en el cuaderno</button>
+            </div>
+            
+            <div class="pausa-activa">
+                <h3>2. Dibujo de Fenotipos</h3>
+                <p>Dibuja dos naranjas: Una Dulce de cáscara Gruesa (Dominante/Dominante) y una Ácida de cáscara Delgada (Recesivo/Recesivo).</p>
+                <button class="btn-completar" id="btn-pausa-2" onclick="completarPausa(2)">Ya lo hice en el cuaderno</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h3>3. Mapa Mental Simple</h3>
+                <p>Crea un mapa mental con la palabra "Cruce Dihíbrido" en el centro, sacando flechas hacia "2 Genes", "Café", "Vaca" y "Naranja".</p>
+                <button class="btn-completar" id="btn-pausa-3" onclick="completarPausa(3)">Ya lo hice en el cuaderno</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h3>4. Asignación de Letras</h3>
+                <p>En el cuaderno: Asigna letras a los alelos del café. R = Resistente, r = Susceptible. G = Grano grande, g = Grano pequeño. Escribe cómo se vería un genotipo híbrido para ambas (Heterocigoto).</p>
+                <button class="btn-completar" id="btn-pausa-4" onclick="completarPausa(4)">Ya lo hice en el cuaderno</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h3>5. Estiramiento y Diagrama</h3>
+                <p>Ponte de pie, estira los brazos. Luego siéntate y dibuja un cuadro de Punnett vacío (una cuadrícula de 4x4, ¡es decir, 16 cuadritos!).</p>
+                <button class="btn-completar" id="btn-pausa-5" onclick="completarPausa(5)">Ya lo hice en el cuaderno</button>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: PREGUNTA ICFES (INDAGAR) -->
+        <div class="seccion" id="sec-icfes">
+            <h2>Competencia Científica: Indagar (0.4 pts)</h2>
+            <p class="texto-narrativo">
+                En la Finca "El Edén" en Pueblo Rico, se cruzaron dos cafetos doblemente heterocigotos para Tamaño de planta (Alto 'A', bajo 'a') y Resistencia (Resistente 'R', susceptible 'r') -> AaRr x AaRr. Se sembraron 1600 semillas resultantes. Observa los resultados reales obtenidos en campo en la siguiente gráfica de barras.
+            </p>
+
+            <!-- GRÁFICA SVG -->
+            <div class="contenedor-visual">
+                <svg width="600" height="350" viewBox="0 0 600 350">
+                    <!-- Títulos y Ejes -->
+                    <text x="300" y="25" font-size="16" font-weight="bold" text-anchor="middle">Distribución Fenotípica de Cafetos F2</text>
+                    <line x1="60" y1="300" x2="550" y2="300" stroke="#333" stroke-width="2"/>
+                    <line x1="60" y1="40" x2="60" y2="300" stroke="#333" stroke-width="2"/>
+                    <text x="15" y="180" font-size="14" font-weight="bold" transform="rotate(-90, 15, 180)">Número de Plantas</text>
+                    
+                    <!-- Marcas Y -->
+                    <text x="30" y="300" font-size="12">0</text>
+                    <text x="25" y="225" font-size="12">300</text>
+                    <text x="25" y="150" font-size="12">600</text>
+                    <text x="25" y="75" font-size="12">900</text>
+
+                    <!-- Barras (Basado en proporción 9:3:3:1 de 1600 total) -->
+                    <!-- 9/16 = 900 Alto/Resist. -->
+                    <rect x="90" y="75" width="60" height="225" fill="#2E5C25"/> 
+                    <text x="120" y="320" font-size="11" text-anchor="middle">Alto</text>
+                    <text x="120" y="335" font-size="11" text-anchor="middle">Resist.</text>
+                    <text x="120" y="65" font-size="12" font-weight="bold" text-anchor="middle">900</text>
+
+                    <!-- 3/16 = 300 Alto/Susc. -->
+                    <rect x="200" y="225" width="60" height="75" fill="#8CB87A"/>
+                    <text x="230" y="320" font-size="11" text-anchor="middle">Alto</text>
+                    <text x="230" y="335" font-size="11" text-anchor="middle">Susc.</text>
+                    <text x="230" y="215" font-size="12" font-weight="bold" text-anchor="middle">300</text>
+
+                    <!-- 3/16 = 300 Bajo/Resist. -->
+                    <rect x="310" y="225" width="60" height="75" fill="#E67E22"/>
+                    <text x="340" y="320" font-size="11" text-anchor="middle">Bajo</text>
+                    <text x="340" y="335" font-size="11" text-anchor="middle">Resist.</text>
+                    <text x="340" y="215" font-size="12" font-weight="bold" text-anchor="middle">300</text>
+
+                    <!-- 1/16 = 100 Bajo/Susc. -->
+                    <rect x="420" y="275" width="60" height="25" fill="#C0392B"/>
+                    <text x="450" y="320" font-size="11" text-anchor="middle">Bajo</text>
+                    <text x="450" y="335" font-size="11" text-anchor="middle">Susc.</text>
+                    <text x="450" y="265" font-size="12" font-weight="bold" text-anchor="middle">100</text>
+                </svg>
+            </div>
+
+            <div class="caja-pregunta" id="icfes-1">
+                <p><strong>De acuerdo con la gráfica y los principios genéticos, ¿qué se puede concluir sobre la herencia de la altura y la resistencia a la roya en estos cafetos?</strong></p>
+                <button class="opcion-btn" data-correct="false" onclick="verificarIcfes(this, false)">A. Los genes de la altura y la resistencia están siempre unidos, por lo que nunca aparecen cafetos Bajos y Resistentes.</button>
+                <button class="opcion-btn" data-correct="true" onclick="verificarIcfes(this, true)">B. Los genes se distribuyen de manera independiente, generando una proporción fenotípica de 9:3:3:1 en la descendencia F2.</button>
+                <button class="opcion-btn" data-correct="false" onclick="verificarIcfes(this, false)">C. La resistencia a la roya es un gen recesivo, ya que la mayoría de las plantas nacieron susceptibles.</button>
+                <button class="opcion-btn" data-correct="false" onclick="verificarIcfes(this, false)">D. Las 1600 plantas clonaron exactamente las características de los padres, sin variaciones genéticas.</button>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 4: CUERPO DEDUCTIVO -->
+        <div class="seccion" id="sec-deductivo">
+            <h2>La Ciencia detrás del Semillero: Tercera Ley de Mendel</h2>
+            
+            <p class="texto-narrativo">
+                Ahora que hemos visto el problema práctico en las fincas de Quimbaya, entremos a la célula. La <strong>Tercera Ley de Mendel</strong>, o <em>Ley de la Distribución Independiente</em>, establece que durante la formación de los gametos (polen y óvulos en plantas, espermatozoides y óvulos en animales), los alelos para diferentes rasgos se separan y se distribuyen hacia los gametos de manera independiente unos de otros. Esto ocurre porque los genes para "Altura" y "Resistencia" están, por lo general, en cromosomas diferentes.
+            </p>
+            <p class="texto-narrativo">
+                El proceso clave responsable de esta "magia mezcladora" es la <strong>Meiosis</strong>. Imagina una célula madre en la flor del café. Durante una fase llamada Metafase I de la meiosis, los pares de cromosomas homólogos se alinean en el centro de la célula. Lo fascinante es que su orientación es aleatoria. El cromosoma con el gen de "Grano Grande" no hace un pacto con el cromosoma del gen de "Resistencia" para irse juntos. Se lanzan al azar. Esto significa que una planta diheterocigota (AaBb) producirá cuatro tipos de gametos en igual proporción: AB, Ab, aB y ab. 
+            </p>
+            <p class="texto-narrativo">
+                Cuando fertilizamos dos plantas diheterocigotas (AaBb x AaBb), estamos combinando matemáticamente 4 tipos de polen con 4 tipos de óvulos. ¡Eso nos da 16 combinaciones posibles en el Cuadro de Punnett! Al observar los fenotipos resultantes, Mendel descubrió que siempre emergen en una proporción mágica: <strong>9:3:3:1</strong>. Nueve mostrarán ambos rasgos dominantes, tres mostrarán el primer dominante y el segundo recesivo, tres mostrarán el primer recesivo y el segundo dominante, y solo uno mostrarán ambos rasgos recesivos. Exactamente lo que observamos en la gráfica de los cafetos del Edén.
+            </p>
+            <p class="texto-narrativo">
+                Esta ley tiene una condición importante: funciona a la perfección si los genes están en <em>cromosomas distintos</em> o muy separados en el mismo cromosoma. Si los genes estuvieran físicamente pegados uno al lado del otro, tenderían a heredarse juntos, un fenómeno conocido como "genes ligados". Afortunadamente, para muchas características agrícolas que mejoran la producción en el Quindío, la distribución independiente nos permite hacer cruces y "limpiar" las características malas mientras conservamos las buenas.
+            </p>
+            <p class="texto-narrativo">
+                En conclusión, la Tercera Ley de Mendel es la prueba matemática de la inmensa diversidad biológica. Permite que el turismo en Quimbaya ofrezca frutas con combinaciones únicas de colores y sabores, que la ganadería adapte razas a la topografía, y que el café colombiano evolucione frente a plagas y cambios climáticos. Sin la distribución independiente, estaríamos estancados evolutivamente con combinaciones genéticas rígidas.
+            </p>
+
+            <!-- ANIMACIÓN CANVAS -->
+            <div class="contenedor-visual">
+                <h3>Simulador de Meiosis (Alineación Aleatoria)</h3>
+                <p style="font-size: 0.95rem; margin-bottom:15px;">Simulando cómo los cromosomas del Café (Color Verde/Rojo para Altura, Azul/Naranja para Resistencia) se alinean al azar generando distintos gametos.</p>
+                
+                <canvas id="canvas-meiosis" width="800" height="300"></canvas>
+                
+                <div class="controles-canvas">
+                    <button class="btn-principal" id="btn-revolver" style="width:auto; padding: 10px 20px;">Revolver Cromosomas (Aleatorio)</button>
+                </div>
+                <p style="margin-top: 10px; font-weight: bold;" id="resultado-gametos">Gametos generados: --</p>
+            </div>
+
+            <!-- ACTIVIDAD 3: ORDENAR LETRAS -->
+            <div class="actividad-dd" id="act-3">
+                <h3>Actividad Interactiva 3: El Proceso Celular (0.2 pts)</h3>
+                <p>Ordena las letras para formar el nombre del proceso de división celular donde ocurre la distribución independiente de los cromosomas.</p>
+                <div class="contenedor-items" id="items-act-3"></div>
+                <div class="contenedor-zonas" id="zonas-act-3"></div>
+                <button class="btn-principal" onclick="validarLetras('act-3', 'MEIOSIS', 0.2)">Verificar Orden</button>
+            </div>
+
+            <!-- ACTIVIDAD 4: ORDENAR PALABRAS -->
+            <div class="actividad-dd" id="act-4">
+                <h3>Actividad Interactiva 4: La Proporción Matemática (0.2 pts)</h3>
+                <p>Ordena las palabras para formar la famosa proporción fenotípica de un cruce entre dos individuos diheterocigotos.</p>
+                <div class="contenedor-items" id="items-act-4"></div>
+                <div class="contenedor-zonas" id="zonas-act-4"></div>
+                <button class="btn-principal" onclick="validarPalabras('act-4', 'LA PROPORCION ES NUEVE TRES TRES UNO', 0.2)">Verificar Frase</button>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 6-10 -->
+            <h2>Retos Finales para el Cuaderno</h2>
+            
+            <div class="pausa-activa">
+                <h3>6. Cuadro de Gametos</h3>
+                <p>Si la planta de café tiene genotipo AaRr. Dibuja los 4 círculos de los gametos posibles que puede producir: (AR), (Ar), (aR), (ar).</p>
+                <button class="btn-completar" id="btn-pausa-6" onclick="completarPausa(6)">Ya lo hice en el cuaderno</button>
+            </div>
+            
+            <div class="pausa-activa">
+                <h3>7. El Cruce de Prueba</h3>
+                <p>Calcula: Si cruzas un toro homocigoto dominante (AABB) con una vaca doblemente recesiva (aabb), ¿Cómo será genotípicamente el 100% de la cría (F1)?</p>
+                <button class="btn-completar" id="btn-pausa-7" onclick="completarPausa(7)">Ya lo hice en el cuaderno</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h3>8. Excepción a la Regla</h3>
+                <p>Escribe en grande en tu cuaderno: "Si los genes están muy cerca en el mismo cromosoma, NO se separan, se llama LIGAMIENTO".</p>
+                <button class="btn-completar" id="btn-pausa-8" onclick="completarPausa(8)">Ya lo hice en el cuaderno</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h3>9. Matemáticas Aplicadas</h3>
+                <p>Si en Pueblo Rico nacen 160 terneros de un cruce diheterocigoto, sabiendo la proporción (9:3:3:1). ¿Cuántos aproximadamente mostrarán el doble genotipo recesivo (el "1" de la fórmula)? (Respuesta: 160/16 * 1 = 10).</p>
+                <button class="btn-completar" id="btn-pausa-9" onclick="completarPausa(9)">Ya lo hice en el cuaderno</button>
+            </div>
+
+            <div class="pausa-activa">
+                <h3>10. Síntesis Agrícola</h3>
+                <p>Escribe un párrafo (4 líneas) aconsejando a un caficultor sobre por qué debe mezclar variedades en lugar de clonar siempre una sola planta susceptible.</p>
+                <button class="btn-completar" id="btn-pausa-10" onclick="completarPausa(10)">Ya lo hice en el cuaderno</button>
+            </div>
+
+        </div>
+
+        <!-- SECCIÓN 5: TALLER FINAL EVALUATIVO -->
+        <div class="seccion" id="sec-evaluacion">
+            <h2>Certificación Genética: Taller Final</h2>
+            <p style="color: var(--color-peligro); font-weight:bold;">¡Atención! Sistema Anti-Fraude Activado para las preguntas abiertas.</p>
+
+            <h3>Selección Múltiple (0.3 pts c/u)</h3>
+            
+            <div class="caja-pregunta" id="eval-m1">
+                <p>1. La Tercera Ley de Mendel se refiere a:</p>
+                <select id="sel-m1" class="input-estilizado" style="border: 2px solid #CCC;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">La dominancia incompleta de un alelo.</option>
+                    <option value="B">La distribución independiente de los alelos para dos o más rasgos.</option>
+                    <option value="C">La mutación espontánea del café en Quimbaya.</option>
+                </select>
+            </div>
+
+            <div class="caja-pregunta" id="eval-m2">
+                <p>2. ¿Cuántos tipos de gametos distintos puede producir un animal con genotipo AaBb?</p>
+                <select id="sel-m2" class="input-estilizado" style="border: 2px solid #CCC;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">Dos (Aa y Bb)</option>
+                    <option value="B">Uno (AaBb)</option>
+                    <option value="C">Cuatro (AB, Ab, aB, ab)</option>
+                </select>
+            </div>
+
+            <div class="caja-pregunta" id="eval-m3">
+                <p>3. En un cuadro de Punnett de 16 casillas para un cruce diheterocigoto, la proporción del fenotipo dominante para ambos rasgos (El "9" de 9:3:3:1) corresponde genotípicamente a plantas:</p>
+                <select id="sel-m3" class="input-estilizado" style="border: 2px solid #CCC;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">A_B_ (Al menos un alelo dominante en ambos pares)</option>
+                    <option value="B">aabb (Todos recesivos)</option>
+                    <option value="C">AAbb únicamente</option>
+                </select>
+            </div>
+
+            <div class="caja-pregunta" id="eval-m4">
+                <p>4. ¿En qué proceso de división celular ocurre la separación y distribución independiente de los cromosomas homólogos?</p>
+                <select id="sel-m4" class="input-estilizado" style="border: 2px solid #CCC;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">Mitosis celular de las hojas.</option>
+                    <option value="B">Meiosis (Formación de gametos).</option>
+                    <option value="C">Fermentación del grano de café.</option>
+                </select>
+            </div>
+
+            <div class="caja-pregunta" id="eval-m5">
+                <p>5. Si dos características NO cumplen la proporción 9:3:3:1 y siempre se heredan juntas, es porque los genes probablemente están:</p>
+                <select id="sel-m5" class="input-estilizado" style="border: 2px solid #CCC;">
+                    <option value="">Selecciona...</option>
+                    <option value="A">En cromosomas distintos.</option>
+                    <option value="B">Ligados (muy cerca en el mismo cromosoma).</option>
+                    <option value="C">Desaparecidos.</option>
+                </select>
+            </div>
+
+            <h3>Análisis Agrícola - Preguntas Abiertas (0.2 pts c/u)</h3>
+            <p style="font-size: 0.9rem; margin-bottom: 15px;">Responde con tus propias palabras (Mínimo 10-15 palabras por respuesta).</p>
+
+            <div class="caja-pregunta">
+                <label><strong>1. Aplicación:</strong> Explica por qué para un caficultor en Pueblo Rico es ventajoso que el gen de la altura no esté ligado genéticamente al gen del sabor del café.</label>
+                <textarea id="eval-a1" class="textarea-controlado" placeholder="Escribe tu análisis aquí..."></textarea>
+            </div>
+
+            <div class="caja-pregunta">
+                <label><strong>2. Deducción:</strong> Al cruzar dos naranjos diheterocigotos, 1 de cada 16 frutos sale pequeño y ácido (Doble recesivo). ¿Por qué es la proporción más baja de todas?</label>
+                <textarea id="eval-a2" class="textarea-controlado" placeholder="Escribe tu análisis aquí..."></textarea>
+            </div>
+
+            <div class="caja-pregunta">
+                <label><strong>3. Concepto Físico:</strong> ¿Qué papel juegan los cromosomas en la Metafase I de la meiosis para que se cumpla la Tercera Ley de Mendel?</label>
+                <textarea id="eval-a3" class="textarea-controlado" placeholder="Escribe tu análisis aquí..."></textarea>
+            </div>
+
+            <div class="caja-pregunta">
+                <label><strong>4. Contexto Local:</strong> Si un turista en Quimbaya te pregunta cómo los finqueros logran vacas de buena carne y resistentes al calor simultáneamente, ¿Cómo le explicas usando la genética dihíbrida?</label>
+                <textarea id="eval-a4" class="textarea-controlado" placeholder="Escribe tu análisis aquí..."></textarea>
+            </div>
+
+            <div class="caja-pregunta">
+                <label><strong>5. Síntesis Biológica:</strong> ¿Qué pasaría con la biodiversidad mundial (y de Quindío) si todos los genes se heredaran en un solo bloque indivisible sin distribución independiente?</label>
+                <textarea id="eval-a5" class="textarea-controlado" placeholder="Escribe tu análisis aquí..."></textarea>
+            </div>
+
+            <button id="btn-finalizar" class="btn-principal" style="margin-top: 30px;">Calificar OVA y Emitir Reporte</button>
+
+            <!-- RESULTADOS FINALES -->
+            <div id="resultado-final">
+                <h2 style="color: #27AE60; font-size: 2.5rem; margin-bottom: 10px;">¡Certificación Genética Completa!</h2>
+                <p style="font-size: 1.4rem;">Nota Final: <strong id="nota-final" style="font-size:2rem; color:var(--color-cafe-oscuro)">--</strong> / 5.0</p>
+                
+                <div id="feedback-ruta" style="background: white; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left; font-size: 1.1rem; border: 1px solid #CCC;">
+                    <!-- Llenado por JS -->
+                </div>
+
+                <button class="btn-principal" onclick="descargarReporteTxt()" style="background-color: var(--color-verde-quindio);">Descargar Resultados (.txt)</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCRIPT PRINCIPAL Vainilla JS -->
+    <script>
+        /**
+         * ========================================================
+         * 1. GESTIÓN DE ESTADO Y PERSISTENCIA (LocalStorage)
+         * ========================================================
+         */
+        const STORAGE_KEY = 'ova_mendel_quimbaya_v1';
+        let estado = {
+            nombres: '', apellidos: '',
+            puntos: 0.0, progreso: 0,
+            completados: [], respuestasLocales: {},
+            finalizado: false
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const dataGuardada = localStorage.getItem(STORAGE_KEY);
+            if(dataGuardada) {
+                estado = JSON.parse(dataGuardada);
+                restaurarVista();
+            }
+        });
+
+        function guardarData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
+            actualizarInterfazHUD();
+        }
+
+        function darPuntos(cantidad, idElemento) {
+            if(!estado.completados.includes(idElemento)) {
+                estado.puntos = Math.min(5.0, estado.puntos + cantidad);
+                estado.progreso = Math.min(100, estado.progreso + 3.5); // Aprox basado en cantidad de eventos
+                estado.completados.push(idElemento);
+                guardarData();
+                return true;
+            }
+            return false;
+        }
+
+        function actualizarInterfazHUD() {
+            document.getElementById('hud-nombre').innerText = `${estado.nombres} ${estado.apellidos}`;
+            document.getElementById('hud-puntos').innerText = estado.puntos.toFixed(1);
+            document.getElementById('barra-progreso').style.width = `${estado.progreso}%`;
+        }
+
+        document.getElementById('btn-ingresar').addEventListener('click', () => {
+            const n = document.getElementById('nombres').value.trim();
+            const a = document.getElementById('apellidos').value.trim();
+            if(n === '' || a === '') return alert('Ingresa nombres y apellidos para entrar a la finca.');
+            
+            estado.nombres = n; estado.apellidos = a;
+            guardarData();
+            iniciarOVA();
+        });
+
+        function iniciarOVA() {
+            document.getElementById('pantalla-bienvenida').style.display = 'none';
+            document.getElementById('contenido-ova').style.display = 'block';
+            document.getElementById('hud').classList.remove('hud-oculto');
+            actualizarInterfazHUD();
+            iniciarCanvas();
+        }
+
+        function restaurarVista() {
+            if(estado.nombres !== '') {
+                iniciarOVA();
+                
+                // Restaurar botones de tests
+                estado.completados.forEach(id => {
+                    // Pre-saberes y Icfes
+                    if(id.startsWith('pre-') || id.startsWith('icfes-')) {
+                        const btn = document.querySelector(`#${id} button[data-correct="true"]`);
+                        if(btn) btn.classList.add('correcta');
+                        document.querySelectorAll(`#${id} button`).forEach(b => b.disabled = true);
+                    }
+                    // Pausas
+                    if(id.startsWith('pausa-')) {
+                        const num = id.split('-')[1];
+                        const btn = document.getElementById(`btn-pausa-${num}`);
+                        if(btn){ btn.disabled = true; btn.innerText = "Completado ✓"; btn.style.background = "#27AE60"; }
+                    }
+                    // Actividades DD
+                    if(id.startsWith('act-')) {
+                        const btn = document.querySelector(`#${id} .btn-principal`);
+                        if(btn){ btn.disabled = true; btn.innerText = "Verificado ✓"; btn.style.background = "#27AE60"; }
+                    }
+                });
+
+                // Restaurar respuestas abiertas
+                for(let i=1; i<=5; i++) {
+                    if(estado.respuestasLocales[`sel-m${i}`]) document.getElementById(`sel-m${i}`).value = estado.respuestasLocales[`sel-m${i}`];
+                    if(estado.respuestasLocales[`eval-a${i}`]) document.getElementById(`eval-a${i}`).value = estado.respuestasLocales[`eval-a${i}`];
+                }
+
+                if(estado.finalizado) presentarResultados();
+            }
+        }
+
+        /**
+         * ========================================================
+         * 2. LÓGICA DE PREGUNTAS Y PAUSAS
+         * ========================================================
+         */
+        function verificarOpcion(idDiv, boton, esCierta) {
+            document.querySelectorAll(`#${idDiv} button`).forEach(b => b.disabled = true);
+            if(esCierta) {
+                boton.classList.add('correcta');
+                darPuntos(0.1, idDiv);
+            } else {
+                boton.classList.add('incorrecta');
+                document.querySelectorAll(`#${idDiv} button`).forEach(b => {
+                    if(b.getAttribute('data-correct') === 'true') {
+                        b.style.border = '3px solid #2ECC71';
+                        b.style.background = '#E8F5E9';
+                    }
+                });
+                estado.completados.push(idDiv);
+                guardarData();
+            }
+        }
+
+        function verificarIcfes(boton, esCierta) {
+            verificarOpcion('icfes-1', boton, esCierta);
+            if(esCierta) {
+                estado.puntos = Math.min(5.0, estado.puntos + 0.3); // +0.1 base + 0.3 = 0.4 pts
+                guardarData();
+            }
+        }
+
+        function completarPausa(n) {
+            const b = document.getElementById(`btn-pausa-${n}`);
+            b.disabled = true; b.innerText = "Completado ✓"; b.style.background = "#27AE60";
+            darPuntos(0.1, `pausa-${n}`);
+        }
+
+        /**
+         * ========================================================
+         * 3. JUEGOS DRAG AND DROP (Vainilla)
+         * ========================================================
+         */
+        let divArrastrado = null;
+
+        function crearDragDrop(idItems, idZonas, arregloTextos, esPalabra) {
+            const contItems = document.getElementById(idItems);
+            const contZonas = document.getElementById(idZonas);
+            contItems.innerHTML = ''; contZonas.innerHTML = '';
+
+            const desordenado = [...arregloTextos].sort(() => Math.random() - 0.5);
+
+            desordenado.forEach((txt, index) => {
+                const i = document.createElement('div');
+                i.className = 'item-arrastrable';
+                i.innerText = txt;
+                i.draggable = true;
+                
+                i.addEventListener('dragstart', e => {
+                    divArrastrado = i;
+                    e.dataTransfer.setData('text/plain', txt);
+                    setTimeout(() => i.style.opacity = '0.4', 0);
+                });
+                i.addEventListener('dragend', () => i.style.opacity = '1');
+                contItems.appendChild(i);
+            });
+
+            arregloTextos.forEach(() => {
+                const z = document.createElement('div');
+                z.className = `zona-drop ${esPalabra ? 'palabra' : ''}`;
+                
+                z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('hover'); });
+                z.addEventListener('dragleave', () => z.classList.remove('hover'));
+                z.addEventListener('drop', e => {
+                    e.preventDefault(); z.classList.remove('hover');
+                    if(divArrastrado) {
+                        // Si ya tiene algo, devolverlo
+                        if(z.innerText !== '') {
+                            const temp = document.createElement('div');
+                            temp.className = 'item-arrastrable';
+                            temp.innerText = z.innerText;
+                            temp.draggable = true;
+                            temp.addEventListener('dragstart', ev => {
+                                divArrastrado = temp; ev.dataTransfer.setData('text/plain', temp.innerText);
+                                setTimeout(() => temp.style.opacity='0.4', 0);
+                            });
+                            temp.addEventListener('dragend', () => temp.style.opacity='1');
+                            contItems.appendChild(temp);
+                        }
+                        z.innerText = divArrastrado.innerText;
+                        divArrastrado.remove();
+                    }
+                });
+
+                z.addEventListener('click', () => {
+                    if(z.innerText !== '') {
+                        const temp = document.createElement('div');
+                        temp.className = 'item-arrastrable';
+                        temp.innerText = z.innerText; temp.draggable = true;
+                        temp.addEventListener('dragstart', ev => {
+                            divArrastrado = temp; ev.dataTransfer.setData('text', temp.innerText);
+                            setTimeout(()=>temp.style.opacity='0.4',0);
+                        });
+                        temp.addEventListener('dragend', () => temp.style.opacity='1');
+                        contItems.appendChild(temp);
+                        z.innerText = '';
+                    }
+                });
+                contZonas.appendChild(z);
+            });
+        }
+
+        crearDragDrop('items-act-1', 'zonas-act-1', ['D','I','H','I','B','R','I','D','O'], false);
+        crearDragDrop('items-act-2', 'zonas-act-2', ['LOS','RASGOS','SE','HEREDAN','INDEPENDIENTEMENTE'], true);
+        crearDragDrop('items-act-3', 'zonas-act-3', ['M','E','I','O','S','I','S'], false);
+        crearDragDrop('items-act-4', 'zonas-act-4', ['LA','PROPORCION','ES','NUEVE','TRES','TRES','UNO'], true);
+
+        function validarLetras(id, correcta, pts) {
+            let form = '';
+            document.querySelectorAll(`#zonas-${id} .zona-drop`).forEach(z => form += z.innerText);
+            if(form === correcta) {
+                if(darPuntos(pts, id)) {
+                    const b = document.querySelector(`#${id} .btn-principal`);
+                    b.disabled = true; b.innerText = "Verificado ✓"; b.style.background = "#27AE60";
+                    alert("¡Correcto! Has construido el término biológico exacto.");
+                }
+            } else { alert("El orden no es correcto. Inténtalo de nuevo."); }
+        }
+
+        function validarPalabras(id, correcta, pts) {
+            let form = [];
+            document.querySelectorAll(`#zonas-${id} .zona-drop`).forEach(z => { if(z.innerText!=='') form.push(z.innerText) });
+            if(form.join(' ') === correcta) {
+                if(darPuntos(pts, id)) {
+                    const b = document.querySelector(`#${id} .btn-principal`);
+                    b.disabled = true; b.innerText = "Verificado ✓"; b.style.background = "#27AE60";
+                    alert("¡Perfecto! La idea científica tiene sentido lógico.");
+                }
+            } else { alert("La frase no tiene la sintaxis correcta. Revísala."); }
+        }
+
+        /**
+         * ========================================================
+         * 4. ANIMACIÓN CANVAS 60FPS (Mendel's Law Meiosis)
+         * ========================================================
+         */
+        function iniciarCanvas() {
+            const canvas = document.getElementById('canvas-meiosis');
+            const ctx = canvas.getContext('2d');
+            const btn = document.getElementById('btn-revolver');
+            const lblGametos = document.getElementById('resultado-gametos');
+
+            let animando = false;
+            let fase = 0; // 0=reposo, 1=moviéndose, 2=separados
+            
+            // Cromosomas Par 1 (Altura: A/a)
+            let c1 = { x: 350, y: 150, color: '#2ECC71', letra: 'A', id: 1, targetX: 350 };
+            let c2 = { x: 450, y: 150, color: '#E74C3C', letra: 'a', id: 2, targetX: 450 };
+            
+            // Cromosomas Par 2 (Resistencia: R/r)
+            let c3 = { x: 350, y: 200, color: '#3498DB', letra: 'R', id: 3, targetX: 350 };
+            let c4 = { x: 450, y: 200, color: '#E67E22', letra: 'r', id: 4, targetX: 450 };
+
+            let arregloBase = [[c1,c2], [c3,c4]];
+
+            function dibujarCromosoma(c) {
+                ctx.fillStyle = c.color;
+                ctx.beginPath();
+                ctx.roundRect(c.x - 15, c.y - 30, 30, 60, 10);
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.font = '20px bold Arial';
+                ctx.fillText(c.letra, c.x - 7, c.y + 7);
+            }
+
+            function frame() {
+                ctx.clearRect(0,0, canvas.width, canvas.height);
+                
+                // Dibujar célula
+                ctx.strokeStyle = '#555';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                // Forma de célula dividiéndose si fase == 2
+                if(fase === 2) {
+                    ctx.ellipse(250, 150, 120, 100, 0, 0, Math.PI*2);
+                    ctx.ellipse(550, 150, 120, 100, 0, 0, Math.PI*2);
+                } else {
+                    ctx.ellipse(400, 150, 200, 120, 0, 0, Math.PI*2);
+                    // Línea ecuatorial
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath(); ctx.moveTo(400, 30); ctx.lineTo(400, 270); ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+                ctx.stroke();
+
+                // Animar movimiento
+                let todosEnDestino = true;
+                [c1,c2,c3,c4].forEach(c => {
+                    if(Math.abs(c.x - c.targetX) > 1) {
+                        c.x += (c.targetX - c.x) * 0.1; // Ease out
+                        todosEnDestino = false;
+                    } else { c.x = c.targetX; }
+                    dibujarCromosoma(c);
+                });
+
+                if(fase === 1 && todosEnDestino) {
+                    fase = 2; // Separación hacia polos
+                    [c1,c2,c3,c4].forEach(c => {
+                        c.targetX = (c.targetX < 400) ? 250 : 550;
+                    });
+                } else if (fase === 2 && todosEnDestino) {
+                    animando = false;
+                    // Evaluar gametos
+                    let gIzq = (c1.targetX < 400 ? c1.letra : c2.letra) + (c3.targetX < 400 ? c3.letra : c4.letra);
+                    let gDer = (c1.targetX > 400 ? c1.letra : c2.letra) + (c3.targetX > 400 ? c3.letra : c4.letra);
+                    lblGametos.innerText = `Gametos generados: [ ${gIzq} ]  y  [ ${gDer} ]`;
+                }
+
+                requestAnimationFrame(frame);
+            }
+            frame(); // iniciar loop
+
+            btn.addEventListener('click', () => {
+                if(animando) return;
+                animando = true; fase = 1;
+                lblGametos.innerText = `Gametos generados: Mezclando...`;
+                
+                // Shuffle (orientación aleatoria en la placa ecuatorial)
+                if(Math.random() > 0.5) { c1.targetX = 350; c2.targetX = 450; } else { c1.targetX = 450; c2.targetX = 350; }
+                if(Math.random() > 0.5) { c3.targetX = 350; c4.targetX = 450; } else { c3.targetX = 450; c4.targetX = 350; }
+                
+                // Reset Y
+                [c1,c2].forEach(c => { c.y = 100; c.x = 400; });
+                [c3,c4].forEach(c => { c.y = 200; c.x = 400; });
+            });
+        }
+
+        /**
+         * ========================================================
+         * 5. SISTEMA ANTI-FRAUDE STRICTO
+         * ========================================================
+         */
+        document.querySelectorAll('.textarea-controlado').forEach(ta => {
+            let lastKeyTime = Date.now();
+
+            const alertarFraude = (e) => {
+                e.preventDefault();
+                ta.value = '';
+                document.getElementById('modal-fraude').style.display = 'flex';
+            };
+
+            ta.addEventListener('paste', alertarFraude);
+            ta.addEventListener('drop', alertarFraude);
+            ta.addEventListener('contextmenu', e => e.preventDefault());
+
+            ta.addEventListener('keydown', e => {
+                // Prevenir Ctrl+V / Cmd+V
+                if((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) { alertarFraude(e); return; }
+                
+                // Chequeo de cadencia (si escribe más rápido que 20ms por letra, es robot/paste)
+                const now = Date.now();
+                if(e.key.length === 1 && (now - lastKeyTime) < 20) { alertarFraude(e); }
+                lastKeyTime = now;
+
+                // Guardar
+                estado.respuestasLocales[ta.id] = ta.value;
+                guardarData();
+            });
+            ta.addEventListener('blur', () => { estado.respuestasLocales[ta.id] = ta.value; guardarData(); });
+        });
+
+        function cerrarModalFraude() { document.getElementById('modal-fraude').style.display = 'none'; }
+
+        for(let i=1; i<=5; i++){
+            const s = document.getElementById(`sel-m${i}`);
+            s.addEventListener('change', () => { estado.respuestasLocales[s.id] = s.value; guardarData(); });
+        }
+
+        /**
+         * ========================================================
+         * 6. CALIFICACIÓN FINAL
+         * ========================================================
+         */
+        document.getElementById('btn-finalizar').addEventListener('click', () => {
+            
+            // Validar abiertas (>10 palabras)
+            for(let i=1; i<=5; i++) {
+                const text = document.getElementById(`eval-a${i}`).value.trim();
+                if(text.split(/\s+/).filter(w=>w.length>0).length < 10) {
+                    return alert(`Tu respuesta en la pregunta abierta #${i} es muy corta. Elabora una respuesta científica propia (Mín. 10 palabras).`);
+                }
+            }
+            
+            // Validar selects
+            for(let i=1; i<=5; i++) {
+                if(document.getElementById(`sel-m${i}`).value === '') return alert(`Responde la pregunta múltiple #${i}.`);
+            }
+
+            // Calificar múltiples: 1:B, 2:C, 3:A, 4:B, 5:B
+            const correctas = ['B','C','A','B','B'];
+            let puntosTest = 0;
+            for(let i=1; i<=5; i++) { if(document.getElementById(`sel-m${i}`).value === correctas[i-1]) puntosTest += 0.3; }
+
+            // Calificar abiertas (Base de 1.0 total si no hizo fraude y completó palabras)
+            const puntosAbiertas = 1.0;
+
+            estado.puntos = Math.min(5.0, estado.puntos + puntosTest + puntosAbiertas);
+            estado.progreso = 100; estado.finalizado = true;
+            guardarData();
+            presentarResultados();
+        });
+
+        function presentarResultados() {
+            document.getElementById('btn-finalizar').style.display = 'none';
+            document.getElementById('resultado-final').style.display = 'block';
+            document.getElementById('nota-final').innerText = estado.puntos.toFixed(1);
+
+            let retro = "";
+            if(estado.puntos >= 4.5) retro = "<strong>¡Genetista Maestro de Pueblo Rico!</strong> Dominas la Tercera Ley de Mendel a la perfección. Eres capaz de planear cruces complejos para mejorar cultivos de café y hatos ganaderos. Sigue analizando la ciencia de la agronomía.";
+            else if(estado.puntos >= 3.0) retro = "<strong>¡Buen esfuerzo agronómico!</strong> Entiendes que los genes se separan, pero te sugerimos revisar matemáticamente el cuadro de Punnett y por qué la proporción siempre es 9:3:3:1 en híbridos completos.";
+            else retro = "<strong>¡Hay que volver a la semilla!</strong> Te sugerimos re-leer la sección de Meiosis. Es crucial entender que los cromosomas se separan de manera aleatoria, permitiendo todas las combinaciones posibles.";
+
+            document.getElementById('feedback-ruta').innerHTML = retro;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function descargarReporteTxt() {
+            let t = "=================================================\n";
+            t += " REPORTE DE APRENDIZAJE: TERCERA LEY DE MENDEL\n";
+            t += "    Vereda Pueblo Rico - Quimbaya, Quindío\n";
+            t += "=================================================\n\n";
+            t += `Estudiante: ${estado.nombres} ${estado.apellidos}\n`;
+            t += `Puntaje Final: ${estado.puntos.toFixed(1)} / 5.0\n`;
+            t += `Evaluación Anti-Fraude: Superada.\n\n`;
+            
+            t += "--- RESPUESTAS MÚLTIPLES ---\n";
+            const cor = ['B','C','A','B','B'];
+            for(let i=1; i<=5; i++) {
+                t += `Q${i}: Seleccionó ${estado.respuestasLocales[`sel-m${i}`]} (Correcta era ${cor[i-1]})\n`;
+            }
+
+            t += "\n--- RESPUESTAS ABIERTAS ---\n";
+            for(let i=1; i<=5; i++) {
+                t += `Respuesta ${i}:\n${estado.respuestasLocales[`eval-a${i}`]}\n\n`;
+            }
+            
+            t += "\nGenerado automáticamente por OVA Educativo V1.";
+            
+            const b = new Blob([t], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(b);
+            const a = document.createElement('a');
+            a.href = url; a.download = `ReporteGenetica_${estado.apellidos}.txt`;
+            a.click(); URL.revokeObjectURL(url);
+        }
+
+    </script>
+</body>
+</html>

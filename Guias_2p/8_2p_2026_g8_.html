@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Interconexión Total - Digestión y Presión en Pueblo Rico</title>
+    <style>
+        /* ==========================================================================
+           VARIABLES Y PALETA DE COLORES (Paisaje Cultural Cafetero)
+           ========================================================================== */
+        :root {
+            --cafe-oscuro: #3E2723;
+            --cafe-claro: #5D4037;
+            --verde-quindio: #2E7D32;
+            --verde-claro: #81C784;
+            --naranja-citrico: #F57C00;
+            --amarillo-sol: #FBC02D;
+            --crema-fondo: #FDFBF7;
+            --blanco: #FFFFFF;
+            --rojo-sangre: #C62828;
+            --azul-cielo: #0277BD;
+            --texto-principal: #212121;
+            --borde-suave: rgba(62, 39, 35, 0.1);
+        }
+
+        /* ==========================================================================
+           RESET Y TIPOGRAFÍA BASE
+           ========================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--crema-fondo);
+            color: var(--texto-principal);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* ==========================================================================
+           PANTALLA DE BIENVENIDA (LOGIN)
+           ========================================================================== */
+        #welcome-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, var(--verde-quindio), var(--cafe-claro));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .welcome-card {
+            background: var(--blanco);
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .welcome-card h1 {
+            color: var(--cafe-oscuro);
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+
+        .welcome-card p {
+            color: var(--cafe-claro);
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: var(--verde-quindio);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--borde-suave);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--naranja-citrico);
+        }
+
+        .btn {
+            background-color: var(--naranja-citrico);
+            color: var(--blanco);
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover { background-color: #E65100; }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        /* ==========================================================================
+           BARRA DE NAVEGACIÓN Y GAMIFICACIÓN
+           ========================================================================== */
+        #navbar {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            z-index: 900;
+            display: none; /* Oculto inicialmente */
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-name {
+            font-weight: bold;
+            color: var(--cafe-oscuro);
+            font-size: 1.1rem;
+        }
+
+        .score-display {
+            background: var(--amarillo-sol);
+            color: var(--cafe-oscuro);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .unlockables {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-locked { filter: grayscale(100%) opacity(0.3); }
+        .icon-unlocked { filter: none; animation: pop 0.5s ease; }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .progress-container {
+            width: 300px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--verde-quindio);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* ==========================================================================
+           CONTENIDO PRINCIPAL
+           ========================================================================== */
+        #main-content {
+            display: none; /* Oculto inicialmente */
+            padding: 100px 20px 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        section {
+            background: var(--blanco);
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 2.5rem;
+            border-left: 5px solid var(--verde-quindio);
+        }
+
+        h2 { color: var(--cafe-oscuro); margin-bottom: 1.5rem; font-size: 1.8rem; border-bottom: 2px solid var(--borde-suave); padding-bottom: 10px; }
+        h3 { color: var(--verde-quindio); margin: 1.5rem 0 1rem; }
+        p { margin-bottom: 1.2rem; text-align: justify; }
+
+        .highlight {
+            background-color: rgba(245, 124, 0, 0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--cafe-oscuro);
+        }
+
+        /* Tablas */
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+        }
+        .styled-table thead tr {
+            background-color: var(--verde-quindio);
+            color: #ffffff;
+            text-align: left;
+        }
+        .styled-table th, .styled-table td { padding: 12px 15px; }
+        .styled-table tbody tr { border-bottom: 1px solid #dddddd; }
+        .styled-table tbody tr:nth-of-type(even) { background-color: #f3f3f3; }
+        .styled-table tbody tr:last-of-type { border-bottom: 2px solid var(--verde-quindio); }
+
+        /* Actividades / Pausas Activas */
+        .actividad-card {
+            background: rgba(129, 199, 132, 0.1);
+            border: 1px dashed var(--verde-quindio);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+        .btn-check {
+            background-color: var(--verde-claro);
+            color: var(--cafe-oscuro);
+            margin-top: 10px;
+        }
+        .btn-check.done {
+            background-color: var(--verde-quindio);
+            color: white;
+            cursor: default;
+        }
+
+        /* Cuestionarios y Evaluaciones */
+        .question-block {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #fafafa;
+            border-radius: 8px;
+            border-left: 4px solid var(--naranja-citrico);
+        }
+        .options label {
+            display: block;
+            margin-bottom: 8px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        .options label:hover { background: #e0e0e0; }
+        
+        /* Anti-Fraude Textareas */
+        .fraud-alert {
+            color: var(--rojo-sangre);
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: none;
+            margin-top: 5px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 2px solid var(--borde-suave);
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        textarea:focus { border-color: var(--naranja-citrico); outline: none; }
+
+        /* Canvas Container */
+        #canvas-container {
+            width: 100%;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+            background: #1a1a1a;
+            position: relative;
+        }
+        canvas { display: block; width: 100%; height: 400px; }
+
+        /* SVG Containers */
+        .svg-container {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1rem;
+            background: white;
+            border: 1px solid var(--borde-suave);
+            border-radius: 10px;
+        }
+        
+        /* Ocultar secciones bloqueadas */
+        .locked-section {
+            opacity: 0.5;
+            pointer-events: none;
+            position: relative;
+        }
+        .locked-section::after {
+            content: "🔒 Responde correctamente la pregunta de la gráfica para desbloquear.";
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================================================
+         PANTALLA DE BIENVENIDA
+         ========================================================================== -->
+    <div id="welcome-screen">
+        <div class="welcome-card">
+            <!-- SVG Decorativo: Grano de Café y Hoja -->
+            <svg width="80" height="80" viewBox="0 0 100 100" style="margin-bottom: 1rem;">
+                <path d="M50 10 C20 10, 10 40, 10 60 C10 80, 30 90, 50 90 C70 90, 90 80, 90 60 C90 40, 80 10, 50 10 Z" fill="#5D4037"/>
+                <path d="M45 20 Q60 50 45 80" stroke="#3E2723" stroke-width="4" fill="none"/>
+                <path d="M50 10 C70 0, 90 20, 70 40 C60 50, 40 30, 50 10 Z" fill="#2E7D32"/>
+            </svg>
+            <h1>Laboratorio Vivo: Pueblo Rico</h1>
+            <p>Bienvenido al Objeto Virtual de Aprendizaje sobre la <strong>Interconexión Total: Digestión y Presión</strong>. <br><br>Para comenzar tu recorrido por nuestra vereda en Quimbaya, por favor regístrate.</p>
+            
+            <div class="input-group">
+                <label for="nombres">Nombres:</label>
+                <input type="text" id="nombres" placeholder="Ej. Ana María" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="apellidos">Apellidos:</label>
+                <input type="text" id="apellidos" placeholder="Ej. López Gómez" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar">Comenzar Aventura Educativa</button>
+            <p id="login-error" style="color: red; display: none; margin-top: 10px;">Debes ingresar ambos campos.</p>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         BARRA DE NAVEGACIÓN
+         ========================================================================== -->
+    <nav id="navbar">
+        <div class="nav-user">
+            <span class="user-name" id="display-name">Estudiante</span>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+        <div class="nav-user">
+            <div class="score-display">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#F57C00"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <span id="score-text">0 / 5 Pts</span>
+            </div>
+            <div class="unlockables">
+                <!-- Icono 1: Café -->
+                <svg id="icon-1" class="icon-locked" width="30" height="30" viewBox="0 0 100 100" title="Recolector Novato">
+                    <circle cx="50" cy="50" r="45" fill="#5D4037"/>
+                    <path d="M40 25 Q60 50 40 75" stroke="#3E2723" stroke-width="5" fill="none"/>
+                </svg>
+                <!-- Icono 2: Naranja -->
+                <svg id="icon-2" class="icon-locked" width="30" height="30" viewBox="0 0 100 100" title="Fuerza Cítrica">
+                    <circle cx="50" cy="55" r="40" fill="#F57C00"/>
+                    <circle cx="40" cy="45" r="5" fill="#FFF" opacity="0.5"/>
+                    <path d="M50 15 Q60 5 70 15" stroke="#2E7D32" stroke-width="8" fill="none" stroke-linecap="round"/>
+                </svg>
+                <!-- Icono 3: Vaca (Ganadería) -->
+                <svg id="icon-3" class="icon-locked" width="30" height="30" viewBox="0 0 100 100" title="Energía Láctea">
+                    <rect x="20" y="30" width="60" height="40" rx="10" fill="#FFF" stroke="#000" stroke-width="3"/>
+                    <circle cx="35" cy="45" r="8" fill="#000"/>
+                    <circle cx="65" cy="55" r="10" fill="#000"/>
+                </svg>
+                <!-- Icono 4: Jeep (Turismo) -->
+                <svg id="icon-4" class="icon-locked" width="30" height="30" viewBox="0 0 100 100" title="Motor del Turismo">
+                    <rect x="10" y="40" width="80" height="30" fill="#C62828"/>
+                    <circle cx="25" cy="70" r="15" fill="#333"/>
+                    <circle cx="75" cy="70" r="15" fill="#333"/>
+                    <rect x="20" y="20" width="40" height="20" fill="#81C784" opacity="0.8"/>
+                </svg>
+                <!-- Icono 5: Gota de Sangre / Agua -->
+                <svg id="icon-5" class="icon-locked" width="30" height="30" viewBox="0 0 100 100" title="Maestro de la Presión">
+                    <path d="M50 10 Q20 50 20 70 A30 30 0 0 0 80 70 Q80 50 50 10 Z" fill="#C62828"/>
+                    <path d="M40 60 A10 10 0 0 0 60 60" stroke="#FFF" stroke-width="3" fill="none" opacity="0.6"/>
+                </svg>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ==========================================================================
+         CONTENEDOR PRINCIPAL
+         ========================================================================== -->
+    <main id="main-content">
+        
+        <!-- SECCIÓN 1: INICIO Y PRE-SABERES -->
+        <section id="inicio">
+            <h2>Objetivo de Aprendizaje</h2>
+            <p>Comprender cómo se interconectan los sistemas digestivo y circulatorio a través de los principios físicos de la presión, utilizando ejemplos reales de la nutrición y el trabajo en las fincas cafetaleras, citrícolas y ganaderas de la <strong>Vereda Pueblo Rico (Quimbaya)</strong>.</p>
+            
+            <h3>Activación de Pre-saberes</h3>
+            <p>Antes de recorrer la vereda, evaluemos qué tanto conoces. (Gana puntos para desbloquear emblemas).</p>
+            
+            <div class="question-block" id="pre-1">
+                <p><strong>1. Un recolector de café en la finca 'El Ocaso' necesita mucha energía para su jornada. ¿En qué parte de su sistema digestivo los nutrientes del desayuno pasan a su sangre?</strong></p>
+                <div class="options">
+                    <label><input type="radio" name="q1" value="0"> Estómago</label>
+                    <label><input type="radio" name="q1" value="1"> Intestino Delgado (Vellosidades)</label>
+                    <label><input type="radio" name="q1" value="0"> Intestino Grueso</label>
+                </div>
+            </div>
+
+            <div class="question-block" id="pre-2">
+                <p><strong>2. Cuando bombeamos agua desde una cañada en Pueblo Rico hacia la casa de la finca, usamos presión. En el cuerpo humano, ¿qué órgano actúa como esa bomba generando presión hidrostática?</strong></p>
+                <div class="options">
+                    <label><input type="radio" name="q2" value="0"> Los pulmones</label>
+                    <label><input type="radio" name="q2" value="0"> El hígado</label>
+                    <label><input type="radio" name="q2" value="1"> El corazón</label>
+                </div>
+            </div>
+
+            <div class="question-block" id="pre-3">
+                <p><strong>3. ¿Qué relación fundamental existe entre la sangre y los nutrientes obtenidos de comer una naranja tangelo cultivada en Quimbaya?</strong></p>
+                <div class="options">
+                    <label><input type="radio" name="q3" value="1"> La sangre transporta los nutrientes (como la vitamina C) a todas las células mediante la red capilar.</label>
+                    <label><input type="radio" name="q3" value="0"> La sangre destruye los nutrientes ácidos del tangelo antes de que lleguen al cerebro.</label>
+                    <label><input type="radio" name="q3" value="0"> No hay relación, los nutrientes viajan por el sistema nervioso.</label>
+                </div>
+            </div>
+            <button class="btn" id="btn-eval-pre">Verificar Pre-saberes</button>
+            <p id="feedback-pre" style="margin-top: 10px; font-weight: bold;"></p>
+        </section>
+
+        <!-- SECCIÓN 2: CUERPO INDUCTIVO (DIGESTIÓN EN EL ENTORNO LOCAL) -->
+        <section id="inductivo">
+            <h2>El Combustible del Paisaje Cultural Cafetero: La Digestión</h2>
+            <p>La alborada en la vereda Pueblo Rico de Quimbaya está marcada por la neblina que desciende sobre los cafetales y el sonido inconfundible del campo despertando. Para un trabajador agrícola, ya sea un recolector de café, un encargado de ordeñar en la ganadería local o un guía que prepara los jeeps Willys para el turismo, la jornada exige una cantidad monumental de energía. Esta energía no surge de la nada; proviene del tradicional desayuno quindiano: la arepa con queso, el calentado, y por supuesto, una buena taza de café oscuro. Aquí es donde comienza la <span class="highlight">interconexión fisiológica</span>, un proceso que transforma el paisaje en fuerza humana mediante el sistema digestivo.</p>
+            
+            <p>El proceso inicia con la <strong>digestión mecánica y química</strong>. Imagina el proceso de beneficio del café: la despulpadora rompe mecánicamente la cereza, de forma similar a como nuestros dientes trituran la arepa. Luego, el café pasa a tanques de fermentación donde enzimas y bacterias degradan el mucílago. En nuestro cuerpo, la saliva (con la enzima amilasa) y luego los jugos gástricos en el estómago (ácido clorhídrico y pepsina) actúan como ese tanque de fermentación, descomponiendo químicamente los carbohidratos complejos de la arepa y las proteínas del queso lácteo de la región en moléculas más simples (monosacáridos y aminoácidos).</p>
+
+            <p>Sin embargo, la magia real de la interconexión ocurre más adelante, en el <strong>intestino delgado</strong> (específicamente en el yeyuno e íleon). Este órgano no es un tubo liso; está tapizado por millones de estructuras microscópicas llamadas <em>vellosidades intestinales</em>. Piensa en las raíces de un árbol de naranjas tangelo, extendiéndose finamente bajo la tierra volcánica del Quindío para maximizar la absorción de agua y minerales. Las vellosidades funcionan bajo el mismo principio geométrico: aumentan drásticamente el área de superficie para absorber eficientemente los nutrientes descompuestos.</p>
+
+            <p>Dentro de cada vellosidad intestinal existe una red diminuta de vasos sanguíneos (capilares) y un vaso linfático (quilífero). Aquí es donde ocurre el salto intersistémico crítico: los nutrientes cruzan la membrana celular del intestino para ingresar al torrente sanguíneo. Los carbohidratos (que ahora son glucosa, de fórmula molecular C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>) y los aminoácidos entran directamente a la sangre capilar. Los lípidos (grasas del queso o la mantequilla) toman la ruta linfática primero. Es una logística perfecta, comparable a las pequeñas vías terciarias de Pueblo Rico que conectan cada finca aislada con la carretera principal para exportar los productos.</p>
+
+            <p>Una vez en la sangre, estos nutrientes deben ser entregados a cada célula muscular del recolector para que pueda sostener el canasto de café bajo el sol abrasador. Pero la sangre no se mueve sola. Al igual que el sistema de acueducto veredal requiere bombas para llevar el agua cuesta arriba contra la gravedad, nuestro cuerpo necesita una bomba central y un sistema de tuberías presurizadas. Es aquí donde la digestión cede el protagonismo a los principios de la física de fluidos y al sistema circulatorio, demostrando que en el cuerpo, como en la finca, todo está profunda y vitalmente conectado.</p>
+
+            <!-- Cuadro Comparativo -->
+            <h3>Análisis Nutricional de la Producción de Pueblo Rico</h3>
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Producto Local</th>
+                        <th>Macronutriente Principal</th>
+                        <th>Producto Final (Post-Digestión)</th>
+                        <th>Ruta de Absorción (Vellosidad)</th>
+                        <th>Función en la Finca (Metabolismo)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Café (Bebida)</strong></td>
+                        <td>Alcaloides (Cafeína) / Antioxidantes</td>
+                        <td>Cafeína libre</td>
+                        <td>Capilar Sanguíneo directo al Hígado</td>
+                        <td>Estimulación nerviosa, alerta para guías turísticos.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Naranja/Cítricos</strong></td>
+                        <td>Carbohidratos simples (Fructosa), Vitamina C</td>
+                        <td>Monosacáridos (C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>)</td>
+                        <td>Capilar Sanguíneo (Transporte activo)</td>
+                        <td>Energía rápida e inmunidad para trabajo al aire libre.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Queso (Ganadería)</strong></td>
+                        <td>Proteínas y Lípidos</td>
+                        <td>Aminoácidos y Ácidos Grasos</td>
+                        <td>Capilar (Aminoácidos) / Vaso Quilífero (Grasas)</td>
+                        <td>Reparación de tejido muscular tras la recolección.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Arepa de Maíz</strong></td>
+                        <td>Carbohidratos Complejos (Almidón)</td>
+                        <td>Glucosa pura</td>
+                        <td>Capilar Sanguíneo</td>
+                        <td>Energía sostenida (Glucógeno) para largas jornadas.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- SECCIÓN 3: PAUSAS ACTIVAS 1-5 (CUADERNO) -->
+        <section id="pausas-1-5">
+            <h2>Pausas Activas: Retos en el Cuaderno</h2>
+            <p>Toma tu cuaderno de Ciencias Naturales. Realiza los siguientes ejercicios y haz clic en "Ya lo hice" para actualizar tu progreso.</p>
+
+            <div class="actividad-card">
+                <strong>Actividad 1: Reflexión</strong><br>
+                Escribe en tu cuaderno: ¿Por qué crees que un turista que camina por los cafetales bajo el sol se desmaya si no ha desayunado adecuadamente? Relaciónalo con la glucosa.
+                <button class="btn btn-check" onclick="marcarPausa(this, 1)">✓ Ya lo hice en mi cuaderno</button>
+            </div>
+            
+            <div class="actividad-card">
+                <strong>Actividad 2: Dibujo Anatómico y Local</strong><br>
+                Dibuja una vellosidad intestinal (con sus capilares) y, al lado, dibuja las raíces de un árbol de cítricos. Escribe las similitudes en su función de absorción.
+                <button class="btn btn-check" onclick="marcarPausa(this, 2)">✓ Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="actividad-card">
+                <strong>Actividad 3: Mapa Mental</strong><br>
+                Crea un mapa mental cuyo centro sea "La Arepa con Queso". Muestra las flechas de cómo se digiere hasta llegar a la sangre.
+                <button class="btn btn-check" onclick="marcarPausa(this, 3)">✓ Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="actividad-card">
+                <strong>Actividad 4: Cuadro de Variables</strong><br>
+                Haz una tabla comparando la "Digestión Mecánica" (ej. despulpado de café, masticar) vs "Digestión Química" (ej. fermentación, enzimas gástricas).
+                <button class="btn btn-check" onclick="marcarPausa(this, 4)">✓ Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <div class="actividad-card">
+                <strong>Actividad 5: Diagrama de Flujo</strong><br>
+                Dibuja el camino de una gota de jugo de naranja desde la boca hasta que la vitamina C ingresa al capilar sanguíneo.
+                <button class="btn btn-check" onclick="marcarPausa(this, 5)">✓ Ya lo hice en mi cuaderno</button>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: COMPETENCIA ICFES (GRÁFICA COMPLEJA SVG) -->
+        <section id="icfes-graph">
+            <h2>Análisis de Datos: Competencia Indagar</h2>
+            <p>Observa detenidamente la siguiente gráfica. Representa los niveles de glucosa en la sangre de un recolector de la Vereda Pueblo Rico durante la mañana, comparando el consumo de dos alimentos distintos a las 6:00 AM.</p>
+            
+            <div class="svg-container">
+                <!-- SVG GRÁFICA COMPLEJA -->
+                <svg width="100%" height="300" viewBox="0 0 600 300">
+                    <!-- Ejes y grilla -->
+                    <rect width="600" height="300" fill="#f9f9f9" />
+                    <line x1="50" y1="250" x2="550" y2="250" stroke="#000" stroke-width="2"/> <!-- Eje X -->
+                    <line x1="50" y1="20" x2="50" y2="250" stroke="#000" stroke-width="2"/> <!-- Eje Y -->
+                    
+                    <!-- Etiquetas Eje Y (Glucosa mg/dL) -->
+                    <text x="10" y="30" font-size="12" fill="#333">140</text>
+                    <line x1="45" y1="30" x2="550" y2="30" stroke="#ccc" stroke-dasharray="4"/>
+                    <text x="10" y="85" font-size="12" fill="#333">110</text>
+                    <line x1="45" y1="85" x2="550" y2="85" stroke="#ccc" stroke-dasharray="4"/>
+                    <text x="15" y="140" font-size="12" fill="#333">80</text>
+                    <line x1="45" y1="140" x2="550" y2="140" stroke="#ccc" stroke-dasharray="4"/>
+                    <text x="15" y="195" font-size="12" fill="#333">50</text>
+                    <line x1="45" y1="195" x2="550" y2="195" stroke="#ccc" stroke-dasharray="4"/>
+                    
+                    <text x="-180" y="15" transform="rotate(-90)" font-size="14" fill="#333" font-weight="bold">Glucosa en Sangre (mg/dL)</text>
+
+                    <!-- Etiquetas Eje X (Tiempo) -->
+                    <text x="50" y="270" font-size="12" fill="#333">6:00 AM</text>
+                    <text x="150" y="270" font-size="12" fill="#333">7:00 AM</text>
+                    <text x="250" y="270" font-size="12" fill="#333">8:00 AM</text>
+                    <text x="350" y="270" font-size="12" fill="#333">9:00 AM</text>
+                    <text x="450" y="270" font-size="12" fill="#333">10:00 AM</text>
+                    
+                    <text x="250" y="295" font-size="14" fill="#333" font-weight="bold">Hora del día (Jornada de recolección)</text>
+
+                    <!-- Línea 1: Naranja Cítrica (Absorción rápida) -->
+                    <path d="M 50 160 Q 100 30 150 140 T 250 180 T 350 195 T 450 195" stroke="#F57C00" stroke-width="3" fill="none"/>
+                    
+                    <!-- Línea 2: Arepa con Queso (Absorción lenta y sostenida) -->
+                    <path d="M 50 160 Q 120 140 180 110 T 300 90 T 450 130" stroke="#5D4037" stroke-width="3" fill="none"/>
+
+                    <!-- Leyenda -->
+                    <rect x="400" y="30" width="15" height="15" fill="#F57C00"/>
+                    <text x="420" y="42" font-size="12">Jugo de Naranja</text>
+                    <rect x="400" y="55" width="15" height="15" fill="#5D4037"/>
+                    <text x="420" y="67" font-size="12">Arepa con Queso</text>
+                </svg>
+            </div>
+
+            <div class="question-block">
+                <p><strong>Pregunta de Análisis:</strong> Según la gráfica, si el trabajador debe hacer un esfuerzo físico prolongado cargando bultos hasta las 10:00 AM sin comer nada más, ¿qué alimento le proporciona una presión hidrostática capilar más estable debido a un nivel de glucosa sostenido?</p>
+                <div class="options">
+                    <label><input type="radio" name="icfes" value="0"> El Jugo de Naranja, porque el pico de energía llega rápidamente a las 6:30 AM.</label>
+                    <label><input type="radio" name="icfes" value="1"> La Arepa con Queso, porque sus carbohidratos complejos mantienen los niveles de glucosa por encima de 80 mg/dL de forma prolongada.</label>
+                    <label><input type="radio" name="icfes" value="0"> Ambos alimentos, ya que las dos líneas terminan en el mismo punto a las 10:00 AM.</label>
+                </div>
+                <button class="btn" id="btn-icfes" style="margin-top:10px;">Validar Respuesta</button>
+                <p id="feedback-icfes" style="margin-top: 10px; font-weight: bold; color: var(--rojo-sangre);"></p>
+            </div>
+        </section>
+
+        <!-- CONTENIDO BLOQUEADO (Se desbloquea al responder la gráfica) -->
+        <div id="locked-content" class="locked-section">
+            
+            <!-- SECCIÓN 5: CUERPO DEDUCTIVO (LA FÍSICA DE LA PRESIÓN EN LA SANGRE) -->
+            <section id="deductivo">
+                <h2>El Motor del Cuerpo: Presión y Hemodinámica</h2>
+                <p>Ahora que sabemos que la glucosa de la arepa y los aminoácidos de la leche han ingresado a la sangre en las vellosidades intestinales, enfrentamos un problema físico: ¿Cómo forzamos a este líquido cargado de nutrientes a moverse a través de más de 90,000 kilómetros de vasos sanguíneos, a menudo en contra de la gravedad, para llegar al cerebro o a las manos que recolectan el café? La respuesta está en una variable física fundamental: la <strong>Presión</strong>.</p>
+                
+                <p>En física, la presión se define como la fuerza aplicada perpendicularmente sobre una superficie ($P = F/A$). En nuestra vereda de Quimbaya, vemos la presión en acción constantemente. Cuando el tractorista infla las llantas del Jeep Willys a 35 PSI, está aumentando la presión del aire contra las paredes del neumático. Cuando el agua baja por las tuberías desde el nacimiento de agua en la montaña hacia los tanques de lavado de café, la gravedad genera una presión hidrostática tremenda. El sistema circulatorio humano aplica exactamente las mismas leyes de la mecánica de fluidos (hemodinámica).</p>
+
+                <p>El corazón actúa como una bomba hidráulica excepcionalmente potente. Durante la <em>sístole</em> (contracción), el ventrículo izquierdo empuja la sangre oxigenada y rica en nutrientes hacia la arteria aorta, generando la <strong>presión arterial sistólica</strong> (usualmente alrededor de 120 mmHg). Esta onda de presión es la fuerza motriz que viaja por las arterias, ramificándose como los caminos rurales de Pueblo Rico, haciéndose cada vez más estrechas: de arterias a arteriolas, y finalmente a capilares.</p>
+
+                <p>Es en los capilares donde ocurre el milagro de la interconexión definitiva. Aquí, la física de la presión dicta la nutrición celular. Existen dos fuerzas en conflicto, conocidas como las <em>Fuerzas de Starling</em>. Primero, la <strong>Presión Hidrostática Capilar</strong>: la fuerza del bombeo del corazón que empuja el agua y la glucosa <em>hacia afuera</em> del capilar, bañando las células musculares. Segundo, la <strong>Presión Oncótica (u Osmótica)</strong>: generada por las proteínas gigantes en la sangre (producidas a partir de los lácteos y carnes consumidas) que actúan como esponjas, atrayendo los desechos y el agua <em>de vuelta hacia adentro</em> del capilar para ser filtrados.</p>
+
+                <p>Si un trabajador agrícola sufre deshidratación bajo el sol quindiano sin reponer líquidos, el volumen de agua en su sangre disminuye. La física es implacable: a menor volumen en un tubo cerrado, menor presión ($P \propto V$). Su presión arterial cae (hipotensión), la presión hidrostática en sus capilares ya no es suficiente para empujar la glucosa hacia su cerebro, y experimenta mareo. De la misma forma que una bomba de agua pierde su fuerza si el nivel del tanque baja demasiado. Por eso, la nutrición, la hidratación y la presión son un solo engranaje vital para la supervivencia y el trabajo diario.</p>
+            </section>
+
+            <!-- SECCIÓN 6: ANIMACIÓN CANVAS (SIMULACIÓN FÍSICA) -->
+            <section id="animacion">
+                <h2>Laboratorio Virtual: Dinámica Capilar en Tiempo Real</h2>
+                <p>En esta simulación a 60fps generada mediante código, observarás la interconexión. En la parte inferior, las vellosidades intestinales absorben nutrientes (Cítricos en naranja, Café en marrón, Proteínas en blanco). Estos ingresan al torrente sanguíneo, donde los glóbulos rojos (rojo) fluyen gracias a la <strong>presión hidrostática</strong> de izquierda a derecha.</p>
+                <div id="canvas-container">
+                    <canvas id="bio-canvas"></canvas>
+                </div>
+                <p style="text-align: center; font-size: 0.9em; margin-top: 10px; color: var(--cafe-claro);"><em>Interactúa: Mueve el ratón o toca el lienzo para generar "presión" local y acelerar el flujo en esa área.</em></p>
+            </section>
+
+            <!-- SECCIÓN 7: PAUSAS ACTIVAS 6-10 -->
+            <section id="pausas-6-10">
+                <h2>Pausas Activas: Profundización</h2>
+                <p>Regresa a tu cuaderno para afianzar los conceptos físicos de la presión sanguínea.</p>
+
+                <div class="actividad-card">
+                    <strong>Actividad 6: Mapa Conceptual</strong><br>
+                    Crea un mapa que conecte estos términos: Corazón, Presión Arterial, Sístole, Capilares, Glucosa, Célula Muscular.
+                    <button class="btn btn-check" onclick="marcarPausa(this, 6)">✓ Ya lo hice en mi cuaderno</button>
+                </div>
+                
+                <div class="actividad-card">
+                    <strong>Actividad 7: Observación y Tabla de Datos</strong><br>
+                    Tómate el pulso en reposo durante 1 minuto (anota el valor). Luego, haz 20 sentadillas como si estuvieras recogiendo café, y tómate el pulso de nuevo. Construye una tabla con ambos datos y explica la diferencia en presión.
+                    <button class="btn btn-check" onclick="marcarPausa(this, 7)">✓ Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <div class="actividad-card">
+                    <strong>Actividad 8: Dibujo Esquemático</strong><br>
+                    Dibuja una manguera de la finca con el agua saliendo a presión. Al lado, dibuja una arteria con la sangre fluyendo. Escribe la fórmula $P = F/A$ en ambos dibujos señalando qué es F y qué es A.
+                    <button class="btn btn-check" onclick="marcarPausa(this, 8)">✓ Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <div class="actividad-card">
+                    <strong>Actividad 9: Síntesis Escrita</strong><br>
+                    Escribe un párrafo (mínimo 5 líneas) explicando por qué comer un buen desayuno previene los mareos (baja presión) a media mañana en un día de ordeño.
+                    <button class="btn btn-check" onclick="marcarPausa(this, 9)">✓ Ya lo hice en mi cuaderno</button>
+                </div>
+
+                <div class="actividad-card">
+                    <strong>Actividad 10: Reto Matemático Local</strong><br>
+                    Si la presión sistólica ideal de un recolector es 120 mmHg y la de un turista no aclimatado sube a 145 mmHg por el esfuerzo, ¿cuál es la diferencia de presión en mmHg? ¿Qué riesgos físicos corre el turista en sus capilares (vasos delgados)?
+                    <button class="btn btn-check" onclick="marcarPausa(this, 10)">✓ Ya lo hice en mi cuaderno</button>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 8: EVALUACIÓN FINAL ANTIFRAUDE -->
+            <section id="evaluacion">
+                <h2>Taller Evaluativo Final</h2>
+                <p>Para completar el OVA y generar tu reporte, responde el siguiente taller. <br><span class="highlight">⚠️ IMPORTANTE:</span> Las respuestas abiertas están protegidas contra copiar/pegar y uso de Inteligencia Artificial. Debes redactar con tus propias palabras y tener entre <strong>10 y 15 palabras</strong> por respuesta.</p>
+
+                <h3>Parte I: Selección Múltiple</h3>
+                
+                <div class="question-block" id="eval-q1">
+                    <p><strong>1. ¿Qué enzima en la boca comienza la digestión química de la arepa de maíz?</strong></p>
+                    <label><input type="radio" name="eq1" value="0"> Pepsina</label>
+                    <label><input type="radio" name="eq1" value="1"> Amilasa salival</label>
+                    <label><input type="radio" name="eq1" value="0"> Ácido Clorhídrico</label>
+                </div>
+                <div class="question-block" id="eval-q2">
+                    <p><strong>2. ¿Cuál es el nombre de las estructuras en el intestino delgado responsables de aumentar el área de absorción?</strong></p>
+                    <label><input type="radio" name="eq2" value="0"> Alvéolos</label>
+                    <label><input type="radio" name="eq2" value="1"> Vellosidades intestinales</label>
+                    <label><input type="radio" name="eq2" value="0"> Nefronas</label>
+                </div>
+                <div class="question-block" id="eval-q3">
+                    <p><strong>3. La presión ejercida por los líquidos hacia afuera de los capilares se llama:</strong></p>
+                    <label><input type="radio" name="eq3" value="1"> Presión Hidrostática</label>
+                    <label><input type="radio" name="eq3" value="0"> Presión Oncótica</label>
+                    <label><input type="radio" name="eq3" value="0"> Presión Atmosférica</label>
+                </div>
+                <div class="question-block" id="eval-q4">
+                    <p><strong>4. ¿Qué ruta toman los lípidos (grasas) del queso antes de llegar a la sangre?</strong></p>
+                    <label><input type="radio" name="eq4" value="0"> Pasan directo por la vena porta hepática</label>
+                    <label><input type="radio" name="eq4" value="1"> Entran al vaso quilífero (sistema linfático)</label>
+                    <label><input type="radio" name="eq4" value="0"> Se evaporan en el estómago</label>
+                </div>
+                <div class="question-block" id="eval-q5">
+                    <p><strong>5. Si el volumen de sangre de un trabajador disminuye por deshidratación, la presión arterial:</strong></p>
+                    <label><input type="radio" name="eq5" value="0"> Aumenta</label>
+                    <label><input type="radio" name="eq5" value="1"> Disminuye (Hipotensión)</label>
+                    <label><input type="radio" name="eq5" value="0"> Se mantiene igual gracias al estómago</label>
+                </div>
+
+                <h3>Parte II: Desarrollo Crítico (10 a 15 palabras)</h3>
+                
+                <div class="question-block">
+                    <label for="open-1"><strong>6. Explica brevemente cómo el corazón es similar a la bomba de agua de la finca.</strong></label>
+                    <textarea id="open-1" class="anti-fraud" placeholder="Escribe aquí tu respuesta (10-15 palabras)..."></textarea>
+                    <div class="fraud-alert" id="fa-1"></div>
+                </div>
+                
+                <div class="question-block">
+                    <label for="open-2"><strong>7. ¿Qué función física cumplen las vellosidades intestinales al absorber los nutrientes del café?</strong></label>
+                    <textarea id="open-2" class="anti-fraud" placeholder="Escribe aquí tu respuesta (10-15 palabras)..."></textarea>
+                    <div class="fraud-alert" id="fa-2"></div>
+                </div>
+
+                <div class="question-block">
+                    <label for="open-3"><strong>8. Define "Presión Hidrostática Capilar" usando el ejemplo de una manguera de riego.</strong></label>
+                    <textarea id="open-3" class="anti-fraud" placeholder="Escribe aquí tu respuesta (10-15 palabras)..."></textarea>
+                    <div class="fraud-alert" id="fa-3"></div>
+                </div>
+
+                <div class="question-block">
+                    <label for="open-4"><strong>9. ¿Por qué los carbohidratos complejos de la arepa dan energía más prolongada que un dulce?</strong></label>
+                    <textarea id="open-4" class="anti-fraud" placeholder="Escribe aquí tu respuesta (10-15 palabras)..."></textarea>
+                    <div class="fraud-alert" id="fa-4"></div>
+                </div>
+
+                <div class="question-block">
+                    <label for="open-5"><strong>10. En conclusión, ¿cómo se interconecta el sistema digestivo con el sistema circulatorio?</strong></label>
+                    <textarea id="open-5" class="anti-fraud" placeholder="Escribe aquí tu respuesta (10-15 palabras)..."></textarea>
+                    <div class="fraud-alert" id="fa-5"></div>
+                </div>
+
+                <button class="btn" id="btn-finalizar" style="width: 100%; font-size: 1.3rem;">Generar Calificación y Reporte</button>
+            </section>
+
+            <!-- SECCIÓN 9: RESULTADOS Y EXPORTACIÓN -->
+            <section id="resultados" style="display: none; background: #e8f5e9; border-left-color: #2E7D32;">
+                <h2>Reporte de Laboratorio Vivo</h2>
+                <p><strong>Estudiante:</strong> <span id="res-nombre"></span></p>
+                <p><strong>Nota Final:</strong> <span id="res-nota" style="font-size: 1.5rem; font-weight: bold; color: var(--cafe-oscuro);"></span></p>
+                
+                <h3>Retroalimentación Inteligente y Ruta de Fortalecimiento</h3>
+                <p id="res-feedback"></p>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="btn" id="btn-descargar" style="background-color: var(--verde-quindio);">Descargar Resultados (.txt)</button>
+                </div>
+            </section>
+
+        </div> <!-- Fin de locked-content -->
+    </main>
+
+    <!-- ==========================================================================
+         CÓDIGO JAVASCRIPT: Lógica, Gamificación, Canvas y Anti-Fraude
+         ========================================================================== -->
+    <script>
+        // ESTADO GLOBAL
+        const state = {
+            nombres: "",
+            apellidos: "",
+            puntos: 0,
+            pausasCompletadas: 0,
+            iconosDesbloqueados: 0,
+            preSaberesResuelto: false,
+            icfesResuelto: false,
+            respuestasFinales: {}
+        };
+
+        // ELEMENTOS DEL DOM
+        const ui = {
+            welcome: document.getElementById('welcome-screen'),
+            btnIniciar: document.getElementById('btn-iniciar'),
+            nombres: document.getElementById('nombres'),
+            apellidos: document.getElementById('apellidos'),
+            errorLogin: document.getElementById('login-error'),
+            navbar: document.getElementById('navbar'),
+            mainContent: document.getElementById('main-content'),
+            displayName: document.getElementById('display-name'),
+            scoreText: document.getElementById('score-text'),
+            progressBar: document.getElementById('progress-bar'),
+            lockedContent: document.getElementById('locked-content')
+        };
+
+        // 1. GESTIÓN DE USUARIO (LOGIN)
+        ui.btnIniciar.addEventListener('click', () => {
+            const nom = ui.nombres.value.trim();
+            const ape = ui.apellidos.value.trim();
+            
+            if(nom === "" || ape === "") {
+                ui.errorLogin.style.display = "block";
+                return;
+            }
+            
+            state.nombres = nom;
+            state.apellidos = ape;
+            ui.displayName.textContent = `${nom} ${ape}`;
+            
+            ui.welcome.style.opacity = "0";
+            setTimeout(() => {
+                ui.welcome.style.display = "none";
+                ui.navbar.style.display = "flex";
+                ui.mainContent.style.display = "block";
+                initCanvas(); // Iniciar animación al entrar
+            }, 500);
+        });
+
+        // 2. GAMIFICACIÓN Y PUNTOS
+        function sumarPunto() {
+            if(state.puntos < 5) {
+                state.puntos++;
+                ui.scoreText.textContent = `${state.puntos} / 5 Pts`;
+                desbloquearIcono(state.puntos);
+            }
+        }
+
+        function desbloquearIcono(num) {
+            const icon = document.getElementById(`icon-${num}`);
+            if(icon) {
+                icon.classList.remove('icon-locked');
+                icon.classList.add('icon-unlocked');
+            }
+        }
+
+        function actualizarProgreso() {
+            // El progreso se basa en las 10 pausas activas (10% cada una)
+            const porcentaje = (state.pausasCompletadas / 10) * 100;
+            ui.progressBar.style.width = `${porcentaje}%`;
+        }
+
+        window.marcarPausa = function(btn, num) {
+            if(btn.classList.contains('done')) return;
+            btn.classList.add('done');
+            btn.innerHTML = "✓ Completado en el cuaderno";
+            state.pausasCompletadas++;
+            actualizarProgreso();
+            if(state.pausasCompletadas % 2 === 0 && state.puntos < 5 && state.preSaberesResuelto) {
+               // sumamos puntos extra si hacen pausas (opcional, dejamos los puntos limitados a pre-saberes e ICFES por ahora)
+            }
+        };
+
+        // 3. PRE-SABERES
+        document.getElementById('btn-eval-pre').addEventListener('click', () => {
+            if(state.preSaberesResuelto) return;
+            
+            const q1 = document.querySelector('input[name="q1"]:checked');
+            const q2 = document.querySelector('input[name="q2"]:checked');
+            const q3 = document.querySelector('input[name="q3"]:checked');
+            const feedback = document.getElementById('feedback-pre');
+            
+            if(!q1 || !q2 || !q3) {
+                feedback.textContent = "Por favor responde las 3 preguntas.";
+                feedback.style.color = "var(--rojo-sangre)";
+                return;
+            }
+
+            let aciertos = parseInt(q1.value) + parseInt(q2.value) + parseInt(q3.value);
+            for(let i=0; i<aciertos; i++) sumarPunto();
+            
+            state.preSaberesResuelto = true;
+            document.getElementById('btn-eval-pre').disabled = true;
+            
+            feedback.style.color = "var(--verde-quindio)";
+            feedback.innerHTML = `¡Excelente! Has obtenido ${aciertos} respuestas correctas. Los nutrientes se absorben en las vellosidades, el corazón bombea con presión, y la sangre transporta todo a las células. ¡Continúa bajando!`;
+        });
+
+        // 4. ICFES (DESBLOQUEO DE SECCIÓN)
+        document.getElementById('btn-icfes').addEventListener('click', () => {
+            if(state.icfesResuelto) return;
+            
+            const q = document.querySelector('input[name="icfes"]:checked');
+            const feedback = document.getElementById('feedback-icfes');
+            
+            if(!q) {
+                feedback.textContent = "Selecciona una opción.";
+                return;
+            }
+
+            if(q.value === "1") {
+                feedback.style.color = "var(--verde-quindio)";
+                feedback.textContent = "¡Correcto! Los carbohidratos complejos de la arepa brindan una absorción prolongada, manteniendo la presión hidrostática estable por más tiempo. ¡Has desbloqueado el resto del contenido!";
+                sumarPunto();
+                state.icfesResuelto = true;
+                ui.lockedContent.classList.remove('locked-section');
+                document.getElementById('btn-icfes').disabled = true;
+            } else {
+                feedback.style.color = "var(--rojo-sangre)";
+                feedback.textContent = "Incorrecto. Analiza las líneas: la naranja (fructosa) sube rápido pero cae antes de las 8:00 AM. Vuelve a intentarlo.";
+            }
+        });
+
+        // 5. SISTEMA ANTI-FRAUDE (Restricciones Estrictas)
+        const textareas = document.querySelectorAll('.anti-fraud');
+        
+        textareas.forEach((ta, index) => {
+            // Prevenir pegado, soltar y menú contextual
+            ta.addEventListener('paste', e => e.preventDefault());
+            ta.addEventListener('drop', e => e.preventDefault());
+            ta.addEventListener('contextmenu', e => e.preventDefault());
+            
+            // Prevenir atajos de teclado (Ctrl+V, Cmd+V)
+            ta.addEventListener('keydown', e => {
+                if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+                    e.preventDefault();
+                }
+            });
+
+            // Medidor de Cadencia (Velocidad de tecleo IA / Copy Paste)
+            let startTime = 0;
+            ta.addEventListener('focus', () => {
+                if(startTime === 0 || ta.value.length === 0) startTime = Date.now();
+            });
+            
+            ta.addEventListener('input', () => {
+                const len = ta.value.length;
+                if(len > 15) { // Solo medimos después de algunas letras
+                    const timeTaken = (Date.now() - startTime) / 1000; // Segundos
+                    const charsPerSecond = len / timeTaken;
+                    
+                    // Si escribe más de 30 caracteres por segundo (inhumano)
+                    if(charsPerSecond > 30) {
+                        const alertBox = document.getElementById(`fa-${index+1}`);
+                        alertBox.textContent = "⚠️ ¡Alerta de Integridad! Velocidad de escritura anormal detectada. Por favor escribe con el teclado.";
+                        alertBox.style.display = "block";
+                        ta.value = ""; // Borrar contenido fraudulento
+                        startTime = Date.now(); // Reset timer
+                    } else {
+                        document.getElementById(`fa-${index+1}`).style.display = "none";
+                    }
+                }
+            });
+        });
+
+        // 6. ANIMACIÓN HTML5 CANVAS (Dinámica Capilar)
+        function initCanvas() {
+            const canvas = document.getElementById('bio-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Ajustar al contenedor
+            function resize() {
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = 400;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            // Partículas
+            const redCells = [];
+            const nutrients = [];
+            const villi = [];
+            
+            // Crear vellosidades en la parte inferior
+            for(let i=0; i<8; i++) {
+                villi.push({
+                    x: (canvas.width / 8) * i + 30,
+                    y: canvas.height,
+                    width: 40,
+                    height: 100 + Math.random() * 50
+                });
+            }
+
+            // Mouse interaction para "Presión"
+            let mouseX = -100;
+            let mouseY = -100;
+            canvas.addEventListener('mousemove', e => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+                mouseY = e.clientY - rect.top;
+            });
+            canvas.addEventListener('mouseleave', () => { mouseX = -100; mouseY = -100; });
+
+            class RedCell {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * (canvas.height - 200) + 50;
+                    this.radius = 12;
+                    this.baseVx = 1 + Math.random() * 2; // Presión base
+                    this.vx = this.baseVx;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                }
+                update() {
+                    // Simular presión extra si el mouse está cerca
+                    const dx = mouseX - this.x;
+                    const dy = mouseY - this.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist < 100) {
+                        this.vx = this.baseVx * 2.5; // Acelera
+                    } else {
+                        this.vx = this.baseVx; // Retorna a normal
+                    }
+
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if(this.x > canvas.width + 20) {
+                        this.x = -20;
+                        this.y = Math.random() * (canvas.height - 200) + 50;
+                    }
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = "rgba(198, 40, 40, 0.8)"; // Rojo sangre
+                    ctx.fill();
+                    ctx.strokeStyle = "#B71C1C";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    // Centro pálido (forma bicóncava)
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius - 6, 0, Math.PI * 2);
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+                    ctx.fill();
+                }
+            }
+
+            class Nutrient {
+                constructor() {
+                    const v = villi[Math.floor(Math.random() * villi.length)];
+                    this.x = v.x + v.width/2 + (Math.random()-0.5)*20;
+                    this.y = v.y;
+                    this.radius = 4;
+                    this.vy = -1 - Math.random() * 1.5; // Sube (absorción)
+                    this.vx = (Math.random() - 0.5) * 1;
+                    
+                    // Tipo de nutriente al azar (colores locales)
+                    const types = ["#F57C00", "#5D4037", "#FFFFFF"]; // Naranja, Café, Proteína Láctea
+                    this.color = types[Math.floor(Math.random() * types.length)];
+                    this.absorbed = false;
+                }
+                update() {
+                    if(!this.absorbed) {
+                        this.y += this.vy;
+                        this.x += this.vx;
+                        // Si llega a la corriente sanguínea (y < 250)
+                        if(this.y < canvas.height - 150) {
+                            this.absorbed = true;
+                        }
+                    } else {
+                        // Se mueve con la presión de la sangre
+                        this.vx = 2 + Math.random();
+                        this.vy = (Math.random() - 0.5) * 0.5;
+                        this.x += this.vx;
+                        this.y += this.vy;
+                    }
+
+                    if(this.x > canvas.width + 20 || this.y < -20) {
+                        // Reset en una vellosidad
+                        const v = villi[Math.floor(Math.random() * villi.length)];
+                        this.x = v.x + v.width/2;
+                        this.y = v.y;
+                        this.absorbed = false;
+                        this.vy = -1 - Math.random() * 1.5;
+                        this.vx = (Math.random() - 0.5) * 1;
+                    }
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = this.color;
+                }
+            }
+
+            for(let i=0; i<60; i++) redCells.push(new RedCell());
+            for(let i=0; i<100; i++) nutrients.push(new Nutrient());
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Fondo Capilar (Arriba)
+                ctx.fillStyle = "rgba(255, 235, 238, 0.1)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height - 150);
+
+                // Dibujar Vellosidades Intestinales
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = "#E57373"; // Color tejido
+                ctx.strokeStyle = "#D32F2F";
+                ctx.lineWidth = 3;
+                villi.forEach(v => {
+                    ctx.beginPath();
+                    ctx.roundRect(v.x, v.y - v.height, v.width, v.height + 20, 20);
+                    ctx.fill();
+                    ctx.stroke();
+                });
+
+                redCells.forEach(cell => { cell.update(); cell.draw(); });
+                nutrients.forEach(nut => { nut.update(); nut.draw(); ctx.shadowBlur = 0; });
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // 7. EVALUACIÓN FINAL Y GENERACIÓN DE REPORTE
+        document.getElementById('btn-finalizar').addEventListener('click', () => {
+            // Validar Selección Múltiple
+            let smScore = 0;
+            const resSM = [];
+            for(let i=1; i<=5; i++) {
+                const q = document.querySelector(`input[name="eq${i}"]:checked`);
+                if(!q) {
+                    alert(`Por favor responde la pregunta de selección múltiple número ${i}.`);
+                    return;
+                }
+                smScore += parseInt(q.value);
+                resSM.push(`P${i}: ${q.value === "1" ? "Correcto" : "Incorrecto"}`);
+            }
+
+            // Validar Preguntas Abiertas (10 a 15 palabras)
+            let openValid = true;
+            const resAbiertas = [];
+            for(let i=1; i<=5; i++) {
+                const ta = document.getElementById(`open-${i}`);
+                const text = ta.value.trim();
+                const wordCount = text === "" ? 0 : text.split(/\s+/).length;
+                
+                const alertBox = document.getElementById(`fa-${i}`);
+                if(wordCount < 10 || wordCount > 15) {
+                    alertBox.textContent = `⚠️ Tu respuesta tiene ${wordCount} palabras. Debe tener estrictamente entre 10 y 15 palabras.`;
+                    alertBox.style.display = "block";
+                    openValid = false;
+                } else {
+                    alertBox.style.display = "none";
+                    resAbiertas.push(`P${i+5}: ${text}`);
+                }
+            }
+
+            if(!openValid) return;
+
+            // Calcular nota final (sobre 5.0)
+            // Asumimos 0.5 por cada múltiple (máx 2.5) y 0.5 por completar cada abierta bien redactada (máx 2.5)
+            const notaFinal = ((smScore * 0.5) + (5 * 0.5)).toFixed(1);
+            
+            // Generar Retroalimentación Inteligente
+            let feedback = "";
+            if(smScore === 5) {
+                feedback = "¡Magnífico! Dominas los conceptos teóricos de absorción, enzimas y hemodinámica. Estás listo para aplicar esta ciencia en los cultivos de Pueblo Rico.";
+            } else if (smScore >= 3) {
+                feedback = "Buen trabajo, pero hay conceptos de presión o absorción linfática que debes repasar. Ruta sugerida: Vuelve a leer la sección 'El Motor del Cuerpo'.";
+            } else {
+                feedback = "Tus bases necesitan fortalecimiento. Ruta sugerida: Revisa el cuadro comparativo y la gráfica de la jornada de recolección para entender cómo fluye la energía.";
+            }
+
+            // Mostrar Resultados
+            document.getElementById('res-nombre').textContent = `${state.nombres} ${state.apellidos}`;
+            document.getElementById('res-nota').textContent = `${notaFinal} / 5.0`;
+            document.getElementById('res-feedback').textContent = feedback;
+            
+            document.getElementById('evaluacion').style.display = "none";
+            document.getElementById('resultados').style.display = "block";
+            
+            // Guardar para descarga
+            state.respuestasFinales = {
+                nota: notaFinal,
+                sm: resSM,
+                abiertas: resAbiertas,
+                feedback: feedback
+            };
+        });
+
+        // 8. DESCARGA DEL REPORTE (.txt)
+        document.getElementById('btn-descargar').addEventListener('click', () => {
+            const date = new Date().toLocaleDateString();
+            let content = `=================================================\n`;
+            content += `OVA: INTERCONEXIÓN TOTAL - DIGESTIÓN Y PRESIÓN\n`;
+            content += `LABORATORIO VIVO: PUEBLO RICO, QUIMBAYA\n`;
+            content += `=================================================\n\n`;
+            
+            content += `Estudiante: ${state.nombres} ${state.apellidos}\n`;
+            content += `Fecha de realización: ${date}\n`;
+            content += `Pausas Activas (Cuaderno): ${state.pausasCompletadas}/10\n`;
+            content += `Calificación Final: ${state.respuestasFinales.nota} / 5.0\n\n`;
+            
+            content += `--- RESULTADOS SELECCIÓN MÚLTIPLE ---\n`;
+            state.respuestasFinales.sm.forEach(r => content += `${r}\n`);
+            
+            content += `\n--- RESPUESTAS DESARROLLO CRÍTICO ---\n`;
+            state.respuestasFinales.abiertas.forEach(r => content += `${r}\n\n`);
+            
+            content += `--- RETROALIMENTACIÓN ---\n`;
+            content += `${state.respuestasFinales.feedback}\n`;
+
+            const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Reporte_OVA_${state.apellidos}_${state.nombres}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+    </script>
+</body>
+</html>

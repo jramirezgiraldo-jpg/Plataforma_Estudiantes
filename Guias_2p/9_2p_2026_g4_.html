@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primera Ley de Mendel: Uniformidad en Pueblo Rico</title>
+    <style>
+        :root {
+            --cafe-oscuro: #2b1d0e;
+            --verde-cafetal: #1b5e20;
+            --verde-claro: #4caf50;
+            --naranja-quindio: #ff9800;
+            --rojo-cereza: #b71c1c;
+            --crema-finca: #fdf5e6;
+            --cielo: #e3f2fd;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--crema-finca); color: var(--cafe-oscuro); line-height: 1.6; }
+
+        /* --- Pantalla de Acceso --- */
+        #auth-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: linear-gradient(135deg, var(--verde-cafetal), var(--cafe-oscuro));
+            display: flex; justify-content: center; align-items: center;
+        }
+        .login-card {
+            background: white; padding: 40px; border-radius: 20px; width: 90%; max-width: 450px;
+            text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+        .login-card h1 { color: var(--verde-cafetal); margin-bottom: 20px; font-size: 1.8rem; }
+        .login-card input {
+            width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem;
+        }
+
+        /* --- Layout --- */
+        #app-content { display: none; }
+        nav {
+            background: var(--verde-cafetal); color: white; padding: 15px 5%;
+            position: sticky; top: 0; z-index: 1000; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .progress-container { display: flex; align-items: center; gap: 15px; }
+        .bar-bg { width: 200px; height: 14px; background: rgba(255,255,255,0.2); border-radius: 7px; overflow: hidden; }
+        #bar-fill { width: 0%; height: 100%; background: var(--naranja-quindio); transition: 0.8s ease; }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        section {
+            background: white; padding: 50px; border-radius: 30px; margin-bottom: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-left: 10px solid var(--verde-cafetal);
+        }
+
+        h2 { color: var(--verde-cafetal); font-size: 2.2rem; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h3 { color: var(--rojo-cereza); margin-top: 30px; }
+        p { margin-bottom: 20px; text-align: justify; font-size: 1.1rem; }
+
+        /* --- Visuales SVG --- */
+        .art-box { background: var(--cielo); border-radius: 20px; padding: 20px; margin: 30px 0; text-align: center; }
+        
+        /* --- Tablas --- */
+        .tech-table { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 0.95rem; }
+        .tech-table th { background: var(--cafe-oscuro); color: white; padding: 15px; }
+        .tech-table td { padding: 15px; border: 1px solid #ddd; text-align: center; }
+        .tech-table tr:nth-child(even) { background: #f9f9f9; }
+
+        /* --- Pausas Activas --- */
+        .challenge-box {
+            background: #fff3e0; border: 2px dashed var(--naranja-quindio); padding: 30px;
+            border-radius: 20px; margin: 40px 0; position: relative;
+        }
+        .challenge-box h4 { color: #e65100; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+
+        /* --- Gamificación --- */
+        .badge { display: inline-flex; align-items: center; background: #eee; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; margin: 5px; }
+
+        /* --- Canvas --- */
+        #canvas-container {
+            width: 100%; height: 400px; background: #222; border-radius: 20px; margin: 30px 0; position: relative;
+        }
+
+        /* --- Quiz & Anti-Fraude --- */
+        .quiz-item { background: #f5f5f5; padding: 25px; border-radius: 15px; margin-bottom: 20px; }
+        textarea {
+            width: 100%; height: 120px; padding: 15px; border-radius: 12px; border: 2px solid #ccc;
+            margin-top: 15px; font-size: 1rem; transition: 0.3s;
+        }
+        textarea:focus { border-color: var(--verde-cafetal); outline: none; }
+        .alert-fraud { color: var(--rojo-cereza); font-weight: bold; font-size: 0.85rem; display: none; margin-top: 5px; }
+
+        .btn {
+            background: var(--verde-cafetal); color: white; border: none; padding: 14px 28px;
+            border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s;
+        }
+        .btn:hover { background: var(--cafe-oscuro); transform: scale(1.02); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        #final-screen { display: none; text-align: center; padding: 80px 20px; }
+
+        sub { font-size: 0.7em; }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE ACCESO -->
+    <div id="auth-overlay">
+        <div class="login-card">
+            <svg width="80" height="80" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="white" stroke-width="2" />
+                <path d="M50 20 L50 80 M20 50 L80 50" stroke="white" stroke-width="2" />
+                <path d="M30 30 Q50 10 70 30 Q90 50 70 70 Q50 90 30 70 Q10 50 30 30" fill="rgba(255,255,255,0.2)" stroke="white" />
+            </svg>
+            <h1>Genética en Pueblo Rico</h1>
+            <p>Ingresa tus datos para iniciar la investigación</p>
+            <input type="text" id="user-ape" placeholder="Tus Apellidos">
+            <input type="text" id="user-nom" placeholder="Tu Nombre">
+            <button class="btn" style="width: 100%" id="btn-login">Empezar Investigación</button>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="app-content">
+        <nav>
+            <div>📍 Vereda Pueblo Rico | <span id="nav-user"></span></div>
+            <div class="progress-container">
+                <div id="score-display">⭐ 0.0</div>
+                <div class="bar-bg"><div id="bar-fill"></div></div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- INTRODUCCIÓN -->
+            <section id="intro">
+                <h2>Objetivo de Aprendizaje</h2>
+                <p>Identificar y predecir los fenotipos y genotipos de la primera generación filial (F<sub>1</sub>) mediante el estudio de la Primera Ley de Mendel, aplicada a la mejora de cultivos de café y cítricos en las fincas de la Vereda Pueblo Rico, Quimbaya.</p>
+                
+                <div class="quiz-item">
+                    <p><strong>Pre-saberes 1:</strong> Si cruzamos una planta de café de grano rojo puro con una de grano amarillo puro, y todos los hijos son rojos, ¿cuál es el carácter dominante?</p>
+                    <label><input type="radio" name="pre1" value="0"> El grano amarillo.</label><br>
+                    <label><input type="radio" name="pre1" value="1"> El grano rojo.</label>
+                </div>
+
+                <div class="quiz-item">
+                    <p><strong>Pre-saberes 2:</strong> En la ganadería de nuestra vereda, ¿qué significa que un animal sea "puro"?</p>
+                    <label><input type="radio" name="pre2" value="1"> Que tiene genes idénticos para un carácter (homocigoto).</label><br>
+                    <label><input type="radio" name="pre2" value="0"> Que es de una raza muy cara.</label>
+                </div>
+
+                <div class="quiz-item">
+                    <p><strong>Pre-saberes 3:</strong> ¿Dónde se guarda la información que determina si una naranja es dulce o ácida?</p>
+                    <label><input type="radio" name="pre3" value="1"> En los genes dentro del ADN.</label><br>
+                    <label><input type="radio" name="pre3" value="0"> En el abono que se le echa al suelo.</label>
+                </div>
+                <button class="btn" onclick="checkPre()">Validar Inicio</button>
+            </section>
+
+            <!-- CUERPO INDUCTIVO -->
+            <section>
+                <h2>El Secreto de la Semilla Pura</h2>
+                <p>
+                    Caminar por los senderos de la Vereda Pueblo Rico es presenciar un laboratorio genético a cielo abierto. Cuando un caficultor de nuestra zona decide sembrar una nueva parcela, lo primero que busca es la "pureza" de la semilla. Imaginemos que en la Finca La Esperanza, el dueño tiene dos tipos de café: uno con hojas verde oscuro muy resistentes al sol (Carácter dominante A) y otro con hojas verde claro que sufren mucho bajo el calor de Quimbaya (Carácter recesivo a).
+                </p>
+                <p>
+                    Gregor Mendel, el padre de la genética, descubrió algo asombroso que podemos ver hoy en nuestros cafetales: el **Principio de Uniformidad**. Si tomamos una planta "Línea Pura" dominante (AA) y la cruzamos con una "Línea Pura" recesiva (aa), los resultados no son una mezcla de colores o resistencias. Sorprendentemente, el 100% de la descendencia, a la que llamamos Primera Generación Filial (F<sub>1</sub>), se verá exactamente igual al padre dominante. 
+                </p>
+                <p>
+                    En nuestra vereda, esto es vital para la productividad. Si cruzamos un toro de raza pura con alta producción cárnica (Dominante) con una vaca de baja producción (Recesiva), esperamos que todos los terneros de la F<sub>1</sub> hereden esa robustez. Sin embargo, aunque se vean fuertes, estos terneros llevan "escondido" el gen de la baja producción. Son lo que la ciencia llama **Heterocigotos** (Aa).
+                </p>
+                <p>
+                    Este fenómeno explica por qué, a veces, al sembrar semillas de frutos hermosos comprados en el mercado de Quimbaya, las plantas resultantes son todas uniformes en la primera cosecha, pero en la siguiente generación empiezan a aparecer variaciones. La Primera Ley de Mendel nos asegura que en la F<sub>1</sub>, el gen dominante "eclipsa" totalmente al recesivo, manteniendo una apariencia constante en toda la población del cultivo.
+                </p>
+                <p>
+                    La aplicación técnica de esto en Pueblo Rico permite que el turismo rural sea tan exitoso. Los turistas buscan paisajes uniformes, cafetales que crecen al mismo ritmo y flores de cítricos que brotan al tiempo. Esta uniformidad no es casualidad; es el resultado de entender que al cruzar dos razas puras distintas, obtenemos una generación de híbridos que conservan las mejores características visibles para el mercado nacional e internacional.
+                </p>
+
+                <table class="tech-table">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th>Definición Técnica</th>
+                            <th>Ejemplo en Pueblo Rico</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Línea Pura</td>
+                            <td>Individuo Homocigoto (AA o aa)</td>
+                            <td>Semilla de café certificada por la Federación</td>
+                        </tr>
+                        <tr>
+                            <td>F<sub>1</sub></td>
+                            <td>Primera Generación Filial</td>
+                            <td>Los primeros terneros de un cruce controlado</td>
+                        </tr>
+                        <tr>
+                            <td>Genotipo</td>
+                            <td>Carga genética invisible (letras)</td>
+                            <td>El potencial de dulzura de una naranja</td>
+                        </tr>
+                        <tr>
+                            <td>Fenotipo</td>
+                            <td>Característica física observable</td>
+                            <td>El color rojo brillante de la cereza de café</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- PAUSAS ACTIVAS 1-5 -->
+                <div class="challenge-box">
+                    <h4>☕ Pausa Activa 1: Reflexión Local</h4>
+                    <p>En tu cuaderno, describe un carácter dominante que hayas observado en los animales o plantas de tu finca o de la vereda.</p>
+                    <button class="btn" onclick="addProgress(10, this)">Completado</button>
+                </div>
+                <div class="challenge-box">
+                    <h4>🎨 Pausa Activa 2: Dibujo de Observación</h4>
+                    <p>Dibuja en tu cuaderno dos tipos de frutos de café: uno maduro (rojo) y uno pinto. Señala cuál crees que es dominante.</p>
+                    <button class="btn" onclick="addProgress(10, this)">Completado</button>
+                </div>
+                <div class="challenge-box">
+                    <h4>🧠 Pausa Activa 3: Mapa Mental</h4>
+                    <p>Crea un mapa mental que conecte: MENDEL -> PUEBLO RICO -> UNIFORMIDAD -> GENES.</p>
+                    <button class="btn" onclick="addProgress(10, this)">Completado</button>
+                </div>
+                <div class="challenge-box">
+                    <h4>📊 Pausa Activa 4: Cuadro Comparativo</h4>
+                    <p>Elabora un cuadro comparativo entre Genotipo y Fenotipo usando ejemplos de la ganadería de Quimbaya.</p>
+                    <button class="btn" onclick="addProgress(10, this)">Completado</button>
+                </div>
+                <div class="challenge-box">
+                    <h4>🔄 Pausa Activa 5: Diagrama de Flujo</h4>
+                    <p>Diseña el proceso desde que se cruzan dos plantas puras hasta obtener la F<sub>1</sub> uniforme.</p>
+                    <button class="btn" onclick="addProgress(10, this)">Completado</button>
+                </div>
+            </section>
+
+            <!-- ANÁLISIS DE GRÁFICA -->
+            <section>
+                <h2>Análisis de Productividad: La Gráfica Mendeliana</h2>
+                <p>En la Cooperativa de Caficultores de Quimbaya, se analizó el crecimiento de una población F<sub>1</sub> resultante del cruce entre Café Robusta (Dominante) y Café Arábigo (Recesivo).</p>
+                <div class="art-box">
+                    <svg width="600" height="300" viewBox="0 0 600 300">
+                        <rect x="50" y="50" width="500" height="200" fill="#fff" stroke="#333" />
+                        <!-- Barras de Uniformidad -->
+                        <rect x="100" y="100" width="400" height="150" fill="var(--verde-claro)" />
+                        <text x="300" y="180" text-anchor="middle" fill="white" font-weight="bold">F1: 100% Rasgo Dominante</text>
+                        <text x="300" y="280" text-anchor="middle" font-size="14">Individuos en el cultivo de Pueblo Rico</text>
+                        <text x="20" y="150" transform="rotate(-90, 20, 150)" text-anchor="middle">Frecuencia (%)</text>
+                    </svg>
+                </div>
+                <div class="quiz-item">
+                    <p><strong>Competencia Indagar:</strong> Según el principio de uniformidad, si el rasgo "Resistencia a la Roya" es dominante (R) y el "No Resistente" es recesivo (r), ¿qué pasará al cruzar RR x rr?</p>
+                    <label><input type="radio" name="icfes" value="0"> La mitad de las plantas morirán por la roya.</label><br>
+                    <label><input type="radio" name="icfes" value="1"> Todas las plantas de la F1 serán resistentes a la roya.</label><br>
+                    <label><input type="radio" name="icfes" value="0"> Aparecerán plantas de un nuevo color naranja.</label>
+                </div>
+            </section>
+
+            <!-- CUERPO DEDUCTIVO -->
+            <section>
+                <h2>Leyes Matemáticas de la Herencia</h2>
+                <p>
+                    Para predecir con exactitud científica, debemos aplicar el Cuadro de Punnett. Esta herramienta es el "GPS" del genetista. Si representamos el polen de un cafeto dominante como **A** y el óvulo de uno recesivo como **a**, el resultado matemático siempre será **Aa**. Aunque la letra minúscula está presente, el fenotipo (lo que vemos en el campo) será siempre el determinado por la mayúscula. Esta es la ley inquebrantable de la dominancia completa.
+                </p>
+                <p>
+                    En la producción de cítricos en Pueblo Rico, esto se traduce en predictibilidad económica. Un agricultor sabe que al comprar semillas certificadas F<sub>1</sub>, no tendrá pérdidas por variabilidad. La ciencia de Mendel nos dice que los caracteres no se mezclan como pinturas, sino que se comportan como unidades discretas. El gen recesivo no desaparece; simplemente queda silenciado, esperando la siguiente generación para volver a manifestarse.
+                </p>
+
+                <!-- ANIMACIÓN CENTRAL CANVAS -->
+                <h3>Simulador: Fecundación Cruzada en Quimbaya</h3>
+                <p>Usa el mouse para guiar el polen (partículas amarillas) hacia los óvulos de la flor. Observa cómo al unirse se forma el genotipo Aa (Heterocigoto) que garantiza la uniformidad en nuestra vereda.</p>
+                <div id="canvas-container">
+                    <canvas id="genetics-sim"></canvas>
+                </div>
+
+                <!-- PAUSAS ACTIVAS 6-10 -->
+                <div class="challenge-box">
+                    <h4>📑 Pausa Activa 6: Mapa Conceptual</h4>
+                    <p>Construye un mapa conceptual sobre la Primera Ley de Mendel en tu cuaderno.</p>
+                    <button class="btn" onclick="addProgress(10, this)">Completado</button>
+                </div>
+                <div class="challenge-box">
+                    <h4>📋 Pausa Activa 7: Tabla de Datos</h4>
+                    <p>Observa 5 gallinas o vacas de tu zona y anota sus rasgos físicos más comunes en una tabla.</p>
+                    <button class="btn" onclick="addProgress(10, this)">Completado</button>
+                </div>
+                <div class="challenge-box">
+                    <h4>📐 Pausa Activa 8: Dibujo Técnico</h4>
+                    <p>Realiza un esquema detallado de un Cuadro de Punnett para el cruce AA x aa.</p>
+                    <button class="btn" onclick="addProgress(10, this)">Completado</button>
+                </div>
+                <div class="challenge-box">
+                    <h4>✍️ Pausa Activa 9: Síntesis Escrita</h4>
+                    <p>Escribe en 5 líneas por qué es importante para un campesino de Quimbaya conocer la ley de uniformidad.</p>
+                    <button class="btn" onclick="addProgress(10, this)">Completado</button>
+                </div>
+                <div class="challenge-box">
+                    <h4>➕ Pausa Activa 10: Problema Matemático</h4>
+                    <p>Si un lote tiene 500 semillas de un cruce F<sub>1</sub> (AA x aa), ¿cuántas tendrán el fenotipo dominante? Explica tu respuesta.</p>
+                    <button class="btn" onclick="addProgress(10, this)">Completado</button>
+                </div>
+            </section>
+
+            <!-- EVALUACIÓN FINAL -->
+            <section id="final-test">
+                <h2>Taller Evaluativo: El Genoma de Pueblo Rico</h2>
+                
+                <div id="mc-questions"></div>
+
+                <h3>Desarrollo y Análisis Crítico</h3>
+                <p><small>Nota: El sistema bloquea el pegado de texto. Escribe con tus propias palabras.</small></p>
+                <div id="open-questions"></div>
+
+                <button class="btn" style="width: 100%; margin-top: 30px;" onclick="evaluateAll()">Finalizar y Calificar</button>
+            </section>
+
+            <div id="final-screen">
+                <h2 id="final-msg">¡Investigación Finalizada!</h2>
+                <div style="font-size: 4rem; margin: 20px 0;" id="final-grade">0.0</div>
+                <div id="final-route" style="padding: 20px; border-radius: 10px; background: #e8f5e9; margin-bottom: 20px;"></div>
+                <button class="btn" onclick="exportResults()">Descargar Reporte de Pueblo Rico (.txt)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let userData = { nom: '', ape: '', score: 0, progress: 0 };
+        const appId = "ova_mendel_9";
+
+        // --- Manejo de Acceso ---
+        document.getElementById('btn-login').addEventListener('click', () => {
+            const nom = document.getElementById('user-nom').value.trim();
+            const ape = document.getElementById('user-ape').value.trim();
+            if(!nom || !ape) return alert("Por favor, ingresa tus datos para el registro de la vereda.");
+            userData.nom = nom; userData.ape = ape;
+            document.getElementById('nav-user').innerText = `${nom} ${ape}`;
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            initQuiz();
+            initCanvas();
+        });
+
+        // --- Gamificación y Progreso ---
+        function addProgress(val, btn) {
+            userData.progress += (val / 100) * 20; // Pausas valen 20%
+            btn.disabled = true;
+            btn.innerText = "⭐ Registrado";
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('bar-fill').style.width = Math.min(100, (userData.progress / 20) * 100) + "%";
+            document.getElementById('score-display').innerText = `⭐ ${(userData.score).toFixed(1)}`;
+        }
+
+        function checkPre() {
+            let hits = 0;
+            if(document.querySelector('input[name="pre1"]:checked')?.value == "1") hits++;
+            if(document.querySelector('input[name="pre2"]:checked')?.value == "1") hits++;
+            if(document.querySelector('input[name="pre3"]:checked')?.value == "1") hits++;
+            alert(`Pre-saberes: ${hits}/3. ¡Continuemos con el estudio!`);
+            userData.progress += 5;
+            updateUI();
+        }
+
+        // --- Simulador Canvas ---
+        function initCanvas() {
+            const canvas = document.getElementById('genetics-sim');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = 400;
+
+            let particles = [];
+            let ovules = [
+                {x: 150, y: 300, label: 'a'},
+                {x: 300, y: 300, label: 'a'},
+                {x: 450, y: 300, label: 'a'}
+            ];
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+                if(Math.random() > 0.8) {
+                    particles.push({x: mx, y: my, vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2, life: 100});
+                }
+            });
+
+            function animate() {
+                ctx.fillStyle = '#111';
+                ctx.fillRect(0,0,canvas.width,canvas.height);
+
+                // Dibujar óvulos
+                ovules.forEach(o => {
+                    ctx.fillStyle = '#ffc107';
+                    ctx.beginPath(); ctx.arc(o.x, o.y, 25, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = 'black'; ctx.font = "bold 16px Arial";
+                    ctx.fillText(o.label, o.x-5, o.y+5);
+                });
+
+                // Partículas polen
+                particles.forEach((p, i) => {
+                    p.x += p.vx; p.y += p.vy; p.life--;
+                    ctx.fillStyle = `rgba(255, 235, 59, ${p.life/100})`;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+
+                    ovules.forEach(o => {
+                        let dist = Math.sqrt((p.x-o.x)**2 + (p.y-o.y)**2);
+                        if(dist < 25) {
+                            ctx.fillStyle = 'white';
+                            ctx.fillText("¡Fecundado! -> Aa", o.x-40, o.y-40);
+                        }
+                    });
+                });
+                particles = particles.filter(p => p.life > 0);
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // --- Evaluación Final ---
+        const questionsMC = [
+            {q: "¿Qué significa que una generación sea uniforme?", a: "Que todos tienen genes distintos", b: "Que todos muestran el mismo fenotipo dominante", c: "Que son de diferentes colores", r: "b"},
+            {q: "En el cruce AA x aa, el genotipo de la F1 es:", a: "AA", b: "aa", c: "Aa", r: "c"},
+            {q: "Si el color rojo es dominante, ¿cómo se ve una planta Aa?", a: "Amarilla", b: "Roja", c: "Naranja", r: "b"},
+            {q: "Mendel usó plantas puras. En Quimbaya, esto equivale a:", a: "Semillas certificadas", b: "Plantas de monte", c: "Frutos podridos", r: "a"},
+            {q: "¿Qué sucede con el gen recesivo en la F1?", a: "Desaparece para siempre", b: "Se mezcla con el dominante", c: "Se mantiene oculto en el genotipo", r: "c"}
+        ];
+
+        const questionsOpen = [
+            "Explica con tus palabras por qué un caficultor de Pueblo Rico prefiere cultivos uniformes.",
+            "Describe la diferencia entre Fenotipo y Genotipo usando un ejemplo de la vereda.",
+            "¿Por qué crees que Mendel es llamado el padre de la genética aplicada?",
+            "Si cruzamos un limón Tahití puro con uno común, ¿qué esperarías ver en la F1 según la ley?",
+            "Relaciona el concepto de 'Línea Pura' con la calidad del café Quindiano."
+        ];
+
+        function initQuiz() {
+            const mcDiv = document.getElementById('mc-questions');
+            questionsMC.forEach((q, i) => {
+                mcDiv.innerHTML += `
+                    <div class="quiz-item">
+                        <p><strong>${i+1}. ${q.q}</strong></p>
+                        <label><input type="radio" name="mc${i}" value="a"> ${q.a}</label><br>
+                        <label><input type="radio" name="mc${i}" value="b"> ${q.b}</label><br>
+                        <label><input type="radio" name="mc${i}" value="c"> ${q.c}</label>
+                    </div>
+                `;
+            });
+
+            const opDiv = document.getElementById('open-questions');
+            questionsOpen.forEach((q, i) => {
+                opDiv.innerHTML += `
+                    <div class="quiz-item">
+                        <p><strong>${i+6}. ${q}</strong></p>
+                        <textarea id="open-${i}" placeholder="Escribe al menos 15 palabras..."></textarea>
+                        <div id="alert-${i}" class="alert-fraud">⚠️ Se detectó pegado de texto o escritura artificial.</div>
+                    </div>
+                `;
+                setupAntiFraud(i);
+            });
+        }
+
+        function setupAntiFraud(id) {
+            const tx = document.getElementById(`open-${id}`);
+            let lastKeyTime = Date.now();
+            
+            tx.addEventListener('paste', e => {
+                e.preventDefault();
+                document.getElementById(`alert-${id}`).style.display = "block";
+                tx.value = "⚠️ ERROR: PEGAR NO ESTÁ PERMITIDO";
+            });
+
+            tx.addEventListener('keydown', () => {
+                const now = Date.now();
+                if(now - lastKeyTime < 15) { // Escritura demasiado rápida (IA/Bot)
+                    document.getElementById(`alert-${id}`).style.display = "block";
+                }
+                lastKeyTime = now;
+            });
+            tx.addEventListener('contextmenu', e => e.preventDefault());
+        }
+
+        function evaluateAll() {
+            let score = 0;
+            // Calificar MC (40%)
+            questionsMC.forEach((q, i) => {
+                const sel = document.querySelector(`input[name="mc${i}"]:checked`);
+                if(sel && sel.value === q.r) score += 0.4;
+            });
+
+            // Calificar Abiertas (40%)
+            let openScore = 0;
+            questionsOpen.forEach((_, i) => {
+                const text = document.getElementById(`open-${i}`).value;
+                const fraud = document.getElementById(`alert-${i}`).style.display === "block";
+                if(text.split(' ').length >= 10 && !fraud) openScore += 0.4;
+            });
+            score += openScore;
+
+            // Progreso (20%)
+            score += (userData.progress / 100) * 5;
+
+            const final = Math.min(5, score).toFixed(1);
+            showResults(final);
+        }
+
+        function showResults(grade) {
+            document.querySelector('.container').style.display = 'none';
+            document.getElementById('final-screen').style.display = 'block';
+            document.getElementById('final-grade').innerText = grade;
+            
+            let route = "";
+            if(grade < 3.0) route = "🛑 RUTA DE NIVELACIÓN: Debes revisar nuevamente el concepto de Heterocigoto. Te recomendamos volver a ver el simulador de polen y realizar los cuadros de Punnett en tu cuaderno.";
+            else if(grade < 4.5) route = "🌾 RUTA DE FORTALECIMIENTO: ¡Buen trabajo, investigador! Entiendes la uniformidad. Para llegar a la excelencia, profundiza en cómo se ocultan los genes recesivos.";
+            else route = "☕ RUTA DE EXCELENCIA: ¡Eres un maestro genetista de Pueblo Rico! Dominas la Primera Ley y su aplicación técnica. Estás listo para el siguiente nivel.";
+            
+            document.getElementById('final-route').innerText = route;
+        }
+
+        function exportResults() {
+            const content = `REPORTE GENÉTICO - PUEBLO RICO\n` +
+                            `Estudiante: ${userData.nom} ${userData.ape}\n` +
+                            `Nota Final: ${document.getElementById('final-grade').innerText}/5.0\n` +
+                            `Estado: ${document.getElementById('final-route').innerText}`;
+            const blob = new Blob([content], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Resultados_${userData.ape}.txt`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

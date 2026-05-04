@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Biotecnología Animal - Quimbaya</title>
+    <style>
+        :root {
+            --pcc-verde-oscuro: #1b5e20;
+            --pcc-verde-claro: #4caf50;
+            --pcc-cafe: #4e342e;
+            --pcc-naranja: #ef6c00;
+            --pcc-crema: #fffde7;
+            --pcc-rojo: #c62828;
+            --pcc-azul-vacio: #1a237e;
+        }
+
+        * { box-sizing: border-box; scroll-behavior: smooth; }
+        body { 
+            margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--pcc-crema); color: var(--pcc-cafe);
+            line-height: 1.8; user-select: none;
+        }
+
+        /* --- Pantalla de Bienvenida --- */
+        #welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%231b5e20"/><circle cx="50" cy="50" r="40" fill="none" stroke="%234caf50" stroke-width="2" stroke-dasharray="5,5"/></svg>');
+            background-size: cover; z-index: 5000; display: flex; justify-content: center; align-items: center;
+        }
+        .login-card {
+            background: white; padding: 40px; border-radius: 30px; 
+            width: 90%; max-width: 450px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border: 4px solid var(--pcc-verde-oscuro);
+        }
+        .login-card h2 { color: var(--pcc-verde-oscuro); margin-bottom: 20px; }
+        .login-card input {
+            width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd;
+            border-radius: 10px; font-size: 1rem; outline: none; transition: 0.3s;
+        }
+        .login-card input:focus { border-color: var(--pcc-naranja); }
+
+        /* --- Navbar y Progreso --- */
+        nav {
+            position: sticky; top: 0; background: var(--pcc-verde-oscuro); color: white;
+            padding: 15px 5%; display: flex; justify-content: space-between; align-items: center;
+            z-index: 4000; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .user-info { font-weight: bold; font-size: 0.9rem; }
+        .progress-container { display: flex; align-items: center; gap: 10px; }
+        .progress-bar-bg { width: 200px; height: 14px; background: rgba(255,255,255,0.2); border-radius: 7px; overflow: hidden; }
+        #progress-fill { width: 0%; height: 100%; background: var(--pcc-naranja); transition: 0.5s ease; }
+        #score-badge { background: var(--pcc-naranja); padding: 2px 10px; border-radius: 15px; font-size: 0.8rem; }
+
+        /* --- Contenido --- */
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+        section { 
+            background: white; padding: 50px; margin-bottom: 50px; border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-left: 10px solid var(--pcc-verde-oscuro);
+            position: relative; overflow: hidden;
+        }
+
+        h1, h2, h3 { color: var(--pcc-verde-oscuro); }
+        p { margin-bottom: 20px; text-align: justify; }
+
+        /* --- Ilustraciones SVG --- */
+        .svg-illustration {
+            display: flex; justify-content: center; margin: 30px 0;
+            background: #f9f9f9; padding: 20px; border-radius: 20px;
+        }
+
+        /* --- Cuadros Comparativos --- */
+        .comparison-table {
+            width: 100%; border-collapse: collapse; margin: 30px 0; font-size: 0.95rem;
+        }
+        .comparison-table th { background: var(--pcc-verde-oscuro); color: white; padding: 15px; text-align: left; }
+        .comparison-table td { border: 1px solid #e0e0e0; padding: 15px; vertical-align: top; }
+        .comparison-table tr:nth-child(even) { background: #f1f8e9; }
+
+        /* --- Pausas Activas --- */
+        .pausa-activa {
+            background: #fff3e0; border: 2px dashed var(--pcc-naranja);
+            padding: 30px; margin: 40px 0; border-radius: 20px;
+            position: relative;
+        }
+        .pausa-activa::after {
+            content: "📝 ACTIVIDAD DE CUADERNO";
+            position: absolute; top: -12px; right: 20px;
+            background: var(--pcc-naranja); color: white;
+            padding: 4px 12px; font-size: 0.7rem; font-weight: bold; border-radius: 10px;
+        }
+
+        /* --- Canvas --- */
+        #canvas-wrap { text-align: center; margin: 40px 0; }
+        canvas { 
+            background: #000; border-radius: 15px; 
+            max-width: 100%; height: auto; border: 5px solid var(--pcc-cafe);
+        }
+
+        /* --- Botones --- */
+        .btn {
+            background: var(--pcc-verde-oscuro); color: white; border: none;
+            padding: 12px 25px; border-radius: 10px; cursor: pointer;
+            font-weight: bold; transition: 0.3s; display: inline-block;
+        }
+        .btn:hover { background: var(--pcc-naranja); transform: translateY(-2px); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* --- Quiz --- */
+        .option-btn {
+            display: block; width: 100%; text-align: left; padding: 15px;
+            margin: 10px 0; border: 2px solid #eee; border-radius: 10px;
+            background: white; cursor: pointer; transition: 0.2s;
+        }
+        .option-btn:hover { background: #f5f5f5; border-color: var(--pcc-verde-claro); }
+        .correct { background: #c8e6c9 !important; border-color: #4caf50 !important; }
+        .incorrect { background: #ffcdd2 !important; border-color: #f44336 !important; }
+
+        /* --- Anti-IA Textarea --- */
+        textarea {
+            width: 100%; height: 120px; border: 2px solid #ddd; border-radius: 15px;
+            padding: 15px; font-family: inherit; margin-bottom: 10px; resize: none;
+        }
+        .ia-warning { color: var(--pcc-rojo); font-size: 0.8rem; display: none; margin-bottom: 15px; font-weight: bold; }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            section { padding: 25px; }
+            .progress-bar-bg { width: 100px; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <!-- BIENVENIDA -->
+    <div id="welcome-screen">
+        <div class="login-card">
+            <svg width="80" height="80" viewBox="0 0 100 100">
+                <path d="M20 50 Q50 10 80 50 Q50 90 20 50" fill="none" stroke="#1b5e20" stroke-width="3"/>
+                <circle cx="50" cy="50" r="8" fill="#ef6c00"/>
+            </svg>
+            <h2>Biotecnología en Pueblo Rico</h2>
+            <p>Mejora animal y fertilización asistida en el paisaje quindiano.</p>
+            <input type="text" id="input-lastname" placeholder="Tus Apellidos">
+            <input type="text" id="input-firstname" placeholder="Tus Nombres">
+            <button class="btn" id="start-btn" style="width: 100%; margin-top: 20px;">INGRESAR AL OVA</button>
+        </div>
+    </div>
+
+    <!-- NAVEGACIÓN -->
+    <nav>
+        <div class="user-info">📍 <span id="nav-name">Estudiante</span> | Vereda Pueblo Rico</div>
+        <div class="progress-container">
+            <span id="score-badge">Nivel 0</span>
+            <div class="progress-bar-bg"><div id="progress-fill"></div></div>
+            <span id="percent-text">0%</span>
+        </div>
+    </nav>
+
+    <div class="main-content">
+
+        <!-- INTRODUCCIÓN Y PRE-SABERES -->
+        <section>
+            <h1>1. Objetivo de Aprendizaje</h1>
+            <p>Al finalizar este OVA, serás capaz de describir los procesos biotecnológicos de fertilización asistida e inseminación artificial, analizando su impacto en la mejora genética de las razas lecheras de la <strong>Vereda Pueblo Rico</strong> y comprendiendo las implicaciones técnicas y éticas de estas intervenciones.</p>
+
+            <div style="background: #f9f9f9; padding: 25px; border-radius: 20px;">
+                <h3>Pre-saberes: ¿Qué tanto sabemos del hato?</h3>
+                <div id="pre-quiz">
+                    <div class="quiz-item" data-q="0">
+                        <p>1. ¿Cuál es el principal objetivo de la inseminación artificial en una finca lechera de Quimbaya?</p>
+                        <button class="option-btn" onclick="checkPre(this, true)">A. Mejorar la genética del ganado para aumentar la producción de leche.</button>
+                        <button class="option-btn" onclick="checkPre(this, false)">B. Evitar que las vacas salgan a pastorear por la vereda.</button>
+                        <button class="option-btn" onclick="checkPre(this, false)">C. Cambiar el color del pelaje del ganado por estética.</button>
+                    </div>
+                    <div class="quiz-item" data-q="1" style="display:none; margin-top: 20px;">
+                        <p>2. ¿Cómo se transporta el material genético (semen) de toros de alta calidad?</p>
+                        <button class="option-btn" onclick="checkPre(this, false)">A. En recipientes con agua tibia de la quebrada.</button>
+                        <button class="option-btn" onclick="checkPre(this, true)">B. En pajillas congeladas con nitrógeno líquido a temperaturas bajísimas.</button>
+                        <button class="option-btn" onclick="checkPre(this, false)">C. En cajas de cartón bien ventiladas.</button>
+                    </div>
+                    <div class="quiz-item" data-q="2" style="display:none; margin-top: 20px;">
+                        <p>3. ¿Qué parte del sistema reproductor de la vaca se interviene durante la inseminación?</p>
+                        <button class="option-btn" onclick="checkPre(this, true)">A. El útero, depositando el semen después de pasar el cuello uterino.</button>
+                        <button class="option-btn" onclick="checkPre(this, false)">B. Los pulmones para que respire mejor el embrión.</button>
+                        <button class="option-btn" onclick="checkPre(this, false)">C. El sistema digestivo para mejorar la absorción.</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CUERPO INDUCTIVO -->
+        <section id="cuerpo-inductivo">
+            <h2>2. Inducción: Ciencia bajo el Samán</h2>
+            <div class="text-block">
+                <p>En el amanecer de la <strong>Vereda Pueblo Rico</strong>, mientras el olor a café recién tostado se mezcla con la neblina, los ganaderos de Quimbaya se preparan para una jornada técnica. Ya no solo se depende de la monta natural; hoy, la ciencia camina por los potreros. La intervención animal, específicamente la fertilización asistida, se ha convertido en la herramienta clave para transformar la economía local. Imaginen una vaca de raza Normando o Jersey que, gracias a la inseminación artificial, puede tener una cría con el potencial genético de los mejores toros del mundo, sin que el semental pise jamás suelo quindiano.</p>
+                
+                <p>Este proceso comienza con la observación meticulosa. El vaquero identifica el "celo" de la hembra, un ciclo natural que indica que es el momento preciso para intervenir. En la ganadería de nuestra zona, esto es vital porque permite programar los nacimientos, asegurando que cuando lleguen los meses de mayor sequía o lluvia intensa, las crías tengan la edad suficiente para resistir. La biotecnología aquí no es fría ni distante; es una aliada del paisaje cultural cafetero que busca la eficiencia y el bienestar animal.</p>
+                
+                <p>Al introducir el semen procesado, se eliminan los riesgos físicos de la monta natural y se reduce la transmisión de enfermedades venéreas entre el ganado. En las fincas de cítricos y café que también integran ganadería, este control es sinónimo de estabilidad. Un ternero "mejorado" significa más litros de leche para la cooperativa y una mejor calidad de vida para las familias de Pueblo Rico. Es una cadena de progreso que inicia en una pequeña pajilla de nitrógeno.</p>
+                
+                <p>Pero no se trata solo de producir más. El mejoramiento animal busca la adaptabilidad. El clima de Quimbaya es generoso pero cambiante. Las razas se seleccionan por su resistencia a los parásitos locales y su capacidad para transformar el forraje de nuestras laderas en energía. La intervención humana, bien ejecutada, respeta la biología del animal mientras acelera procesos que a la naturaleza le tomarían décadas.</p>
+                
+                <p>Así, la fertilización asistida es un diálogo entre la tradición del abuelo que conocía a cada vaca por su nombre y el técnico que analiza datos de producción en una tableta. En Pueblo Rico, estamos rediseñando el futuro genético del Quindío, un embrión a la vez, garantizando que el sector pecuario siga siendo un pilar del turismo y la productividad regional.</p>
+            </div>
+
+            <div class="svg-illustration">
+                <svg width="300" height="200" viewBox="0 0 300 200">
+                    <rect x="0" y="150" width="300" height="50" fill="#8bc34a"/> <!-- Pasto -->
+                    <path d="M50 150 L50 100 Q80 80 120 100 L120 150" fill="#fff" stroke="#4e342e" stroke-width="2"/> <!-- Vaca simplificada -->
+                    <circle cx="80" cy="110" r="15" fill="#eee"/> <!-- Mancha -->
+                    <path d="M120 100 L130 90" stroke="#4e342e" stroke-width="2"/> <!-- Cuello -->
+                    <rect x="180" y="80" width="10" height="80" fill="#455a64"/> <!-- Termo nitrógeno -->
+                    <path d="M185 80 L185 40 Q210 20 240 40 L240 80" fill="none" stroke="#ef6c00" stroke-width="2" stroke-dasharray="4"/> <!-- Conexión biotec -->
+                    <text x="170" y="180" font-size="12" fill="#333">Laboratorio de Campo</text>
+                </svg>
+            </div>
+
+            <table class="comparison-table">
+                <caption>Tabla Comparativa: Métodos de Reproducción en Pueblo Rico</caption>
+                <thead>
+                    <tr>
+                        <th>Criterio</th>
+                        <th>Monta Natural</th>
+                        <th>Inseminación Artificial (IA)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Control Genético</strong></td>
+                        <td>Limitado al toro de la finca o vecindario.</td>
+                        <td>Acceso a genética global probada (toros élite).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sanidad</strong></td>
+                        <td>Riesgo de transmisión de enfermedades por contacto.</td>
+                        <td>Material estéril y certificado; riesgo casi nulo.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Costo Inicial</strong></td>
+                        <td>Bajo (mantenimiento del toro).</td>
+                        <td>Alto (equipo, nitrógeno y técnico).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Eficiencia</strong></td>
+                        <td>Variable, depende del estado físico del toro.</td>
+                        <td>Alta, permite programar partos masivos.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- PAUSAS ACTIVAS 1-5 -->
+            <div class="pausa-activa">
+                <p><strong>Reto 1:</strong> En tu cuaderno, responde: ¿Cuál es la mayor ventaja que identificarías para un pequeño productor de la vereda si decide usar inseminación?</p>
+                <button class="btn" onclick="completeActivity(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pausa-activa">
+                <p><strong>Reto 2:</strong> Realiza un dibujo detallado del "Termo de Nitrógeno" y cómo crees que se mantienen las pajillas en su interior.</p>
+                <button class="btn" onclick="completeActivity(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pausa-activa">
+                <p><strong>Reto 3:</strong> Crea un mapa mental que conecte: Producción de Leche, Inseminación, Turismo y Vereda Pueblo Rico.</p>
+                <button class="btn" onclick="completeActivity(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pausa-activa">
+                <p><strong>Reto 4:</strong> Elabora un cuadro comparativo en tu cuaderno sobre las razas Holstein y Jersey (comunes en la zona) y sus ventajas genéticas.</p>
+                <button class="btn" onclick="completeActivity(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pausa-activa">
+                <p><strong>Reto 5:</strong> Diseña un diagrama de flujo que represente el proceso desde que se detecta el celo de la vaca hasta que nace el ternero.</p>
+                <button class="btn" onclick="completeActivity(5)">Ya lo hice (+5%)</button>
+            </div>
+
+            <!-- PREGUNTA ICFES (GRÁFICA SVG) -->
+            <div style="background: #e1f5fe; padding: 30px; border-radius: 20px; margin: 30px 0;">
+                <h3>Análisis de Gráfica: Competencia Indagar</h3>
+                <div style="text-align: center;">
+                    <svg width="400" height="250" viewBox="0 0 400 250">
+                        <!-- Ejes -->
+                        <line x1="50" y1="200" x2="350" y2="200" stroke="#000" stroke-width="2"/>
+                        <line x1="50" y1="200" x2="50" y2="50" stroke="#000" stroke-width="2"/>
+                        <!-- Datos (Producción Leche Litros/Día) -->
+                        <polyline points="50,180 125,160 200,120 275,80 350,60" fill="none" stroke="#ef6c00" stroke-width="3"/>
+                        <circle cx="50" cy="180" r="4" fill="#1b5e20"/>
+                        <circle cx="125" cy="160" r="4" fill="#1b5e20"/>
+                        <circle cx="200" cy="120" r="4" fill="#1b5e20"/>
+                        <circle cx="275" cy="80" r="4" fill="#1b5e20"/>
+                        <circle cx="350" cy="60" r="4" fill="#1b5e20"/>
+                        <!-- Etiquetas -->
+                        <text x="30" y="190" font-size="10">10L</text>
+                        <text x="30" y="60" font-size="10">35L</text>
+                        <text x="50" y="220" font-size="10">Gen 0</text>
+                        <text x="320" y="220" font-size="10">Gen 4 (IA)</text>
+                        <text x="120" y="30" font-size="14" font-weight="bold">Progreso Lechero en Pueblo Rico</text>
+                    </svg>
+                </div>
+                <p><strong>Pregunta:</strong> Observando la tendencia de la gráfica tras 4 generaciones aplicando Inseminación Artificial (IA), ¿qué conclusión es biológicamente válida para el hato de Quimbaya?</p>
+                <button class="option-btn" onclick="checkIcfes(this, false)">A. La producción se estanca porque los animales se cansan de la tecnología.</button>
+                <button class="option-btn" onclick="checkIcfes(this, true)">B. Existe una correlación positiva entre la mejora genética dirigida y el incremento del rendimiento lechero.</button>
+                <button class="option-btn" onclick="checkIcfes(this, false)">C. La inseminación disminuye la cantidad de leche pero mejora el sabor del café.</button>
+            </div>
+        </section>
+
+        <!-- CUERPO DEDUCTIVO -->
+        <section id="cuerpo-deductivo">
+            <h2>3. Deducción: Leyes de la Herencia y Biotecnología</h2>
+            <div class="text-block">
+                <p>Para comprender la fertilización asistida, debemos deducir las leyes moleculares que la sustentan. El éxito de la inseminación artificial en las vacas lecheras de Pueblo Rico se basa en la manipulación controlada de los gametos. Durante la inseminación, el técnico deposita el semen directamente en el cuerpo del útero, superando la barrera del <i>cervix</i>. Este acto técnico multiplica las probabilidades de encuentro entre el espermatozoide y el ovocito<sub>2</sub>, un proceso que en condiciones naturales está sujeto a muchas variables de fallo.</p>
+                
+                <p>La mejora animal se fundamenta en la selección de rasgos cuantitativos. En Quimbaya, buscamos toros cuyos índices de heredabilidad para la grasa y proteína láctea sean superiores. Al cruzar una vaca local con un toro "probado", estamos aplicando principios de genética de poblaciones. Deducimos que, si el padre aporta alelos dominantes para la producción lechera, la probabilidad de que la descendencia F<sub>1</sub> supere la media del hato es extremadamente alta. Es una intervención matemática sobre la vida misma.</p>
+                
+                <p>Otro aspecto técnico es la sincronización de celos mediante hormonas. Los veterinarios de la zona utilizan protocolos que permiten que un grupo de 20 vacas entren en celo al mismo tiempo. Esto optimiza la logística del técnico inseminador y permite que los terneros nazcan en la misma semana, facilitando el manejo sanitario en la finca. Deducimos que la biotecnología reproductiva es, en esencia, la gestión eficiente del tiempo biológico del ganado.</p>
+                
+                <p>Sin embargo, la mejora genética tiene límites. La consanguinidad es un riesgo latente si no se lleva un registro estricto en el cuaderno de campo. Si un ganadero usa el mismo semen para hijas y nietas, los alelos recesivos deletéreos pueden manifestarse, causando malformaciones o debilidad. La ciencia en Pueblo Rico nos enseña que la diversidad genética es la verdadera riqueza de la montaña quindiana.</p>
+                
+                <p>Finalmente, la fertilización asistida nos lleva a reflexionar sobre la ética. Intervenir en los animales para "mejorarlos" nos obliga a garantizarles un bienestar superior. Una vaca con mayor potencial de producción requiere mejores pastos, sombra y agua limpia. La biotecnología en Quimbaya no es solo un fin económico, es un compromiso con la salud animal y la sostenibilidad del paisaje cultural cafetero.</p>
+            </div>
+
+            <!-- ANIMACIÓN CENTRAL CANVAS -->
+            <div id="canvas-wrap">
+                <h3>Visualización Científica: El Proceso de Fecundación</h3>
+                <p>Interactúa con el microscopio virtual: Haz clic para liberar espermatozoides hacia el óvulo.</p>
+                <canvas id="bio-canvas"></canvas>
+                <p><small>Simulación procedural a 60fps de la interacción de gametos.</small></p>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 6-10 -->
+            <div class="pausa-activa">
+                <p><strong>Reto 6:</strong> Construye un mapa conceptual en tu cuaderno que explique los pasos técnicos de la Inseminación Artificial.</p>
+                <button class="btn" onclick="completeActivity(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pausa-activa">
+                <p><strong>Reto 7:</strong> Elabora una tabla de datos observando (o imaginando basado en lo leído) la producción de 5 vacas de la vereda antes y después de un proceso de mejora.</p>
+                <button class="btn" onclick="completeActivity(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pausa-activa">
+                <p><strong>Reto 8:</strong> Realiza un dibujo técnico esquemático del sistema reproductor de la vaca e indica el punto exacto donde se deposita el semen.</p>
+                <button class="btn" onclick="completeActivity(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pausa-activa">
+                <p><strong>Reto 9:</strong> Escribe una síntesis de media página sobre por qué la diversidad genética evita enfermedades en el ganado de Quimbaya.</p>
+                <button class="btn" onclick="completeActivity(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pausa-activa">
+                <p><strong>Reto 10:</strong> Resolución de problema: Si un ganadero de Pueblo Rico insemina 12 vacas y el índice de preñez es del 65%, ¿cuántos terneros se espera que nazcan aproximadamente?</p>
+                <button class="btn" onclick="completeActivity(5)">Ya lo hice (+5%)</button>
+            </div>
+        </section>
+
+        <!-- EVALUACIÓN FINAL -->
+        <section id="evaluacion">
+            <h2>4. Taller de Certificación Biotecnológica</h2>
+            
+            <h3>Preguntas de Selección Múltiple</h3>
+            <div id="final-multiple">
+                <div class="eval-q">
+                    <p>1. ¿Qué es un ovocito<sub>2</sub> en el contexto de la fertilización?</p>
+                    <select class="btn" style="background:white; color:black; border:1px solid #ddd; width:100%; margin-bottom:15px;" id="mq1">
+                        <option value="0">Selecciona...</option>
+                        <option value="1">La célula reproductora masculina.</option>
+                        <option value="2">La célula reproductora femenina lista para ser fecundada.</option>
+                        <option value="3">Un tipo de vacuna para el ganado.</option>
+                    </select>
+                </div>
+                <div class="eval-q">
+                    <p>2. ¿Para qué se utiliza el nitrógeno líquido en biotecnología animal?</p>
+                    <select class="btn" style="background:white; color:black; border:1px solid #ddd; width:100%; margin-bottom:15px;" id="mq2">
+                        <option value="0">Selecciona...</option>
+                        <option value="1">Para enfriar la leche recién ordeñada.</option>
+                        <option value="2">Para criopreservar el semen y los embriones.</option>
+                        <option value="3">Para fertilizar los pastos de la vereda.</option>
+                    </select>
+                </div>
+                <!-- ... más preguntas simuladas en JS ... -->
+            </div>
+
+            <h3 style="margin-top: 40px;">Preguntas Abiertas (Análisis Crítico)</h3>
+            <p><small>* El sistema detecta automáticamente el uso de IA o Copiar/Pegar.</small></p>
+            
+            <div class="open-q-box">
+                <p>1. ¿Cómo impacta la mejora animal en la sostenibilidad económica de la Vereda Pueblo Rico?</p>
+                <textarea id="oq1" placeholder="Escribe tu análisis (10-15 palabras)" onkeydown="checkTyping(this, 'w1')"></textarea>
+                <div id="w1" class="ia-warning">⚠️ Velocidad de escritura sospechosa / Acción bloqueada.</div>
+
+                <p>2. ¿Cuál es el papel del vaquero tradicional frente a la llegada de nuevas tecnologías reproductivas?</p>
+                <textarea id="oq2" placeholder="Escribe tu análisis (10-15 palabras)" onkeydown="checkTyping(this, 'w2')"></textarea>
+                <div id="w2" class="ia-warning">⚠️ Velocidad de escritura sospechosa / Acción bloqueada.</div>
+
+                <p>3. Describe una consecuencia ética de buscar vacas cada vez más productoras:</p>
+                <textarea id="oq3" placeholder="Escribe tu análisis (10-15 palabras)" onkeydown="checkTyping(this, 'w3')"></textarea>
+                <div id="w3" class="ia-warning">⚠️ Velocidad de escritura sospechosa / Acción bloqueada.</div>
+
+                <p>4. ¿Por qué es fundamental el control sanitario en la fertilización asistida?</p>
+                <textarea id="oq4" placeholder="Escribe tu análisis (10-15 palabras)" onkeydown="checkTyping(this, 'w4')"></textarea>
+                <div id="w4" class="ia-warning">⚠️ Velocidad de escritura sospechosa / Acción bloqueada.</div>
+
+                <p>5. ¿Qué importancia tiene el cuaderno de campo en el seguimiento genético?</p>
+                <textarea id="oq5" placeholder="Escribe tu análisis (10-15 palabras)" onkeydown="checkTyping(this, 'w5')"></textarea>
+                <div id="w5" class="ia-warning">⚠️ Velocidad de escritura sospechosa / Acción bloqueada.</div>
+            </div>
+
+            <button class="btn" style="width:100%; margin-top:30px;" onclick="calculateFinalScore()">FINALIZAR Y EVALUAR</button>
+        </section>
+
+        <!-- CIERRE -->
+        <section id="cierre" style="display:none; border-top: 8px solid var(--pcc-naranja);">
+            <h2>5. Resultados de la Expedición</h2>
+            <div id="final-report" style="background:#f1f8e9; padding:30px; border-radius:15px; margin-bottom:20px;">
+                <!-- Resultados cargados vía JS -->
+            </div>
+            <button class="btn" onclick="downloadTXT()">DESCARGAR REPORTE (.TXT)</button>
+        </section>
+
+    </div>
+
+    <script>
+        // --- VARIABLES DE ESTADO ---
+        let userProfile = { first: "", last: "", progress: 0, points: 0, suspect: false };
+        let preQuizStep = 0;
+        let typingData = {};
+
+        // --- GESTIÓN DE USUARIO ---
+        document.getElementById('start-btn').addEventListener('click', () => {
+            const f = document.getElementById('input-firstname').value.trim();
+            const l = document.getElementById('input-lastname').value.trim();
+            if(!f || !l) {
+                alert("Ingresa nombres y apellidos para comenzar.");
+                return;
+            }
+            userProfile.first = f;
+            userProfile.last = l;
+            document.getElementById('nav-name').innerText = `${f} ${l}`;
+            document.getElementById('welcome-screen').style.display = 'none';
+            initCanvas();
+        });
+
+        // --- SISTEMA DE PROGRESO ---
+        function updateProgressUI() {
+            document.getElementById('progress-fill').style.width = userProfile.progress + "%";
+            document.getElementById('percent-text').innerText = userProfile.progress + "%";
+            const points = (userProfile.progress / 20).toFixed(1);
+            document.getElementById('score-badge').innerText = `Puntos: ${points}`;
+        }
+
+        function completeActivity(val) {
+            if(userProfile.progress + val <= 100) {
+                userProfile.progress += val;
+                updateProgressUI();
+            }
+            event.target.disabled = true;
+            event.target.innerText = "¡Completado!";
+        }
+
+        // --- PRE-SABERES ---
+        function checkPre(btn, isCorrect) {
+            const parent = btn.parentElement;
+            const buttons = parent.querySelectorAll('.option-btn');
+            buttons.forEach(b => b.disabled = true);
+
+            if(isCorrect) {
+                btn.classList.add('correct');
+                userProfile.progress += 5;
+                updateProgressUI();
+            } else {
+                btn.classList.add('incorrect');
+            }
+
+            setTimeout(() => {
+                preQuizStep++;
+                const next = document.querySelector(`.quiz-item[data-q="${preQuizStep}"]`);
+                if(next) next.style.display = 'block';
+            }, 600);
+        }
+
+        function checkIcfes(btn, isCorrect) {
+            const parent = btn.parentElement;
+            const buttons = parent.querySelectorAll('.option-btn');
+            buttons.forEach(b => b.disabled = true);
+            if(isCorrect) {
+                btn.classList.add('correct');
+                userProfile.progress += 10;
+                updateProgressUI();
+            } else {
+                btn.classList.add('incorrect');
+            }
+        }
+
+        // --- ANTI-FRAUDE ---
+        const textareas = document.querySelectorAll('textarea');
+        textareas.forEach(ta => {
+            ta.addEventListener('paste', e => {
+                e.preventDefault();
+                userProfile.suspect = true;
+                document.getElementById(ta.nextElementSibling.id).style.display = 'block';
+            });
+            ta.addEventListener('drop', e => e.preventDefault());
+        });
+
+        function checkTyping(el, warningId) {
+            const now = Date.now();
+            if(!typingData[el.id]) typingData[el.id] = [];
+            typingData[el.id].push(now);
+
+            if(typingData[el.id].length > 5) {
+                const lastIdx = typingData[el.id].length - 1;
+                const diff = typingData[el.id][lastIdx] - typingData[el.id][lastIdx - 5];
+                if(diff < 200) { // Demasiado rápido (5 teclas en menos de 200ms)
+                    document.getElementById(warningId).style.display = 'block';
+                    userProfile.suspect = true;
+                }
+            }
+        }
+
+        // --- CANVAS ANIMATION ---
+        const canvas = document.getElementById('bio-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let ovulo = { x: 0, y: 0, r: 60, angle: 0 };
+
+        function initCanvas() {
+            canvas.width = 600;
+            canvas.height = 400;
+            ovulo.x = canvas.width / 2;
+            ovulo.y = canvas.height / 2;
+
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const startX = e.clientX - rect.left;
+                const startY = e.clientY - rect.top;
+                for(let i=0; i<5; i++) {
+                    particles.push(new Sperm(startX, startY));
+                }
+            });
+            loop();
+        }
+
+        class Sperm {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.angle = Math.atan2(ovulo.y - y, ovulo.x - x);
+                this.speed = 2 + Math.random() * 2;
+                this.tailAngle = 0;
+            }
+            update() {
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                this.tailAngle += 0.5;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.fillStyle = "white";
+                ctx.beginPath(); ctx.ellipse(0, 0, 5, 3, 0, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = "white";
+                ctx.beginPath();
+                ctx.moveTo(-5, 0);
+                for(let i=0; i<15; i++) {
+                    ctx.lineTo(-i - 5, Math.sin(i * 0.5 + this.tailAngle) * 3);
+                }
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        function loop() {
+            ctx.fillStyle = "rgba(10, 20, 40, 0.2)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Óvulo (Zuna Pelúcida)
+            ovulo.angle += 0.01;
+            ctx.beginPath();
+            ctx.arc(ovulo.x, ovulo.y, ovulo.r + Math.sin(ovulo.angle)*2, 0, Math.PI*2);
+            ctx.strokeStyle = "#ff8a65"; ctx.lineWidth = 4; ctx.stroke();
+            ctx.fillStyle = "#fbe9e7"; ctx.fill();
+            
+            // Núcleo
+            ctx.beginPath();
+            ctx.arc(ovulo.x, ovulo.y, 10, 0, Math.PI*2);
+            ctx.fillStyle = "#ef6c00"; ctx.fill();
+
+            particles.forEach((p, idx) => {
+                p.update(); p.draw();
+                // Colisión
+                const dist = Math.hypot(p.x - ovulo.x, p.y - ovulo.y);
+                if(dist < ovulo.r) particles.splice(idx, 1);
+            });
+
+            requestAnimationFrame(loop);
+        }
+
+        // --- RESULTADOS FINALES ---
+        function calculateFinalScore() {
+            let evalScore = 0;
+            if(document.getElementById('mq1').value === '2') evalScore += 1;
+            if(document.getElementById('mq2').value === '2') evalScore += 1;
+            
+            // Validar abiertas (mínimo 10 palabras, máximo 15)
+            let openValid = 0;
+            for(let i=1; i<=5; i++){
+                const val = document.getElementById('oq' + i).value.trim();
+                const words = val.split(/\s+/).length;
+                if(words >= 10 && words <= 15) openValid++;
+            }
+            
+            const totalScore = ((userProfile.progress / 20) + evalScore + (openValid / 2.5)).toFixed(1);
+            const finalFinal = Math.min(totalScore, 5.0);
+
+            document.getElementById('cierre').style.display = 'block';
+            document.getElementById('final-report').innerHTML = `
+                <h3>Certificado de Competencias Biotecnológicas</h3>
+                <p><strong>Estudiante:</strong> ${userProfile.first} ${userProfile.last}</p>
+                <p><strong>Nota Final:</strong> ${finalFinal} / 5.0</p>
+                <p><strong>Integridad académica:</strong> ${userProfile.suspect ? '❌ Sospecha de Fraude (Copiado/Pegado/IA)' : '✅ Sistema Limpio'}</p>
+                <p><strong>Ruta de Fortalecimiento:</strong> ${finalFinal >= 4 ? 'Excelente. Puedes profundizar en Transferencia de Embriones.' : 'Debes reforzar la anatomía reproductiva y leyes de Mendel.'}</p>
+            `;
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function downloadTXT() {
+            const content = `RESULTADOS OVA - PUEBLO RICO\nUsuario: ${userProfile.first} ${userProfile.last}\nProgreso: ${userProfile.progress}%\nIntegridad: ${userProfile.suspect ? 'Alerta' : 'Limpio'}\nQuimbaya, Quindío - 2024`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Resultados_Ganaderia_${userProfile.last}.txt`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

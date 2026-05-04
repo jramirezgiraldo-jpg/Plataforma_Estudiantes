@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Jóvenes en acción II - Manos a la obra</title>
+    <style>
+        /* =========================================
+           PALETA DE COLORES Y DISEÑO (PCC)
+           ========================================= */
+        :root {
+            --tierra-oscura: #3E2723;
+            --cafe-tostado: #5D4037;
+            --verde-cafeto: #1B5E20;
+            --verde-lima: #7CB342;
+            --naranja-citrico: #F57C00;
+            --amarillo-sol: #FBC02D;
+            --azul-lluvia: #0288D1;
+            --crema-fondo: #F1F8E9;
+            --blanco: #FFFFFF;
+            --gris-texto: #263238;
+            --rojo-alerta: #C62828;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--crema-fondo);
+            color: var(--gris-texto);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* =========================================
+           SISTEMA DE AUTENTICACIÓN
+           ========================================= */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, var(--verde-cafeto), var(--cafe-tostado));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .login-box {
+            background: var(--blanco);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border-top: 5px solid var(--naranja-citrico);
+        }
+
+        .login-box h1 { color: var(--tierra-oscura); margin-bottom: 10px; font-size: 1.8em; }
+        .login-box p { font-size: 0.95em; margin-bottom: 25px; color: #555; }
+
+        .input-group { margin-bottom: 18px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: 600; color: var(--cafe-tostado); }
+        .input-group input {
+            width: 100%; padding: 12px; border: 2px solid #C8E6C9; border-radius: 6px; font-size: 1em; transition: border-color 0.3s;
+        }
+        .input-group input:focus { border-color: var(--naranja-citrico); outline: none; }
+
+        .btn {
+            background-color: var(--naranja-citrico); color: var(--blanco); border: none;
+            padding: 14px 25px; border-radius: 6px; font-size: 1.1em; cursor: pointer;
+            font-weight: bold; transition: background 0.3s, transform 0.1s; width: 100%; margin-top: 10px;
+        }
+        .btn:hover { background-color: #E65100; transform: scale(1.02); }
+
+        /* =========================================
+           INTERFAZ PRINCIPAL Y GAMIFICACIÓN
+           ========================================= */
+        #main-app { display: none; }
+
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; background: var(--blanco);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 500; padding: 12px 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 4px solid var(--verde-lima);
+        }
+
+        .user-info { font-weight: bold; color: var(--tierra-oscura); display: flex; align-items: center; gap: 10px; }
+        .stats-area { display: flex; align-items: center; gap: 20px; }
+
+        .points-badge {
+            background: var(--verde-cafeto); color: var(--blanco); padding: 6px 16px;
+            border-radius: 20px; font-weight: bold; display: flex; align-items: center; gap: 5px;
+        }
+
+        .progress-container-outer { text-align: right; }
+        .progress-label { font-size: 0.75em; font-weight: bold; color: var(--cafe-tostado); text-transform: uppercase; margin-bottom: 2px;}
+        .progress-container { width: 200px; background: #E0E0E0; border-radius: 8px; height: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--amarillo-sol); width: 0%; transition: width 0.5s ease; }
+
+        .unlockables { display: flex; gap: 8px; }
+        .icon-unlock { width: 26px; height: 26px; fill: #CFD8DC; transition: fill 0.5s, transform 0.3s; }
+        .icon-unlock.unlocked { fill: var(--naranja-citrico); transform: scale(1.15); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); }
+
+        main { max-width: 950px; margin: 90px auto 50px auto; padding: 20px; }
+
+        /* =========================================
+           ESTRUCTURA DE CONTENIDO
+           ========================================= */
+        section {
+            background: var(--blanco); padding: 35px; border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06); margin-bottom: 40px;
+            border-left: 6px solid var(--verde-cafeto);
+        }
+
+        h2 { color: var(--tierra-oscura); border-bottom: 2px solid var(--naranja-citrico); padding-bottom: 8px; margin-bottom: 20px; font-size: 1.8em; }
+        h3 { color: var(--verde-cafeto); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em;}
+        p { margin-bottom: 18px; text-align: justify; font-size: 1.05em; }
+
+        .highlight { background-color: #FFF3E0; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: var(--naranja-citrico); }
+
+        /* =========================================
+           CUADROS COMPARATIVOS
+           ========================================= */
+        table { width: 100%; border-collapse: collapse; margin: 25px 0; background: var(--blanco); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        th, td { padding: 14px; border: 1px solid #E0E0E0; text-align: left; }
+        th { background-color: var(--cafe-tostado); color: var(--blanco); }
+        tr:nth-child(even) { background-color: #F1F8E9; }
+
+        /* =========================================
+           PAUSAS ACTIVAS
+           ========================================= */
+        .pausa-activa {
+            background: #E8F5E9; border: 2px dashed var(--verde-cafeto); padding: 25px;
+            margin: 30px 0; border-radius: 10px;
+        }
+        .pausa-activa h4 { color: var(--verde-cafeto); margin-bottom: 15px; font-size: 1.2em;}
+        .pausa-activa ul { margin-left: 20px; margin-bottom: 20px; }
+        .pausa-activa li { margin-bottom: 10px; }
+        .btn-pausa {
+            background: transparent; border: 2px solid var(--verde-cafeto); color: var(--verde-cafeto);
+            padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.3s;
+        }
+        .btn-pausa:hover { background: #C8E6C9; }
+        .btn-pausa.done { background: var(--verde-cafeto); color: var(--blanco); }
+
+        /* =========================================
+           JUEGOS DRAG & DROP
+           ========================================= */
+        .game-container {
+            background: #FAFAFA; padding: 25px; border-radius: 10px; margin: 30px 0;
+            border: 1px solid #CFD8DC; text-align: center;
+        }
+        .game-title { color: var(--naranja-citrico); font-weight: bold; margin-bottom: 10px; font-size: 1.1em;}
+
+        .draggable-area { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 25px; min-height: 55px; }
+        .drop-area { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: #ECEFF1; padding: 20px; border-radius: 8px; }
+
+        .drag-item {
+            background: var(--cafe-tostado); color: var(--blanco); padding: 12px 20px;
+            border-radius: 6px; cursor: grab; user-select: none; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+        .drag-item.letter { padding: 12px 18px; font-size: 1.2em; background: var(--verde-cafeto); }
+
+        .drop-slot {
+            width: auto; min-width: 70px; height: 50px; border: 2px dashed #90A4AE; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; background: var(--blanco); transition: background 0.2s;
+        }
+        .drop-slot.letter-slot { min-width: 45px; }
+        .drop-slot.hovered { background: #CFD8DC; border-color: var(--naranja-citrico); }
+
+        .game-status { margin-top: 15px; font-weight: bold; color: var(--naranja-citrico); height: 20px; }
+
+        /* =========================================
+           ANIMACIÓN CANVAS Y SVG GRÁFICAS
+           ========================================= */
+        .canvas-wrapper {
+            background: #E3F2FD; border-radius: 12px; padding: 15px; margin: 25px 0;
+            border: 2px solid #BBDEFB; box-shadow: 0 6px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column;
+        }
+        .canvas-controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; background: #FFF; padding: 10px; border-radius: 8px;}
+        .canvas-controls button {
+            background: var(--tierra-oscura); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+        .canvas-controls button.btn-lluvia { background: var(--azul-lluvia); }
+        .canvas-controls button.btn-sol { background: var(--amarillo-sol); color: var(--tierra-oscura); }
+        
+        canvas { display: block; width: 100%; height: 400px; background: #fff; border-radius: 8px;}
+
+        .svg-container {
+            width: 100%; background: var(--blanco); border: 1px solid #E0E0E0;
+            border-radius: 12px; padding: 20px; margin: 25px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* =========================================
+           EVALUACIÓN Y ANTI-FRAUDE
+           ========================================= */
+        .question-block {
+            margin-bottom: 25px; padding: 20px; background: #F5F5F5;
+            border-radius: 8px; border-left: 5px solid var(--naranja-citrico);
+        }
+        .question-block label { display: block; margin-bottom: 10px; cursor: pointer; }
+        .question-block input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+
+        textarea.anti-fraud {
+            width: 100%; height: 110px; padding: 12px; border: 2px solid #B0BEC5;
+            border-radius: 6px; resize: vertical; font-family: inherit; font-size: 1.05em;
+        }
+        textarea.anti-fraud:focus { border-color: var(--naranja-citrico); outline: none; }
+
+        .alert-fraud {
+            color: var(--blanco); background: var(--rojo-alerta); font-size: 0.9em; font-weight: bold;
+            display: none; margin-top: 8px; padding: 8px; border-radius: 4px; text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         PANTALLA DE INGRESO
+         ========================================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>Jóvenes en Acción II</h1>
+            <p>Laboratorio: Manos a la obra (Adaptación y Mitigación)<br><strong>Vereda Pueblo Rico, Quimbaya (Quindío)</strong></p>
+            <div class="input-group">
+                <label for="inp-apellidos">Apellidos del Líder Juvenil:</label>
+                <input type="text" id="inp-apellidos" placeholder="Tus apellidos" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="inp-nombres">Nombres del Líder Juvenil:</label>
+                <input type="text" id="inp-nombres" placeholder="Tus nombres" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar">Iniciar Implementación</button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         INTERFAZ PRINCIPAL
+         ========================================= -->
+    <div id="main-app">
+        <header>
+            <div class="user-info">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--tierra-oscura)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span id="display-name">Estudiante</span>
+            </div>
+            
+            <div class="stats-area">
+                <div class="unlockables">
+                    <!-- Icono Solución (Engranaje/Hoja) -->
+                    <svg class="icon-unlock" id="icon-mitigacion" viewBox="0 0 24 24"><path d="M19.33,10.18L21.08,8.42L18.73,6.07L17,7.82C15.65,6.72 13.9,6 12,6V3H8.67V6C6.77,6 5.02,6.72 3.67,7.82L1.92,6.07L-0.43,8.42L1.32,10.18C0.5,11.59 0,13.23 0,15H3.33C3.33,10.22 7.22,6.33 12,6.33C16.78,6.33 20.67,10.22 20.67,15H24C24,13.23 23.5,11.59 22.68,10.18M12,9A6,6 0 0,0 6,15H8A4,4 0 0,1 12,11A4,4 0 0,1 16,15H18A6,6 0 0,0 12,9M12,12A3,3 0 0,0 9,15H11A1,1 0 0,1 12,14A1,1 0 0,1 13,15H15A3,3 0 0,0 12,12Z"/></svg>
+                    <!-- Icono Agua/Cosecha -->
+                    <svg class="icon-unlock" id="icon-adaptacion" viewBox="0 0 24 24"><path d="M12,20A6,6 0 0,1 6,14C6,10 12,3.25 12,3.25C12,3.25 18,10 18,14A6,6 0 0,1 12,20Z"/></svg>
+                </div>
+
+                <div class="points-badge">
+                    <span>★</span>
+                    <span id="display-points">0</span> / 5
+                </div>
+                
+                <div class="progress-container-outer">
+                    <div class="progress-label">Implementación</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- 1. OBJETIVO Y PRE-SABERES -->
+            <section id="sec-inicio">
+                <h2>1. Preparando el Terreno en Quimbaya</h2>
+                <p><strong>Objetivo de Aprendizaje (Grado 9):</strong> Diferenciar, diseñar e implementar acciones de mitigación (reducción de emisiones) y adaptación (supervivencia climática) aplicadas a los sistemas productivos de café, cítricos y ganadería en la Vereda Pueblo Rico.</p>
+                <p>El cambio climático ya no es una teoría del futuro, es una realidad que quema los cafetales o inunda los pastos en el Quindío. Evaluemos qué tanto sabes sobre cómo enfrentarlo:</p>
+                
+                <div class="question-block">
+                    <p><strong>Pre-saber 1:</strong> ¿Cuál es la diferencia principal entre Mitigación y Adaptación al cambio climático?</p>
+                    <label><input type="radio" name="pre1" value="a" onchange="saveAnswer('pre1', this.value)"> a) Mitigación es huir de la finca, Adaptación es quedarse a sufrir el calor.</label>
+                    <label><input type="radio" name="pre1" value="b" onchange="saveAnswer('pre1', this.value)"> b) Mitigación ataca las causas (reducir gases de efecto invernadero), mientras que Adaptación es prepararse para sobrevivir a los impactos (como sequías).</label>
+                    <label><input type="radio" name="pre1" value="c" onchange="saveAnswer('pre1', this.value)"> c) Son exactamente la misma palabra científica.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>Pre-saber 2:</strong> ¿Qué es fundamentalmente un Gas de Efecto Invernadero (GEI)?</p>
+                    <label><input type="radio" name="pre2" value="a" onchange="saveAnswer('pre2', this.value)"> a) Un gas que se usa exclusivamente para cultivar tomates en invernaderos plásticos.</label>
+                    <label><input type="radio" name="pre2" value="b" onchange="saveAnswer('pre2', this.value)"> b) Un gas que atrapa el calor del sol en la atmósfera terrestre, calentando el planeta de forma excesiva si se acumula demasiado.</label>
+                    <label><input type="radio" name="pre2" value="c" onchange="saveAnswer('pre2', this.value)"> c) El aire puro que respiran los árboles de cítricos en la noche.</label>
+                </div>
+                <div class="question-block">
+                    <p><strong>Pre-saber 3:</strong> Si en Pueblo Rico ocurre una sequía prolongada extrema, ¿qué le pasa a una planta de café a pleno sol?</p>
+                    <label><input type="radio" name="pre3" value="a" onchange="saveAnswer('pre3', this.value)"> a) Sufre estrés hídrico, sus flores se caen (no hay granos) y la planta puede morir por las altas temperaturas.</label>
+                    <label><input type="radio" name="pre3" value="b" onchange="saveAnswer('pre3', this.value)"> b) Produce granos de café más grandes y dulces porque absorbe más energía del sol.</label>
+                    <label><input type="radio" name="pre3" value="c" onchange="saveAnswer('pre3', this.value)"> c) Sus hojas se vuelven impermeables automáticamente para guardar agua.</label>
+                </div>
+            </section>
+
+            <!-- 2. CUERPO INDUCTIVO -->
+            <section id="sec-inductivo">
+                <h2>2. Mitigación: Cortando el Problema de Raíz</h2>
+                <p>Para salvar el Paisaje Cultural Cafetero, los jóvenes de la <strong>Vereda Pueblo Rico</strong> deben entender que existen dos frentes de batalla. El primero de ellos es la Mitigación. En términos ambientales, <span class="highlight">la mitigación ataca las causas del problema</span>. Consiste en implementar tecnologías o cambios en la agricultura para reducir directamente la cantidad de Gases de Efecto Invernadero (GEI) que la finca emite hacia la atmósfera. Si reducimos la emisión de gases a nivel local, contribuimos a frenar el calentamiento global.</p>
+
+                <p>En el municipio de Quimbaya, uno de los mayores retos de mitigación se encuentra en la ganadería tradicional. Cuando las vacas realizan su proceso de digestión, eructan y defecan grandes cantidades de gas Metano (CH<sub>4</sub>). Este gas es hasta 28 veces más potente que el Dióxido de Carbono (CO<sub>2</sub>) para atrapar calor en la atmósfera. Además, el uso excesivo de fertilizantes químicos en el café y los cítricos libera Óxido Nitroso (N<sub>2</sub>O), otro gas letal para el clima. Es urgente que los jóvenes implementen acciones en las fincas para detener esta fuga de gases.</p>
+
+                <p>Una acción mitigadora revolucionaria y de bajo costo es la construcción de un <strong>Biodigestor</strong>. Este sistema cerrado, parecido a una gran bolsa plástica, captura el estiércol del ganado y de los cerdos de la finca. En su interior, sin oxígeno, bacterias especializadas descomponen el estiércol capturando el Metano (CH<sub>4</sub>). En lugar de que este gas escape y caliente el planeta, el biodigestor lo transforma en "Biogás", el cual el campesino puede usar para encender la estufa de su cocina, reemplazando la leña y el gas propano comprado. ¡Es convertir un problema de contaminación en energía limpia!</p>
+
+                <p>En el sector cafetero, la acción mitigadora por excelencia son las <strong>Biofábricas</strong> comunitarias. Durante la época de cosecha en Pueblo Rico, se generan toneladas de pulpa de café (la cáscara roja del grano). Si esta pulpa se tira a las cañadas o se deja pudrir al sol, emite enormes cantidades de Dióxido de Carbono (CO<sub>2</sub>) y contamina el agua. En las biofábricas, los jóvenes usan lombrices y microorganismos de montaña para compostar esta pulpa, convirtiéndola en abono orgánico. Así, el carbono no se va al aire, sino que regresa al suelo nutriendo los cítricos y los cafetos. Por lo tanto, podemos afirmar científicamente que <span class="highlight">las biofábricas reducen las emisiones de gases</span> en el sector agrícola local.</p>
+
+                <p>Estas acciones no solo salvan el planeta, sino que ahorran dinero. Un caficultor que usa el abono orgánico de su biofábrica ya no tiene que comprar costosos bultos de fertilizantes de síntesis química, reduciendo su huella de carbono y aumentando sus ganancias. La mitigación transforma la agricultura de Quimbaya de ser una víctima del cambio climático, a ser parte de la solución global.</p>
+
+                <h3>Cuadro Comparativo: Mitigación en Pueblo Rico</h3>
+                <table>
+                    <tr>
+                        <th>Proceso Agropecuario</th>
+                        <th>Finca Tradicional (Alta Emisión)</th>
+                        <th>Finca Mitigadora (Jóvenes en Acción)</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Manejo de Estiércol</strong></td>
+                        <td>Se descompone al aire libre emitiendo Metano (CH<sub>4</sub>).</td>
+                        <td>Uso de <strong>Biodigestor</strong>: Transforma el metano en Biogás útil.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pulpa de Café</strong></td>
+                        <td>Se pudre emitiendo Dióxido de Carbono (CO<sub>2</sub>) al aire libre.</td>
+                        <td>Manejo en <strong>Biofábricas</strong>: Retiene el carbono en forma de abono.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fertilización</strong></td>
+                        <td>Químicos sintéticos que liberan Óxido Nitroso (N<sub>2</sub>O).</td>
+                        <td>Abono orgánico local (reduce transporte y químicos).</td>
+                    </tr>
+                </table>
+
+                <!-- ACTIVIDAD 1: ORDENAR LETRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 1: Tecnología Mitigadora</div>
+                    <p>Arrastra las letras para formar el nombre del sistema que captura el estiércol para evitar que el metano escape a la atmósfera (Mencionado en el texto):</p>
+                    <div class="draggable-area" id="drag-area-1"></div>
+                    <div class="drop-area" id="drop-area-1" data-word="BIODIGESTOR" data-type="letters"></div>
+                    <div class="game-status" id="status-game-1"></div>
+                </div>
+
+                <!-- ACTIVIDAD 2: ORDENAR PALABRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 2: El Principio de la Mitigación</div>
+                    <p>Ordena la frase exacta del texto que explica hacia dónde se dirige la mitigación (párrafo 1):</p>
+                    <div class="draggable-area" id="drag-area-2"></div>
+                    <div class="drop-area" id="drop-area-2" data-word="La mitigación ataca las causas del problema" data-type="words"></div>
+                    <div class="game-status" id="status-game-2"></div>
+                </div>
+
+                <!-- PAUSAS ACTIVAS 1-5 -->
+                <div class="pausa-activa">
+                    <h4>Pausas Activas (Análisis en Cuaderno Físico)</h4>
+                    <p>Desarrolla estos retos prácticos. Al terminar, registra tu avance en el botón inferior.</p>
+                    <ul>
+                        <li><strong>1. Química Ambiental:</strong> Escribe en tu cuaderno la fórmula del Metano y del Dióxido de Carbono (según el texto) y dibuja qué proceso agropecuario produce cada uno en Quimbaya.</li>
+                        <li><strong>2. Dibujo Técnico:</strong> Dibuja un esquema básico de cómo funciona un "Biodigestor" (Entrada de estiércol -> Bacterias -> Salida de Biogás a la cocina).</li>
+                        <li><strong>3. Cuadro Comparativo:</strong> Copia el cuadro de "Mitigación en Pueblo Rico" en tu cuaderno.</li>
+                        <li><strong>4. Síntesis Escrita:</strong> Explica en 2 renglones por qué una Biofábrica ayuda a combatir el cambio climático.</li>
+                        <li><strong>5. Reflexión Económica:</strong> ¿Por qué mitigar (ej. usar abono propio) le ahorra dinero al campesino a pesar de que requiere más trabajo inicial?</li>
+                    </ul>
+                    <button class="btn-pausa" id="btn-pausa-1" onclick="togglePausa(1)">Registrar Acciones Completadas</button>
+                </div>
+            </section>
+
+            <!-- 3. PREGUNTA ICFES CON GRÁFICA SVG -->
+            <section id="sec-icfes">
+                <h2>3. Auditoría de Emisiones (Análisis de Datos)</h2>
+                <p>Analiza el siguiente gráfico de barras que compara las emisiones mensuales de Metano (CH<sub>4</sub>) medidas en kilogramos, de dos fincas ganaderas de la Vereda Pueblo Rico que tienen la misma cantidad de vacas. La Finca 1 maneja el estiércol de forma tradicional a la intemperie. La Finca 2 instaló un Biodigestor financiado por un grupo de jóvenes emprendedores.</p>
+                
+                <div class="svg-container">
+                    <svg viewBox="0 0 650 350" width="100%" height="100%">
+                        <!-- Ejes -->
+                        <line x1="60" y1="300" x2="600" y2="300" stroke="#37474F" stroke-width="2"/>
+                        <line x1="60" y1="40" x2="60" y2="300" stroke="#37474F" stroke-width="2"/>
+                        
+                        <!-- Etiquetas Ejes -->
+                        <text x="330" y="340" text-anchor="middle" fill="#37474F" font-weight="bold">Fincas Ganaderas (Pueblo Rico)</text>
+                        <text x="20" y="170" transform="rotate(-90 20,170)" text-anchor="middle" fill="#37474F" font-weight="bold">Emisiones de Metano (kg CH4 / mes)</text>
+                        
+                        <!-- Marcas Eje Y -->
+                        <text x="50" y="305" text-anchor="end" font-size="12">0</text>
+                        <text x="50" y="240" text-anchor="end" font-size="12">100</text>
+                        <text x="50" y="175" text-anchor="end" font-size="12">200</text>
+                        <text x="50" y="110" text-anchor="end" font-size="12">300</text>
+                        <text x="50" y="45" text-anchor="end" font-size="12">400</text>
+
+                        <!-- Líneas guía -->
+                        <line x1="60" y1="240" x2="600" y2="240" stroke="#E0E0E0" stroke-width="1" stroke-dasharray="4,4"/>
+                        <line x1="60" y1="175" x2="600" y2="175" stroke="#E0E0E0" stroke-width="1" stroke-dasharray="4,4"/>
+                        <line x1="60" y1="110" x2="600" y2="110" stroke="#E0E0E0" stroke-width="1" stroke-dasharray="4,4"/>
+                        <line x1="60" y1="45" x2="600" y2="45" stroke="#E0E0E0" stroke-width="1" stroke-dasharray="4,4"/>
+
+                        <!-- Barra 1: Finca Tradicional (Alta emisión: 380kg) -->
+                        <rect x="150" y="58" width="100" height="242" fill="var(--rojo-alerta)" />
+                        <text x="200" y="50" text-anchor="middle" font-weight="bold" fill="var(--rojo-alerta)">380 kg</text>
+                        <text x="200" y="320" text-anchor="middle" font-weight="bold">Finca 1: Tradicional</text>
+
+                        <!-- Barra 2: Finca Biodigestor (Baja emisión, gas capturado: 40kg) -->
+                        <rect x="400" y="274" width="100" height="26" fill="var(--verde-lima)" />
+                        <text x="450" y="265" text-anchor="middle" font-weight="bold" fill="var(--verde-cafeto)">40 kg</text>
+                        <text x="450" y="320" text-anchor="middle" font-weight="bold">Finca 2: Con Biodigestor</text>
+                    </svg>
+                </div>
+
+                <div class="question-block">
+                    <p><strong>Competencia: Indagar e Interpretar Datos (Tipo ICFES)</strong></p>
+                    <p>Basado estrictamente en la gráfica y en la lectura anterior sobre mitigación, ¿cuál es la interpretación correcta de este fenómeno?</p>
+                    <label><input type="radio" name="icfes1" value="a" onchange="saveAnswer('icfes1', this.value)"> a) Las vacas de la Finca 2 dejaron de producir metano internamente porque comen abono orgánico.</label>
+                    <label><input type="radio" name="icfes1" value="b" onchange="saveAnswer('icfes1', this.value)"> b) El Biodigestor de la Finca 2 es una acción mitigadora altamente efectiva, ya que logra capturar casi la totalidad del metano que de otro modo iría a la atmósfera.</label>
+                    <label><input type="radio" name="icfes1" value="c" onchange="saveAnswer('icfes1', this.value)"> c) La Finca 1 contamina menos porque el estiércol al aire libre se evapora y desaparece rápidamente gracias al sol de Quimbaya.</label>
+                    <label><input type="radio" name="icfes1" value="d" onchange="saveAnswer('icfes1', this.value)"> d) El biodigestor aumenta las emisiones de metano en más de un 80%.</label>
+                </div>
+            </section>
+
+            <!-- 4. CUERPO DEDUCTIVO Y ANIMACIÓN -->
+            <section id="sec-deductivo">
+                <h2>4. Adaptación: El Arte de Sobrevivir al Clima</h2>
+                <p>Aunque implementemos todas las acciones de mitigación posibles en Pueblo Rico, el cambio climático ya está aquí. Las temporadas de sequía (Fenómeno de El Niño) son más calientes y prolongadas, y las temporadas de lluvias (Fenómeno de La Niña) son torrenciales y destruyen los suelos. Aquí es donde entra el segundo frente de batalla: La Adaptación. En ciencias ambientales, <span class="highlight">la adaptación nos prepara para los impactos</span>. Son todas las modificaciones en el terreno y en la forma de cultivar que hacemos para que la finca soporte el clima extremo sin quebrar económicamente.</p>
+
+                <p>La estrategia de adaptación más importante para el Quindío es regresar al <strong>Café Bajo Sombra</strong>. Durante los años 90, muchos agricultores talaron todos los árboles para sembrar "café a libre exposición solar" y producir más rápido. Hoy, ese modelo es un desastre frente a El Niño. El sol extremo quema las flores del café, abortando la cosecha. La acción de adaptación de los jóvenes es plantar árboles nativos (como el Nogal Cafetero y Guayacanes) dentro del cafetal. Estos árboles gigantes actúan como una "sombrilla térmica": bajan la temperatura del suelo hasta 4°C en época de calor y protegen a la planta de café del golpe directo del sol.</p>
+
+                <p>Frente a las sequías severas que secan los acueductos veredales, la adaptación exige implementar <strong>Sistemas de Cosecha de Agua de Lluvia</strong>. En lugar de dejar que el agua de lluvia de los techos de las fincas y marquesinas se pierda escurriendo por la tierra, se instalan canaletas que dirigen esa agua hacia grandes tanques de almacenamiento (geomembranas). Cuando llega el verano extremo, el agricultor usa esa agua guardada para regar sus árboles de cítricos y darle de beber al ganado, evitando la muerte de sus animales por deshidratación.</p>
+
+                <p>Por otro lado, para combatir los vendavales repentinos causados por el desequilibrio climático, se implementan las <strong>Barreras Rompevientos</strong>. Se trata de hileras densas de árboles altos plantados estratégicamente en los bordes de la finca. Cuando las tormentas de viento golpean, los árboles frena la velocidad de la ráfaga, evitando que el viento arranque las flores de los cítricos y los frutos inmaduros del café. Esta simple acción de adaptación asegura la cosecha del año.</p>
+
+                <p>Implementar estas estrategias significa generar Resiliencia. Una vereda resiliente no puede detener un huracán o una sequía mundial, pero está diseñada para soportar el golpe y recuperarse rápidamente. Los jóvenes en acción son los arquitectos de esta nueva agricultura adaptada; ellos entienden que luchar contra la naturaleza es una batalla perdida, pero adaptarse a sus nuevas reglas garantiza el futuro del Paisaje Cultural Cafetero.</p>
+
+                <!-- ANIMACIÓN CANVAS (Simulador de Clima y Adaptación) -->
+                <h3>Simulador de Extremos Climáticos</h3>
+                <p>Interactúa con este simulador. A la izquierda, una "Finca Desprotegida" (sin adaptación). A la derecha, una "Finca Resiliente" (con árboles de sombra y tanque de agua). Activa los eventos climáticos extremos y observa el impacto en la salud del cultivo de café.</p>
+                
+                <div class="canvas-wrapper">
+                    <div class="canvas-controls">
+                        <button class="btn-sol" id="btn-sol">Simular Sequía (El Niño)</button>
+                        <button class="btn-lluvia" id="btn-lluvia">Simular Lluvia (La Niña)</button>
+                    </div>
+                    <canvas id="climaCanvas"></canvas>
+                </div>
+
+                <!-- ACTIVIDAD 3: ORDENAR LETRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 3: La Supervivencia Agrícola</div>
+                    <p>Forma la palabra clave del texto que significa prepararse y modificar la finca para soportar los impactos del clima extremo:</p>
+                    <div class="draggable-area" id="drag-area-3"></div>
+                    <div class="drop-area" id="drop-area-3" data-word="ADAPTACION" data-type="letters"></div>
+                    <div class="game-status" id="status-game-3"></div>
+                </div>
+
+                <!-- ACTIVIDAD 4: ORDENAR PALABRAS -->
+                <div class="game-container">
+                    <div class="game-title">Actividad 4: El Propósito de la Adaptación</div>
+                    <p>Ordena la frase exacta del texto deductivo (párrafo 1) que resume la función de este frente de batalla climático:</p>
+                    <div class="draggable-area" id="drag-area-4"></div>
+                    <div class="drop-area" id="drop-area-4" data-word="La adaptación nos prepara para los impactos" data-type="words"></div>
+                    <div class="game-status" id="status-game-4"></div>
+                </div>
+
+                <!-- PAUSAS ACTIVAS 6-10 -->
+                <div class="pausa-activa">
+                    <h4>Pausas Activas (Cuaderno de Diseño y Adaptación)</h4>
+                    <ul>
+                        <li><strong>6. Mapa de la Finca:</strong> Dibuja el croquis de una finca ideal en Pueblo Rico ubicando las "Barreras Rompevientos", el "Café bajo sombra" y la "Cosecha de agua".</li>
+                        <li><strong>7. Cálculo de Adaptación:</strong> Si un techo de 100 metros cuadrados capta 5 litros de agua de lluvia por cada m2 durante una tormenta. ¿Cuántos litros de agua recolectará el tanque de "Cosecha de agua" en esa lluvia?</li>
+                        <li><strong>8. Diferenciación Crítica:</strong> Escribe en una frase clara por qué un Biodigestor es MITIGACIÓN y un Tanque de Agua es ADAPTACIÓN.</li>
+                        <li><strong>9. Problema local:</strong> Entrevista mental a un abuelo cafetero: ¿Qué le pasó al café a "libre exposición solar" (sin sombra) durante el último verano fuerte? Escribe su supuesta respuesta según el texto.</li>
+                        <li><strong>10. Lema Juvenil:</strong> Crea una frase motivacional corta invitando a los campesinos a volver a sembrar árboles nativos (Nogal Cafetero) en sus fincas.</li>
+                    </ul>
+                    <button class="btn-pausa" id="btn-pausa-2" onclick="togglePausa(2)">Registrar Acciones Completadas</button>
+                </div>
+            </section>
+
+            <!-- 5. EVALUACIÓN FINAL -->
+            <section id="sec-evaluacion">
+                <h2>5. Taller de Certificación de Líderes Ambientales</h2>
+                <p>Evalúa tus conocimientos. Recuerda que las áreas de texto poseen un <strong style="color:var(--rojo-alerta);">sistema de auditoría anti-fraude</strong> que anula el proceso si detecta copiar y pegar masivo o uso de bots.</p>
+                
+                <form id="form-evaluacion" onsubmit="event.preventDefault(); finalizarOVA();">
+                    
+                    <h3>A. Conceptos Críticos (Selección Múltiple)</h3>
+                    
+                    <div class="question-block">
+                        <p>1. Según lo leído, la diferencia exacta entre Mitigación y Adaptación es:</p>
+                        <label><input type="radio" name="eval_m1" value="a" required> a) Mitigación ataca las causas reduciendo los gases de efecto invernadero emitidos, mientras que Adaptación es prepararse para sobrevivir a los impactos climáticos extremos que ya están ocurriendo.</label>
+                        <label><input type="radio" name="eval_m1" value="b" required> b) Ambas cosas significan sembrar pasto para las vacas.</label>
+                        <label><input type="radio" name="eval_m1" value="c" required> c) Adaptación es cambiar de país, y mitigación es vender la finca.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>2. ¿Cómo contribuye una "Biofábrica" de abono a la Mitigación del cambio climático?</p>
+                        <label><input type="radio" name="eval_m2" value="a" required> a) Aumentando la temperatura del suelo mediante químicos artificiales.</label>
+                        <label><input type="radio" name="eval_m2" value="b" required> b) Evitando que la pulpa del café se pudra al aire libre y emita Dióxido de Carbono (CO2) a la atmósfera, reteniéndolo como abono.</label>
+                        <label><input type="radio" name="eval_m2" value="c" required> c) Produciendo Metano (CH4) de alta pureza para contaminar el río.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>3. El uso de "Café bajo sombra" (sembrar árboles grandes en el cafetal) es una estrategia de Adaptación frente al Fenómeno de El Niño porque:</p>
+                        <label><input type="radio" name="eval_m3" value="a" required> a) La "sombrilla térmica" de los árboles baja la temperatura del cultivo hasta 4°C, protegiendo las flores y la planta de las quemaduras del sol extremo.</label>
+                        <label><input type="radio" name="eval_m3" value="b" required> b) Los árboles grandes se beben toda el agua y secan el café más rápido.</label>
+                        <label><input type="radio" name="eval_m3" value="c" required> c) Las ramas de los árboles evitan que caiga la lluvia sobre el café durante la sequía.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>4. Un Biodigestor en una finca ganadera soluciona un problema gravísimo porque:</p>
+                        <label><input type="radio" name="eval_m4" value="a" required> a) Genera más estiércol para ensuciar las cañadas.</label>
+                        <label><input type="radio" name="eval_m4" value="b" required> b) Captura el Metano (CH4) altamente contaminante del estiércol animal y lo transforma en Biogás útil para cocinar, evitando que escape a la atmósfera.</label>
+                        <label><input type="radio" name="eval_m4" value="c" required> c) Atrapa el Dióxido de Carbono del aire y lo convierte en agua potable.</label>
+                    </div>
+
+                    <div class="question-block">
+                        <p>5. ¿Cuál es el propósito de las "Barreras Rompevientos" en la agricultura de Pueblo Rico?</p>
+                        <label><input type="radio" name="eval_m5" value="a" required> a) Acelerar el viento para secar la ropa de los campesinos más rápido.</label>
+                        <label><input type="radio" name="eval_m5" value="b" required> b) Frenar la velocidad de las ráfagas de las tormentas, protegiendo los cultivos (como las flores de cítricos y frutos inmaduros) para que el viento no los arranque.</label>
+                        <label><input type="radio" name="eval_m5" value="c" required> c) Producir un muro de ladrillos que tape la vista del paisaje cultural cafetero.</label>
+                    </div>
+
+                    <h3>B. Formulación de Acciones (Preguntas Abiertas)</h3>
+                    <p style="font-size:0.85em; color:#757575;">Digita tus respuestas analíticamente. El sistema monitorea la cadencia humana de escritura. No pegues textos.</p>
+                    
+                    <div class="question-block">
+                        <label>6. Explica con tus propias palabras por qué el gas Metano (CH<sub>4</sub>) de las vacas es peligroso para el planeta si se deja escapar al aire libre (según el texto inductivo).</label>
+                        <textarea id="eval_o1" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o1"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>7. Describe detalladamente cómo funciona la estrategia de adaptación llamada "Cosecha de Agua de Lluvia" y en qué momento extremo le sirve al campesino.</label>
+                        <textarea id="eval_o2" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o2"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>8. Si tuvieras que convencer a un caficultor de que no deje su "café a libre exposición solar", ¿qué argumentos biológicos y climáticos usarías basándote en la lectura?</label>
+                        <textarea id="eval_o3" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o3"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>9. Basado en el gráfico ICFES analizado en la sección 3, ¿por qué los jóvenes que financiaron el Biodigestor lograron una victoria ecológica sobre la finca de ganadería tradicional?</label>
+                        <textarea id="eval_o4" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o4"></div>
+                    </div>
+
+                    <div class="question-block">
+                        <label>10. Conclusión personal: Como joven de la región, nombra 1 acción de Mitigación y 1 acción de Adaptación que te comprometerías a enseñar en tu vereda para proteger el Paisaje Cultural Cafetero.</label>
+                        <textarea id="eval_o5" class="anti-fraud" required></textarea>
+                        <div class="alert-fraud" id="alert-eval_o5"></div>
+                    </div>
+
+                    <button type="submit" class="btn">Procesar Evaluación Final</button>
+                </form>
+            </section>
+
+            <!-- 6. RESULTADOS Y DESCARGA -->
+            <section id="sec-resultados" style="display:none; text-align:center;">
+                <h2>Certificación de Acción Climática</h2>
+                <div id="feedback-content" style="font-size: 1.25em; margin-bottom: 20px; color: var(--cafe-tostado);"></div>
+                <div id="ruta-content" style="text-align: left; background:#FFF8E1; padding: 25px; border-radius:12px; border: 1px solid #FFE0B2;"></div>
+                
+                <button class="btn" id="btn-descargar" onclick="descargarResultados()" style="margin-top: 35px; background-color: var(--verde-cafeto);">
+                    Descargar Expediente de Implementación (.txt)
+                </button>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- =========================================
+         LÓGICA JAVASCRIPT (VANILLA)
+         ========================================= -->
+    <script>
+        // --- 1. ESTADO GLOBAL Y LOCALSTORAGE ---
+        const LOCAL_KEY = 'ova_quimbaya_accion_9_state';
+        let state = {
+            apellidos: '', nombres: '',
+            points: 0, progress: 0, unlocked: [],
+            answers: {}, texts: {}, pausas: [false, false], gamesDone: []
+        };
+
+        // --- 2. INICIALIZACIÓN ---
+        document.addEventListener("DOMContentLoaded", () => {
+            loadState();
+            configurarAntiFraude();
+            initDragAndDrop();
+            initClimaCanvas(); // Iniciar simulacion 60fps
+        });
+
+        document.getElementById('btn-iniciar').addEventListener('click', () => {
+            const apellidos = document.getElementById('inp-apellidos').value.trim();
+            const nombres = document.getElementById('inp-nombres').value.trim();
+            
+            if(apellidos === '' || nombres === '') {
+                alert("Por favor, registra tus Nombres y Apellidos para la certificación.");
+                return;
+            }
+            state.apellidos = apellidos; state.nombres = nombres;
+            saveState(); mostrarApp();
+        });
+
+        function loadState() {
+            const saved = localStorage.getItem(LOCAL_KEY);
+            if(saved) {
+                state = JSON.parse(saved);
+                if(state.nombres !== '') mostrarApp();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(state));
+            updateUI();
+        }
+
+        function mostrarApp() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                restaurarDOM(); updateUI();
+            }, 600);
+        }
+
+        function updateUI() {
+            document.getElementById('display-name').textContent = `${state.nombres} ${state.apellidos}`;
+            document.getElementById('display-points').textContent = state.points;
+            
+            // Calculo de progreso (4 juegos + 2 pausas + 4 forms (pre1,2,3,icfes)) = 10 ítems
+            let items = state.gamesDone.length + state.pausas.filter(p=>p).length + Object.keys(state.answers).length;
+            let percent = Math.min((items / 10) * 100, 100);
+            document.getElementById('progress-bar').style.width = percent + '%';
+
+            // Unlocks por puntos
+            if(state.points >= 2 && !state.unlocked.includes('mitigacion')) state.unlocked.push('mitigacion');
+            if(state.points >= 4 && !state.unlocked.includes('adaptacion')) state.unlocked.push('adaptacion');
+
+            if(state.unlocked.includes('mitigacion')) document.getElementById('icon-mitigacion').classList.add('unlocked');
+            if(state.unlocked.includes('adaptacion')) document.getElementById('icon-adaptacion').classList.add('unlocked');
+        }
+
+        function restaurarDOM() {
+            for(let key in state.answers) {
+                let radio = document.querySelector(`input[name="${key}"][value="${state.answers[key]}"]`);
+                if(radio) radio.checked = true;
+            }
+            for(let key in state.texts) {
+                let t = document.getElementById(key);
+                if(t) t.value = state.texts[key];
+            }
+            if(state.pausas[0]) {
+                let b = document.getElementById('btn-pausa-1');
+                b.classList.add('done'); b.textContent = "Acciones Registradas ✓";
+            }
+            if(state.pausas[1]) {
+                let b = document.getElementById('btn-pausa-2');
+                b.classList.add('done'); b.textContent = "Acciones Registradas ✓";
+            }
+            state.gamesDone.forEach(gId => {
+                let st = document.getElementById(`status-game-${gId}`);
+                if(st) st.textContent = "¡Implementación Correcta! (+1 Punto ★)";
+                let dropArea = document.getElementById(`drop-area-${gId}`);
+                if(dropArea) dropArea.style.pointerEvents = 'none';
+            });
+        }
+
+        function saveAnswer(key, val) {
+            state.answers[key] = val; saveState();
+        }
+
+        function togglePausa(index) {
+            let i = index - 1;
+            if(!state.pausas[i]) {
+                state.pausas[i] = true;
+                let b = document.getElementById(`btn-pausa-${index}`);
+                b.classList.add('done'); b.textContent = "Acciones Registradas ✓";
+                saveState();
+            }
+        }
+
+        // --- 3. SISTEMA ANTI-FRAUDE ---
+        function configurarAntiFraude() {
+            const textareas = document.querySelectorAll('.anti-fraud');
+            textareas.forEach(ta => {
+                ta.addEventListener('paste', e => { e.preventDefault(); alertFraud(ta, "Auditoría: Pegar texto bloqueado. Construye tus propias ideas."); });
+                ta.addEventListener('drop', e => { e.preventDefault(); alertFraud(ta, "Auditoría: Arrastrar texto externo bloqueado."); });
+                ta.addEventListener('contextmenu', e => e.preventDefault());
+
+                let keyTimes = [];
+                ta.addEventListener('keydown', e => {
+                    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'v')) {
+                        e.preventDefault(); alertFraud(ta, "Atajos de copia bloqueados."); return;
+                    }
+                    if(e.key.length > 1) return; // Ignorar Shift, Alt, Enter, etc
+                    
+                    const now = Date.now();
+                    keyTimes.push(now);
+                    if(keyTimes.length > 8) keyTimes.shift();
+
+                    if(keyTimes.length === 8) {
+                        let totalDiff = 0;
+                        for(let i=1; i<keyTimes.length; i++){ totalDiff += (keyTimes[i] - keyTimes[i-1]); }
+                        let avg = totalDiff / 7;
+                        
+                        // IA / Bots pegan texto entero en menos de 30ms promedio por tecla. Humanos son más lentos.
+                        if(avg < 30) {
+                            ta.value = ""; keyTimes = [];
+                            alertFraud(ta, "¡INFRACCIÓN DE AUTORÍA! Velocidad de tipeo inhumana (Uso de scripts/IA detectado). Texto vaciado.");
+                            e.preventDefault();
+                        }
+                    }
+                });
+
+                ta.addEventListener('input', () => { state.texts[ta.id] = ta.value; saveState(); });
+            });
+        }
+
+        function alertFraud(element, msg) {
+            let alertBox = document.getElementById('alert-' + element.id);
+            alertBox.textContent = msg; alertBox.style.display = 'block';
+            setTimeout(() => { alertBox.style.display = 'none'; }, 4500);
+        }
+
+        // --- 4. SISTEMA DRAG & DROP ---
+        function initDragAndDrop() {
+            const games = [
+                {id: 1, type: 'letters', word: 'BIODIGESTOR'},
+                {id: 2, type: 'words', word: 'La mitigación ataca las causas del problema'},
+                {id: 3, type: 'letters', word: 'ADAPTACION'},
+                {id: 4, type: 'words', word: 'La adaptación nos prepara para los impactos'}
+            ];
+
+            games.forEach(game => {
+                if(state.gamesDone.includes(game.id)) return;
+
+                let items = [];
+                if(game.type === 'letters') items = game.word.split('');
+                if(game.type === 'words') items = game.word.split(' ');
+                
+                let shuffled = [...items].sort(() => Math.random() - 0.5);
+
+                const dragArea = document.getElementById(`drag-area-${game.id}`);
+                const dropArea = document.getElementById(`drop-area-${game.id}`);
+
+                shuffled.forEach((item, index) => {
+                    let div = document.createElement('div');
+                    div.className = `drag-item ${game.type === 'letters' ? 'letter' : ''}`;
+                    div.draggable = true; div.id = `drag-${game.id}-${index}`;
+                    div.textContent = item; div.dataset.val = item;
+                    div.addEventListener('dragstart', dragStart);
+                    dragArea.appendChild(div);
+                });
+
+                items.forEach((item) => {
+                    let slot = document.createElement('div');
+                    slot.className = `drop-slot ${game.type === 'letters' ? 'letter-slot' : ''}`;
+                    slot.dataset.targetId = game.id;
+                    slot.addEventListener('dragover', dragOver);
+                    slot.addEventListener('dragenter', dragEnter);
+                    slot.addEventListener('dragleave', dragLeave);
+                    slot.addEventListener('drop', dropEvent);
+                    dropArea.appendChild(slot);
+                });
+            });
+        }
+
+        let draggedElement = null;
+        function dragStart(e) { draggedElement = e.target; e.dataTransfer.effectAllowed = 'move'; }
+        function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+        function dragEnter(e) { e.preventDefault(); this.classList.add('hovered'); }
+        function dragLeave(e) { this.classList.remove('hovered'); }
+
+        function dropEvent(e) {
+            e.preventDefault(); this.classList.remove('hovered');
+            if(this.children.length > 0) {
+                let oldChild = this.children[0];
+                let gameId = this.dataset.targetId;
+                document.getElementById(`drag-area-${gameId}`).appendChild(oldChild);
+            }
+            this.appendChild(draggedElement);
+            checkGameCompletion(this.dataset.targetId);
+        }
+
+        function checkGameCompletion(gameId) {
+            const dropArea = document.getElementById(`drop-area-${gameId}`);
+            const slots = dropArea.querySelectorAll('.drop-slot');
+            const targetWord = dropArea.dataset.word;
+            const type = dropArea.dataset.type;
+            
+            let currentStr = ''; let allFilled = true;
+
+            slots.forEach(slot => {
+                if(slot.children.length === 0) allFilled = false;
+                else currentStr += slot.children[0].dataset.val + (type==='words' ? ' ' : '');
+            });
+
+            currentStr = currentStr.trim();
+
+            if(allFilled) {
+                if(currentStr === targetWord) {
+                    document.getElementById(`status-game-${gameId}`).textContent = "¡Implementación Correcta! (+1 Punto ★)";
+                    document.getElementById(`status-game-${gameId}`).style.color = "var(--verde-cafeto)";
+                    dropArea.style.pointerEvents = 'none';
+                    state.points += 1; state.gamesDone.push(parseInt(gameId)); saveState();
+                } else {
+                    document.getElementById(`status-game-${gameId}`).textContent = "Diseño erróneo. Revisa la lógica climática.";
+                }
+            }
+        }
+
+        // --- 5. ANIMACIÓN HTML5 CANVAS (Simulador Climático y Adaptación) ---
+        function initClimaCanvas() {
+            const canvas = document.getElementById('climaCanvas');
+            const ctx = canvas.getContext('2d');
+            let bounds = canvas.parentElement.getBoundingClientRect();
+            
+            function resize() {
+                bounds = canvas.parentElement.getBoundingClientRect();
+                canvas.width = bounds.width; 
+                canvas.height = 400;
+            }
+            window.addEventListener('resize', resize); resize();
+
+            // Estados del Clima
+            let clima = "NORMAL"; // NORMAL, SOL (Sequía), LLUVIA (Inundación)
+            let intensidad = 0; // 0 a 100 de impacto
+
+            document.getElementById('btn-sol').addEventListener('click', function() {
+                clima = "SOL"; intensidad = 0; // Inicia impacto
+            });
+            document.getElementById('btn-lluvia').addEventListener('click', function() {
+                clima = "LLUVIA"; intensidad = 0;
+            });
+
+            // Objetos de la simulación
+            class Finca {
+                constructor(x, width, tieneAdaptacion) {
+                    this.x = x; this.width = width;
+                    this.tieneAdaptacion = tieneAdaptacion;
+                    this.saludCafe = 100; // 0 a 100
+                    this.aguaTanque = 0; // 0 a 100 (solo para adaptada)
+                }
+                
+                update() {
+                    // Recuperación lenta si clima es NORMAL
+                    if(clima === "NORMAL") {
+                        if(this.saludCafe < 100) this.saludCafe += 0.5;
+                        return;
+                    }
+
+                    // Daño por Clima
+                    if(clima === "SOL") {
+                        if(this.tieneAdaptacion) {
+                            this.saludCafe -= 0.05; // Sombra protege, pierde poca salud
+                            // Si hay agua en tanque, se usa para regar y salvar la planta
+                            if(this.aguaTanque > 0 && this.saludCafe < 80) {
+                                this.aguaTanque -= 0.5;
+                                this.saludCafe += 0.4;
+                            }
+                        } else {
+                            this.saludCafe -= 0.3; // Se quema rápido sin sombra
+                        }
+                    } else if (clima === "LLUVIA") {
+                        if(this.tieneAdaptacion) {
+                            this.saludCafe -= 0.02; // El suelo y barreras frenan daño
+                            if(this.aguaTanque < 100) this.aguaTanque += 0.8; // Cosecha agua
+                        } else {
+                            this.saludCafe -= 0.25; // Suelo lavado, raíces podridas
+                        }
+                    }
+                    if(this.saludCafe < 0) this.saludCafe = 0;
+                    if(this.saludCafe > 100) this.saludCafe = 100;
+                }
+
+                draw(ctx) {
+                    // Suelo
+                    let colorSuelo = '#8D6E63'; // Tierra normal
+                    if(clima === "SOL" && this.saludCafe < 50) colorSuelo = '#D7CCC8'; // Polvo seco
+                    if(clima === "LLUVIA" && !this.tieneAdaptacion && intensidad > 50) colorSuelo = '#5D4037'; // Barro inundado
+                    ctx.fillStyle = colorSuelo;
+                    ctx.fillRect(this.x, 300, this.width, 100);
+
+                    // Planta de Café Central
+                    let cX = this.x + this.width/2;
+                    let cY = 300;
+                    
+                    // Tallo
+                    ctx.fillStyle = '#4E342E'; ctx.fillRect(cX-4, cY-60, 8, 60);
+                    
+                    // Hojas color según salud
+                    let r = 46, g = 125, b = 50; // Verde
+                    if(this.saludCafe < 60) { r=175; g=180; b=43; } // Verde amarillento
+                    if(this.saludCafe < 30) { r=245; g=127; b=23; } // Amarillo quemado/podrido
+                    if(this.saludCafe === 0) { r=121; g=85; b=72; } // Café muerto
+                    
+                    ctx.fillStyle = `rgb(${r},${g},${b})`;
+                    ctx.beginPath(); ctx.arc(cX, cY-70, 30, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(cX-20, cY-50, 20, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(cX+20, cY-50, 20, 0, Math.PI*2); ctx.fill();
+
+                    // Frutos rojos solo si salud > 70
+                    if(this.saludCafe > 70) {
+                        ctx.fillStyle = '#D32F2F';
+                        ctx.beginPath(); ctx.arc(cX, cY-70, 5, 0, Math.PI*2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(cX-15, cY-55, 5, 0, Math.PI*2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(cX+15, cY-55, 5, 0, Math.PI*2); ctx.fill();
+                    }
+
+                    // ADAPTACIONES DIBUJADAS
+                    if(this.tieneAdaptacion) {
+                        // Árbol de Sombra (Nogal Cafetero) gigante al fondo
+                        ctx.fillStyle = '#3E2723'; ctx.fillRect(this.x + 20, 180, 15, 120);
+                        ctx.fillStyle = 'rgba(27, 94, 32, 0.85)'; // Sombra verde oscura
+                        ctx.beginPath(); ctx.arc(this.x + 25, 150, 80, 0, Math.PI*2); ctx.fill();
+
+                        // Tanque Cosecha de Agua de Lluvia
+                        ctx.fillStyle = '#78909C'; // Metal/Plástico
+                        ctx.fillRect(this.x + this.width - 60, 240, 40, 60);
+                        // Nivel del agua en tanque
+                        ctx.fillStyle = '#29B6F6';
+                        let altoAgua = (this.aguaTanque / 100) * 56;
+                        ctx.fillRect(this.x + this.width - 58, 298 - altoAgua, 36, altoAgua);
+                        ctx.fillStyle = '#FFF'; ctx.font="10px Arial";
+                        ctx.fillText("Agua", this.x + this.width - 40, 290);
+                    }
+
+                    // Barras de Salud UI
+                    ctx.fillStyle = '#37474F'; ctx.font = "bold 14px Arial"; ctx.textAlign="center";
+                    ctx.fillText(`Salud Cultivo: ${Math.round(this.saludCafe)}%`, cX, 80);
+                    ctx.fillStyle = '#CFD8DC'; ctx.fillRect(cX-50, 90, 100, 10);
+                    ctx.fillStyle = this.saludCafe > 50 ? '#4CAF50' : (this.saludCafe > 20 ? '#FFEB3B' : '#F44336');
+                    ctx.fillRect(cX-50, 90, this.saludCafe, 10);
+                }
+            }
+
+            let fincaTradicional = new Finca(0, canvas.width/2, false);
+            let fincaResiliente = new Finca(canvas.width/2, canvas.width/2, true);
+            
+            // Partículas de lluvia
+            let gotas = [];
+            for(let i=0; i<100; i++) {
+                gotas.push({ x: Math.random()*canvas.width, y: Math.random()*400, vy: 10 + Math.random()*10 });
+            }
+
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if(clima !== "NORMAL") {
+                    intensidad += 0.2;
+                    if(intensidad > 100) { clima = "NORMAL"; intensidad = 0; } // Pasa la tormenta/sequía
+                }
+
+                // DIBUJAR FONDO Y CLIMA
+                if(clima === "NORMAL") {
+                    ctx.fillStyle = '#E1F5FE'; ctx.fillRect(0,0,canvas.width,300); // Cielo claro
+                } else if (clima === "SOL") {
+                    // Cielo rojo/naranja ardiente
+                    ctx.fillStyle = `rgb(255, ${235 - intensidad}, ${150 - intensidad})`; ctx.fillRect(0,0,canvas.width,300);
+                    // Sol gigante
+                    ctx.fillStyle = 'rgba(255, 193, 7, 0.8)';
+                    ctx.beginPath(); ctx.arc(canvas.width/2, 100, 50 + (intensidad/2), 0, Math.PI*2); ctx.fill();
+                } else if (clima === "LLUVIA") {
+                    ctx.fillStyle = '#90A4AE'; ctx.fillRect(0,0,canvas.width,300); // Cielo gris oscuro
+                    // Animación de gotas
+                    ctx.fillStyle = '#0288D1';
+                    gotas.forEach(g => {
+                        ctx.fillRect(g.x, g.y, 2, 10);
+                        g.y += g.vy;
+                        if(g.y > 400) { g.y = -10; g.x = Math.random()*canvas.width; }
+                    });
+                }
+
+                // Separador Central
+                ctx.strokeStyle = '#37474F'; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height); ctx.stroke();
+
+                // Textos Titulares
+                ctx.fillStyle = '#37474F'; ctx.font = "bold 18px Arial"; ctx.textAlign="center";
+                ctx.fillText("Finca Desprotegida", canvas.width*0.25, 30);
+                ctx.fillText("Finca Resiliente (Adaptada)", canvas.width*0.75, 30);
+
+                // Actualizar y dibujar fincas
+                fincaTradicional.update();
+                fincaResiliente.update();
+                
+                fincaTradicional.draw(ctx);
+                fincaResiliente.draw(ctx);
+
+                // UI Clima Estado
+                if(clima !== "NORMAL") {
+                    ctx.fillStyle = clima === "SOL" ? '#E65100' : '#01579B';
+                    ctx.font = "bold 20px Arial"; ctx.textAlign="center";
+                    ctx.fillText(`Carga Climática: ${clima} (${Math.round(intensidad)}%)`, canvas.width/2, 60);
+                }
+
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        // --- 6. EVALUACIÓN Y CIERRE ---
+        function finalizarOVA() {
+            let m1 = document.querySelector('input[name="eval_m1"]:checked');
+            let m2 = document.querySelector('input[name="eval_m2"]:checked');
+            let m3 = document.querySelector('input[name="eval_m3"]:checked');
+            let m4 = document.querySelector('input[name="eval_m4"]:checked');
+            let m5 = document.querySelector('input[name="eval_m5"]:checked');
+
+            if(!m1 || !m2 || !m3 || !m4 || !m5) {
+                alert("Debe completar todo el bloque de selección múltiple para emitir su certificación."); return;
+            }
+
+            // Calificación (Respuestas correctas: a, b, a, b, b)
+            let correctas = 0;
+            if(m1.value === 'a') correctas++;
+            if(m2.value === 'b') correctas++;
+            if(m3.value === 'a') correctas++;
+            if(m4.value === 'b') correctas++;
+            if(m5.value === 'b') correctas++;
+
+            let notaFinal = (correctas / 5) * 5.0;
+
+            document.getElementById('form-evaluacion').style.display = 'none';
+            document.getElementById('sec-resultados').style.display = 'block';
+
+            let feed = document.getElementById('feedback-content');
+            let ruta = document.getElementById('ruta-content');
+
+            feed.innerHTML = `<strong>Calificación del Plan de Acción:</strong> ${notaFinal.toFixed(1)} / 5.0<br>
+                              <strong>Insignias de Desempeño:</strong> ${state.points} / 5<br>`;
+
+            let sugerencias = "<h3>Ruta de Fortalecimiento Climático:</h3><ul>";
+            if(notaFinal === 5.0) {
+                sugerencias += "<li>¡Excelencia Absoluta! Tienes las bases conceptuales para transformar la agricultura del Quindío. Entiendes que para sobrevivir al futuro hay que mitigar la raíz y adaptarse al entorno. Eres un líder de verdad.</li>";
+            } else {
+                if(m1.value !== 'a') sugerencias += "<li><strong>Concepto Clave:</strong> Repasa la introducción. Mitigar es reducir los gases (causas). Adaptar es prepararse para el impacto (consecuencias).</li>";
+                if(m2.value !== 'b') sugerencias += "<li><strong>Mitigación Café:</strong> La biofábrica retiene el CO2 en la tierra evitando que la pulpa lo libere al aire (Sección 2).</li>";
+                if(m3.value !== 'a') sugerencias += "<li><strong>Adaptación Café:</strong> Los árboles nativos en el cafetal bajan el calor 4°C y protegen del sol asesino durante El Niño (Sección 4).</li>";
+                if(m4.value !== 'b') sugerencias += "<li><strong>Mitigación Ganadería:</strong> El Biodigestor encierra y atrapa el Metano del estiércol para convertirlo en Biogás, no en más contaminación (Sección 2).</li>";
+                if(m5.value !== 'b') sugerencias += "<li><strong>Adaptación Vientos:</strong> Las barreras rompevientos son un escudo de árboles que frena el ventarrón para salvar las flores (Sección 4).</li>";
+            }
+            sugerencias += "</ul>";
+            ruta.innerHTML = sugerencias;
+
+            state.notaFinal = notaFinal; saveState();
+        }
+
+        function descargarResultados() {
+            let o1 = document.getElementById('eval_o1').value.replace(/\n/g, ' ');
+            let o2 = document.getElementById('eval_o2').value.replace(/\n/g, ' ');
+            let o3 = document.getElementById('eval_o3').value.replace(/\n/g, ' ');
+            let o4 = document.getElementById('eval_o4').value.replace(/\n/g, ' ');
+            let o5 = document.getElementById('eval_o5').value.replace(/\n/g, ' ');
+
+            let content = `================================================
+EXPEDIENTE DE IMPLEMENTACIÓN - GRADO 9
+OVA: Jóvenes en Acción II - Manos a la obra
+Territorio: Vereda Pueblo Rico, Quimbaya (Quindío)
+================================================
+Líder Juvenil Titular: ${state.nombres} ${state.apellidos}
+Fecha del Reporte: ${new Date().toLocaleDateString()}
+------------------------------------------------
+GAMIFICACIÓN Y LOGROS:
+Insignias de Intervención: ${state.points} / 5
+------------------------------------------------
+EVALUACIÓN DE CONCEPTOS CRÍTICOS: ${state.notaFinal} / 5.0
+------------------------------------------------
+ACCIONES DE MITIGACIÓN Y ADAPTACIÓN (Auditoría Anti-Fraude Superada):
+P6 (Peligro del Metano Ganadero): ${o1}
+P7 (Estrategia Cosecha de Agua): ${o2}
+P8 (Defensa del Café bajo Sombra): ${o3}
+P9 (Auditoría Biodigestor vs Tradicional): ${o4}
+P10 (Compromiso de Acción Veredal): ${o5}
+================================================
+* Documento electrónico expedido localmente. Válido para planes de acción ambiental en el Paisaje Cultural Cafetero. *`;
+
+            let blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement("a");
+            a.href = url;
+            a.download = `AccionClimatica_${state.apellidos}_${state.nombres}.txt`;
+            document.body.appendChild(a);
+            a.click(); document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+</html>

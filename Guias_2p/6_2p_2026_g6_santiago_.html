@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión: El Hospital Agrícola - SOS Celular</title>
+    <style>
+        :root {
+            --bg-dark: #020617;
+            --panel-bg: #1e293b;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-bright: #f8fafc;
+            --text-dim: #94a3b8;
+            --gold: #fbbf24;
+            --silver: #cbd5e1;
+            --iron: #b45309;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-bright);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: linear-gradient(90deg, #0f172a, #1e293b);
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .container {
+            flex: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            width: 100%;
+        }
+
+        /* Barra de Progreso */
+        .progress-container {
+            width: 100%;
+            background: #334155;
+            height: 14px;
+            border-radius: 7px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            display: none;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Paneles de Misión */
+        .mission-panel {
+            display: none;
+            background: var(--panel-bg);
+            border-radius: 16px;
+            padding: 2.5rem;
+            border: 2px solid #334155;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.4s ease-out;
+        }
+        .mission-panel.active { display: block; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tipografía y Elementos Visuales */
+        h2 { color: var(--primary); text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 1px; }
+        p { line-height: 1.6; font-size: 1.15rem; margin-bottom: 1.2rem; }
+        .badge { background: #334155; padding: 0.4rem 1rem; border-radius: 50px; font-weight: bold; font-size: 0.9rem; margin-bottom: 1rem; display: inline-block; }
+        .highlight { color: var(--primary); font-weight: bold; }
+
+        /* Botones Adaptados */
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            font-size: 1.2rem;
+            font-weight: 800;
+            border-radius: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 4px 0px #1d4ed8;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 0px #1d4ed8; }
+        button:active { transform: translateY(2px); box-shadow: 0 0px 0px #1d4ed8; }
+        button:disabled { background: #475569; box-shadow: none; cursor: not-allowed; opacity: 0.6; }
+        .btn-success { background: var(--success); box-shadow: 0 4px 0px #065f46; }
+        .btn-success:hover { background: #059669; box-shadow: 0 6px 0px #065f46; }
+
+        /* Misión 2 - Checklist */
+        .checklist-container { margin-top: 2rem; }
+        .checklist-item {
+            background: #0f172a;
+            border: 2px solid #334155;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .checklist-item.checked { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        .check-circle { width: 35px; height: 35px; border: 3px solid #64748b; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .checked .check-circle { background: var(--success); border-color: var(--success); }
+        .check-circle::after { content: "✓"; color: white; display: none; font-weight: bold; }
+        .checked .check-circle::after { display: block; }
+
+        /* Temporizador */
+        .timer-box {
+            background: #020617;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid var(--warning);
+            margin: 1.5rem 0;
+        }
+        .timer-val { font-family: monospace; font-size: 3.5rem; color: var(--warning); font-weight: bold; }
+
+        /* Misión 3 - Pausa */
+        .breathe-widget {
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--success), transparent);
+            margin: 3rem auto;
+            animation: breathe 8s infinite ease-in-out;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.2rem;
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(0.8); opacity: 0.4; }
+            50% { transform: scale(1.4); opacity: 1; }
+        }
+
+        /* Misión 4 - Quiz */
+        .quiz-option {
+            background: #0f172a;
+            border: 2px solid #334155;
+            padding: 1.2rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1.1rem;
+        }
+        .quiz-option:hover { border-color: var(--primary); }
+        .quiz-option.correct { border-color: var(--success); background: rgba(16, 185, 129, 0.2); }
+        .quiz-option.incorrect { border-color: var(--danger); background: rgba(239, 68, 68, 0.2); }
+
+        /* Podio */
+        .element-medal {
+            width: 220px; height: 260px;
+            border: 6px solid;
+            margin: 2rem auto;
+            border-radius: 15px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: #020617;
+        }
+        .medal-au { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 30px rgba(251, 191, 36, 0.3); }
+        .medal-ag { border-color: var(--silver); color: var(--silver); box-shadow: 0 0 30px rgba(203, 213, 225, 0.3); }
+        .medal-fe { border-color: var(--iron); color: var(--iron); box-shadow: 0 0 30px rgba(180, 83, 9, 0.3); }
+        .medal-sym { font-size: 5rem; font-weight: 900; }
+        .medal-name { font-size: 1.5rem; text-transform: uppercase; font-weight: bold; }
+
+        /* Modal Restaurar */
+        #restoreModal {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.9); z-index: 1000;
+            display: none; align-items: center; justify-content: center;
+        }
+        .modal-box { background: var(--panel-bg); padding: 3rem; border-radius: 20px; text-align: center; border: 2px solid var(--primary); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="mainTitle">Hospital Agrícola: SOS Celular</h1>
+        <div class="progress-container" id="progCont">
+            <div class="progress-bar" id="progBar"></div>
+        </div>
+    </header>
+
+    <div id="restoreModal">
+        <div class="modal-box">
+            <h2>¡Sistemas Restaurados!</h2>
+            <p>Hola <span id="resName" class="highlight"></span>, detectamos una sesión previa en la <span id="resMission" class="highlight"></span>.</p>
+            <div style="display:flex; gap:1rem; justify-content:center; margin-top:2rem;">
+                <button onclick="app.resume()" class="btn-success">Continuar</button>
+                <button onclick="app.reset()" style="background:var(--danger)">Reiniciar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <!-- Misión 0: Login -->
+        <section id="mission-0" class="mission-panel active">
+            <h2>Identificación de Operador</h2>
+            <p>Bienvenido al Hospital Agrícola. Para iniciar el diagnóstico de las organelas y salvar la cosecha de la selva, ingresa tu código de mando.</p>
+            <input type="text" id="userName" placeholder="Ingresa tu nombre aquí..." style="width:100%; padding:1.2rem; border-radius:10px; border:none; margin-bottom:1.5rem; font-size:1.2rem;">
+            <button onclick="app.start()" style="width:100%">Iniciar Protocolo de Diagnóstico</button>
+        </section>
+
+        <!-- Misión 1: El Despegue -->
+        <section id="mission-1" class="mission-panel">
+            <div class="badge">Misión 1: Teoría de Fallas</div>
+            <h2>El Hospital de la Selva</h2>
+            <p>Comandante <span class="uName highlight"></span>, imagina que eres el jefe mecánico de una expedición en la selva profunda. Tienes a cargo una flota de tractores (plantas) que están fallando.</p>
+            <p>En una célula, cada pieza es como un componente de un motor de alto cilindraje:</p>
+            <ul style="list-style:none; margin:1.5rem 0;">
+                <li style="margin-bottom:1rem; padding:1rem; background:#0f172a; border-radius:8px;">
+                    🚀 <span class="highlight">Falla en Mitocondrias:</span> El tractor se queda sin combustible. No hay energía para avanzar.
+                </li>
+                <li style="margin-bottom:1rem; padding:1rem; background:#0f172a; border-radius:8px;">
+                    🛡️ <span class="highlight">Falla en Membrana:</span> La carrocería tiene huecos. Entra basura y salen piezas importantes.
+                </li>
+                <li style="margin-bottom:1rem; padding:1rem; background:#0f172a; border-radius:8px;">
+                    📦 <span class="highlight">Falla en Ribosomas:</span> No hay repuestos. La fábrica de proteínas se detuvo.
+                </li>
+            </ul>
+            <p>Si una organela falla, la planta se marchita como un motor fundido. ¡Debemos aprender a reparar el sistema!</p>
+            <button onclick="app.goTo(2)" class="btn-success">Ir al Taller de Reparación →</button>
+        </section>
+
+        <!-- Misión 2: El Taller (CUADERNO) -->
+        <section id="mission-2" class="mission-panel">
+            <div class="badge">Misión 2: Ingeniería en Cuaderno (75 min)</div>
+            <h2>Taller de Diagnóstico Crítico</h2>
+            <p>Apaga la pantalla momentáneamente, <span class="uName"></span>. El trabajo real de ingeniería ocurre en los planos físicos. Completa estos retos en tu cuaderno:</p>
+            
+            <div class="timer-box">
+                <div class="timer-val" id="timerM2">75:00</div>
+                <p style="color:var(--text-dim); font-size:0.9rem; margin-top:0.5rem;">Tiempo Restante de Operación</p>
+            </div>
+
+            <div class="checklist-container">
+                <div class="checklist-item" id="c0" onclick="app.toggleCheck(0)">
+                    <div class="check-circle"></div>
+                    <div>
+                        <p style="font-weight:bold; margin:0;">SUB-RETO A: Manual de Fallas (Escritura)</p>
+                        <p style="font-size:0.9rem; margin:0; color:var(--text-dim);">Escribe en tu cuaderno: "¿Qué sucede si una célula pierde su mitocondria?". Usa la analogía de la moto sin gasolina.</p>
+                    </div>
+                </div>
+
+                <div class="checklist-item" id="c1" onclick="app.toggleCheck(1)">
+                    <div class="check-circle"></div>
+                    <div>
+                        <p style="font-weight:bold; margin:0;">SUB-RETO B: Planos de Emergencia (Dibujo)</p>
+                        <p style="font-size:0.9rem; margin:0; color:var(--text-dim);">Dibuja una planta marchita (enferma) y una planta sana. Señala con flechas qué organela crees que falló en la planta enferma.</p>
+                    </div>
+                </div>
+
+                <div class="checklist-item" id="c2" onclick="app.toggleCheck(2)">
+                    <div class="check-circle"></div>
+                    <div>
+                        <p style="font-weight:bold; margin:0;">SUB-RETO C: Caso Clínico (Análisis)</p>
+                        <p style="font-size:0.9rem; margin:0; color:var(--text-dim);">Inventa un caso: "La semilla que no quería despertar". Explica qué parte de la célula falló para que no creciera.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btnM2" onclick="app.goTo(3)" disabled style="width:100%; margin-top:2rem;">Reportar Taller Completado</button>
+        </section>
+
+        <!-- Misión 3: Pit Stop -->
+        <section id="mission-3" class="mission-panel">
+            <div class="badge">Misión 3: Recarga de Oxígeno (15 min)</div>
+            <h2>Modo Hibernación: Enfriando el Motor</h2>
+            <p style="text-align:center;">Excelente esfuerzo físico. Tu cerebro ha consumido mucha glucosa. Vamos a oxigenar las mitocondrias de tus neuronas.</p>
+            <div class="timer-box" style="border-color:var(--success)">
+                <div class="timer-val" id="timerM3" style="color:var(--success)">15:00</div>
+            </div>
+            <div class="breathe-widget">Inhala</div>
+            <p style="text-align:center; color:var(--text-dim);">Sigue el ritmo del círculo para estabilizar tus sistemas celulares.</p>
+            <button onclick="app.goTo(4)" style="background:none; border:2px solid var(--primary); width:100%;">Omitir y volver al trabajo</button>
+        </section>
+
+        <!-- Misión 4: Prueba de Pista -->
+        <section id="mission-4" class="mission-panel">
+            <div class="badge">Misión 4: Diagnóstico Final</div>
+            <h2>Simulador de Diagnóstico</h2>
+            <p>Resuelve los siguientes casos para obtener tu licencia de Ingeniero Biológico.</p>
+            
+            <div id="quizArea"></div>
+            
+            <div id="quizFeedback" style="height:12px; border-radius:6px; margin-top:1rem;"></div>
+            
+            <button id="btnM4" onclick="app.goTo(5)" disabled style="width:100%; margin-top:2rem; display:none;">Ver Resultados de Misión</button>
+        </section>
+
+        <!-- Misión 5: Podio -->
+        <section id="mission-5" class="mission-panel">
+            <div class="badge">Misión 5: El Podio</div>
+            <h2>Certificación de Ingeniería</h2>
+            
+            <div style="text-align:center; margin:2rem 0;">
+                <p style="font-size:1.5rem;">Nota Final de Diagnóstico:</p>
+                <h1 style="font-size:4rem; color:var(--success);" id="finalScore">0.0</h1>
+            </div>
+
+            <div id="medalBox" class="element-medal">
+                <div class="medal-sym" id="mSym">??</div>
+                <div class="medal-name" id="mName">Elemento</div>
+            </div>
+
+            <p style="text-align:center;" id="podiumMsg"></p>
+
+            <button onclick="app.export()" class="btn-success" style="width:100%; margin-top:2rem;">📥 Descargar Informe de Ingeniería (.txt)</button>
+        </section>
+
+    </div>
+
+    <script>
+        const app = {
+            state: {
+                name: "",
+                mission: 0,
+                checks: [false, false, false],
+                m2Time: 75 * 60,
+                m3Time: 15 * 60,
+                quizAnswers: [null, null, null, null],
+                score: 0
+            },
+
+            questions: [
+                { q: "Si las mitocondrias de una semilla se dañan, ¿qué le pasará?", a: ["Crecerá más rápido", "No tendrá energía para germinar", "Cambiará de color"], c: 1 },
+                { q: "La membrana celular falla y deja entrar veneno a la planta. Es como:", "a": ["Un motor con el filtro de aire roto", "Una moto sin llantas", "Un casco muy pequeño"], c: 0 },
+                { q: "Los ribosomas no fabrican proteínas (repuestos). La planta:", "a": ["Se vuelve azul", "No puede reparar sus hojas", "Vuela por el espacio"], c: 1 },
+                { q: "En el 'Hospital Agrícola', un paciente tiene el núcleo dañado. ¿Qué perdió?", "a": ["Su agua", "Sus instrucciones de crecimiento", "Su color verde"], c: 1 }
+            ],
+
+            init() {
+                const saved = localStorage.getItem('santiago_ova_hospital_agricola');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    this.state = data;
+                    document.getElementById('resName').innerText = this.state.name;
+                    document.getElementById('resMission').innerText = "Misión " + this.state.mission;
+                    document.getElementById('restoreModal').style.display = 'flex';
+                }
+            },
+
+            start() {
+                const name = document.getElementById('userName').value.trim();
+                if (!name) return;
+                this.state.name = name;
+                this.state.mission = 1;
+                this.save();
+                this.render();
+            },
+
+            resume() {
+                document.getElementById('restoreModal').style.display = 'none';
+                this.render();
+            },
+
+            reset() {
+                localStorage.removeItem('santiago_ova_hospital_agricola');
+                location.reload();
+            },
+
+            save() {
+                localStorage.setItem('santiago_ova_hospital_agricola', JSON.stringify(this.state));
+            },
+
+            render() {
+                // Ocultar todos
+                document.querySelectorAll('.mission-panel').forEach(p => p.classList.remove('active'));
+                // Mostrar actual
+                document.getElementById('mission-' + this.state.mission).classList.add('active');
+                
+                // Actualizar nombres
+                document.querySelectorAll('.uName').forEach(el => el.innerText = this.state.name);
+
+                // Progreso
+                const pb = document.getElementById('progBar');
+                document.getElementById('progCont').style.display = this.state.mission > 0 ? 'block' : 'none';
+                pb.style.width = (this.state.mission / 5 * 100) + '%';
+
+                if (this.state.mission === 2) this.startTimer('m2', 'timerM2');
+                if (this.state.mission === 3) this.startTimer('m3', 'timerM3');
+                if (this.state.mission === 4) this.renderQuiz();
+                if (this.state.mission === 5) this.showFinal();
+                
+                this.updateChecklistUI();
+            },
+
+            goTo(m) {
+                this.state.mission = m;
+                this.save();
+                this.render();
+            },
+
+            // Temporizadores
+            startTimer(key, displayId) {
+                if (this.interval) clearInterval(this.interval);
+                this.interval = setInterval(() => {
+                    if (this.state[key + 'Time'] > 0) {
+                        this.state[key + 'Time']--;
+                        this.save();
+                        const min = Math.floor(this.state[key + 'Time'] / 60);
+                        const sec = this.state[key + 'Time'] % 60;
+                        document.getElementById(displayId).innerText = `${min}:${sec < 10 ? '0' : ''}${sec}`;
+                    } else {
+                        clearInterval(this.interval);
+                    }
+                }, 1000);
+            },
+
+            // Checklist Misión 2
+            toggleCheck(i) {
+                this.state.checks[i] = !this.state.checks[i];
+                this.updateChecklistUI();
+                this.save();
+            },
+
+            updateChecklistUI() {
+                this.state.checks.forEach((c, i) => {
+                    const el = document.getElementById('c' + i);
+                    if (el) c ? el.classList.add('checked') : el.classList.remove('checked');
+                });
+                const btn = document.getElementById('btnM2');
+                if (btn) btn.disabled = !this.state.checks.every(x => x);
+            },
+
+            // Quiz Misión 4
+            renderQuiz() {
+                const area = document.getElementById('quizArea');
+                const nextIdx = this.state.quizAnswers.findIndex(x => x === null);
+                
+                if (nextIdx === -1) {
+                    area.innerHTML = "<div style='text-align:center; padding:2rem;'><h3>¡Diagnóstico Completo!</h3><p>Todos los casos han sido procesados.</p></div>";
+                    document.getElementById('btnM4').style.display = 'block';
+                    document.getElementById('btnM4').disabled = false;
+                    return;
+                }
+
+                const q = this.questions[nextIdx];
+                let html = `<h3>Caso #${nextIdx + 1}: ${q.q}</h3><div style="margin-top:1.5rem;">`;
+                q.a.forEach((opt, i) => {
+                    html += `<div class="quiz-option" onclick="app.answer(${nextIdx}, ${i})">${opt}</div>`;
+                });
+                html += `</div>`;
+                area.innerHTML = html;
+            },
+
+            answer(qIdx, aIdx) {
+                const correct = this.questions[qIdx].c === aIdx;
+                this.state.quizAnswers[qIdx] = correct;
+                
+                const feedback = document.getElementById('quizFeedback');
+                feedback.style.background = correct ? 'var(--success)' : 'var(--danger)';
+                
+                this.save();
+                setTimeout(() => {
+                    feedback.style.background = 'transparent';
+                    this.renderQuiz();
+                }, 1000);
+            },
+
+            // Final
+            showFinal() {
+                const checkScore = (this.state.checks.filter(x => x).length / 3) * 2.5;
+                const quizScore = (this.state.quizAnswers.filter(x => x).length / 4) * 2.5;
+                const final = (checkScore + quizScore).toFixed(1);
+                this.state.score = final;
+                
+                document.getElementById('finalScore').innerText = final;
+                
+                const mBox = document.getElementById('medalBox');
+                const mSym = document.getElementById('mSym');
+                const mName = document.getElementById('mName');
+                const msg = document.getElementById('podiumMsg');
+
+                mBox.className = "element-medal";
+                if (final >= 4.6) {
+                    mBox.classList.add('medal-au'); mSym.innerText = "Au"; mName.innerText = "Oro";
+                    msg.innerText = "¡Ingeniero Maestro! Has salvado la selva con precisión total.";
+                } else if (final >= 3.6) {
+                    mBox.classList.add('medal-ag'); mSym.innerText = "Ag"; mName.innerText = "Plata";
+                    msg.innerText = "¡Muy bien! Tus diagnósticos son confiables y efectivos.";
+                } else {
+                    mBox.classList.add('medal-fe'); mSym.innerText = "Fe"; mName.innerText = "Hierro";
+                    msg.innerText = "Buen esfuerzo. Eres resistente como el hierro, sigue practicando.";
+                }
+            },
+
+            export() {
+                const date = new Date().toLocaleDateString();
+                const content = `
+REPORTE DE MISIÓN: HOSPITAL AGRÍCOLA
+-----------------------------------
+Operador: ${this.state.name}
+Fecha: ${date}
+Tema: Consecuencias de daños en organelas
+
+RESULTADOS:
+- Retos de Cuaderno: ${this.state.checks.filter(x=>x).length}/3
+- Casos de Diagnóstico: ${this.state.quizAnswers.filter(x=>x).length}/4
+- Nota Final: ${this.state.score} / 5.0
+
+DETALLES:
+Santiago ha identificado cómo la falla de mitocondrias,
+membranas y ribosomas afecta el crecimiento de las 
+plantas y semillas, utilizando analogías de motores
+y herramientas de la selva.
+-----------------------------------
+SISTEMAS BIOLÓGICOS VALIDADOS.
+                `;
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Reporte_Ingenieria_${this.state.name}.txt`;
+                a.click();
+            }
+        };
+
+        window.onload = () => app.init();
+    </script>
+</body>
+</html>

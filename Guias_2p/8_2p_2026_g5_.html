@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Biomecánica Rural - Pueblo Rico</title>
+    <style>
+        :root {
+            --pcc-verde-monte: #2e7d32;
+            --pcc-cafe-tierra: #4e342e;
+            --pcc-rojo-cereza: #c62828;
+            --pcc-naranja-citrico: #ef6c00;
+            --pcc-crema: #fff9c4;
+            --pcc-hueso: #f5f5f5;
+            --pcc-musculo: #d84315;
+            --pcc-oro: #f9a825;
+        }
+
+        * { box-sizing: border-box; scroll-behavior: smooth; }
+        body { 
+            margin: 0; font-family: 'Segoe UI', sans-serif; 
+            background-color: var(--pcc-crema); color: var(--pcc-cafe-tierra);
+            line-height: 1.8; user-select: none;
+        }
+
+        /* --- Overlay de Entrada --- */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--pcc-verde-monte), var(--pcc-cafe-tierra));
+            z-index: 5000; display: flex; justify-content: center; align-items: center;
+        }
+        .login-box {
+            background: white; padding: 40px; border-radius: 25px; text-align: center;
+            width: 90%; max-width: 500px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .login-box input {
+            width: 100%; padding: 15px; margin: 10px 0; border: 2px solid var(--pcc-verde-monte);
+            border-radius: 10px; font-size: 1rem;
+        }
+
+        /* --- UI de Usuario --- */
+        nav {
+            position: sticky; top: 0; background: var(--pcc-verde-monte); color: white;
+            padding: 10px 5%; display: flex; justify-content: space-between; align-items: center;
+            z-index: 4000; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .progress-container { display: flex; align-items: center; gap: 15px; }
+        .progress-bar { width: 150px; height: 12px; background: rgba(255,255,255,0.3); border-radius: 6px; overflow: hidden; }
+        #fill { width: 0%; height: 100%; background: var(--pcc-oro); transition: 0.5s; }
+
+        /* --- Layout --- */
+        .container { max-width: 1000px; margin: 20px auto; padding: 20px; }
+        section { 
+            background: white; padding: 40px; margin-bottom: 40px; border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-left: 10px solid var(--pcc-verde-monte);
+        }
+
+        /* --- Pausas Activas --- */
+        .pause-box {
+            background: #e3f2fd; border: 2px dashed var(--pcc-verde-monte);
+            padding: 25px; margin: 30px 0; border-radius: 15px; position: relative;
+        }
+        .pause-box::before {
+            content: "📓 RETO DE CUADERNO"; position: absolute; top: -12px; left: 20px;
+            background: var(--pcc-cafe-tierra); color: white; padding: 2px 12px; font-size: 0.7rem; border-radius: 5px;
+        }
+
+        /* --- Visualización --- */
+        .canvas-container { text-align: center; margin: 30px 0; background: #222; border-radius: 15px; padding: 10px; }
+        #sim-canvas { width: 100%; height: 400px; cursor: crosshair; }
+
+        .table-wrap { overflow-x: auto; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: var(--pcc-verde-monte); color: white; padding: 15px; }
+        td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+
+        .btn {
+            background: var(--pcc-verde-monte); color: white; border: none; padding: 12px 25px;
+            border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .btn:hover { background: var(--pcc-cafe-tierra); transform: translateY(-2px); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        textarea { 
+            width: 100%; height: 80px; padding: 10px; border: 2px solid #ddd; border-radius: 10px; 
+            margin-top: 10px; resize: none; font-family: inherit;
+        }
+        .alert-ia { color: var(--pcc-rojo-cereza); font-size: 0.8rem; display: none; font-weight: bold; }
+
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>Bienvenido, Campesino de Pueblo Rico</h2>
+            <p>Ingresa tus datos para iniciar la capacitación en Ergonomía Rural</p>
+            <input type="text" id="user-last" placeholder="Apellidos">
+            <input type="text" id="user-name" placeholder="Nombres">
+            <button class="btn" id="start-btn" style="width: 100%; margin-top: 20px;">ENTRAR AL OVA</button>
+        </div>
+    </div>
+
+    <nav>
+        <div><span id="nav-user">Usuario</span> | 📍 Pueblo Rico, Quimbaya</div>
+        <div class="progress-container">
+            <span id="points">0.0 / 5.0</span>
+            <div class="progress-bar"><div id="fill"></div></div>
+            <span id="badge">🌱</span>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <!-- INICIO -->
+        <section id="inicio">
+            <h1>1. La Estructura de Nuestra Tierra</h1>
+            <p><strong>Objetivo:</strong> Analizar la biomecánica del movimiento humano y los principios de ergonomía aplicados a las labores agrícolas de la vereda, para prevenir lesiones musculoesqueléticas.</p>
+            
+            <h3>Pre-saberes: El cuerpo en el cafetal</h3>
+            <p>1. Al levantar un bulto de café de 40kg, ¿dónde debería recaer la mayor fuerza?</p>
+            <button class="btn" onclick="preScore(1, true, this)">A. En las piernas (cuádriceps)</button>
+            <button class="btn" onclick="preScore(1, false, this)">B. En la columna vertebral</button>
+            
+            <p>2. ¿Qué sistema actúa como la "palanca" del cuerpo?</p>
+            <button class="btn" onclick="preScore(2, true, this)">A. Los huesos y articulaciones</button>
+            <button class="btn" onclick="preScore(2, false, this)">B. Solo la piel</button>
+
+            <p>3. ¿Por qué nos cansamos después de una jornada de recolección de cítricos?</p>
+            <button class="btn" onclick="preScore(3, true, this)">A. Por la acumulación de ácido láctico en los músculos</button>
+            <button class="btn" onclick="preScore(3, false, this)">B. Porque el sol nos quita los huesos</button>
+        </section>
+
+        <!-- CUERPO INDUCTIVO -->
+        <section id="inductivo">
+            <h2>2. Inducción: El Movimiento en la Montaña</h2>
+            <p>En las laderas de la <strong>Vereda Pueblo Rico</strong>, el movimiento no es solo una función biológica; es la base de nuestra economía. Cuando un recolector de café estira su brazo para alcanzar una cereza roja en la parte alta del arbusto, está ejecutando una danza coordinada entre el sistema óseo y el muscular. El esqueleto, compuesto por 206 huesos, actúa como el armazón de un "Willys" cafetero, dándole estructura y protección a nuestros órganos. Sin embargo, este armazón sería inerte si no fuera por los más de 600 músculos que, mediante contracción y relajación, generan la tracción necesaria para subir pendientes o cargar canastos.</p>
+            
+            <p>La biomecánica rural estudia cómo estas fuerzas interactúan con las herramientas. En Quimbaya, el uso del azadón o la "maca" de café impone cargas específicas sobre las articulaciones sinoviales. Por ejemplo, al usar un azadón, el codo actúa como un fulcro de una palanca de tercer género. Si el campesino dobla excesivamente la espalda en lugar de flexionar las rodillas, el centro de gravedad se desplaza, multiplicando la presión sobre los discos intervertebrales de la zona lumbar. Este es un problema común en las fincas de cítricos durante la cosecha, donde la postura forzada prolongada puede derivar en hernias discales.</p>
+            
+            <p>Desde una perspectiva inductiva, observamos que la fuerza del campesino de Pueblo Rico proviene de la eficiencia mecánica. Los huesos no son estructuras secas; son tejidos vivos que almacenan calcio y fósforo, minerales que fluyen gracias a la alimentación local basada en el campo. Los músculos, por su parte, se adaptan a la labor. Un recolector veterano desarrolla una propiocepción avanzada: la capacidad de su sistema nervioso para reconocer la posición de sus extremidades sin mirar, permitiéndole moverse con agilidad entre los surcos de café incluso en terrenos inestables por la lluvia.</p>
+
+            <p>El equilibrio del movimiento depende de los tendones, que unen el músculo al hueso, y los ligamentos, que unen hueso con hueso. En el sector ganadero de nuestra vereda, el manejo de bovinos requiere ráfagas de fuerza explosiva (fibras musculares blancas) para sujetar a un animal, seguidas de periodos de resistencia (fibras rojas). Si estos tejidos no están preparados mediante una correcta higiene postural, el riesgo de esguinces o desgarros es inminente, afectando la productividad de la finca.</p>
+
+            <p>Finalmente, debemos entender que el descanso es parte del ciclo biomecánico. Durante la noche, en la tranquilidad de Pueblo Rico, los músculos reparan las micro-roturas sufridas durante la jornada. Sin este proceso de recuperación, el sistema óseo comienza a sufrir micro-fracturas por estrés. La ergonomía no es un lujo de oficina; es una herramienta de supervivencia para el trabajador de la tierra quindiana, garantizando que su "maquinaria" biológica dure tantos años como la fertilidad de sus suelos.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <caption>Cuadro Técnico: Palancas Biomecánicas en Labores de Pueblo Rico</caption>
+                    <thead>
+                        <tr>
+                            <th>Tipo de Palanca</th>
+                            <th>Labor Asociada</th>
+                            <th>Fulcro (Punto de Apoyo)</th>
+                            <th>Recomendación Ergonómica</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1er Grado (Equilibrio)</td>
+                            <td>Mantener la cabeza erguida mirando el café</td>
+                            <td>Articulación Atlas-Occipital</td>
+                            <td>Evitar inclinación cervical por más de 20 min</td>
+                        </tr>
+                        <tr>
+                            <td>2do Grado (Fuerza)</td>
+                            <td>Caminar empinado con bulto al hombro</td>
+                            <td>Articulación de los dedos del pie</td>
+                            <td>Usar calzado con buen agarre y soporte</td>
+                        </tr>
+                        <tr>
+                            <td>3er Grado (Velocidad)</td>
+                            <td>Levantar la canastilla de cítricos</td>
+                            <td>Codo (Bíceps braquial)</td>
+                            <td>Mantener la carga pegada al eje del cuerpo</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 1-5 -->
+            <div class="pause-box">
+                <p><strong>RETO 1:</strong> Responde: ¿Por qué crees que los abuelos de la vereda sufren a veces de las rodillas después de años de carga?</p>
+                <button class="btn" onclick="addProgress(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-box">
+                <p><strong>RETO 2:</strong> Dibuja en tu cuaderno un brazo levantando un bulto de café e identifica el músculo agonista (bíceps) y el antagonista (tríceps).</p>
+                <button class="btn" onclick="addProgress(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-box">
+                <p><strong>RETO 3:</strong> Crea un mapa mental sobre las funciones del sistema óseo (Soporte, Protección, Movimiento, Almacén).</p>
+                <button class="btn" onclick="addProgress(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-box">
+                <p><strong>RETO 4:</strong> Elabora un cuadro comparativo entre el tejido óseo compacto y el tejido óseo esponjoso.</p>
+                <button class="btn" onclick="addProgress(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-box">
+                <p><strong>RETO 5:</strong> Diseña un diagrama de flujo del proceso de contracción muscular (Impulso nervioso -> Calcio -> Actina/Miosina).</p>
+                <button class="btn" onclick="addProgress(5)">Ya lo hice (+5%)</button>
+            </div>
+
+            <!-- PREGUNTA ICFES -->
+            <div style="background: #fff3e0; padding: 20px; border-radius: 15px; border: 2px solid var(--pcc-naranja-citrico);">
+                <h3>Competencia Indagar: Análisis de Carga Lumbar</h3>
+                <svg width="400" height="200" viewBox="0 0 400 200" style="background: white; border-radius: 10px;">
+                    <rect x="50" y="150" width="300" height="10" fill="#8d6e63"/>
+                    <line x1="100" y1="150" x2="150" y2="50" stroke="black" stroke-width="4"/>
+                    <circle cx="150" cy="50" r="15" fill="#d84315"/>
+                    <path d="M150 50 L250 150" stroke="red" stroke-width="2" stroke-dasharray="5"/>
+                    <text x="260" y="140" font-size="12">Carga Distante</text>
+                    <text x="110" y="40" font-size="12" font-weight="bold">Centro de Gravedad</text>
+                    <text x="180" y="180" font-size="14" fill="#555">Gráfica A: Carga Incorrecta</text>
+                </svg>
+                <p>Según la gráfica de vectores de fuerza, cuando un campesino levanta una caja de naranjas manteniendo los brazos alejados del cuerpo:</p>
+                <button class="btn" onclick="checkIcfes(false, this)">A. El peso de la caja disminuye por la distancia.</button>
+                <button class="btn" onclick="checkIcfes(true, this)">B. El torque sobre la vértebra L<sub>5</sub> aumenta drásticamente.</button>
+                <button class="btn" onclick="checkIcfes(false, this)">C. Los músculos de las piernas hacen todo el trabajo.</button>
+            </div>
+        </section>
+
+        <!-- CUERPO DEDUCTIVO -->
+        <section id="deductivo">
+            <h2>3. Deducción: Leyes de la Física Humana</h2>
+            <p>A partir de los principios de la física, podemos deducir que el cuerpo humano en el campo opera bajo leyes de equilibrio estático y dinámico. La primera ley de Newton explica por qué un bulto de café en reposo requiere una fuerza muscular mayor para iniciar el movimiento (vencer la inercia) que para mantenerlo. Deductivamente, el campesino que utiliza un balanceo rítmico al caminar con carga está optimizando el gasto de ATP (Adenosín Trifosfato), la molécula de energía celular. Si el movimiento es errático, la fatiga muscular llega antes de terminar el lote.</p>
+            
+            <p>La Ley de Wolff en el sistema óseo nos indica que los huesos se remodelan según las cargas que reciben. Por ello, el trabajo físico moderado en Pueblo Rico fortalece la densidad ósea de nuestros jóvenes, pero el sobreesfuerzo sin técnica deforma las epífisis de los huesos largos. En el nivel muscular, la Ley de "Todo o Nada" rige la contracción de las sarcómeras. Al aplicar fuerza para arrancar una maleza persistente, el sistema nervioso recluta más unidades motoras. Si la resistencia es mayor que la capacidad de tensión del tendón, se produce una avulsión.</p>
+            
+            <p>Desde la fisiología muscular, deducimos que el oxígeno es el combustible crítico. En las alturas de Quimbaya, el metabolismo aeróbico permite jornadas largas. Sin embargo, en esfuerzos intensos como clavar postes para una cerca ganadera, el músculo entra en fase anaeróbica, produciendo energía rápidamente pero generando desechos metabólicos. La respiración rítmica del trabajador no es solo para oxigenar, sino para mantener el pH de la sangre estable y evitar calambres dolorosos.</p>
+
+            <p>En el taller de ergonomía deductiva, analizamos que la columna vertebral posee curvaturas naturales (lordosis y cifosis) que funcionan como resortes. Cuando un guía turístico de la vereda camina por senderos cargando una mochila, debe asegurar que el peso esté distribuido simétricamente. Una asimetría constante provoca que los músculos erectores de la espina de un lado trabajen el doble, causando escoliosis funcional a largo plazo. El equilibrio no es solo no caerse, es distribuir la presión de forma que ninguna fibra muscular se agote prematuramente.</p>
+
+            <p>En conclusión, la fuerza del campesino de Pueblo Rico no reside en la brutalidad del esfuerzo, sino en la armonía de su biomecánica. El conocimiento de las palancas anatómicas y la aplicación de las leyes de la física al trabajo diario permiten que la labor agrícola sea sostenible. Proteger el sistema óseo y muscular es asegurar que las manos que hoy siembran café, puedan seguir saludando con fuerza a las futuras generaciones de Quimbaya.</p>
+
+            <div class="canvas-container">
+                <h3 style="color: white;">Simulador de Flexión: Bíceps y Radio</h3>
+                <p style="color: #aaa; font-size: 0.8rem;">Interactúa: Mueve el mouse sobre el simulador para contraer el músculo y observar el fulcro.</p>
+                <canvas id="sim-canvas"></canvas>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 6-10 -->
+            <div class="pause-box">
+                <p><strong>RETO 6:</strong> Construye un mapa conceptual sobre los tipos de músculos (Liso, Estriado esquelético y Cardíaco).</p>
+                <button class="btn" onclick="addProgress(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-box">
+                <p><strong>RETO 7:</strong> Elabora una tabla de datos observando a un familiar trabajar: ¿Cuántas veces flexiona las rodillas en 5 minutos?</p>
+                <button class="btn" onclick="addProgress(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-box">
+                <p><strong>RETO 8:</strong> Dibuja un esquema del esqueleto humano señalando los huesos principales: Fémur, Radio, Húmero, Pelvis y Cráneo.</p>
+                <button class="btn" onclick="addProgress(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-box">
+                <p><strong>RETO 9:</strong> Realiza una síntesis de 15 renglones explicando por qué el calcio es vital para el campesino de Quimbaya.</p>
+                <button class="btn" onclick="addProgress(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="pause-box">
+                <p><strong>RETO 10:</strong> Resolución: Si un campesino levanta 10 bultos de café de 50kg cada uno, ¿cuánta masa total ha movilizado? ¿Qué articulación sufrió más si no dobló las rodillas?</p>
+                <button class="btn" onclick="addProgress(5)">Ya lo hice (+5%)</button>
+            </div>
+        </section>
+
+        <!-- EVALUACIÓN -->
+        <section id="evaluacion">
+            <h2>4. Taller de Ergonomía y Biomecánica</h2>
+            <div id="quiz-final">
+                <p><strong>1. ¿Qué tipo de palanca es la articulación del codo al levantar un canasto de cítricos?</strong></p>
+                <select id="q1" style="width: 100%; padding: 10px;">
+                    <option value="x">Seleccionar...</option>
+                    <option value="a">Primer Grado</option>
+                    <option value="b">Segundo Grado</option>
+                    <option value="c">Tercer Grado (Bíceps insertado después del fulcro)</option>
+                </select>
+
+                <p><strong>2. ¿Cuál es el principal mineral almacenado en los huesos de un trabajador rural?</strong></p>
+                <select id="q2" style="width: 100%; padding: 10px;">
+                    <option value="x">Seleccionar...</option>
+                    <option value="a">Hierro</option>
+                    <option value="b">Calcio</option>
+                    <option value="c">Magnesio</option>
+                </select>
+
+                <p><strong>3. ¿Qué sucede con el músculo durante una contracción isotónica?</strong></p>
+                <select id="q3" style="width: 100%; padding: 10px;">
+                    <option value="x">Seleccionar...</option>
+                    <option value="a">Se acorta generando movimiento</option>
+                    <option value="b">Mantiene la misma longitud</option>
+                    <option value="c">Se convierte en hueso</option>
+                </select>
+
+                <h3 style="margin-top: 30px;">Preguntas Abiertas (Análisis Ergonómico)</h3>
+                <p style="font-size: 0.8rem; color: #666;">* Responde entre 10 y 15 palabras. No se permite copiar/pegar.</p>
+                
+                <p>4. Describe la postura correcta para levantar un bulto de café desde el suelo:</p>
+                <textarea id="qa1" onkeydown="logKey(event, 'qa1')"></textarea>
+                <div id="ia-qa1" class="alert-ia">¡Alerta! Cadencia de escritura sospechosa detectada.</div>
+
+                <p>5. Explica por qué es importante realizar estiramientos después de recolectar cítricos:</p>
+                <textarea id="qa2" onkeydown="logKey(event, 'qa2')"></textarea>
+                <div id="ia-qa2" class="alert-ia">¡Alerta! Cadencia de escritura sospechosa detectada.</div>
+
+                <button class="btn" style="margin-top: 30px; width: 100%;" onclick="finishTaller()">FINALIZAR Y CALIFICAR</button>
+            </div>
+        </section>
+
+        <!-- RESULTADOS -->
+        <section id="resultados" style="display: none;">
+            <h2>Reporte de Salud Ocupacional Rural</h2>
+            <div id="report-text" style="background: #f5f5f5; padding: 20px; border-radius: 10px; font-family: monospace;"></div>
+            <button class="btn" style="margin-top: 20px;" onclick="downloadReport()">DESCARGAR RESULTADOS (.TXT)</button>
+        </section>
+
+    </div>
+
+    <script>
+        // --- Estado Global ---
+        let app = {
+            user: { name: "", last: "" },
+            prog: 0,
+            score: 0.0,
+            keyTimes: { qa1: [], qa2: [] },
+            isCheater: { qa1: false, qa2: false },
+            points: 0
+        };
+
+        // --- Gestión de Usuario ---
+        document.getElementById('start-btn').addEventListener('click', () => {
+            const n = document.getElementById('user-name').value.trim();
+            const l = document.getElementById('user-last').value.trim();
+            if(n && l) {
+                app.user = { name: n, last: l };
+                document.getElementById('nav-user').innerText = `${n} ${l}`;
+                document.getElementById('login-overlay').style.display = 'none';
+                initSim();
+            } else {
+                alert("Ingresa tus datos completos.");
+            }
+        });
+
+        function addProgress(val) {
+            app.prog = Math.min(app.prog + val, 100);
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('fill').style.width = app.prog + "%";
+            app.score = (app.prog / 100) * 3.5; // El resto viene del taller
+            document.getElementById('points').innerText = `${app.score.toFixed(1)} / 5.0`;
+            
+            const b = document.getElementById('badge');
+            if(app.score > 1) b.innerText = "☕";
+            if(app.score > 2.5) b.innerText = "💪";
+            if(app.score >= 4) b.innerText = "🎩";
+        }
+
+        function preScore(q, correct, btn) {
+            if(correct) {
+                btn.style.background = "#4caf50";
+                addProgress(5);
+            } else {
+                btn.style.background = "#f44336";
+            }
+            btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+        }
+
+        function checkIcfes(correct, btn) {
+            if(correct) {
+                btn.style.background = "#4caf50";
+                addProgress(10);
+            } else {
+                btn.style.background = "#f44336";
+            }
+            btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+        }
+
+        // --- Anti-Fraude ---
+        ['copy', 'paste', 'drop', 'contextmenu'].forEach(evt => {
+            document.addEventListener(evt, e => {
+                if(e.target.tagName === 'TEXTAREA') {
+                    e.preventDefault();
+                    alert("⚠️ Acción bloqueada por seguridad académica.");
+                }
+            });
+        });
+
+        function logKey(e, id) {
+            app.keyTimes[id].push(Date.now());
+            if(app.keyTimes[id].length > 5) {
+                let last = app.keyTimes[id].slice(-5);
+                let diffs = [];
+                for(let i=1; i<last.length; i++) diffs.push(last[i] - last[i-1]);
+                let avg = diffs.reduce((a,b)=>a+b)/diffs.length;
+                if(avg < 30) { // Velocidad inhumana
+                    app.isCheater[id] = true;
+                    document.getElementById('ia-' + id).style.display = 'block';
+                }
+            }
+        }
+
+        // --- Simulador Canvas ---
+        function initSim() {
+            const canvas = document.getElementById('sim-canvas');
+            const ctx = canvas.getContext('2d');
+            let angle = 0;
+
+            canvas.addEventListener('mousemove', (e) => {
+                let rect = canvas.getBoundingClientRect();
+                let y = e.clientY - rect.top;
+                angle = (y / canvas.height) * Math.PI / 2;
+            });
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Hombro
+                ctx.fillStyle = "#555";
+                ctx.beginPath(); ctx.arc(100, 100, 20, 0, Math.PI*2); ctx.fill();
+
+                // Húmero
+                ctx.strokeStyle = "#eee"; ctx.lineWidth = 15;
+                ctx.beginPath(); ctx.moveTo(100, 100); ctx.lineTo(100, 250); ctx.stroke();
+
+                // Fulcro (Codo)
+                ctx.fillStyle = varColor('--pcc-oro');
+                ctx.beginPath(); ctx.arc(100, 250, 10, 0, Math.PI*2); ctx.fill();
+
+                // Radio/Cúbito
+                let rx = 100 + Math.cos(angle) * 150;
+                let ry = 250 + Math.sin(angle) * 150;
+                ctx.strokeStyle = "#eee";
+                ctx.beginPath(); ctx.moveTo(100, 250); ctx.lineTo(rx, ry); ctx.stroke();
+
+                // Músculo (Bíceps)
+                ctx.strokeStyle = varColor('--pcc-musculo');
+                ctx.lineWidth = 10 + (Math.PI/2 - angle) * 15; // Se ensancha al contraer
+                ctx.beginPath();
+                ctx.moveTo(100, 120);
+                // Inserción en el radio (tercer grado)
+                let ix = 100 + Math.cos(angle) * 40;
+                let iy = 250 + Math.sin(angle) * 40;
+                ctx.lineTo(ix, iy);
+                ctx.stroke();
+
+                // Carga (Canasto)
+                ctx.fillStyle = varColor('--pcc-naranja-citrico');
+                ctx.fillRect(rx-20, ry-20, 40, 40);
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        function varColor(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        // --- Finalización ---
+        function finishTaller() {
+            let bonus = 0;
+            if(document.getElementById('q1').value === 'c') bonus += 0.5;
+            if(document.getElementById('q2').value === 'b') bonus += 0.5;
+            if(document.getElementById('q3').value === 'a') bonus += 0.5;
+
+            const check = (id) => {
+                const t = document.getElementById(id).value.trim();
+                const words = t.split(/\s+/).length;
+                if(words >= 10 && words <= 15 && !app.isCheater[id]) return 0.5;
+                return 0;
+            }
+
+            app.score += bonus + check('qa1') + check('qa2');
+            app.score = Math.min(app.score, 5.0);
+
+            document.getElementById('resultados').style.display = 'block';
+            let report = `
+RESULTADOS OVA: BIOMECÁNICA RURAL
+ESTUDIANTE: ${app.user.last}, ${app.user.name}
+FECHA: ${new Date().toLocaleDateString()}
+VEREDA: Pueblo Rico, Quimbaya
+
+PUNTAJE FINAL: ${app.score.toFixed(1)} / 5.0
+PROGRESO DE RETOS: ${app.prog}%
+ESTADO INTEGRIDAD: ${Object.values(app.isCheater).includes(true) ? '⚠️ ALERTA DE FRAUDE' : '✅ LIMPIO'}
+
+RUTA DE FORTALECIMIENTO:
+${app.score < 3.5 ? '- Debes repasar la técnica de carga y los tipos de palancas anatómicas.' : '- ¡Excelente! Tienes claro cómo proteger tu cuerpo en las labores del campo.'}
+- Recomendación: Realiza pausas activas cada 2 horas en el lote de café.
+            `;
+            document.getElementById('report-text').innerText = report;
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function downloadReport() {
+            const blob = new Blob([document.getElementById('report-text').innerText], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Reporte_${app.user.last}.txt`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

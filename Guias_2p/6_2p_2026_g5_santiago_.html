@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión Biología: La Energía de la Vida</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gold: #fbbf24;
+            --silver: #cbd5e1;
+            --iron: #b45309;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: #020617;
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        h1, h2, h3 {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            width: 100%;
+        }
+
+        .mission-panel {
+            display: none;
+            background-color: var(--panel-bg);
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.5s ease-out;
+            border: 2px solid #334155;
+        }
+
+        .mission-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Botones Generales */
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: #2563eb;
+            transform: scale(1.02);
+        }
+
+        button:disabled {
+            background-color: #475569;
+            color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success { background-color: var(--success); }
+        .btn-success:hover { background-color: #059669; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.2rem;
+            background-color: #0f172a;
+            border: 2px solid #334155;
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Barra de progreso global */
+        .progress-container {
+            width: 100%;
+            background-color: #334155;
+            height: 12px;
+            border-radius: 6px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--success);
+            width: 0%;
+            transition: width 0.5s ease-out;
+        }
+
+        /* Estilos Misión 2 - Checklist */
+        .checklist-item {
+            background-color: #0f172a;
+            border: 2px solid #334155;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .checklist-item.completed {
+            border-color: var(--success);
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+
+        .check-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid #64748b;
+            background: transparent;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+        }
+
+        .checklist-item.completed .check-btn {
+            border-color: var(--success);
+            background-color: var(--success);
+        }
+
+        .check-btn::after {
+            content: "✓";
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: none;
+        }
+
+        .checklist-item.completed .check-btn::after {
+            display: block;
+        }
+
+        /* Temporizador */
+        .timer-display {
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            font-family: monospace;
+            color: var(--warning);
+            margin: 1rem 0;
+            background: #020617;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 2px solid #334155;
+        }
+
+        /* Misión 3 - Respiración */
+        .breathe-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            margin: 3rem auto;
+            animation: breathe 8s infinite ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(0.8); opacity: 0.5; box-shadow: 0 0 20px var(--primary); }
+            50% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 60px var(--primary); }
+            100% { transform: scale(0.8); opacity: 0.5; box-shadow: 0 0 20px var(--primary); }
+        }
+
+        /* Quiz */
+        .quiz-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background-color: #0f172a;
+            border: 2px solid #334155;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success);
+            background-color: rgba(16, 185, 129, 0.2);
+            animation: pulseCorrect 0.5s;
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--danger);
+            background-color: rgba(239, 68, 68, 0.2);
+            animation: shakeError 0.5s;
+        }
+
+        @keyframes pulseCorrect {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            50% { transform: scale(1.02); box-shadow: 0 0 20px 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        @keyframes shakeError {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        /* Tabla Periódica Elemento */
+        .element-card {
+            width: 250px;
+            height: 300px;
+            margin: 2rem auto;
+            border: 4px solid;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #020617;
+            position: relative;
+        }
+
+        .element-card.au { border-color: var(--gold); box-shadow: 0 0 30px rgba(251, 191, 36, 0.4); }
+        .element-card.ag { border-color: var(--silver); box-shadow: 0 0 30px rgba(203, 213, 225, 0.4); }
+        .element-card.fe { border-color: var(--iron); box-shadow: 0 0 30px rgba(180, 83, 9, 0.4); }
+
+        .elem-number { position: absolute; top: 10px; left: 15px; font-size: 1.5rem; font-weight: bold; }
+        .elem-symbol { font-size: 6rem; font-weight: bold; line-height: 1; }
+        .elem-name { font-size: 2rem; text-transform: uppercase; margin-top: 10px; }
+        .elem-note { position: absolute; bottom: 10px; font-size: 1.2rem; color: var(--success); }
+
+        .au .elem-symbol, .au .elem-number, .au .elem-name { color: var(--gold); }
+        .ag .elem-symbol, .ag .elem-number, .ag .elem-name { color: var(--silver); }
+        .fe .elem-symbol, .fe .elem-number, .fe .elem-name { color: var(--iron); }
+
+        /* Modal Restaurar Sesión */
+        #restoreModal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--panel-bg);
+            padding: 3rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid var(--primary);
+            max-width: 500px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: #334155;
+        }
+
+        .highlight {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .visual-feedback {
+            height: 10px;
+            width: 100%;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="headerTitle">Misión: La Mitocondria</h1>
+        <div class="progress-container" id="globalProgressContainer" style="display:none; margin-top: 1rem; margin-bottom: 0;">
+            <div class="progress-bar" id="globalProgressBar"></div>
+        </div>
+    </header>
+
+    <!-- Modal Restaurar Sesión -->
+    <div id="restoreModal" style="display: none;">
+        <div class="modal-content">
+            <h2>¡Sistemas en línea!</h2>
+            <p style="margin: 1.5rem 0; font-size: 1.2rem;">Hola <span id="restoreName" class="highlight"></span>, veo que la nave quedó pausada en la <span class="highlight" id="restoreMissionText"></span>.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button onclick="app.resumeSession()" class="btn-success">🚀 Continuar Misión</button>
+                <button onclick="app.resetSession()" style="background-color: var(--danger);">Reiniciar todo</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <!-- Misión 0: Login -->
+        <section id="mission-0" class="mission-panel active">
+            <h2>Centro de Comando</h2>
+            <p style="margin: 1.5rem 0; font-size: 1.2rem; color: var(--text-muted);">
+                Iniciando reactores biológicos. Por favor, identifícate para sincronizar la telemetría de energía.
+            </p>
+            <input type="text" id="studentName" placeholder="Escribe tu nombre aquí, Comandante..." autocomplete="off">
+            <button onclick="app.startMissions()">Encender Reactores</button>
+        </section>
+
+        <!-- Misión 1: Introducción -->
+        <section id="mission-1" class="mission-panel">
+            <div class="badge">Misión 1/5 • Tiempo est.: 20 min</div>
+            <h2>El Despegue: El Motor de la Vida</h2>
+            <p style="font-size: 1.2rem; line-height: 1.6; margin-top: 1rem;">
+                Comandante <span class="playerName highlight"></span>, imagina el poderoso motor de una moto de alto cilindraje acelerando a fondo. O piensa en la fuerza explosiva en las piernas de un T-Rex al perseguir a su presa en la selva. Ambos necesitan una fuente masiva de <b>energía</b>.
+            </p>
+            <p style="font-size: 1.2rem; line-height: 1.6; margin-top: 1rem;">
+                En tu cuerpo, las fábricas encargadas de producir esa energía son unos orgánulos llamados <b>MITOCONDRIAS</b>.
+            </p>
+            <div style="background: #0f172a; padding: 1.5rem; border-left: 5px solid var(--primary); margin: 2rem 0; border-radius: 0 8px 8px 0;">
+                <h3 style="color: var(--warning); margin-bottom: 0.5rem;">La Analogía del Fogón de Leña:</h3>
+                <ul style="list-style-position: inside; font-size: 1.1rem; line-height: 1.8;">
+                    <li>Imagina un gran <b>fogón de leña</b> usado para labrar la tierra en las madrugadas frías.</li>
+                    <li>La <b>leña</b> es la <span class="highlight">Glucosa</span> (el azúcar y alimento que comemos).</li>
+                    <li>El <b>viento (aire)</b> que aviva el fuego es el <span class="highlight">Oxígeno</span> que respiramos.</li>
+                    <li>El <b>calor y la fuerza</b> que genera el fogón para trabajar es el <span class="highlight">ATP (Energía)</span>.</li>
+                </ul>
+                <p style="margin-top: 1rem; font-style: italic;">A este proceso de quemar la "leña" celular con oxígeno para sacar energía se le llama <b>Respiración Celular</b>.</p>
+            </div>
+            <p style="font-size: 1.2rem; margin-bottom: 2rem;">
+                Las células de los músculos tienen miles de mitocondrias, listas para "encender sus fogones" cuando decides correr o saltar. ¿Estás listo para encender el tuyo?
+            </p>
+            <button onclick="app.nextMission(2)" class="btn-success">Comprendido. Ir al Taller →</button>
+        </section>
+
+        <!-- Misión 2: El Taller del Experto (Cuaderno) -->
+        <section id="mission-2" class="mission-panel">
+            <div class="badge">Misión 2/5 • Alta Intensidad Física & Práctica</div>
+            <h2>El Taller del Experto</h2>
+            <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1rem;">
+                <span class="playerName"></span>, apaga las pantallas. Es momento de usar tu cuaderno. Necesitas fuerza de enfoque. Completa los 3 retos físicos antes de que el motor se quede sin combustible.
+            </p>
+            
+            <div class="timer-display" id="m2Timer">75:00</div>
+            
+            <div class="checklist-item" id="chkContainer0">
+                <button class="check-btn" onclick="app.toggleCheck(0)" id="chkBtn0"></button>
+                <div>
+                    <h3 style="margin-bottom: 0.5rem;">Reto A: Bitácora del Reactor (Escritura)</h3>
+                    <p>Anota en tu cuaderno el título: "La Mitocondria: El Fogón de la Vida". Escribe con tus propias palabras qué es la respiración celular utilizando la metáfora de la leña (glucosa), el viento (oxígeno) y el calor/fuerza (energía/ATP) necesarios para trabajar la tierra o arrancar una moto.</p>
+                </div>
+            </div>
+
+            <div class="checklist-item" id="chkContainer1">
+                <button class="check-btn" onclick="app.toggleCheck(1)" id="chkBtn1"></button>
+                <div>
+                    <h3 style="margin-bottom: 0.5rem;">Reto B: Planos del Motor (Dibujo y Esquema)</h3>
+                    <p>Dibuja en tu cuaderno una Mitocondria gigante. Tiene forma ovalada o de frijol, y por dentro tiene una línea plegada en forma de laberinto (crestas mitocondriales). <b>El reto:</b> Adentro de ese laberinto, dibuja de forma creativa un fogón de leña encendido. Ponle flechas señalando qué entra (Leña/Glucosa y Oxígeno) y qué sale de ese fogón (Fuerza/ATP).</p>
+                </div>
+            </div>
+
+            <div class="checklist-item" id="chkContainer2">
+                <button class="check-btn" onclick="app.toggleCheck(2)" id="chkBtn2"></button>
+                <div>
+                    <h3 style="margin-bottom: 0.5rem;">Reto C: Análisis de Falla Crítica (Solución de Problemas)</h3>
+                    <p>En el espacio profundo, si a los reactores de una nave espacial les cortas la entrada de oxígeno, el motor se apaga y la nave se detiene. En tu cuaderno, responde: <i>Si te vas corriendo muy rápido por la selva y te quedas sin aire (oxígeno), ¿qué le pasará a los "fogones" (mitocondrias) de los músculos de tus piernas? ¿Podrán seguir produciendo ATP?</i></p>
+                </div>
+            </div>
+
+            <button id="btnM2Next" onclick="app.nextMission(3)" disabled style="width: 100%;">Diagnóstico Completo. Siguiente Fase →</button>
+        </section>
+
+        <!-- Misión 3: Pit Stop -->
+        <section id="mission-3" class="mission-panel">
+            <div class="badge">Misión 3/5 • Recuperación de Sistemas</div>
+            <h2>Pit Stop / Enfriando el Motor</h2>
+            <p style="text-align: center; font-size: 1.2rem; margin-top: 1rem;">
+                Excelente trabajo manual, <span class="playerName"></span>. Las mitocondrias de tu cerebro acaban de gastar mucha energía. Es momento de darles oxígeno para evitar que el motor se recaliente.
+            </p>
+            
+            <div class="timer-display" id="m3Timer" style="color: var(--primary); border-color: var(--primary);">15:00</div>
+            
+            <p style="text-align: center; font-size: 1.2rem; color: var(--text-muted);">
+                Sigue el círculo visual con tu respiración.<br>Crece = Inhala oxígeno limpio. Se encoge = Exhala el gas residual.
+            </p>
+
+            <div class="breathe-circle">Oxígeno</div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button onclick="app.nextMission(4)" style="background-color: transparent; border: 2px solid var(--primary);">Saltar descanso (Modo Turbo)</button>
+            </div>
+        </section>
+
+        <!-- Misión 4: La Prueba de Pista (Quiz Gamificado) -->
+        <section id="mission-4" class="mission-panel">
+            <div class="badge">Misión 4/5 • Evaluación de Telemetría</div>
+            <h2>Prueba de Pista (Niveles de Energía)</h2>
+            <p style="margin-bottom: 2rem; font-size: 1.1rem; color: var(--text-muted);">
+                Verifica los medidores de ATP. Selecciona la respuesta correcta para continuar la marcha del motor celular.
+            </p>
+
+            <div id="quizContainer">
+                <!-- El quiz se inyecta por JS -->
+            </div>
+            
+            <div class="visual-feedback" id="quizFeedback"></div>
+
+            <button id="btnM4Next" onclick="app.nextMission(5)" disabled style="width: 100%; display: none; margin-top: 2rem;" class="btn-success">Combustible a Tope. Ir al Podio →</button>
+        </section>
+
+        <!-- Misión 5: El Podio -->
+        <section id="mission-5" class="mission-panel">
+            <div class="badge" style="background-color: var(--success);">Misión Finalizada</div>
+            <h2>Reporte de Expedición</h2>
+            
+            <div id="finalScoreDisplay" style="text-align: center; font-size: 3rem; font-weight: bold; margin: 2rem 0;">
+                Nota: <span id="finalScoreValue">0.0</span> / 5.0
+            </div>
+
+            <p style="text-align: center; font-size: 1.2rem; margin-bottom: 1rem;">
+                Con base en la energía producida en tu cuaderno y la prueba de pista, tus mitocondrias han forjado este elemento:
+            </p>
+
+            <div id="elementCard" class="element-card">
+                <!-- Data inyectada por JS -->
+                <div class="elem-number" id="elNum">79</div>
+                <div class="elem-symbol" id="elSym">Au</div>
+                <div class="elem-name" id="elName">Oro</div>
+                <div class="elem-note" id="elNote">Excelente</div>
+            </div>
+
+            <div style="text-align: center; margin-top: 3rem;">
+                <button onclick="app.downloadReport()" class="btn-success" style="font-size: 1.5rem; padding: 1.5rem 3rem;">📥 Descargar Informe de Misión</button>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Lógica de la OVA Completa adaptada para Mitocondria
+        const app = {
+            state: {
+                name: "",
+                currentMission: 0,
+                m2Checks: [false, false, false],
+                m2ElapsedSeconds: 0,
+                m3ElapsedSeconds: 0,
+                quizAnswers: [null, null, null, null, null],
+                score: 0.0
+            },
+            
+            timers: {
+                m2: null,
+                m3: null
+            },
+
+            questions: [
+                {
+                    q: "1. ¿Qué orgánulo es considerado el 'motor' o central de energía de la célula?",
+                    opts: [
+                        "El Núcleo.",
+                        "La Mitocondria.",
+                        "La Membrana Celular."
+                    ],
+                    correct: 1
+                },
+                {
+                    q: "2. En nuestra analogía del fogón de leña, ¿qué elemento representa a la leña que sirve de combustible primario?",
+                    opts: [
+                        "El Oxígeno.",
+                        "El ADN.",
+                        "La Glucosa (el alimento)."
+                    ],
+                    correct: 2
+                },
+                {
+                    q: "3. ¿Qué representa el fuego, el calor y la fuerza producida por el fogón de leña para trabajar la tierra?",
+                    opts: [
+                        "La Energía producida (conocida como ATP).",
+                        "Los músculos de las piernas.",
+                        "El sudor del cuerpo."
+                    ],
+                    correct: 0
+                },
+                {
+                    q: "4. Un T-Rex necesita correr a gran velocidad. ¿Qué crees que tienen las células de sus músculos en mayor cantidad?",
+                    opts: [
+                        "Más agua para flotar.",
+                        "Miles de mitocondrias para generar mucha energía rápida.",
+                        "Una armadura celular de hierro."
+                    ],
+                    correct: 1
+                },
+                {
+                    q: "5. ¿Qué gas es indispensable para que el 'fogón' o motor mitocondrial no se apague y siga quemando glucosa?",
+                    opts: [
+                        "El Dióxido de Carbono (CO2).",
+                        "El Oxígeno (O2).",
+                        "El Nitrógeno (N)."
+                    ],
+                    correct: 1
+                }
+            ],
+            
+            currentQuizIndex: 0,
+
+            init() {
+                // Clave de almacenamiento única para esta temática de la Mitocondria
+                const saved = localStorage.getItem('santiago_ova_mitocondria_state');
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        if (parsed.currentMission > 0 && parsed.currentMission < 5) {
+                            this.state = parsed;
+                            document.getElementById('restoreName').innerText = this.state.name;
+                            document.getElementById('restoreMissionText').innerText = "Misión " + this.state.currentMission;
+                            document.getElementById('restoreModal').style.display = 'flex';
+                            return;
+                        }
+                    } catch(e) { console.error("Error loading state", e); }
+                }
+                this.showPanel(0);
+            },
+
+            saveState() {
+                localStorage.setItem('santiago_ova_mitocondria_state', JSON.stringify(this.state));
+                this.updateGlobalProgress();
+            },
+
+            resumeSession() {
+                document.getElementById('restoreModal').style.display = 'none';
+                
+                // Restaurar UI de Misión 2
+                this.state.m2Checks.forEach((checked, i) => {
+                    if(checked) {
+                        document.getElementById(`chkContainer${i}`).classList.add('completed');
+                    }
+                });
+                this.checkM2Complete();
+
+                // Restaurar Quiz
+                this.currentQuizIndex = this.state.quizAnswers.findIndex(a => a === null);
+                if(this.currentQuizIndex === -1 && this.state.currentMission === 4) {
+                    this.currentQuizIndex = 4; // Ya terminó pero está en la vista
+                    this.checkQuizComplete();
+                }
+
+                this.updateNameDisplays();
+                this.showPanel(this.state.currentMission);
+            },
+
+            resetSession() {
+                localStorage.removeItem('santiago_ova_mitocondria_state');
+                location.reload();
+            },
+
+            startMissions() {
+                const nameInput = document.getElementById('studentName').value.trim();
+                if (!nameInput) {
+                    document.getElementById('studentName').style.borderColor = 'var(--danger)';
+                    return;
+                }
+                this.state.name = nameInput;
+                this.updateNameDisplays();
+                document.getElementById('globalProgressContainer').style.display = 'block';
+                this.nextMission(1);
+            },
+
+            updateNameDisplays() {
+                const elements = document.querySelectorAll('.playerName');
+                elements.forEach(el => el.innerText = this.state.name);
+            },
+
+            showPanel(missionId) {
+                document.querySelectorAll('.mission-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(`mission-${missionId}`).classList.add('active');
+                
+                // Manejo específico al entrar a un panel
+                if (missionId === 2) this.startTimer('m2', 75 * 60, 'm2ElapsedSeconds', 'm2Timer');
+                if (missionId === 3) this.startTimer('m3', 15 * 60, 'm3ElapsedSeconds', 'm3Timer');
+                if (missionId === 4) this.renderQuiz();
+                if (missionId === 5) this.calculateFinalPodium();
+            },
+
+            nextMission(target) {
+                // Detener temporizadores si se cambia de misión
+                clearInterval(this.timers.m2);
+                clearInterval(this.timers.m3);
+                
+                this.state.currentMission = target;
+                this.saveState();
+                this.showPanel(target);
+            },
+
+            updateGlobalProgress() {
+                const totalMissions = 5;
+                const percentage = (this.state.currentMission / totalMissions) * 100;
+                document.getElementById('globalProgressBar').style.width = percentage + '%';
+            },
+
+            // Lógica Misión 2: Checklists
+            toggleCheck(index) {
+                this.state.m2Checks[index] = !this.state.m2Checks[index];
+                const container = document.getElementById(`chkContainer${index}`);
+                
+                if (this.state.m2Checks[index]) {
+                    container.classList.add('completed');
+                } else {
+                    container.classList.remove('completed');
+                }
+                
+                this.saveState();
+                this.checkM2Complete();
+            },
+
+            checkM2Complete() {
+                const allChecked = this.state.m2Checks.every(c => c === true);
+                const btn = document.getElementById('btnM2Next');
+                btn.disabled = !allChecked;
+                if(allChecked) {
+                    btn.classList.add('btn-success');
+                } else {
+                    btn.classList.remove('btn-success');
+                }
+            },
+
+            // Lógica Temporizadores
+            startTimer(timerId, totalSeconds, stateVar, displayId) {
+                clearInterval(this.timers[timerId]);
+                
+                const updateDisplay = () => {
+                    let remaining = totalSeconds - this.state[stateVar];
+                    if (remaining < 0) remaining = 0;
+                    
+                    const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+                    const s = (remaining % 60).toString().padStart(2, '0');
+                    document.getElementById(displayId).innerText = `${m}:${s}`;
+                    
+                    if (remaining === 0) {
+                        clearInterval(this.timers[timerId]);
+                        document.getElementById(displayId).style.color = "var(--danger)";
+                    }
+                };
+
+                updateDisplay(); // Mostrar inicial
+
+                this.timers[timerId] = setInterval(() => {
+                    this.state[stateVar]++;
+                    this.saveState();
+                    updateDisplay();
+                }, 1000);
+            },
+
+            // Lógica Misión 4: Quiz
+            renderQuiz() {
+                const container = document.getElementById('quizContainer');
+                if (this.currentQuizIndex >= this.questions.length) {
+                    this.checkQuizComplete();
+                    return;
+                }
+
+                const q = this.questions[this.currentQuizIndex];
+                
+                let html = `<h3 style="margin-bottom: 1.5rem; font-size: 1.3rem;">${q.q}</h3>`;
+                
+                q.opts.forEach((opt, idx) => {
+                    html += `<button class="quiz-option" onclick="app.answerQuiz(${idx}, this)">${opt}</button>`;
+                });
+
+                container.innerHTML = html;
+                document.getElementById('quizFeedback').style.backgroundColor = 'transparent';
+            },
+
+            answerQuiz(selectedIdx, btnElement) {
+                // Deshabilitar todos los botones temporalmente
+                const buttons = document.querySelectorAll('.quiz-option');
+                buttons.forEach(b => b.disabled = true);
+
+                const correctIdx = this.questions[this.currentQuizIndex].correct;
+                const feedbackBar = document.getElementById('quizFeedback');
+
+                if (selectedIdx === correctIdx) {
+                    btnElement.classList.add('correct');
+                    feedbackBar.style.backgroundColor = 'var(--success)';
+                    this.state.quizAnswers[this.currentQuizIndex] = true;
+                } else {
+                    btnElement.classList.add('incorrect');
+                    buttons[correctIdx].classList.add('correct'); // Mostrar la correcta
+                    feedbackBar.style.backgroundColor = 'var(--danger)';
+                    this.state.quizAnswers[this.currentQuizIndex] = false;
+                }
+
+                this.saveState();
+
+                // Esperar para feedback visual y pasar a la siguiente
+                setTimeout(() => {
+                    this.currentQuizIndex++;
+                    if (this.currentQuizIndex < this.questions.length) {
+                        this.renderQuiz();
+                    } else {
+                        this.checkQuizComplete();
+                    }
+                }, 1500);
+            },
+
+            checkQuizComplete() {
+                document.getElementById('quizContainer').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; background: rgba(16, 185, 129, 0.1); border: 2px solid var(--success); border-radius: 8px;">
+                        <h3 style="color: var(--success); font-size: 1.5rem;">¡Medidores de Energía Calibrados!</h3>
+                        <p style="margin-top: 1rem;">La prueba ha concluido. El núcleo central está validando tu nivel de ATP.</p>
+                    </div>
+                `;
+                document.getElementById('quizFeedback').style.display = 'none';
+                document.getElementById('btnM4Next').style.display = 'block';
+                document.getElementById('btnM4Next').disabled = false;
+            },
+
+            // Lógica Misión 5: Cálculo y Descarga
+            calculateFinalPodium() {
+                // Cuaderno: 3 checks. 2.5 puntos totales (0.833 cada uno)
+                let checksCompletados = this.state.m2Checks.filter(c => c).length;
+                let puntosCuaderno = (checksCompletados / 3) * 2.5;
+
+                // Quiz: 5 preguntas. 2.5 puntos totales (0.5 cada una)
+                let correctasQuiz = this.state.quizAnswers.filter(a => a === true).length;
+                let puntosQuiz = (correctasQuiz / 5) * 2.5;
+
+                let notaFinal = puntosCuaderno + puntosQuiz;
+                // Redondear a 1 decimal
+                notaFinal = Math.round(notaFinal * 10) / 10;
+                
+                if(notaFinal < 0) notaFinal = 0.0;
+                if(notaFinal > 5) notaFinal = 5.0;
+
+                this.state.score = notaFinal;
+                this.saveState(); // Guardar el score final
+
+                document.getElementById('finalScoreValue').innerText = notaFinal.toFixed(1);
+
+                // Asignar Elemento Químico
+                const card = document.getElementById('elementCard');
+                const sym = document.getElementById('elSym');
+                const name = document.getElementById('elName');
+                const num = document.getElementById('elNum');
+                const note = document.getElementById('elNote');
+
+                card.className = 'element-card'; // Reset classes
+
+                if (notaFinal >= 4.6) {
+                    card.classList.add('au');
+                    num.innerText = '79';
+                    sym.innerText = 'Au';
+                    name.innerText = 'Oro';
+                    note.innerText = '¡Energía Máxima (ATP)!';
+                } else if (notaFinal >= 3.6) {
+                    card.classList.add('ag');
+                    num.innerText = '47';
+                    sym.innerText = 'Ag';
+                    name.innerText = 'Plata';
+                    note.innerText = '¡Gran Potencia!';
+                } else {
+                    card.classList.add('fe');
+                    num.innerText = '26';
+                    sym.innerText = 'Fe';
+                    name.innerText = 'Hierro';
+                    note.innerText = '¡Base Sólida y Resistente!';
+                }
+            },
+
+            downloadReport() {
+                const date = new Date().toLocaleDateString('es-CO');
+                const checks = this.state.m2Checks.filter(c => c).length;
+                const correctas = this.state.quizAnswers.filter(a => a === true).length;
+                
+                let elementStr = "Hierro (Fe)";
+                if(this.state.score >= 4.6) elementStr = "Oro (Au)";
+                else if(this.state.score >= 3.6) elementStr = "Plata (Ag)";
+
+                const textContent = `
+===================================================
+REPORTE OFICIAL DE MISIÓN: BIOLOGÍA CELULAR
+===================================================
+TEMA: La energía de la vida: La Mitocondria
+FECHA ESTELAR: ${date}
+COMANDANTE: ${this.state.name.toUpperCase()}
+
+--- RESULTADOS DEL TALLER (TRABAJO FÍSICO) ---
+Retos físicos y de análisis completados: ${checks} / 3
+Tiempo invertido en taller: ${Math.floor(this.state.m2ElapsedSeconds / 60)} minutos
+
+--- RESULTADOS DE LA PRUEBA DE PISTA (DIGITAL) ---
+Respuestas correctas de telemetría: ${correctas} / 5
+
+---------------------------------------------------
+CALIFICACIÓN FINAL: ${this.state.score.toFixed(1)} / 5.0
+MATERIAL SINTETIZADO: ${elementStr}
+---------------------------------------------------
+Observación Central:
+El comandante ${this.state.name} ha comprendido
+exitosamente el rol de la mitocondria en la
+respiración celular, asimilando la analogía del 
+motor/fogón que transforma la glucosa en energía
+vital.
+===================================================
+                `.trim();
+
+                const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Reporte_Mitocondria_${this.state.name.replace(/\s+/g, '_')}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        };
+
+        // Iniciar app al cargar la página
+        window.onload = () => {
+            app.init();
+        };
+    </script>
+</body>
+</html>

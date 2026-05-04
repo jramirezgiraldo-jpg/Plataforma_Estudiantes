@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA · Meiosis: Preparando la semilla de la vida</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #f3f0d9;  /* tono pergamino */
+            color: #2e5a2e;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+        /* login */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #1f6b3add;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .login-card {
+            background: #fffdf2;
+            border-radius: 3rem 1rem 3rem 1rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 20px 30px #0a3b1a, inset 0 0 0 4px #b8d9a0;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        .login-card h1 {
+            font-size: 2.2rem;
+            color: #2f7a4c;
+            border-bottom: 4px solid #a8d28b;
+            display: inline-block;
+            padding-bottom: 6px;
+        }
+        .login-card input {
+            display: block;
+            width: 100%;
+            margin: 1.4rem 0;
+            padding: 1rem 1.2rem;
+            border: 2px solid #b8d9a0;
+            border-radius: 40px;
+            background: #f7ffe6;
+            font-size: 1.1rem;
+        }
+        .login-card input:focus {
+            outline: none;
+            border-color: #2d874a;
+        }
+        .login-card button {
+            background: #4c9e6b;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.4rem;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            border-bottom: 5px solid #1d6b37;
+            cursor: pointer;
+            width: 100%;
+        }
+        .login-card button:hover {
+            background: #6ab585;
+        }
+        /* contenido principal */
+        #mainContent {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+        /* header fijo */
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            background: #d4e8ca;
+            border-radius: 0 0 40px 40px;
+            padding: 0.8rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 12px #4e7b5566;
+            z-index: 100;
+            border: 2px solid #93b87a;
+            backdrop-filter: blur(4px);
+            margin-bottom: 2.5rem;
+        }
+        .user-name {
+            background: #327a4d;
+            color: #f3ffe6;
+            padding: 0.4rem 1.4rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .progress-area {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        .barra-wrapper {
+            width: 220px;
+            height: 22px;
+            background: #bcd6aa;
+            border-radius: 30px;
+            border: 2px solid #2a7840;
+            overflow: hidden;
+        }
+        #progresoFill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #efb34b, #74b72e);
+            transition: width 0.3s;
+        }
+        .tabla-puntos {
+            display: flex;
+            gap: 8px;
+        }
+        .elem {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #9eb993;
+            color: #1d4a1d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.3rem;
+            box-shadow: inset 0 -4px 0 #4d724d;
+            border: 2px solid #2b6b2b;
+            transition: 0.2s;
+        }
+        .elem.unlocked {
+            background: #f5c542;
+            box-shadow: 0 0 15px #f5b041, inset 0 -4px 0 #b37b2e;
+            border-color: #d4a259;
+        }
+        /* secciones */
+        .seccion {
+            background: #fcffee;
+            border-radius: 50px 20px 50px 20px;
+            padding: 2.2rem;
+            margin-bottom: 3rem;
+            box-shadow: 15px 15px 0 #9bc18f;
+            border: 2px solid #7fb174;
+        }
+        h2 {
+            font-size: 2.2rem;
+            color: #1f7a3e;
+            border-left: 16px solid #ffb74d;
+            padding-left: 1.3rem;
+            margin-bottom: 1.8rem;
+        }
+        button {
+            background: #5f9c6b;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            border-bottom: 4px solid #2d7242;
+            cursor: pointer;
+            margin: 0.4rem 0;
+        }
+        button:hover {
+            background: #7cb87e;
+        }
+        button:disabled {
+            background: #a1bfa8;
+            border-bottom-color: #5f7e68;
+            cursor: default;
+            opacity: 0.8;
+        }
+        .pausa-box {
+            background: #e4f2da;
+            border-radius: 30px;
+            padding: 1.2rem 1.8rem;
+            margin: 2rem 0;
+            border-left: 12px solid #fb9c3e;
+        }
+        .pregunta {
+            background: #edf8e5;
+            padding: 1.5rem;
+            border-radius: 25px;
+            margin: 1.2rem 0;
+        }
+        .feedback {
+            margin-top: 0.6rem;
+            padding: 0.6rem;
+            border-radius: 20px;
+        }
+        .correcto { background: #c6e9b5; color: #1f6b1f; }
+        .incorrecto { background: #fad7cf; color: #a0371e; }
+        canvas {
+            display: block;
+            margin: 2rem auto;
+            border-radius: 40px;
+            background: #1f4f2b;  /* fondo oscuro */
+            box-shadow: 0 12px 0 #3f7640, 0 20px 22px #1f4a1f55;
+            max-width: 100%;
+            border: 3px solid #f5b342;
+            cursor: pointer;
+        }
+        .svg-flor {
+            width: 100%;
+            background: #d4eac4;
+            border-radius: 40px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .word-counter {
+            font-size: 0.95rem;
+            margin-top: 0.2rem;
+        }
+        .valido { color: #1f731f; font-weight: bold; }
+        .invalido { color: #b33; }
+        .ruta-card {
+            background: #daefcf;
+            border-radius: 30px;
+            padding: 1.5rem;
+            border: 3px dashed #5b9e5b;
+        }
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN Apellidos y Nombres -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <h1>🌱 Meiosis: la semilla</h1>
+            <p style="color:#2d7a4c;">células sexuales</p>
+            <input type="text" id="apellidosInput" placeholder="Apellidos" autocomplete="off">
+            <input type="text" id="nombresInput" placeholder="Nombres" autocomplete="off">
+            <button id="btnIngresar">🌸 Entrar a la flor</button>
+            <p style="margin-top:1.8rem; background:#daeacb; border-radius:40px; padding:0.5rem;">Apellidos luego Nombres</p>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="mainContent">
+        <!-- header fijo con nombre, barra y elementos químicos -->
+        <div class="fixed-header">
+            <span class="user-name" id="headerNombre">Cargando...</span>
+            <div class="progress-area">
+                <div class="barra-wrapper">
+                    <div id="progresoFill"></div>
+                </div>
+                <div class="tabla-puntos" id="tablaPuntos">
+                    <span class="elem" id="elem1">H</span>
+                    <span class="elem" id="elem2">He</span>
+                    <span class="elem" id="elem3">Li</span>
+                    <span class="elem" id="elem4">Be</span>
+                    <span class="elem" id="elem5">B</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- INICIO: objetivo y pre-saberes -->
+        <section class="seccion">
+            <h2>🎯 Objetivo: La meiosis, preparando la semilla de la vida</h2>
+            <p style="font-size:1.3rem;"><strong>Relacionar la meiosis con la formación de células sexuales (gametos).</strong> Así como una flor produce polen y óvulos, nuestro cuerpo produce espermatozoides y óvulos mediante meiosis. Cada uno de nosotros es una combinación única e irrepetible, gracias a este proceso. También valoraremos la diversidad en nuestra comunidad.</p>
+            <h3>📝 Pre-saberes: lo que ya sabemos</h3>
+            <div class="pregunta" id="presaber1">
+                <p>1. ¿Qué tipo de división celular produce células idénticas para el crecimiento?</p>
+                <label><input type="radio" name="pre1" value="a"> a) Meiosis</label><br>
+                <label><input type="radio" name="pre1" value="b"> b) Mitosis</label><br>
+                <label><input type="radio" name="pre1" value="c"> c) Fisión binaria</label><br>
+                <div class="feedback" id="feedPre1"></div>
+            </div>
+            <div class="pregunta" id="presaber2">
+                <p>2. Los gametos (óvulos y espermatozoides) tienen:</p>
+                <label><input type="radio" name="pre2" value="a"> a) El doble de cromosomas</label><br>
+                <label><input type="radio" name="pre2" value="b"> b) La mitad de cromosomas</label><br>
+                <label><input type="radio" name="pre2" value="c"> c) La misma cantidad</label><br>
+                <div class="feedback" id="feedPre2"></div>
+            </div>
+            <div class="pregunta" id="presaber3">
+                <p>3. ¿Dónde se forman los granos de polen en una flor?</p>
+                <label><input type="radio" name="pre3" value="a"> a) En el ovario</label><br>
+                <label><input type="radio" name="pre3" value="b"> b) En los estambres (anteras)</label><br>
+                <label><input type="radio" name="pre3" value="c"> c) En los pétalos</label><br>
+                <div class="feedback" id="feedPre3"></div>
+            </div>
+        </section>
+
+        <!-- CUERPO INDUCTIVO (texto extenso + 5 pausas) -->
+        <section class="seccion">
+            <h2>🌼 Camino inductivo: La flor y sus secretos</h2>
+            <div>
+                <p>En la vereda, cuando llega la floración del café, los campos se llenan de pequeñas flores blancas con un aroma suave. Los campesinos saben que de esas flores saldrán los frutos, pero pocos han observado los diminutos granos de polen que producen los estambres. Si abrimos una flor de zapallo, podemos ver los estambres cubiertos de polvo amarillo: el polen (gameto masculino) y en el centro el pistilo con el ovario (gameto femenino). La meiosis ocurre dentro de las anteras y los ovarios para producir esas células sexuales.</p>
+                <p>La meiosis fue descrita por primera vez a finales del siglo XIX por el biólogo alemán August Weismann, quien propuso que los gametos debían tener la mitad de la información genética para que al fusionarse se restaurara el número completo. Esto es esencial para mantener el número de cromosomas constante en las especies. Por ejemplo, los seres humanos tenemos 46 cromosomas en nuestras células corporales, pero los óvulos y espermatozoides tienen 23. Al unirse, forman un cigoto con 46.</p>
+                <p>En la naturaleza, la meiosis introduce variabilidad genética mediante dos mecanismos: el entrecruzamiento (crossing over) durante la profase I, donde los cromosomas homólogos intercambian segmentos, y la segregación aleatoria de los cromosomas. Esto hace que cada gameto sea genéticamente único. Por eso hermanos de los mismos padres pueden ser tan diferentes. En nuestra comunidad, esa diversidad es una riqueza: cada persona aporta algo distinto.</p>
+                <p>Cuando los niños juegan con plastilina o barro, pueden modelar células y simular la división. Por ejemplo, pueden hacer dos bolitas que representan los cromosomas y luego separarlas en cuatro. Esta actividad manual ayuda a entender que la meiosis reduce a la mitad y produce cuatro células hijas. En la escuela, podemos usar plastilina casera (harina, agua, sal) para representar las fases: profase, metafase, anafase, telofase. Es una forma de aprender haciendo.</p>
+                <p>Reconocer que cada uno de nosotros es una combinación única nos invita a valorarnos y respetar las diferencias. Así como en una milpa hay plantas de maíz de diferentes alturas, cada persona tiene talentos y características heredadas de sus ancestros. La meiosis es la base biológica de esa individualidad. Al observar una flor de café, podemos reflexionar sobre nuestra propia singularidad y la de nuestros compañeros.</p>
+            </div>
+            <!-- 5 pausas inductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 1: Dibuja una flor y señala dónde se producen el polen y los óvulos. Usa tu cuaderno.</p><button class="pausa-btn" data-id="0">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 2: Investiga cuántos cromosomas tiene el café, el maíz o una planta de tu región. Anótalo.</p><button class="pausa-btn" data-id="1">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 3: Con plastilina o barro, modela una célula con dos pares de cromosomas y simula la meiosis I. Describe lo que hiciste.</p><button class="pausa-btn" data-id="2">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 4: Pregunta a tus abuelos: ¿en qué se parecen físicamente a sus hermanos? ¿En qué son diferentes? Escribe.</p><button class="pausa-btn" data-id="3">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 5: Reflexiona: ¿qué te hace único o única? Escribe tres características que te distinguen.</p><button class="pausa-btn" data-id="4">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- PREGUNTA TIPO ICFES con SVG -->
+        <section class="seccion">
+            <h2>🔬 Pregunta ICFES (Indagar)</h2>
+            <div class="svg-flor">
+                <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- flor de café simplificada -->
+                    <circle cx="150" cy="100" r="40" fill="#f9f2d9" stroke="#7a5d3c" stroke-width="2" />
+                    <!-- pétalos -->
+                    <path d="M110 60 Q90 20, 130 30" fill="#e6d5b8" stroke="#7a5d3c" stroke-width="2" />
+                    <path d="M190 60 Q210 20, 170 30" fill="#e6d5b8" stroke="#7a5d3c" stroke-width="2" />
+                    <path d="M110 140 Q90 180, 130 170" fill="#e6d5b8" stroke="#7a5d3c" stroke-width="2" />
+                    <path d="M190 140 Q210 180, 170 170" fill="#e6d5b8" stroke="#7a5d3c" stroke-width="2" />
+                    <!-- estambres (productores de polen) -->
+                    <circle cx="150" cy="80" r="10" fill="#d48b2e" />
+                    <circle cx="150" cy="120" r="10" fill="#d48b2e" />
+                    <!-- ovario -->
+                    <ellipse cx="150" cy="150" rx="15" ry="10" fill="#6b8e4c" />
+                    <text x="200" y="70" fill="#1f4f1f">anteras (polen)</text>
+                    <text x="200" y="150" fill="#1f4f1f">ovario (óvulo)</text>
+                </svg>
+            </div>
+            <p>En la flor del café, las estructuras señaladas como anteras producen los granos de polen. ¿Qué proceso de división celular ocurre dentro de las anteras para formar el polen?</p>
+            <div class="pregunta">
+                <label><input type="radio" name="icfes" value="a"> a) Mitosis</label><br>
+                <label><input type="radio" name="icfes" value="b"> b) Meiosis</label><br>
+                <label><input type="radio" name="icfes" value="c"> c) Gemación</label><br>
+                <label><input type="radio" name="icfes" value="d"> d) Fisión binaria</label><br>
+                <button id="revisarIcfes">Revisar</button>
+                <div id="feedIcfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <!-- CUERPO DEDUCTIVO (con canvas central) -->
+        <section class="seccion">
+            <h2>⚙️ Camino deductivo: Las fases de la meiosis</h2>
+            <p><strong>Meiosis I (reduccional):</strong> Los cromosomas homólogos se separan. Se divide en profase I (con crossing over), metafase I (los pares se alinean), anafase I (los homólogos se separan) y telofase I (dos células con n cromosomas duplicados). El crossing over ocurre cuando las cromátidas intercambian segmentos, aumentando la variabilidad.</p>
+            <p><strong>Meiosis II (ecuacional):</strong> Similar a la mitosis, separa las cromátidas hermanas. Resultan cuatro células haploides (n). En los machos, las cuatro se convierten en espermatozoides; en las hembras, solo una se convierte en óvulo y las otras son cuerpos polares que degeneran. Esto asegura que el óvulo tenga suficiente citoplasma.</p>
+            <p><strong>Ley de la segregación (Mendel):</strong> Los alelos se separan durante la meiosis. Cada gameto recibe un alelo de cada gen. Esto explica por qué los hijos heredan características de ambos padres. La recombinación independiente de cromosomas produce 2<sup>n</sup> combinaciones posibles, siendo n el número haploide. En humanos, n=23, ¡más de 8 millones de combinaciones posibles sin contar crossing over!</p>
+            <p><strong>Errores meióticos:</strong> Cuando los cromosomas no se separan correctamente (no disyunción), pueden formarse gametos con cromosomas de más o de menos. Esto puede dar lugar a condiciones como el síndrome de Down (trisomía 21). La edad materna avanzada aumenta el riesgo de estos errores.</p>
+            <p><strong>Importancia evolutiva:</strong> La meiosis genera variabilidad genética, materia prima para la selección natural. Las poblaciones con mayor diversidad tienen más probabilidades de adaptarse a cambios ambientales. En la comunidad humana, la diversidad cultural y genética nos hace más resilientes.</p>
+            <p><strong>Analogía con la finca:</strong> Si la mitosis es como plantar esquejes (clones), la meiosis es como sembrar semillas que vienen de la mezcla de dos plantas diferentes. Cada semilla es única. Por eso los campesinos guardan semillas de los mejores frutos, porque saben que la variabilidad puede dar plantas más fuertes.</p>
+
+            <!-- CANVAS: simulación de meiosis con partículas -->
+            <canvas id="canvasMeiosis" width="700" height="300"></canvas>
+            <p style="text-align:center;">Haz clic para iniciar la meiosis. Los pares de cromosomas (círculos) se separan en cuatro células. Mueve el mouse para cambiar la velocidad.</p>
+
+            <!-- 5 pausas deductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 6: Dibuja las fases de la meiosis I en tu cuaderno (profase, metafase, anafase, telofase).</p><button class="pausa-btn" data-id="5">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 7: Explica qué es el crossing over y cómo contribuye a la variabilidad.</p><button class="pausa-btn" data-id="6">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 8: Investiga qué es la no disyunción y un ejemplo de condición genética asociada.</p><button class="pausa-btn" data-id="7">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 9: ¿Por qué los hermanos pueden ser tan diferentes aunque tengan los mismos padres? Explica.</p><button class="pausa-btn" data-id="8">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 10: Reflexiona sobre la importancia de la diversidad en tu salón de clase. Escribe un ejemplo.</p><button class="pausa-btn" data-id="9">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- EVALUACIÓN FINAL (TALLER) -->
+        <section class="seccion">
+            <h2>📋 Taller: La semilla de la vida</h2>
+            <h3>Selección múltiple (autocalifica)</h3>
+            <div><p>1. ¿Cuál es el objetivo principal de la meiosis?</p>
+                <label><input type="radio" name="m1" value="0"> a) Producir células idénticas</label><br>
+                <label><input type="radio" name="m1" value="1"> b) Producir gametos con la mitad de cromosomas</label><br>
+                <label><input type="radio" name="m1" value="2"> c) Reparar tejidos</label><br>
+                <label><input type="radio" name="m1" value="3"> d) Duplicar el ADN</label><br></div>
+            <div><p>2. En la profase I ocurre:</p>
+                <label><input type="radio" name="m2" value="0"> a) Separación de cromátidas</label><br>
+                <label><input type="radio" name="m2" value="1"> b) Crossing over</label><br>
+                <label><input type="radio" name="m2" value="2"> c) Formación de la placa ecuatorial</label><br>
+                <label><input type="radio" name="m2" value="3"> d) División del citoplasma</label><br></div>
+            <div><p>3. ¿Cuántas células hijas se producen al final de la meiosis?</p>
+                <label><input type="radio" name="m3" value="0"> a) 2</label><br>
+                <label><input type="radio" name="m3" value="1"> b) 4</label><br>
+                <label><input type="radio" name="m3" value="2"> c) 8</label><br>
+                <label><input type="radio" name="m3" value="3"> d) 1</label><br></div>
+            <div><p>4. Los óvulos y espermatozoides son células:</p>
+                <label><input type="radio" name="m4" value="0"> a) Diploides</label><br>
+                <label><input type="radio" name="m4" value="1"> b) Haploides</label><br>
+                <label><input type="radio" name="m4" value="2"> c) Poliploides</label><br>
+                <label><input type="radio" name="m4" value="3"> d) Aneuploides</label><br></div>
+            <div><p>5. La meiosis genera variabilidad genética gracias a:</p>
+                <label><input type="radio" name="m5" value="0"> a) La mitosis</label><br>
+                <label><input type="radio" name="m5" value="1"> b) Crossing over y segregación aleatoria</label><br>
+                <label><input type="radio" name="m5" value="2"> c) La duplicación del ADN</label><br>
+                <label><input type="radio" name="m5" value="3"> d) La citocinesis</label><br></div>
+            <button id="calificarMultiple">Calificar múltiple</button>
+            <div id="resultadoMultiple"></div>
+
+            <h3>Preguntas abiertas (10-15 palabras c/u)</h3>
+            <div>
+                <p>1. ¿Qué es la meiosis y dónde ocurre en el cuerpo humano?</p>
+                <textarea id="open1" rows="2"></textarea><div class="word-counter" id="wc1">0 palabras</div>
+                <p>2. Nombra dos diferencias entre mitosis y meiosis.</p>
+                <textarea id="open2" rows="2"></textarea><div class="word-counter" id="wc2">0 palabras</div>
+                <p>3. ¿Cómo contribuye el crossing over a la diversidad genética?</p>
+                <textarea id="open3" rows="2"></textarea><div class="word-counter" id="wc3">0 palabras</div>
+                <p>4. ¿Qué relación tiene la meiosis con la flor de café?</p>
+                <textarea id="open4" rows="2"></textarea><div class="word-counter" id="wc4">0 palabras</div>
+                <p>5. ¿Por qué cada persona es única e irrepetible?</p>
+                <textarea id="open5" rows="2"></textarea><div class="word-counter" id="wc5">0 palabras</div>
+                <button id="validarAbiertas">Validar respuestas</button> <span id="msgAbiertas"></span>
+            </div>
+
+            <!-- Ruta de fortalecimiento -->
+            <div style="margin:2rem 0">
+                <h3>🧭 Ruta de fortalecimiento personalizada</h3>
+                <button id="generarRuta">Analizar debilidades</button>
+                <div id="rutaTexto" class="ruta-card" style="margin-top:1rem;"></div>
+            </div>
+
+            <!-- descarga -->
+            <footer>
+                <button id="descargarResultados">📥 Descargar resultados (.txt)</button>
+            </footer>
+        </section>
+    </div>
+
+    <script>
+        (function(){
+            // Estado global
+            let usuario = { apellidos: '', nombres: '' };
+            let pausasHechas = new Array(10).fill(false);
+            let respuestasMulti = [null, null, null, null, null];
+            const correctasMulti = [1, 1, 1, 1, 1]; // según opciones (base 0)
+            let respuestasAbiertas = ['','','','',''];
+            let notaMultiple = 0;
+
+            // Elementos
+            const loginScreen = document.getElementById('loginScreen');
+            const mainContent = document.getElementById('mainContent');
+            const btnIngresar = document.getElementById('btnIngresar');
+            const apellidosInput = document.getElementById('apellidosInput');
+            const nombresInput = document.getElementById('nombresInput');
+            const headerNombre = document.getElementById('headerNombre');
+            const progresoFill = document.getElementById('progresoFill');
+            const elementos = ['elem1','elem2','elem3','elem4','elem5'].map(id => document.getElementById(id));
+
+            // Funciones de progreso y elementos
+            function actualizarProgresoElementos() {
+                const totalHechas = pausasHechas.filter(v => v).length;
+                const porcentaje = (totalHechas / 10) * 100;
+                progresoFill.style.width = porcentaje + '%';
+                const elementosDesbloqueados = Math.min(5, Math.floor(totalHechas / 2)); // cada 2 pausas desbloquea un elemento
+                for (let i = 0; i < 5; i++) {
+                    if (i < elementosDesbloqueados) elementos[i].classList.add('unlocked');
+                    else elementos[i].classList.remove('unlocked');
+                }
+                guardarLocal();
+            }
+
+            // localStorage
+            function guardarLocal() {
+                if (!usuario.apellidos) return;
+                const data = {
+                    apellidos: usuario.apellidos,
+                    nombres: usuario.nombres,
+                    pausas: pausasHechas,
+                    abiertas: respuestasAbiertas,
+                    multi: respuestasMulti
+                };
+                localStorage.setItem('ova_meiosis', JSON.stringify(data));
+            }
+
+            function cargarLocal() {
+                const saved = localStorage.getItem('ova_meiosis');
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        usuario = { apellidos: data.apellidos || '', nombres: data.nombres || '' };
+                        pausasHechas = data.pausas || new Array(10).fill(false);
+                        respuestasAbiertas = data.abiertas || ['','','','',''];
+                        respuestasMulti = data.multi || [null,null,null,null,null];
+                        // restaurar textareas
+                        document.getElementById('open1').value = respuestasAbiertas[0] || '';
+                        document.getElementById('open2').value = respuestasAbiertas[1] || '';
+                        document.getElementById('open3').value = respuestasAbiertas[2] || '';
+                        document.getElementById('open4').value = respuestasAbiertas[3] || '';
+                        document.getElementById('open5').value = respuestasAbiertas[4] || '';
+                        // restaurar radios multiple
+                        for (let i=1; i<=5; i++) {
+                            const val = respuestasMulti[i-1];
+                            if (val !== null) {
+                                const radio = document.querySelector(`input[name="m${i}"][value="${val}"]`);
+                                if (radio) radio.checked = true;
+                            }
+                        }
+                        if (usuario.apellidos && usuario.nombres) {
+                            loginScreen.style.display = 'none';
+                            mainContent.style.display = 'block';
+                            headerNombre.innerText = `${usuario.apellidos} ${usuario.nombres}`;
+                            actualizarProgresoElementos();
+                            actualizarTodosWordCount();
+                        }
+                        // deshabilitar pausas ya hechas
+                        pausasHechas.forEach((h, idx) => {
+                            if (h) {
+                                const btn = document.querySelector(`.pausa-btn[data-id="${idx}"]`);
+                                if (btn) { btn.disabled = true; btn.innerText = '✔️ Hecho'; }
+                            }
+                        });
+                    } catch (e) {}
+                }
+            }
+
+            // contador de palabras
+            function contarPalabras(t) {
+                return t.trim().split(/\s+/).filter(p => p.length>0).length;
+            }
+            function actualizarWordCount(taId, ctId) {
+                const ta = document.getElementById(taId);
+                const num = contarPalabras(ta.value);
+                document.getElementById(ctId).innerText = num + ' palabras';
+                return num;
+            }
+            function actualizarTodosWordCount() {
+                for (let i=1; i<=5; i++) {
+                    actualizarWordCount(`open${i}`, `wc${i}`);
+                }
+            }
+
+            // LOGIN
+            btnIngresar.addEventListener('click', (e) => {
+                e.preventDefault();
+                const ap = apellidosInput.value.trim();
+                const nom = nombresInput.value.trim();
+                if (!ap || !nom) { alert('Completa ambos campos'); return; }
+                usuario.apellidos = ap; usuario.nombres = nom;
+                headerNombre.innerText = `${ap} ${nom}`;
+                loginScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                if (!localStorage.getItem('ova_meiosis')) {
+                    pausasHechas = new Array(10).fill(false);
+                } else {
+                    cargarLocal();
+                }
+                actualizarProgresoElementos();
+                guardarLocal();
+            });
+
+            // PAUSAS
+            document.querySelectorAll('.pausa-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'), 10);
+                    if (!isNaN(id) && id>=0 && id<10 && !pausasHechas[id]) {
+                        pausasHechas[id] = true;
+                        e.target.disabled = true;
+                        e.target.innerText = '✔️ Hecho';
+                        actualizarProgresoElementos();
+                    }
+                });
+            });
+
+            // Pre-saberes
+            function configPre(ind, correctVal, feedId) {
+                document.querySelectorAll(`input[name="pre${ind}"]`).forEach(r => {
+                    r.addEventListener('change', function() {
+                        const f = document.getElementById(feedId);
+                        if (this.value === correctVal) {
+                            f.innerText = '✅ Correcto.';
+                            f.className = 'feedback correcto';
+                        } else {
+                            f.innerText = '❌ Vuelve a intentar.';
+                            f.className = 'feedback incorrecto';
+                        }
+                    });
+                });
+            }
+            configPre(1, 'b', 'feedPre1');
+            configPre(2, 'b', 'feedPre2');
+            configPre(3, 'b', 'feedPre3');
+
+            // ICFES
+            document.getElementById('revisarIcfes').addEventListener('click', () => {
+                const selec = document.querySelector('input[name="icfes"]:checked');
+                const feed = document.getElementById('feedIcfes');
+                if (!selec) { feed.innerText = 'Elige una opción'; return; }
+                if (selec.value === 'b') {
+                    feed.innerText = '✅ ¡Correcto! Las anteras producen polen mediante meiosis.';
+                    feed.className = 'feedback correcto';
+                } else {
+                    feed.innerText = '❌ No es correcto. Recuerda que los gametos se forman por meiosis.';
+                    feed.className = 'feedback incorrecto';
+                }
+            });
+
+            // Múltiple
+            document.getElementById('calificarMultiple').addEventListener('click', () => {
+                let aciertos = 0;
+                for (let i=1; i<=5; i++) {
+                    const radios = document.getElementsByName(`m${i}`);
+                    let val = null;
+                    for (let r of radios) if (r.checked) { val = r.value; break; }
+                    if (val !== null) {
+                        respuestasMulti[i-1] = parseInt(val,10);
+                        if (respuestasMulti[i-1] === correctasMulti[i-1]) aciertos++;
+                    } else respuestasMulti[i-1] = null;
+                }
+                notaMultiple = aciertos;
+                document.getElementById('resultadoMultiple').innerText = `Obtuviste ${aciertos}/5 correctas.`;
+                guardarLocal();
+            });
+
+            // Abiertas
+            ['open1','open2','open3','open4','open5'].forEach((id, idx) => {
+                document.getElementById(id).addEventListener('input', function() {
+                    actualizarWordCount(id, 'wc'+(idx+1));
+                    respuestasAbiertas[idx] = this.value;
+                    guardarLocal();
+                });
+            });
+            document.getElementById('validarAbiertas').addEventListener('click', () => {
+                let ok = true;
+                for (let i=1; i<=5; i++) {
+                    const num = contarPalabras(document.getElementById(`open${i}`).value);
+                    if (num<10 || num>15) ok = false;
+                }
+                document.getElementById('msgAbiertas').innerText = ok ? '✅ Todas entre 10-15 palabras.' : '❌ Revisa el contador de palabras (deben ser 10-15).';
+            });
+
+            // Ruta fortalecimiento
+            document.getElementById('generarRuta').addEventListener('click', () => {
+                // inductivas: preguntas 1,2 / deductivas: 3,4,5 (aproximadamente)
+                let indAc=0, indTot=0, dedAc=0, dedTot=0;
+                for (let i=0; i<5; i++) {
+                    if (respuestasMulti[i] !== null) {
+                        if (i<2) { indTot++; if (respuestasMulti[i]===correctasMulti[i]) indAc++; }
+                        else { dedTot++; if (respuestasMulti[i]===correctasMulti[i]) dedAc++; }
+                    }
+                }
+                let msg = '';
+                if (indTot>0 && indAc/indTot < 0.6) msg += '🌸 Fortalece lo inductivo: repasa la observación de flores y el contexto. ';
+                if (dedTot>0 && dedAc/dedTot < 0.6) msg += '🧬 Refuerza conceptos deductivos: fases de la meiosis y variabilidad. ';
+                if (msg === '') msg = '🌟 ¡Excelente! Comprendes cómo se forma la semilla de la vida.';
+                document.getElementById('rutaTexto').innerText = msg;
+            });
+
+            // CANVAS animación (meiosis simplificada)
+            const canvas = document.getElementById('canvasMeiosis');
+            const ctx = canvas.getContext('2d');
+            let mouseX = 350; // controla velocidad
+            let fase = 0; // 0: esperando, 1: meiosis I, 2: meiosis II
+            let cromosomas = [];
+            let tiempo = 0;
+
+            function iniciarMeiosis() {
+                fase = 1;
+                // crear dos pares de cromosomas homólogos (cada par de colores distintos)
+                cromosomas = [
+                    { x: 200, y: 150, par: 0, tipo: 'rojo', homólogoX: 250, homólogoY: 150 },
+                    { x: 250, y: 150, par: 0, tipo: 'azul', homólogoX: 200, homólogoY: 150 },
+                    { x: 400, y: 150, par: 1, tipo: 'rojo', homólogoX: 450, homólogoY: 150 },
+                    { x: 450, y: 150, par: 1, tipo: 'azul', homólogoX: 400, homólogoY: 150 }
+                ];
+                tiempo = 0;
+            }
+
+            canvas.addEventListener('click', () => {
+                if (fase === 0) iniciarMeiosis();
+            });
+
+            function actualizarCanvas() {
+                ctx.clearRect(0,0,700,300);
+                // fondo
+                ctx.fillStyle = '#1f4f2b';
+                ctx.fillRect(0,0,700,300);
+
+                let velocidad = 0.5 + (mouseX/700)*2; // entre 0.5 y 2.5
+
+                if (fase === 1) {
+                    // meiosis I: separar homólogos
+                    tiempo += velocidad;
+                    for (let i=0; i<cromosomas.length; i+=2) {
+                        // mover cada par en direcciones opuestas
+                        if (i===0) { // primer par a izquierda
+                            cromosomas[i].x = 200 - tiempo;
+                            cromosomas[i+1].x = 250 - tiempo;
+                        } else { // segundo par a derecha
+                            cromosomas[i].x = 400 + tiempo;
+                            cromosomas[i+1].x = 450 + tiempo;
+                        }
+                    }
+                    if (tiempo > 100) {
+                        fase = 2;
+                        tiempo = 0;
+                        // ahora cada célula tiene dos cromátidas (simulamos separación)
+                        cromosomas = [
+                            { x: 100, y: 150 }, { x: 150, y: 150 }, // célula 1
+                            { x: 500, y: 150 }, { x: 550, y: 150 }  // célula 2
+                        ];
+                    }
+                } else if (fase === 2) {
+                    // meiosis II: separar cromátidas (cada célula se divide)
+                    tiempo += velocidad;
+                    for (let i=0; i<cromosomas.length; i+=2) {
+                        if (i===0) { // primera célula
+                            cromosomas[i].x = 80 - tiempo;
+                            cromosomas[i+1].x = 120 - tiempo;
+                        } else { // segunda célula
+                            cromosomas[i].x = 520 + tiempo;
+                            cromosomas[i+1].x = 560 + tiempo;
+                        }
+                    }
+                    if (tiempo > 40) {
+                        fase = 0; // termina
+                        cromosomas = []; // opcional
+                    }
+                }
+
+                // dibujar cromosomas como círculos
+                for (let i=0; i<cromosomas.length; i++) {
+                    ctx.beginPath();
+                    if (i % 2 === 0) ctx.fillStyle = '#e64c3c'; // rojo
+                    else ctx.fillStyle = '#3498db'; // azul
+                    ctx.shadowColor = '#f5b041';
+                    ctx.shadowBlur = 15;
+                    ctx.arc(cromosomas[i].x, cromosomas[i].y, 8, 0, 2*Math.PI);
+                    ctx.fill();
+                }
+                ctx.shadowBlur = 0;
+
+                // texto
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillStyle = '#fcf9ea';
+                if (fase === 0) ctx.fillText('Haz clic para iniciar la meiosis', 220, 50);
+                else if (fase === 1) ctx.fillText('Meiosis I: separación de homólogos', 220, 50);
+                else if (fase === 2) ctx.fillText('Meiosis II: separación de cromátidas', 220, 50);
+
+                // indicador de velocidad
+                ctx.fillStyle = '#f0f0f0';
+                ctx.fillRect(mouseX-2, 260, 4, 20);
+                ctx.fillText('velocidad', mouseX-30, 290);
+
+                requestAnimationFrame(actualizarCanvas);
+            }
+            actualizarCanvas();
+
+            // Descarga resultados
+            document.getElementById('descargarResultados').addEventListener('click', () => {
+                const nombre = `${usuario.apellidos} ${usuario.nombres}`;
+                const elemIndex = Math.min(5, Math.floor(pausasHechas.filter(v=>v).length / 2));
+                const elemento = ['H','He','Li','Be','B'][elemIndex-1] || 'Ninguno';
+                const multiStr = respuestasMulti.map((v,i)=>`P${i+1}:${v!==null?v:'-'}`).join(' ');
+                const abiertasStr = respuestasAbiertas.map((t,i)=>`A${i+1}:${t.substring(0,30)}`).join(' | ');
+                const contenido = `Nombre: ${nombre}\nNota final múltiple: ${notaMultiple}/5\nElemento químico: ${elemento}\nRespuestas: ${multiStr}\nAbiertas: ${abiertasStr}`;
+                const blob = new Blob([contenido], {type:'text/plain'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `meiosis_${usuario.apellidos}.txt`;
+                a.click();
+            });
+
+            window.addEventListener('load', () => {
+                cargarLocal();
+                actualizarTodosWordCount();
+            });
+        })();
+    </script>
+</body>
+</html>

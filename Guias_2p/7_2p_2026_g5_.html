@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Fotosíntesis II - El Respiro de Pueblo Rico</title>
+    <style>
+        :root {
+            --pcc-verde-oscuro: #1b5e20;
+            --pcc-verde-cafeto: #2e7d32;
+            --pcc-amarillo-sol: #fbc02d;
+            --pcc-naranja-citrico: #fb8c00;
+            --pcc-cafe: #4e342e;
+            --pcc-crema: #fff8e1;
+            --pcc-blanco: #ffffff;
+            --pcc-rojo-cereza: #d32f2f;
+        }
+
+        * { box-sizing: border-box; scroll-behavior: smooth; }
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--pcc-crema); 
+            color: var(--pcc-cafe);
+            line-height: 1.6;
+            user-select: none;
+        }
+
+        /* --- Login y Overlay --- */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--pcc-verde-oscuro), var(--pcc-cafe));
+            z-index: 3000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 25px;
+            color: var(--pcc-cafe);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid var(--pcc-verde-cafeto);
+            border-radius: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* --- Dashboard --- */
+        #main-nav {
+            position: sticky;
+            top: 0;
+            background: var(--pcc-verde-oscuro);
+            color: white;
+            padding: 10px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .bar-bg {
+            width: 150px;
+            height: 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        #bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--pcc-amarillo-sol);
+            transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .hito-icon { font-size: 1.8rem; filter: drop-shadow(0 0 5px gold); }
+
+        /* --- Contenido Principal --- */
+        .content-wrapper { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+        section {
+            background: white;
+            padding: 50px;
+            margin-bottom: 50px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-left: 8px solid var(--pcc-verde-cafeto);
+        }
+
+        h1, h2, h3 { color: var(--pcc-verde-oscuro); }
+
+        /* --- Pausas Activas (Cuaderno) --- */
+        .notebook-box {
+            background: #fff9c4;
+            border: 2px dashed var(--pcc-cafe);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .notebook-box::after {
+            content: "📓 RETO DE CUADERNO";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--pcc-cafe);
+            color: white;
+            padding: 2px 15px;
+            font-size: 0.8rem;
+            border-radius: 10px;
+        }
+
+        /* --- Visuales --- */
+        .visual-container {
+            text-align: center;
+            background: #f1f8e9;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 30px 0;
+        }
+
+        #canvas-stage {
+            width: 100%;
+            height: 450px;
+            background: #001a00;
+            border-radius: 15px;
+            cursor: crosshair;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .data-table th { background: var(--pcc-verde-cafeto); color: white; padding: 15px; }
+        .data-table td { border: 1px solid #c8e6c9; padding: 12px; text-align: center; }
+
+        /* --- Evaluación --- */
+        .feedback-msg { padding: 15px; border-radius: 8px; margin-top: 10px; display: none; }
+        .correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .incorrect { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        textarea {
+            width: 100%; height: 100px; padding: 15px;
+            border: 2px solid #ddd; border-radius: 10px;
+            resize: none; font-family: inherit; margin-top: 10px;
+        }
+
+        .btn-action {
+            background: var(--pcc-verde-cafeto);
+            color: white; border: none; padding: 12px 25px;
+            border-radius: 8px; cursor: pointer; font-weight: bold;
+            transition: 0.3s; margin: 5px;
+        }
+
+        .btn-action:hover { background: var(--pcc-verde-oscuro); transform: translateY(-2px); }
+        .btn-action:disabled { background: #ccc; cursor: not-allowed; }
+
+        .warning-text { color: var(--pcc-rojo-cereza); font-size: 0.85rem; display: none; margin-top: 5px; }
+
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <!-- Login -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <svg width="80" height="80" viewBox="0 0 100 100">
+                <path d="M50 10 Q 70 40 50 90 Q 30 40 50 10" fill="#4caf50" />
+                <circle cx="50" cy="40" r="5" fill="#fff" />
+            </svg>
+            <h2>Explorador de Pueblo Rico</h2>
+            <p>Inicia tu viaje científico por el Paisaje Cultural Cafetero</p>
+            <input type="text" id="in-lastname" placeholder="Tus Apellidos">
+            <input type="text" id="in-name" placeholder="Tus Nombres">
+            <button class="btn-action" id="btn-start">EMPEZAR EXPEDICIÓN</button>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <nav id="main-nav">
+        <div>
+            <span id="display-user">Cargando...</span> | 
+            <span id="timer">00:00</span>
+        </div>
+        <div class="progress-container">
+            <span id="score-text">Nota: 0.0</span>
+            <div class="bar-bg">
+                <div id="bar-fill"></div>
+            </div>
+            <span id="hito-display" class="hito-icon">🌱</span>
+        </div>
+    </nav>
+
+    <div class="content-wrapper">
+        
+        <!-- SECCIÓN 1: OBJETIVO Y PRE-SABERES -->
+        <section id="inicio">
+            <h1>1. El Aliento de la Montaña</h1>
+            <p><strong>Objetivo:</strong> Comprender la producción de glucosa y oxígeno mediante la observación de fenómenos naturales en la Vereda Pueblo Rico, integrando principios de la Fase Oscura y la fotólisis del agua.</p>
+            
+            <div class="visual-container">
+                <h3>Pre-saberes: Desafío de Entrada</h3>
+                <div id="pre-quiz">
+                    <p>1. Si sumerges un musgo de la quebrada "La Soledad" en un frasco con agua bajo el sol, ¿qué esperas ver?</p>
+                    <button class="btn-action" onclick="ansPre(1, 'a', this)">A. El agua se vuelve negra</button>
+                    <button class="btn-action" onclick="ansPre(1, 'b', this)">B. Pequeñas burbujas ascendiendo</button>
+                    <button class="btn-action" onclick="ansPre(1, 'c', this)">C. Nada, las plantas no respiran</button>
+                    <div id="fb-1" class="feedback-msg"></div>
+
+                    <p>2. ¿Cuál es la fuente de energía que usan los cafetales de Quimbaya?</p>
+                    <button class="btn-action" onclick="ansPre(2, 'a', this)">A. Abono químico</button>
+                    <button class="btn-action" onclick="ansPre(2, 'b', this)">B. Radiación solar</button>
+                    <button class="btn-action" onclick="ansPre(2, 'c', this)">C. El viento de la tarde</button>
+                    <div id="fb-2" class="feedback-msg"></div>
+
+                    <p>3. ¿Para qué crees que la planta de café fabrica azúcar (glucosa)?</p>
+                    <button class="btn-action" onclick="ansPre(3, 'a', this)">A. Para endulzar el grano</button>
+                    <button class="btn-action" onclick="ansPre(3, 'b', this)">B. Para atraer insectos</button>
+                    <button class="btn-action" onclick="ansPre(3, 'c', this)">C. Para obtener energía y crecer</button>
+                    <div id="fb-3" class="feedback-msg"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: CUERPO INDUCTIVO -->
+        <section id="inductivo">
+            <h2>2. Inducción: Fenomenología en el Cafetal</h2>
+            <div class="text-block">
+                <p>Caminar por los linderos de la <strong>Vereda Pueblo Rico</strong> es ser testigo de una fábrica silenciosa. Mientras el sol de Quimbaya calienta las hojas cerosas de los cafetales, un proceso invisible pero violento ocurre en el interior de cada célula verde. Los campesinos de nuestra región saben que una buena cosecha de café o de cítricos depende directamente de "qué tanto sol carguen las ramas". Pero, ¿qué significa realmente que una planta cargue sol?</p>
+                
+                <p>La respuesta reside en la <strong>Fotosíntesis II</strong>, específicamente en la capacidad de la planta para transformar lo inorgánico en orgánico. Cuando observamos el musgo en las piedras de las quebradas locales, notamos burbujas de cristal que se desprenden bajo la luz directa. Estas burbujas son evidencia física de la <strong>Fotólisis del Agua</strong>: la luz solar tiene tanta energía que "rompe" las moléculas de agua que la planta absorbió del suelo quindiano. Al romperse el agua, se libera oxígeno puro (O<sub>2</sub>) a la atmósfera, el mismo que respiramos los habitantes de Quimbaya.</p>
+                
+                <p>Este fenómeno inductivo nos permite inferir una ley natural: la materia no aparece de la nada. Los átomos de hidrógeno que quedan tras la ruptura del agua son capturados por moléculas transportadoras para ser usados más adelante. En Pueblo Rico, este proceso es el motor de la biomasa; sin estas burbujas de oxígeno, no habría oxígeno para los animales de las fincas ganaderas, ni tampoco energía para que el árbol de café produzca sus cerezas rojas.</p>
+                
+                <p>Consideremos la relación entre la luz y el agua. En nuestra vereda, el agua es abundante gracias a las cuencas del Río La Vieja y sus afluentes. Cuando una planta de cítricos en plena producción recibe agua constante y sol intenso, su tasa fotosintética alcanza un punto máximo. Los azúcares producidos no solo alimentan a la planta, sino que se almacenan en los frutos, dándole el dulzor característico a las naranjas de nuestra zona. Es una cadena de transformación energética impecable.</p>
+
+                <p>Finalmente, debemos entender que la fotosíntesis es un balance químico. Lo que nosotros exhalamos como desecho (CO<sub>2</sub>), las plantas de Pueblo Rico lo reclaman como materia prima. Es un contrato vital entre el reino animal y el vegetal mediado por la luz. Entender este proceso desde la observación directa de una burbuja de agua es el primer paso para valorar la riqueza ecosistémica que rodea nuestras fincas y hogares.</p>
+            </div>
+
+            <div class="visual-container">
+                <h3>Análisis de Eficiencia Fotosintética</h3>
+                <svg width="500" height="300" viewBox="0 0 500 300" id="svg-graph">
+                    <!-- Ejes -->
+                    <line x1="50" y1="250" x2="450" y2="250" stroke="#4e342e" stroke-width="2"/>
+                    <line x1="50" y1="250" x2="50" y2="50" stroke="#4e342e" stroke-width="2"/>
+                    <!-- Texto Ejes -->
+                    <text x="180" y="280" font-size="12" fill="#4e342e">Intensidad Lumínica (W/m²)</text>
+                    <text x="10" y="150" transform="rotate(-90 20,150)" font-size="12" fill="#4e342e">Tasa de O2 (Burbujas/min)</text>
+                    <!-- Curva de Datos -->
+                    <path d="M50 250 Q 200 50 450 50" fill="none" stroke="#2e7d32" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="200" cy="100" r="6" fill="#fb8c00">
+                        <animate attributeName="r" values="6;9;6" dur="2s" repeatCount="indefinite" />
+                    </circle>
+                </svg>
+            </div>
+
+            <table class="data-table">
+                <caption>Tabla 1: Comparativa de Insumos en Pueblo Rico</caption>
+                <thead>
+                    <tr>
+                        <th>Variable</th>
+                        <th>Origen en la Vereda</th>
+                        <th>Función Bioquímica</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Agua (H<sub>2</sub>O)</td>
+                        <td>Quebrada La Soledad / Lluvia</td>
+                        <td>Donante de electrones y Protones</td>
+                    </tr>
+                    <tr>
+                        <td>Dióxido de Carbono</td>
+                        <td>Aire del campo / Respiración animal</td>
+                        <td>Fuente de Carbono para la Glucosa</td>
+                    </tr>
+                    <tr>
+                        <td>Fotones (Luz)</td>
+                        <td>Radiación solar de Quimbaya</td>
+                        <td>Excitación de la Clorofila</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- PAUSAS ACTIVAS 1-5 -->
+            <div class="notebook-box">
+                <p><strong>RETO 1:</strong> Responde en tu cuaderno: ¿Por qué en un día lluvioso y oscuro en Pueblo Rico las plantas producen menos oxígeno?</p>
+                <button class="btn-action" onclick="upProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="notebook-box">
+                <p><strong>RETO 2:</strong> Dibuja en tu cuaderno una planta acuática de la vereda e identifica con flechas la entrada de luz y la salida de burbujas de O<sub>2</sub>.</p>
+                <button class="btn-action" onclick="upProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="notebook-box">
+                <p><strong>RETO 3:</strong> Crea un Mapa Mental sobre los insumos de la fotosíntesis mencionados en la Tabla 1.</p>
+                <button class="btn-action" onclick="upProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="notebook-box">
+                <p><strong>RETO 4:</strong> Elabora un cuadro comparativo entre el aire que respiras tú y el gas que sale de las burbujas de la planta.</p>
+                <button class="btn-action" onclick="upProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="notebook-box">
+                <p><strong>RETO 5:</strong> Diseña un diagrama de flujo simple que muestre el camino del agua desde la quebrada hasta convertirse en oxígeno.</p>
+                <button class="btn-action" onclick="upProg(5)">Ya lo hice (+5%)</button>
+            </div>
+        </section>
+
+        <!-- COMPETENCIA INDAGAR -->
+        <section id="indagar">
+            <h3>Competencia Indagar (Tipo ICFES)</h3>
+            <p>Observa la gráfica de "Eficiencia Fotosintética" arriba. Un estudiante de la I.E. de Quimbaya nota que después de cierto punto (el punto naranja), aunque el sol brille con más fuerza, la cantidad de burbujas ya no aumenta. ¿Cuál es la explicación más lógica?</p>
+            <button class="btn-action" onclick="ansIcfes('a', this)">A. La planta se quemó por el exceso de sol de la vereda.</button>
+            <button class="btn-action" onclick="ansIcfes('b', this)">B. Los cloroplastos llegaron a su máxima capacidad de trabajo (saturación).</button>
+            <button class="btn-action" onclick="ansIcfes('c', this)">C. El agua de la quebrada se evaporó instantáneamente.</button>
+            <div id="fb-icfes" class="feedback-msg"></div>
+        </section>
+
+        <!-- SECCIÓN 3: CUERPO DEDUCTIVO -->
+        <section id="deductivo">
+            <h2>3. Deducción: La Maquinaria del Ciclo de Calvin</h2>
+            <div class="text-block">
+                <p>Si la fase lumínica es la captura de energía, la <strong>Fase Oscura o Ciclo de Calvin</strong> es la arquitectura de la vida. A nivel deductivo, podemos afirmar que la energía no se destruye, solo se transforma. El ATP y el NADPH producidos anteriormente son "monedas energéticas" que ahora se gastan en el estroma del cloroplasto para fijar el carbono atmosférico. No requiere luz directa, pero depende totalmente de lo que la luz fabricó minutos antes en el cafetal.</p>
+                
+                <p>La ecuación general de la fotosíntesis es una ley de proporciones: 6CO<sub>2</sub> + 6H<sub>2</sub>O + Energía → C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> + 6O<sub>2</sub>. Deductivamente, entendemos que para fabricar una sola molécula de glucosa, la planta debe procesar seis moléculas de dióxido de carbono. En los suelos fértiles de la Vereda Pueblo Rico, ricos en materia orgánica y minerales, los cloroplastos tienen todos los cofactores necesarios para que las enzimas, como la RubisCO, funcionen a la perfección.</p>
+                
+                <p>La glucosa resultante es un polímero de alta energía. Parte de ella se convierte en almidón para que la planta de café sobreviva a las noches frías de Quimbaya, y otra parte se convierte en celulosa para fortalecer el tronco del árbol. Es aquí donde la química se vuelve madera, hoja y fruto. Sin el Ciclo de Calvin, el carbono se quedaría en el aire calentando el planeta, en lugar de estar almacenado en la estructura sólida de nuestros bosques cafeteros.</p>
+                
+                <p>Deducimos también que la eficiencia de este ciclo está ligada a la temperatura. En el clima templado de nuestra vereda (promedio 20°C - 24°C), las enzimas fotosintéticas trabajan en su rango óptimo. Si el cambio climático eleva demasiado la temperatura en Quimbaya, el ciclo podría invertirse en un proceso llamado fotorrespiración, donde la planta gasta energía en lugar de ganarla, poniendo en riesgo la economía de las familias de Pueblo Rico.</p>
+
+                <p>En conclusión, la fotosíntesis II es un sistema termodinámico abierto. Recibe energía del sol, materia del suelo y el aire, y produce orden en forma de moléculas complejas. Al estudiar este proceso, deducimos que la agricultura en Pueblo Rico no es solo sembrar; es gestionar un flujo complejo de electrones y átomos que sostiene la vida de toda nuestra comunidad quindiana.</p>
+            </div>
+
+            <div class="visual-container">
+                <h4>Simulador Cinético: Fijación de Carbono (Ciclo de Calvin)</h4>
+                <p style="font-size: 0.9rem;">Interactúa: Mueve el mouse sobre el simulador para agitar las moléculas de CO<sub>2</sub> (esferas blancas) y ver cómo se integran al ciclo de la glucosa (esferas verdes).</p>
+                <canvas id="canvas-stage"></canvas>
+            </div>
+
+            <!-- PAUSAS ACTIVAS 6-10 -->
+            <div class="notebook-box">
+                <p><strong>RETO 6:</strong> Construye un Mapa Conceptual que conecte la Fase Lumínica con la Fase Oscura usando los conceptos: ATP, NADPH y Glucosa.</p>
+                <button class="btn-action" onclick="upProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="notebook-box">
+                <p><strong>RETO 7:</strong> Elabora una tabla en tu cuaderno con dos columnas: "Lo que entra al Ciclo de Calvin" y "Lo que sale del Ciclo de Calvin".</p>
+                <button class="btn-action" onclick="upProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="notebook-box">
+                <p><strong>RETO 8:</strong> Realiza un dibujo técnico de un cloroplasto señalando el Estroma (donde ocurre el Ciclo de Calvin) y los Tilacoides.</p>
+                <button class="btn-action" onclick="upProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="notebook-box">
+                <p><strong>RETO 9:</strong> Escribe una síntesis de 10 renglones explicando por qué se dice que el café de Pueblo Rico es "energía solar transformada".</p>
+                <button class="btn-action" onclick="upProg(5)">Ya lo hice (+5%)</button>
+            </div>
+            <div class="notebook-box">
+                <p><strong>RETO 10:</strong> Problema Matemático: Si un árbol de cítrico en Pueblo Rico fija 10g de carbono por hora, ¿cuántos gramos fijará en una jornada de sol de 8 horas?</p>
+                <button class="btn-action" onclick="upProg(5)">Ya lo hice (+5%)</button>
+            </div>
+        </section>
+
+        <!-- EVALUACIÓN FINAL -->
+        <section id="evaluacion">
+            <h2>4. Taller de Maestría Científica</h2>
+            <div id="final-exam">
+                <h3>Selección Múltiple</h3>
+                <p>1. ¿Cuál es el papel del CO<sub>2</sub> en el Ciclo de Calvin?</p>
+                <select id="q1">
+                    <option value="0">Seleccionar...</option>
+                    <option value="a">Ser el combustible para la luz</option>
+                    <option value="b">Proveer los átomos de carbono para la glucosa</option>
+                    <option value="c">Enfriar la hoja del cafeto</option>
+                </select>
+
+                <p>2. El oxígeno que sale de las plantas acuáticas en las quebradas de Quimbaya proviene de:</p>
+                <select id="q2">
+                    <option value="0">Seleccionar...</option>
+                    <option value="a">El aire disuelto en el agua</option>
+                    <option value="b">La ruptura de la molécula de agua (Fotólisis)</option>
+                    <option value="c">La descomposición de la glucosa</option>
+                </select>
+
+                <p>3. ¿Qué molécula es el producto final y principal del Ciclo de Calvin?</p>
+                <select id="q3">
+                    <option value="0">Seleccionar...</option>
+                    <option value="a">Glucosa (C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>)</option>
+                    <option value="b">Agua Oxigenada</option>
+                    <option value="c">Clorofila líquida</option>
+                </select>
+
+                <h3>Preguntas Abiertas (Análisis Crítico)</h3>
+                <p style="font-size: 0.8rem; color: #666;">* Las respuestas deben tener entre 10 y 15 palabras. El sistema detecta copia/pegado.</p>
+                
+                <p>4. Explica la importancia de la luz solar para los caficultores de Pueblo Rico:</p>
+                <textarea id="qa1" onkeydown="logKey(event, 'qa1')"></textarea>
+                <p id="w-qa1" class="warning-text">¡Alerta! Cadencia de tecleo inhumana o pegado detectado.</p>
+
+                <p>5. ¿Qué sucedería si elimináramos todas las plantas acuáticas de las quebradas locales?</p>
+                <textarea id="qa2" onkeydown="logKey(event, 'qa2')"></textarea>
+                <p id="w-qa2" class="warning-text">¡Alerta! Cadencia de tecleo inhumana o pegado detectado.</p>
+
+                <button class="btn-action" style="margin-top: 30px; width: 100%;" onclick="gradeAll()">FINALIZAR Y CALIFICAR</button>
+            </div>
+        </section>
+
+        <!-- RESULTADOS -->
+        <section id="result-screen" style="display:none;">
+            <h2>Reporte de Expedición Científica</h2>
+            <div id="report-data" style="font-family: monospace; background: #eee; padding: 20px; border-radius: 10px;"></div>
+            <button class="btn-action" onclick="downloadReport()">DESCARGAR REPORTE (.TXT)</button>
+        </section>
+    </div>
+
+    <script>
+        // --- Estado Global ---
+        let appState = {
+            user: { name: "", last: "" },
+            prog: 0,
+            score: 0.0,
+            time: 0,
+            keyLogs: { qa1: [], qa2: [] },
+            isCheater: { qa1: false, qa2: false },
+            startTime: Date.now()
+        };
+
+        // --- Gestión de Usuario ---
+        document.getElementById('btn-start').addEventListener('click', () => {
+            const n = document.getElementById('in-name').value.trim();
+            const l = document.getElementById('in-lastname').value.trim();
+            if(n && l) {
+                appState.user.name = n;
+                appState.user.last = l;
+                document.getElementById('display-user').innerText = `${n} ${l}`;
+                document.getElementById('login-overlay').style.display = 'none';
+                initApp();
+            } else {
+                alert("Por favor ingresa tus nombres y apellidos.");
+            }
+        });
+
+        function initApp() {
+            setInterval(() => {
+                appState.time++;
+                let m = Math.floor(appState.time / 60).toString().padStart(2,'0');
+                let s = (appState.time % 60).toString().padStart(2,'0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+            drawCanvas();
+        }
+
+        // --- Progreso e Hitos ---
+        function upProg(val) {
+            appState.prog = Math.min(appState.prog + val, 100);
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            document.getElementById('bar-fill').style.width = appState.prog + "%";
+            appState.score = (appState.prog / 100) * 3.5; // El resto viene de evaluación
+            document.getElementById('score-text').innerText = `Nota: ${appState.score.toFixed(1)}`;
+            
+            let hito = document.getElementById('hito-display');
+            if(appState.score > 1.0 && appState.score <= 2.5) hito.innerText = "🌿";
+            if(appState.score > 2.5 && appState.score <= 4.0) hito.innerText = "☕";
+            if(appState.score > 4.0) hito.innerText = "🎩✨";
+        }
+
+        // --- Validaciones ---
+        function ansPre(q, ans, btn) {
+            let fb = document.getElementById(`fb-${q}`);
+            fb.style.display = "block";
+            if(ans === 'b' || (q===2 && ans==='b') || (q===3 && ans==='c')) {
+                fb.innerText = "¡Correcto! Entiendes el entorno de Pueblo Rico.";
+                fb.className = "feedback-msg correct";
+                upProg(3);
+            } else {
+                fb.innerText = "Intenta analizarlo de nuevo pensando en el musgo y el sol.";
+                fb.className = "feedback-msg incorrect";
+            }
+            btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+        }
+
+        function ansIcfes(ans, btn) {
+            let fb = document.getElementById('fb-icfes');
+            fb.style.display = "block";
+            if(ans === 'b') {
+                fb.innerText = "¡Excelente deducción! Es la Ley de Saturación Lumínica.";
+                fb.className = "feedback-msg correct";
+                upProg(10);
+            } else {
+                fb.innerText = "Incorrecto. Recuerda que las enzimas tienen un límite de velocidad.";
+                fb.className = "feedback-msg incorrect";
+            }
+            btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+        }
+
+        // --- Anti-Fraude ---
+        function logKey(e, id) {
+            appState.keyLogs[id].push(Date.now());
+            if(appState.keyLogs[id].length > 5) {
+                let last = appState.keyLogs[id].slice(-5);
+                let diffs = [];
+                for(let i=1; i<last.length; i++) diffs.push(last[i] - last[i-1]);
+                let avg = diffs.reduce((a,b)=>a+b)/diffs.length;
+                if(avg < 30) { // Velocidad inhumana
+                    appState.isCheater[id] = true;
+                    document.getElementById(`w-${id}`).style.display = 'block';
+                }
+            }
+        }
+
+        // --- Canvas Simulador ---
+        function drawCanvas() {
+            const canvas = document.getElementById('canvas-stage');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let mouse = { x: -100, y: -100 };
+
+            canvas.addEventListener('mousemove', e => {
+                let rect = canvas.getBoundingClientRect();
+                mouse.x = e.clientX - rect.left;
+                mouse.y = e.clientY - rect.top;
+            });
+
+            class Mol {
+                constructor(type) {
+                    this.type = type; // 'co2' o 'glu'
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random()-0.5) * 2;
+                    this.vy = (Math.random()-0.5) * 2;
+                    this.r = type === 'co2' ? 5 : 8;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if(this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                    let dist = Math.hypot(this.x - mouse.x, this.y - mouse.y);
+                    if(dist < 50 && this.type === 'co2') {
+                        this.type = 'glu';
+                        this.vx *= 1.5;
+                    }
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+                    ctx.fillStyle = this.type === 'co2' ? '#fff' : '#4caf50';
+                    ctx.fill();
+                    if(this.type === 'glu') {
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = '#4caf50';
+                    } else {
+                        ctx.shadowBlur = 0;
+                    }
+                }
+            }
+
+            for(let i=0; i<40; i++) particles.push(new Mol('co2'));
+
+            function anim() {
+                ctx.fillStyle = 'rgba(0, 26, 0, 0.2)';
+                ctx.fillRect(0,0,canvas.width, canvas.height);
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(anim);
+            }
+            anim();
+        }
+
+        // --- Calificación Final ---
+        function gradeAll() {
+            let bonus = 0;
+            if(document.getElementById('q1').value === 'b') bonus += 0.5;
+            if(document.getElementById('q2').value === 'b') bonus += 0.5;
+            if(document.getElementById('q3').value === 'a') bonus += 0.5;
+
+            // Preguntas Abiertas
+            const checkOpen = (id) => {
+                const text = document.getElementById(id).value.trim();
+                const words = text.split(/\s+/).length;
+                if(words >= 10 && words <= 15 && !appState.isCheater[id]) return 1.0;
+                return 0;
+            };
+
+            appState.score += bonus + checkOpen('qa1') + checkOpen('qa2');
+            appState.score = Math.min(appState.score, 5.0);
+            
+            document.getElementById('result-screen').style.display = 'block';
+            const report = `
+                ESTUDIANTE: ${appState.user.last}, ${appState.user.name}
+                NOTA FINAL: ${appState.score.toFixed(1)} / 5.0
+                TIEMPO TOTAL: ${document.getElementById('timer').innerText}
+                PROGRESO LECTURA/RETO: ${appState.prog}%
+                HITO ALCANZADO: ${document.getElementById('hito-display').innerText}
+                ESTADO ANTI-FRAUDE: ${Object.values(appState.isCheater).includes(true) ? 'ALERTA DETECTADA' : 'LIMPIO'}
+            `;
+            document.getElementById('report-data').innerText = report;
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function downloadReport() {
+            const content = document.getElementById('report-data').innerText;
+            const blob = new Blob([content], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Reporte_Fotosintesis_${appState.user.last}.txt`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

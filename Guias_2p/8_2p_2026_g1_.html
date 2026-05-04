@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA · Homeostasis: el equilibrio de la finca interior</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: #eaf7e1;
+            color: #1e3c2c;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+        /* pantalla de login */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(30, 60, 40, 0.98);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: opacity 0.4s;
+        }
+        .login-card {
+            background: #f5ffe0;
+            border-radius: 3rem 1rem 3rem 1rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.5), inset 0 0 0 2px #b5d6a0;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        .login-card h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #1f4f2b;
+            border-bottom: 3px solid #8fc27e;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+        .login-card input {
+            display: block;
+            width: 100%;
+            margin: 1.2rem 0;
+            padding: 0.9rem 1rem;
+            border: none;
+            border-radius: 50px;
+            background: #dde8d0;
+            font-size: 1rem;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+        .login-card input:focus {
+            outline: none;
+            border-color: #4b7b5e;
+            background: #f5ffe0;
+        }
+        .login-card button {
+            background: #2d6a4f;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.3rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 0 #1b3b2a;
+            transition: 0.1s ease;
+            width: 100%;
+            letter-spacing: 1px;
+        }
+        .login-card button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #1b3b2a;
+        }
+        /* contenido principal */
+        #mainContent {
+            display: none;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem 4rem;
+        }
+        /* header fijo con nombre, barra y elementos */
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            background: #d9e6c3;
+            border-radius: 0 0 30px 30px;
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 6px 12px rgba(0,40,0,0.2);
+            z-index: 100;
+            border: 2px solid #a2c18b;
+            backdrop-filter: blur(4px);
+            margin-bottom: 2rem;
+        }
+        .user-name {
+            font-weight: 800;
+            background: #2b5e3a;
+            color: #f0ffe0;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            box-shadow: inset 0 -2px 0 #143020;
+        }
+        .progress-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .progress-bar-container {
+            width: 200px;
+            height: 20px;
+            background: #b1c9a0;
+            border-radius: 40px;
+            overflow: hidden;
+            border: 2px solid #3d6b4a;
+        }
+        #progresoFill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #f4d03f, #2ecc71);
+            transition: width 0.3s;
+        }
+        .puntos-tabla {
+            display: flex;
+            gap: 8px;
+        }
+        .elem {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #aaa;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            box-shadow: inset 0 -4px 0 #444;
+            transition: 0.2s;
+            border: 2px solid #333;
+        }
+        .elem.unlocked {
+            background: #f5b342;
+            box-shadow: inset 0 -4px 0 #b87333, 0 0 15px gold;
+            border-color: #b8860b;
+        }
+        /* secciones */
+        .seccion {
+            background: #fbffed;
+            border-radius: 40px 40px 40px 10px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 10px 10px 0 #8fb389;
+            border: 2px solid #588157;
+        }
+        h2 {
+            font-size: 2rem;
+            color: #1f4f2b;
+            border-left: 14px solid #7dab73;
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        h3 {
+            color: #325b3a;
+            margin-top: 1.2rem;
+        }
+        button {
+            background: #3d6b4a;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.4rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 4px solid #1e3f27;
+            margin: 0.5rem 0;
+        }
+        button:hover {
+            background: #578b67;
+            transform: scale(1.02);
+        }
+        button:active {
+            border-bottom-width: 1px;
+            transform: translateY(3px);
+        }
+        .pausa-box {
+            background: #daf0ce;
+            border-radius: 30px;
+            padding: 1.2rem;
+            margin: 1.8rem 0;
+            border-left: 12px solid #2e7d5e;
+        }
+        .pregunta {
+            background: #ecf7e5;
+            padding: 1.5rem;
+            border-radius: 25px;
+            margin: 1rem 0;
+        }
+        .feedback {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .correcto {
+            background: #b6e6b6;
+            color: #004d00;
+        }
+        .incorrecto {
+            background: #f9cfcf;
+            color: #8b0000;
+        }
+        canvas {
+            display: block;
+            margin: 2rem auto;
+            border-radius: 30px;
+            background: #98b9a2;
+            box-shadow: 0 8px 0 #4d6b53, 0 14px 20px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 700px;
+            border: 3px solid #4a7856;
+        }
+        .word-counter {
+            font-size: 0.9rem;
+            margin: 0.3rem 0 1rem;
+        }
+        .valido {
+            color: green;
+        }
+        .invalido {
+            color: red;
+        }
+        .icfes-grafico svg {
+            width: 100%;
+            max-height: 200px;
+            margin: 1rem 0;
+            border-radius: 20px;
+            background: #cae0c2;
+            padding: 1rem;
+        }
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+        }
+        .ruta-card {
+            background: #bfdbb5;
+            border-radius: 30px;
+            padding: 1.5rem;
+            font-size: 1.2rem;
+            border: 3px dashed #1f5e3a;
+        }
+    </style>
+</head>
+<body>
+    <!-- pantalla de login (Apellidos / Nombres) -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <h1>🌱 finca interior</h1>
+            <p style="margin-bottom:1.2rem; color:#2b4b2b;">Ingresa para comenzar</p>
+            <input type="text" id="apellidosInput" placeholder="Apellidos" autocomplete="off">
+            <input type="text" id="nombresInput" placeholder="Nombres" autocomplete="off">
+            <button id="btnIngresar">🌿 Entrar al equilibrio</button>
+            <p style="margin-top:1.5rem; font-size:0.9rem; background:#d0e2c0; border-radius:30px; padding:0.5rem;">Orden: primero apellidos, luego nombres</p>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL (visible tras login) -->
+    <div id="mainContent">
+        <!-- HEADER FIJO con nombre, barra de progreso, puntos tabla periódica -->
+        <div class="fixed-header">
+            <span class="user-name" id="headerNombre">Cargando...</span>
+            <div class="progress-area">
+                <div class="progress-bar-container">
+                    <div id="progresoFill"></div>
+                </div>
+                <div class="puntos-tabla" id="puntosTabla">
+                    <span class="elem" id="elem1">H</span>
+                    <span class="elem" id="elem2">He</span>
+                    <span class="elem" id="elem3">Li</span>
+                    <span class="elem" id="elem4">Be</span>
+                    <span class="elem" id="elem5">B</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. INICIO: objetivo y pre-saberes -->
+        <section class="seccion">
+            <h2>🌾 Objetivo de aprendizaje</h2>
+            <p style="font-size:1.3rem;"><strong>Comprender el concepto de homeostasis y regulación, usando la metáfora de una finca que debe mantener su equilibrio frente a inundaciones o sequías.</strong> Así como el cuerpo humano regula temperatura, sed o hambre.</p>
+            
+            <h3>📝 Pre-saberes (responde rápido)</h3>
+            <div class="pregunta" id="presaber1">
+                <p>1. ¿Qué le pasa a una finca si llueve demasiado y el suelo no drena?</p>
+                <label><input type="radio" name="pre1" value="a"> a) Se fertiliza sola</label><br>
+                <label><input type="radio" name="pre1" value="b"> b) Se inunda, las raíces se ahogan</label><br>
+                <label><input type="radio" name="pre1" value="c"> c) Produce más frutos</label><br>
+                <div class="feedback" id="feedPre1"></div>
+            </div>
+            <div class="pregunta" id="presaber2">
+                <p>2. Cuando tienes mucha sed, tu cuerpo está indicando:</p>
+                <label><input type="radio" name="pre2" value="a"> a) Falta de agua (desequilibrio)</label><br>
+                <label><input type="radio" name="pre2" value="b"> b) Exceso de energía</label><br>
+                <label><input type="radio" name="pre2" value="c"> c) Necesidad de dormir</label><br>
+                <div class="feedback" id="feedPre2"></div>
+            </div>
+            <div class="pregunta" id="presaber3">
+                <p>3. La homeostasis en seres vivos significa:</p>
+                <label><input type="radio" name="pre3" value="a"> a) Mantener condiciones internas estables</label><br>
+                <label><input type="radio" name="pre3" value="b"> b) Cambiar constante con el ambiente</label><br>
+                <label><input type="radio" name="pre3" value="c"> c) Crecer sin parar</label><br>
+                <div class="feedback" id="feedPre3"></div>
+            </div>
+        </section>
+
+        <!-- 2. CUERPO INDUCTIVO (texto extenso + 5 pausas) -->
+        <section class="seccion">
+            <h2>🌱 Camino inductivo: la finca como espejo del cuerpo</h2>
+            <div style="columns: 1; column-gap: 2rem;">
+                <p>Imagina una finca en medio de una montaña. Tiene cultivos, animales y una represa que almacena agua para el verano. Durante años, el agricultor aprendió que si llueve en exceso, el nivel de la represa sube y puede desbordarse, arrastrando tierra y semillas. Por el contrario, si no llueve por meses, los surcos se agrietan y los animales sufren. Para evitar ambos extremos, el campesino construye canales y compuertas de madera (troncos) que regulan el flujo. Ese “equilibrio dinámico” es la esencia de la homeostasis.</p>
+                <p>En nuestro cuerpo ocurre algo asombroso: sin que lo pensemos, el organismo ajusta la temperatura, el nivel de azúcar, el agua y las sales. Si hace calor, sudamos; si hace frío, tiritamos. Así como los troncos en la finca desvían el agua para evitar inundación o sequía, nuestros riñones retienen o eliminan agua según lo que bebemos. Incluso sentimos hambre cuando las reservas de energía bajan, y sed cuando la sangre se concentra demasiado.</p>
+                <p>Un ejemplo cotidiano: cuando corres, los músculos producen calor y la temperatura interna sube. El cerebro (como el agricultor) ordena a las glándulas sudoríparas producir sudor; al evaporarse, enfría la piel. Si no existiera este control, las proteínas se dañarían y sobrevendría un golpe de calor. El cuerpo utiliza “troncos” invisibles: hormonas, neuronas y receptores.</p>
+                <p>En la finca, los troncos colocados estratégicamente pueden levantar una compuerta si el agua presiona. En el cuerpo, las células del páncreas detectan glucosa alta y liberan insulina, que “abre la compuerta” para que el azúcar entre a las células. Baja la glucosa y se restablece la calma. Es un ir y venir constante, como las estaciones.</p>
+                <p>Piensa en una época de sequía: el agricultor raciona el agua, prioriza los cultivos más resistentes. Algo similar hace el organismo cuando falta comida: utiliza reservas de grasa y disminuye el metabolismo basal. Pero si la sequía es extrema, el sistema se rompe. Por eso es vital reconocer las señales tempranas: sed, fatiga, mareo. Escuchar al propio cuerpo es el primer paso para mantener la finca interior saludable.</p>
+            </div>
+            <!-- 5 pausas activas inductivas (botones "Ya lo hice") -->
+            <div class="pausa-box" id="pausaInd1"><p>📓 PAUSA 1 (inductiva): Dibuja en tu cuaderno una finca con sus elementos (agua, cultivos, troncos). Explica con tus palabras cómo regula el agua.</p><button class="pausa-btn" data-id="0">✔️ Ya lo hice</button></div>
+            <div class="pausa-box" id="pausaInd2"><p>📓 PAUSA 2: Escribe 3 señales de tu cuerpo que indican desequilibrio (hambre, sed, sueño) y qué hacen para corregirlo.</p><button class="pausa-btn" data-id="1">✔️ Ya lo hice</button></div>
+            <div class="pausa-box" id="pausaInd3"><p>📓 PAUSA 3: Describe una ocasión en que hayas sentido mucho calor y cómo tu cuerpo recuperó la calma.</p><button class="pausa-btn" data-id="2">✔️ Ya lo hice</button></div>
+            <div class="pausa-box" id="pausaInd4"><p>📓 PAUSA 4: Compara el papel del agricultor con el del cerebro en la regulación.</p><button class="pausa-btn" data-id="3">✔️ Ya lo hice</button></div>
+            <div class="pausa-box" id="pausaInd5"><p>📓 PAUSA 5: ¿Qué pasa en la finca si no hay troncos que regulen? relaciónalo con una enfermedad (diabetes, deshidratación).</p><button class="pausa-btn" data-id="4">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- 3. PREGUNTA TIPO ICFES (con SVG) -->
+        <section class="seccion">
+            <h2>🧪 Pregunta ICFES (Indagar)</h2>
+            <div class="icfes-grafico">
+                <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="20" y="20" width="120" height="100" fill="#c9b28b" stroke="#3d2b1a" stroke-width="3" rx="10" />
+                    <text x="60" y="70" fill="#1f3a2b" font-size="16" font-weight="bold">REPRESA</text>
+                    <rect x="160" y="50" width="50" height="30" fill="#a0522d" stroke="#3d2b1a" stroke-width="2" rx="5" />
+                    <text x="170" y="75" fill="white" font-size="12">TRONCO</text>
+                    <line x1="185" y1="50" x2="185" y2="20" stroke="#3d2b1a" stroke-width="4" stroke-linecap="round" />
+                    <path d="M270 70 L300 40 L330 70 L300 100 Z" fill="#5f8b4b" stroke="#1f4f2b" stroke-width="3" />
+                    <text x="290" y="80" fill="#ffffdd" font-size="14">CULTIVO</text>
+                    <line x1="120" y1="70" x2="170" y2="65" stroke="#226622" stroke-width="4" stroke-dasharray="5 3" />
+                    <line x1="220" y1="70" x2="270" y2="70" stroke="#226622" stroke-width="4" stroke-dasharray="5 3" />
+                    <text x="30" y="130" fill="#143020">Entrada de agua</text>
+                    <text x="250" y="130" fill="#143020">Salida regulada</text>
+                </svg>
+            </div>
+            <p>En el esquema, el tronco puede subir o bajar según el nivel del agua. Si la represa recibe un exceso de lluvia, ¿qué debe ocurrir para mantener el equilibrio en el cultivo?</p>
+            <div class="pregunta">
+                <label><input type="radio" name="icfes" value="a"> a) El tronco debe bloquear totalmente la salida</label><br>
+                <label><input type="radio" name="icfes" value="b"> b) El tronco debe subir, permitiendo mayor salida de agua</label><br>
+                <label><input type="radio" name="icfes" value="c"> c) El cultivo debe absorber menos agua</label><br>
+                <label><input type="radio" name="icfes" value="d"> d) El agricultor debe sembrar más</label><br>
+                <button id="revisarIcfes">Revisar</button>
+                <div id="feedIcfes" class="feedback"></div>
+            </div>
+        </section>
+
+        <!-- 4. CUERPO DEDUCTIVO (con canvas animado) -->
+        <section class="seccion">
+            <h2>⚙️ Camino deductivo: principios y leyes del equilibrio</h2>
+            <p>La homeostasis se rige por mecanismos de retroalimentación negativa: un estímulo provoca una respuesta que contrarresta la desviación. Por ejemplo, la presión arterial: si baja, el corazón late más fuerte; si sube, se relaja. Ley de Cannon: “La homeostasis requiere sistemas de control que mantengan parámetros dentro de límites”. En la finca, la retroalimentación negativa sería: si sube el agua, se abre la compuerta (tronco) para que baje. </p>
+            <p>La retroalimentación positiva es menos común: acelera un proceso, como en el parto. Pero en general, el cuerpo usa la negativa. Podemos modelar esto con una ecuación simple: cambio neto = entrada - salida. En la finca: lluvia (entrada) - evaporación y drenaje (salida). Si entrada > salida → nivel sube → el flotador (tronco) abre más salida. Es un sistema autorregulado.</p>
+            <p>Los componentes básicos: estímulo, receptor, centro de control, efector. En la finca: el nivel del agua (estímulo), la posición del tronco (receptor), el instinto del agricultor (control) y la compuerta (efector). En el cuerpo: la temperatura (estímulo), termorreceptores en piel, el hipotálamo (control) y los vasos sanguíneos o glándulas sudoríparas (efectores).</p>
+            <p>El concepto de "punto de ajuste" es clave: el cuerpo intenta mantener 37°C, pH 7.4, glucemia ~90 mg/dL. Si hay desviación, se activan mecanismos. Por ejemplo, si comes mucho azúcar, el páncreas secreta insulina y el hígado almacena glucógeno. Si el nivel baja, el glucagón libera glucosa. Así como el agricultor guarda heno para el invierno y lo usa cuando escasea.</p>
+            <p>Cuando falla la homeostasis aparecen enfermedades: diabetes (fallo en insulina), deshidratación (fallo en sed), hipotermia. En la finca, si la compuerta se atasca con una rama, viene inundación o sequía. Entender estos principios nos permite diseñar intervenciones (como beber agua antes de sentir sed en un día caluroso).</p>
+
+            <!-- CANVAS CENTRAL (animación de alta gama) -->
+            <canvas id="canvasHomeostasis" width="700" height="300"></canvas>
+            <p style="text-align:center; font-style:italic;">Mueve el mouse sobre el canvas para controlar la entrada de agua (lluvia). Observa cómo el tronco flotante regula la salida.</p>
+
+            <!-- 5 pausas deductivas -->
+            <div class="pausa-box"><p>📓 PAUSA 6: Escribe la definición de retroalimentación negativa con el ejemplo de la finca.</p><button class="pausa-btn" data-id="5">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 7: Nombra los 4 componentes homeostáticos y pon un ejemplo corporal.</p><button class="pausa-btn" data-id="6">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 8: ¿Cuál es el punto de ajuste de la temperatura corporal? ¿Qué pasa si se desvía?</p><button class="pausa-btn" data-id="7">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 9: Investiga qué hormona regula el calcio y relaciónala con un "tronco" del cuerpo.</p><button class="pausa-btn" data-id="8">✔️ Ya lo hice</button></div>
+            <div class="pausa-box"><p>📓 PAUSA 10: Dibuja un diagrama de bloques de la regulación de la glucosa.</p><button class="pausa-btn" data-id="9">✔️ Ya lo hice</button></div>
+        </section>
+
+        <!-- 5. EVALUACIÓN FINAL (taller) -->
+        <section class="seccion">
+            <h2>📋 Taller de comprobación</h2>
+            <h3>Selección múltiple (autocalificable)</h3>
+            <div id="multi1"><p>1. ¿Cuál es la función principal de la homeostasis?</p>
+                <label><input type="radio" name="m1" value="0"> a) Producir energía</label><br>
+                <label><input type="radio" name="m1" value="1"> b) Mantener estable el medio interno</label><br>
+                <label><input type="radio" name="m1" value="2"> c) Acelerar el metabolismo</label><br>
+                <label><input type="radio" name="m1" value="3"> d) Eliminar desechos</label><br></div>
+            <div id="multi2"><p>2. En la finca, cuando el agua sube, el tronco se levanta y permite más salida. Esto es un ejemplo de:</p>
+                <label><input type="radio" name="m2" value="0"> a) Retroalimentación positiva</label><br>
+                <label><input type="radio" name="m2" value="1"> b) Falta de control</label><br>
+                <label><input type="radio" name="m2" value="2"> c) Retroalimentación negativa</label><br>
+                <label><input type="radio" name="m2" value="3"> d) Eutrofización</label><br></div>
+            <div id="multi3"><p>3. El hipotálamo actúa como:</p>
+                <label><input type="radio" name="m3" value="0"> a) Efector</label><br>
+                <label><input type="radio" name="m3" value="1"> b) Receptor</label><br>
+                <label><input type="radio" name="m3" value="2"> c) Centro de control</label><br>
+                <label><input type="radio" name="m3" value="3"> d) Variable</label><br></div>
+            <div id="multi4"><p>4. Si sientes sed después de correr, tu cuerpo está usando:</p>
+                <label><input type="radio" name="m4" value="0"> a) Mecanismo homeostático</label><br>
+                <label><input type="radio" name="m4" value="1"> b) Reflejo dañino</label><br>
+                <label><input type="radio" name="m4" value="2"> c) Retroalimentación positiva</label><br>
+                <label><input type="radio" name="m4" value="3"> d) Adaptación evolutiva</label><br></div>
+            <div id="multi5"><p>5. ¿Qué órgano regula principalmente el agua en el cuerpo?</p>
+                <label><input type="radio" name="m5" value="0"> a) Hígado</label><br>
+                <label><input type="radio" name="m5" value="1"> b) Corazón</label><br>
+                <label><input type="radio" name="m5" value="2"> c) Riñón</label><br>
+                <label><input type="radio" name="m5" value="3"> d) Páncreas</label><br></div>
+            <button id="calificarMultiple">Calificar múltiple</button>
+            <div id="resultadoMultiple" style="margin:1rem 0; font-weight:bold;"></div>
+
+            <h3>Preguntas abiertas (10-15 palabras c/u)</h3>
+            <div id="abiertas">
+                <p>1. Explica con tus palabras qué le pasa a una finca cuando hay sequía prolongada.</p>
+                <textarea id="open1" rows="2" cols="60"></textarea><div class="word-counter" id="wc1">0 palabras</div>
+                <p>2. ¿Por qué el cuerpo necesita mantener constante la temperatura?</p>
+                <textarea id="open2" rows="2" cols="60"></textarea><div class="word-counter" id="wc2">0 palabras</div>
+                <p>3. Menciona dos señales de desequilibrio interno y cómo corregirlas.</p>
+                <textarea id="open3" rows="2" cols="60"></textarea><div class="word-counter" id="wc3">0 palabras</div>
+                <p>4. ¿Qué función cumple la insulina en la homeostasis?</p>
+                <textarea id="open4" rows="2" cols="60"></textarea><div class="word-counter" id="wc4">0 palabras</div>
+                <p>5. Relaciona el tronco de la finca con un componente del cuerpo humano.</p>
+                <textarea id="open5" rows="2" cols="60"></textarea><div class="word-counter" id="wc5">0 palabras</div>
+            </div>
+            <button id="validarAbiertas">Validar y guardar respuestas</button>
+            <p id="msgAbiertas"></p>
+
+            <!-- Ruta de fortalecimiento -->
+            <div style="margin: 2rem 0;">
+                <h3>🧭 Ruta de fortalecimiento personalizada</h3>
+                <button id="generarRuta">Analizar debilidades</button>
+                <div id="rutaTexto" class="ruta-card" style="margin-top:1rem;"></div>
+            </div>
+
+            <!-- Cierre y descarga -->
+            <footer>
+                <button id="descargarResultados">📥 Descargar resultados (.txt)</button>
+            </footer>
+        </section>
+    </div>
+
+    <script>
+        (function(){
+            // ---------- estado global ----------
+            let usuario = { apellidos: '', nombres: '' };
+            let pausasHechas = new Array(10).fill(false); // índices 0-9
+            // respuestas múltiple (para nota final)
+            let respuestasMulti = [null, null, null, null, null];
+            const correctasMulti = [1, 2, 2, 0, 2]; // índices base 0 (opción b, c, c, a, c)
+            let respuestasAbiertas = ['','','','',''];
+            let notaMultiple = 0;
+
+            // elementos
+            const loginScreen = document.getElementById('loginScreen');
+            const mainContent = document.getElementById('mainContent');
+            const btnIngresar = document.getElementById('btnIngresar');
+            const apellidosInput = document.getElementById('apellidosInput');
+            const nombresInput = document.getElementById('nombresInput');
+            const headerNombre = document.getElementById('headerNombre');
+            const progresoFill = document.getElementById('progresoFill');
+            const puntosElem = [document.getElementById('elem1'),document.getElementById('elem2'),document.getElementById('elem3'),document.getElementById('elem4'),document.getElementById('elem5')];
+
+            // ---------- funciones de progreso y puntos ----------
+            function actualizarProgresoPuntos() {
+                const totalHechas = pausasHechas.filter(v => v).length;
+                const porcentaje = (totalHechas / 10) * 100;
+                progresoFill.style.width = porcentaje + '%';
+                const puntos = Math.min(5, Math.floor(totalHechas / 2)); // cada 2 pausas = 1 punto
+                for (let i = 0; i < 5; i++) {
+                    if (i < puntos) puntosElem[i].classList.add('unlocked');
+                    else puntosElem[i].classList.remove('unlocked');
+                }
+                guardarProgresoLocal();
+            }
+
+            // guardar todo en localStorage
+            function guardarProgresoLocal() {
+                if (!usuario.apellidos) return;
+                const data = {
+                    apellidos: usuario.apellidos,
+                    nombres: usuario.nombres,
+                    pausas: pausasHechas,
+                    abiertas: respuestasAbiertas,
+                    multi: respuestasMulti
+                };
+                localStorage.setItem('ova_homeostasis', JSON.stringify(data));
+            }
+
+            function cargarProgresoLocal() {
+                const saved = localStorage.getItem('ova_homeostasis');
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        usuario = { apellidos: data.apellidos || '', nombres: data.nombres || '' };
+                        pausasHechas = data.pausas || new Array(10).fill(false);
+                        respuestasAbiertas = data.abiertas || ['','','','',''];
+                        respuestasMulti = data.multi || [null,null,null,null,null];
+                        // restaurar textos abiertos
+                        document.getElementById('open1').value = respuestasAbiertas[0] || '';
+                        document.getElementById('open2').value = respuestasAbiertas[1] || '';
+                        document.getElementById('open3').value = respuestasAbiertas[2] || '';
+                        document.getElementById('open4').value = respuestasAbiertas[3] || '';
+                        document.getElementById('open5').value = respuestasAbiertas[4] || '';
+                        // restaurar radios multiple (por índice)
+                        const radios = document.querySelectorAll('input[type="radio"]');
+                        radios.forEach(r => r.checked = false);
+                        for (let i=0; i<5; i++) {
+                            if (respuestasMulti[i] !== null) {
+                                const r = document.querySelector(`input[name="m${i+1}"][value="${respuestasMulti[i]}"]`);
+                                if (r) r.checked = true;
+                            }
+                        }
+                        if (usuario.apellidos && usuario.nombres) {
+                            loginScreen.style.display = 'none';
+                            mainContent.style.display = 'block';
+                            headerNombre.innerText = `${usuario.apellidos} ${usuario.nombres}`;
+                            actualizarProgresoPuntos();
+                            // actualizar contadores de palabras
+                            actualizarTodosWordCount();
+                        }
+                    } catch (e) {}
+                }
+            }
+
+            // palabra contador
+            function contarPalabras(texto) {
+                return texto.trim().split(/\s+/).filter(p => p.length > 0).length;
+            }
+            function actualizarWordCount(textareaId, contadorId) {
+                const ta = document.getElementById(textareaId);
+                const cont = document.getElementById(contadorId);
+                const num = contarPalabras(ta.value);
+                cont.innerText = num + ' palabras';
+                if (num >= 10 && num <= 15) cont.className = 'word-counter valido';
+                else cont.className = 'word-counter invalido';
+                return num;
+            }
+            function actualizarTodosWordCount() {
+                actualizarWordCount('open1','wc1');
+                actualizarWordCount('open2','wc2');
+                actualizarWordCount('open3','wc3');
+                actualizarWordCount('open4','wc4');
+                actualizarWordCount('open5','wc5');
+            }
+
+            // ---------- LOGIN ----------
+            btnIngresar.addEventListener('click', (e) => {
+                e.preventDefault();
+                const ap = apellidosInput.value.trim();
+                const nom = nombresInput.value.trim();
+                if (ap === '' || nom === '') {
+                    alert('Debes escribir apellidos y nombres.');
+                    return;
+                }
+                usuario.apellidos = ap;
+                usuario.nombres = nom;
+                headerNombre.innerText = `${ap} ${nom}`;
+                loginScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                // inicializar pausas (si no hay datos previos, se crean nuevas)
+                if (!localStorage.getItem('ova_homeostasis')) {
+                    pausasHechas = new Array(10).fill(false);
+                } else {
+                    cargarProgresoLocal(); // ya carga y actualiza
+                }
+                actualizarProgresoPuntos();
+                guardarProgresoLocal();
+            });
+
+            // ---------- PAUSAS (botones) ----------
+            document.querySelectorAll('.pausa-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'), 10);
+                    if (!isNaN(id) && id >= 0 && id < 10 && !pausasHechas[id]) {
+                        pausasHechas[id] = true;
+                        e.target.disabled = true;
+                        e.target.innerText = '✔️ Hecho';
+                        actualizarProgresoPuntos();
+                    }
+                });
+            });
+
+            // ---------- PREGUNTAS PRE-SABERES ----------
+            function configPre(ind, correctVal, feedId) {
+                document.querySelectorAll(`input[name="pre${ind}"]`).forEach(r => {
+                    r.addEventListener('change', function() {
+                        const feed = document.getElementById(feedId);
+                        if (this.value === correctVal) {
+                            feed.innerText = '✅ Correcto. Bien!';
+                            feed.className = 'feedback correcto';
+                        } else {
+                            feed.innerText = '❌ Revisa, no es correcto. Intenta de nuevo.';
+                            feed.className = 'feedback incorrecto';
+                        }
+                    });
+                });
+            }
+            configPre(1, 'b', 'feedPre1');
+            configPre(2, 'a', 'feedPre2');
+            configPre(3, 'a', 'feedPre3');
+
+            // ICFES
+            document.getElementById('revisarIcfes').addEventListener('click', () => {
+                const selec = document.querySelector('input[name="icfes"]:checked');
+                const feed = document.getElementById('feedIcfes');
+                if (!selec) { feed.innerText = 'Elige una opción'; return; }
+                if (selec.value === 'b') {
+                    feed.innerText = '✅ ¡Correcto! El tronco debe subir para drenar más y evitar inundación.';
+                    feed.className = 'feedback correcto';
+                } else {
+                    feed.innerText = '❌ No es la opción adecuada. La homeostasis requiere aumentar la salida si sube la entrada.';
+                    feed.className = 'feedback incorrecto';
+                }
+            });
+
+            // ---------- MÚLTIPLE CALIFICAR ----------
+            document.getElementById('calificarMultiple').addEventListener('click', () => {
+                let aciertos = 0;
+                for (let i = 1; i <= 5; i++) {
+                    const radios = document.getElementsByName(`m${i}`);
+                    let val = null;
+                    for (let r of radios) if (r.checked) { val = r.value; break; }
+                    if (val !== null) {
+                        respuestasMulti[i-1] = parseInt(val,10);
+                        if (respuestasMulti[i-1] === correctasMulti[i-1]) aciertos++;
+                    } else {
+                        respuestasMulti[i-1] = null;
+                    }
+                }
+                notaMultiple = aciertos;
+                document.getElementById('resultadoMultiple').innerHTML = `Has obtenido ${aciertos} / 5 correctas. ${aciertos >= 3 ? '¡Bien!' : 'Puedes mejorar repasando.'}`;
+                guardarProgresoLocal();
+            });
+
+            // ---------- ABIERTAS: validación en tiempo real y guardado ----------
+            ['open1','open2','open3','open4','open5'].forEach((id, idx) => {
+                document.getElementById(id).addEventListener('input', function() {
+                    const wc = actualizarWordCount(id, 'wc'+(idx+1));
+                    respuestasAbiertas[idx] = this.value;
+                    guardarProgresoLocal();
+                });
+            });
+
+            document.getElementById('validarAbiertas').addEventListener('click', () => {
+                let todasBien = true;
+                for (let i=1; i<=5; i++) {
+                    const ta = document.getElementById(`open${i}`);
+                    const num = contarPalabras(ta.value);
+                    if (num < 10 || num > 15) todasBien = false;
+                }
+                if (todasBien) {
+                    document.getElementById('msgAbiertas').innerText = '✅ Todas las respuestas tienen entre 10 y 15 palabras. Guardadas.';
+                } else {
+                    document.getElementById('msgAbiertas').innerText = '❌ Hay respuestas con menos de 10 o más de 15 palabras. Revisa.';
+                }
+                guardarProgresoLocal();
+            });
+
+            // ---------- RUTA DE FORTALECIMIENTO ----------
+            document.getElementById('generarRuta').addEventListener('click', () => {
+                // evaluamos según respuestas múltiple (inductivo/deductivo aproximado)
+                // preguntas 1,2 inductivas; 3,4,5 deductivas
+                let indAc = 0, indTot=0, dedAc=0, dedTot=0;
+                for (let i=0; i<5; i++) {
+                    if (respuestasMulti[i] !== null) {
+                        if (i<2) { // inductivas
+                            indTot++;
+                            if (respuestasMulti[i] === correctasMulti[i]) indAc++;
+                        } else {
+                            dedTot++;
+                            if (respuestasMulti[i] === correctasMulti[i]) dedAc++;
+                        }
+                    }
+                }
+                let mensaje = 'Revisa tus respuestas. ';
+                if (indTot>0 && indAc/indTot < 0.6) mensaje += ' ✍️ Fortalece la parte inductiva: repasa los ejemplos de la finca y señales del cuerpo. ';
+                if (dedTot>0 && dedAc/dedTot < 0.6) mensaje += ' ⚙️ Refuerza conceptos deductivos: principios de retroalimentación y componentes. ';
+                if ((indTot===0 || indAc/indTot>=0.6) && (dedTot===0 || dedAc/dedTot>=0.6)) mensaje = '🌟 ¡Vas muy bien! Sigue profundizando.';
+                document.getElementById('rutaTexto').innerText = mensaje;
+            });
+
+            // ---------- CANVAS ANIMACIÓN (homeostasis con tronco) ----------
+            const canvas = document.getElementById('canvasHomeostasis');
+            const ctx = canvas.getContext('2d');
+            let waterLevel = 150; // desde arriba (y del nivel)
+            const minY = 80, maxY = 230; // rango del agua (y del borde superior del agua)
+            let inflow = 0.5; // será controlado por mouse
+            let outflow = 0.2;
+            let mouseX = 350; // default
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                mouseX = Math.min(650, Math.max(50, x));
+                inflow = 0.2 + (mouseX / 700) * 1.5; // entre 0.2 y 1.7
+            });
+
+            function updateWater() {
+                // regulación: outflow depende del nivel del agua (cuanto más alta, más presión de salida)
+                const levelRatio = (waterLevel - minY) / (maxY - minY); // 0 abajo, 1 arriba
+                outflow = 0.1 + levelRatio * 1.0; // entre 0.1 y 1.1
+                const net = inflow - outflow;
+                waterLevel += net * 0.3;
+                waterLevel = Math.min(maxY, Math.max(minY, waterLevel));
+            }
+
+            function drawCanvas() {
+                ctx.clearRect(0,0,700,300);
+                // cielo / fondo
+                ctx.fillStyle = '#b0d0b0';
+                ctx.fillRect(0,0,700,300);
+                // estanque
+                ctx.fillStyle = '#3f7860';
+                ctx.fillRect(50, waterLevel, 500, 300-waterLevel);
+                // agua
+                ctx.fillStyle = '#3aa8c1';
+                ctx.globalAlpha = 0.6;
+                ctx.fillRect(50, waterLevel, 500, 300-waterLevel);
+                ctx.globalAlpha = 1;
+                // compuerta / tronco flotante
+                ctx.fillStyle = '#8b5a2b';
+                ctx.shadowColor = '#4d2e0e';
+                ctx.shadowBlur = 8;
+                ctx.fillRect(300, waterLevel-15, 60, 20);
+                ctx.shadowBlur = 0;
+                // tronco vertical (palo)
+                ctx.fillStyle = '#654321';
+                ctx.fillRect(320, waterLevel-35, 10, 30);
+                // tubería de entrada (izquierda)
+                ctx.fillStyle = '#aaaaaa';
+                ctx.fillRect(20, 140, 30, 20);
+                ctx.fillStyle = '#226688';
+                ctx.beginPath();
+                ctx.arc(35, 150, 8, 0, Math.PI*2);
+                ctx.fill();
+                // salida (derecha)
+                ctx.fillStyle = '#876b43';
+                ctx.fillRect(550, 170, 40, 20);
+                // texto dinámico
+                ctx.font = 'bold 14px monospace';
+                ctx.fillStyle = '#1e3c2c';
+                ctx.fillText('💧 entrada: ' + inflow.toFixed(2), 80, 40);
+                ctx.fillText('🚰 salida: ' + outflow.toFixed(2), 80, 70);
+                // dibujar nivel ideal
+                ctx.strokeStyle = '#f5cb42';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5,5]);
+                ctx.beginPath();
+                ctx.moveTo(50, 150);
+                ctx.lineTo(550, 150);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            function animate() {
+                updateWater();
+                drawCanvas();
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            // ---------- DESCARGAR RESULTADOS ----------
+            document.getElementById('descargarResultados').addEventListener('click', () => {
+                const nombreCompleto = `${usuario.apellidos} ${usuario.nombres}`;
+                const puntosElemAlcanzado = Math.min(5, Math.floor(pausasHechas.filter(v=>v).length / 2));
+                const elemento = ['H','He','Li','Be','B'][puntosElemAlcanzado-1] || 'Ninguno';
+                const respuestasMultiTexto = respuestasMulti.map((v,i) => `P${i+1}: ${v!==null?v:'sin responder'}`).join('; ');
+                const abiertasTexto = respuestasAbiertas.map((t,i) => `A${i+1}: ${t}`).join(' | ');
+                const contenido = `Nombre: ${nombreCompleto}\nNota final (multiple): ${notaMultiple}/5\nElemento alcanzado: ${elemento}\nRespuestas múltiple: ${respuestasMultiTexto}\nRespuestas abiertas: ${abiertasTexto}`;
+                const blob = new Blob([contenido], {type: 'text/plain'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `homeostasis_${usuario.apellidos}.txt`;
+                a.click();
+            });
+
+            // cargar al inicio si hay localStorage
+            window.addEventListener('load', () => {
+                cargarProgresoLocal();
+                actualizarTodosWordCount();
+                // deshabilitar pausas ya hechas
+                pausasHechas.forEach((hecha, idx) => {
+                    if (hecha) {
+                        const btn = document.querySelector(`.pausa-btn[data-id="${idx}"]`);
+                        if (btn) { btn.disabled = true; btn.innerText = '✔️ Hecho'; }
+                    }
+                });
+                actualizarProgresoPuntos();
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fotosíntesis I: La Receta Mágica - Pueblo Rico, Quimbaya</title>
+    <style>
+        :root {
+            --cafe-oscuro: #2d1b11;
+            --verde-quindio: #1b5e20;
+            --verde-claro: #4caf50;
+            --naranja-citrico: #ff9800;
+            --luz-solar: #fff176;
+            --blanco: #ffffff;
+            --gris-suave: #f4f4f4;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; scroll-behavior: smooth; }
+
+        body { background-color: #f0f4c3; color: var(--cafe-oscuro); line-height: 1.6; }
+
+        /* --- Pantalla de Bienvenida --- */
+        #welcome-screen {
+            position: fixed; inset: 0; z-index: 2000;
+            background: linear-gradient(135deg, var(--verde-quindio), var(--cafe-oscuro));
+            display: flex; justify-content: center; align-items: center; color: white;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
+            padding: 40px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2);
+            width: 90%; max-width: 450px; text-align: center;
+        }
+
+        .login-box h1 { font-size: 1.8rem; margin-bottom: 20px; color: var(--luz-solar); }
+
+        input {
+            width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none;
+            font-size: 1rem; outline: none; background: rgba(255,255,255,0.9);
+        }
+
+        .btn-start {
+            background: var(--naranja-citrico); color: white; border: none; padding: 15px 30px;
+            border-radius: 50px; cursor: pointer; font-weight: bold; margin-top: 20px; transition: 0.3s;
+        }
+        .btn-start:hover { background: #e68900; transform: scale(1.05); }
+
+        /* --- Interfaz Principal --- */
+        #app-container { display: none; }
+
+        nav {
+            background: var(--verde-quindio); color: white; padding: 15px 5%;
+            position: sticky; top: 0; z-index: 1000; display: flex;
+            justify-content: space-between; align-items: center; box-shadow: var(--shadow);
+        }
+
+        .progress-container { width: 200px; height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; }
+        #progress-bar { height: 100%; width: 0%; background: var(--luz-solar); transition: 0.4s; }
+
+        .content { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+
+        section {
+            background: var(--blanco); padding: 50px; border-radius: 30px;
+            margin-bottom: 50px; box-shadow: var(--shadow); border-left: 10px solid var(--verde-quindio);
+        }
+
+        h2 { color: var(--verde-quindio); font-size: 2rem; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        p { margin-bottom: 20px; font-size: 1.1rem; text-align: justify; }
+
+        /* --- Visuales --- */
+        .svg-art { background: #e8f5e9; border-radius: 20px; padding: 20px; margin: 30px 0; text-align: center; }
+        
+        .pause-active {
+            background: #fff3e0; border: 2px dashed var(--naranja-citrico); padding: 30px;
+            border-radius: 20px; margin: 40px 0; position: relative;
+        }
+        .pause-active h4 { color: var(--naranja-citrico); margin-bottom: 15px; }
+
+        /* --- Canvas --- */
+        #canvas-container {
+            width: 100%; height: 500px; background: #000; border-radius: 20px;
+            position: relative; overflow: hidden; margin: 30px 0;
+        }
+        canvas { width: 100%; height: 100%; cursor: crosshair; }
+
+        /* --- Taller --- */
+        .question-card { background: var(--gris-suave); padding: 30px; border-radius: 20px; margin-bottom: 20px; }
+        textarea {
+            width: 100%; height: 120px; padding: 15px; border-radius: 10px; border: 2px solid #ddd;
+            font-size: 1rem; margin-top: 15px; resize: none; background: #fff;
+        }
+        .warning-text { color: #d32f2f; font-size: 0.85rem; margin-top: 5px; font-weight: bold; display: none; }
+
+        /* --- Gamificación e Iconos --- */
+        .reward-icon { font-size: 1.5rem; margin-right: 5px; }
+
+        .table-responsive { overflow-x: auto; margin: 30px 0; }
+        table { width: 100%; border-collapse: collapse; border-radius: 15px; overflow: hidden; }
+        th { background: var(--verde-quindio); color: white; padding: 15px; }
+        td { background: white; border: 1px solid #eee; padding: 15px; text-align: center; }
+
+        #results-card {
+            display: none; background: var(--cafe-oscuro); color: white; padding: 50px;
+            border-radius: 30px; text-align: center; margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BIENVENIDA -->
+    <div id="welcome-screen">
+        <div class="login-box">
+            <svg width="80" height="80" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="yellow" opacity="0.3">
+                    <animate attributeName="r" values="35;45;35" dur="3s" repeatCount="indefinite" />
+                </circle>
+                <path d="M50 20 L50 80 M20 50 L80 50" stroke="white" stroke-width="2"/>
+                <path d="M50 10 Q 70 40 50 90 Q 30 40 50 10" fill="#4caf50"/>
+            </svg>
+            <h1>Laboratorio Biológico Quimbaya</h1>
+            <p>Grado Séptimo - Vereda Pueblo Rico</p>
+            <input type="text" id="input-lastname" placeholder="Apellidos del Estudiante">
+            <input type="text" id="input-firstname" placeholder="Nombres del Estudiante">
+            <button class="btn-start" id="start-btn">Entrar al Cultivo</button>
+        </div>
+    </div>
+
+    <!-- APP PRINCIPAL -->
+    <div id="app-container">
+        <nav>
+            <div id="nav-user">📍 Pueblo Rico | Estudiante: <span id="user-display"></span></div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div class="progress-container"><div id="progress-bar"></div></div>
+                <div id="score-display">🌱 0.0</div>
+            </div>
+        </nav>
+
+        <div class="content">
+            <!-- INICIO -->
+            <section>
+                <h2>Objetivo de Aprendizaje</h2>
+                <p>Identificar los insumos necesarios para la fotosíntesis (Luz solar, Agua y Dióxido de Carbono CO<sub>2</sub>) y comprender su función específica dentro de la producción de biomasa en los cultivos de café y cítricos de nuestra Vereda Pueblo Rico.</p>
+                
+                <div class="question-card">
+                    <p><strong>Pre-saberes 1:</strong> Si caminas bajo el sol de Quimbaya al mediodía, sientes calor. ¿Qué crees que hace un árbol de café con esa misma energía lumínica?</p>
+                    <label><input type="radio" name="pre1" value="0"> La usa para refrescarse.</label><br>
+                    <label><input type="radio" name="pre1" value="1"> La transforma en alimento (energía química).</label><br>
+                    <label><input type="radio" name="pre1" value="0"> No le sirve para nada.</label>
+                    <div id="fb-pre1"></div>
+                </div>
+
+                <div class="question-card">
+                    <p><strong>Pre-saberes 2:</strong> ¿Por qué crees que los cultivos de cítricos en Pueblo Rico crecen más lento en épocas de sequía extrema?</p>
+                    <label><input type="radio" name="pre2" value="1"> Porque les falta agua, un insumo básico de la receta.</label><br>
+                    <label><input type="radio" name="pre2" value="0"> Porque el sol les quema las raíces.</label><br>
+                    <label><input type="radio" name="pre2" value="0"> Porque hay mucho aire en la vereda.</label>
+                </div>
+            </section>
+
+            <!-- CUERPO INDUCTIVO -->
+            <section id="inductivo">
+                <h2>La Cocina de la Finca: Insumos Vitales</h2>
+                <p>
+                    Imagina que estás en la cocina de una de las fincas tradicionales de nuestra Vereda Pueblo Rico. Para hacer una arepa quindiana, necesitas maíz, agua y fuego. De la misma manera, las plantas de café y naranja que rodean nuestras casas tienen una "receta mágica" para fabricar su propio alimento. Este proceso se llama fotosíntesis. Pero a diferencia de nosotros, ellas no van al supermercado; ellas toman lo que necesitan directamente del aire, del suelo y del cielo de Quimbaya.
+                </p>
+                <p>
+                    El primer ingrediente es el **Agua (H<sub>2</sub>O)**. En nuestras montañas, la lluvia es bendición. Las raíces de los cafetos absorben el agua que se filtra en los suelos volcánicos de la vereda. Pero el agua no solo quita la sed; en la fotosíntesis, la planta rompe la molécula de agua para obtener electrones y liberar el oxígeno que nosotros respiramos mientras caminamos por los senderos turísticos de la zona. Sin agua, la receta simplemente no puede comenzar.
+                </p>
+                <p>
+                    El segundo ingrediente viene del aire: el **Dióxido de Carbono (CO<sub>2</sub>)**. Aunque no lo vemos, este gas entra a las hojas de los cítricos a través de unos poros microscópicos llamados estomas. En Pueblo Rico, el aire es puro, pero aun así contiene el CO<sub>2</sub> necesario que las plantas atrapan para convertirlo en carbono sólido, que luego formará la madera del tronco y el azúcar de los frutos que cosechamos en diciembre.
+                </p>
+                <p>
+                    Finalmente, el ingrediente que activa todo: la **Luz Solar**. Quimbaya es tierra de luz. Los fotones que viajan desde el sol son capturados por una sustancia verde llamada clorofila. Piensa en la clorofila como los paneles solares que algunos vecinos instalan en sus techos. Esta energía lumínica es la que permite que el agua y el CO<sub>2</sub> se mezclen para crear glucosa. Sin el sol de nuestras mañanas, los cafetales serían solo palos secos sin vida.
+                </p>
+                <p>
+                    Al unir estos tres elementos, la planta produce oxígeno y glucosa. La glucosa es la "arepa" de la planta; es su energía para crecer, florecer y producir ese aroma a azahar que inunda Pueblo Rico. Entender esta receta es fundamental para nosotros como habitantes de una zona agrícola, pues nos enseña que cuidar el agua y el aire es, literalmente, cuidar el alimento de nuestras fincas y el futuro de nuestra economía cafetera.
+                </p>
+
+                <div class="table-responsive">
+                    <table>
+                        <tr>
+                            <th>Insumo</th>
+                            <th>Origen en Pueblo Rico</th>
+                            <th>Función Pedagógica</th>
+                        </tr>
+                        <tr>
+                            <td>Luz Solar</td>
+                            <td>Cielo despejado de Quimbaya</td>
+                            <td>Fuente de energía primaria (Fotones)</td>
+                        </tr>
+                        <tr>
+                            <td>Agua (H<sub>2</sub>O)</td>
+                            <td>Lluvias y quebradas locales</td>
+                            <td>Donante de electrones y medio de transporte</td>
+                        </tr>
+                        <tr>
+                            <td>CO<sub>2</sub></td>
+                            <td>Atmósfera de la vereda</td>
+                            <td>Fuente de Carbono para crear materia viva</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa 1: Reflexión Territorial</h4>
+                    <p>En tu cuaderno, responde: ¿Cómo cambiaría el paisaje de la Vereda Pueblo Rico si dejara de llover por un año completo? Justifica con lo aprendido sobre el agua.</p>
+                    <button class="btn-start" onclick="markTask(1, this)">Registrar en Progreso</button>
+                </div>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa 2: Dibujo de Proceso</h4>
+                    <p>Dibuja en tu cuaderno una hoja de café ampliada y señala por dónde entra el CO<sub>2</sub> y por dónde sale el Oxígeno.</p>
+                    <button class="btn-start" onclick="markTask(2, this)">Registrar en Progreso</button>
+                </div>
+            </section>
+
+            <!-- GRÁFICA ANALÍTICA -->
+            <section>
+                <h2>Interpretación de Datos: La Luz y la Producción</h2>
+                <div class="svg-art">
+                    <svg width="600" height="350" viewBox="0 0 600 350">
+                        <!-- Ejes -->
+                        <line x1="50" y1="300" x2="550" y2="300" stroke="#333" stroke-width="2"/>
+                        <line x1="50" y1="300" x2="50" y2="50" stroke="#333" stroke-width="2"/>
+                        <!-- Curva -->
+                        <path d="M 50 280 Q 150 100 300 80 L 550 85" fill="none" stroke="var(--verde-quindio)" stroke-width="5"/>
+                        <!-- Textos -->
+                        <text x="300" y="340" text-anchor="middle">Intensidad de Luz Solar (W/m²)</text>
+                        <text x="20" y="175" transform="rotate(-90, 20, 175)" text-anchor="middle">Tasa de Fotosíntesis</text>
+                        <text x="100" y="290" font-size="12">Sombra (Café)</text>
+                        <text x="400" y="290" font-size="12">Sol Directo (Cítricos)</text>
+                    </svg>
+                </div>
+                <div class="question-card">
+                    <p><strong>Competencia Indagar:</strong> Según la gráfica de nuestra vereda, ¿qué sucede con la fotosíntesis cuando la intensidad de luz llega a niveles muy altos (sol directo)?</p>
+                    <label><input type="radio" name="icfes1" value="0"> Sigue aumentando infinitamente.</label><br>
+                    <label><input type="radio" name="icfes1" value="1"> Se estabiliza porque otros factores (como el CO<sub>2</sub>) limitan el proceso.</label><br>
+                    <label><input type="radio" name="icfes1" value="0"> Cae a cero inmediatamente.</label>
+                </div>
+            </section>
+
+            <!-- CUERPO DEDUCTIVO -->
+            <section id="deductivo">
+                <h2>Leyes Térmicas y la Fotólisis</h2>
+                <p>
+                    Para profundizar, debemos deducir las leyes que gobiernan esta "receta". La primera es la **Ley de Conservación de la Materia**: los átomos de carbono que estaban en el aire como CO<sub>2</sub> no desaparecen, sino que se reorganizan. En los cloroplastos de las hojas de naranja de Pueblo Rico, ocurre la fase lumínica. Aquí, la energía de los fotones provoca la **fotólisis del agua**, que es literalmente el rompimiento de la molécula de H<sub>2</sub>O mediante la luz. Este proceso libera O<sub>2</sub> a la atmósfera de Quimbaya y guarda energía en moléculas llamadas ATP.
+                </p>
+                <p>
+                    También debemos considerar la **Temperatura**. Las enzimas que ayudan en la fotosíntesis son como los trabajadores de la finca: si hace demasiado calor (más de 35°C), se cansan y dejan de trabajar eficientemente. En nuestra vereda, la temperatura media de 21°C es ideal. Si la temperatura sube demasiado, los estomas se cierran para no perder agua por transpiración, pero esto bloquea la entrada de CO<sub>2</sub>, deteniendo la "cocina" interna de la planta.
+                </p>
+                <p>
+                    Deducimos entonces que la fotosíntesis es un sistema de equilibrio. No basta con tener mucho sol si no hay agua en el suelo de la finca. Es una cadena de dependencia: la luz activa la clorofila, la clorofila rompe el agua, y la energía resultante fija el carbono del aire. Este ciclo permite que el Paisaje Cultural Cafetero sea una fábrica gigante de oxígeno y alimento que sostiene no solo a las plantas, sino a los animales de nuestra ganadería y a nosotros mismos.
+                </p>
+                
+                <h3>Simulador de Fotólisis: Capturando Fotones</h3>
+                <p>Usa el mouse para mover el cloroplasto (círculo verde) y capturar los fotones (puntos amarillos). Observa cómo al capturarlos se libera energía (puntos azules) y oxígeno (puntos blancos).</p>
+                <div id="canvas-container">
+                    <canvas id="bio-canvas"></canvas>
+                </div>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa 6: Mapa Conceptual</h4>
+                    <p>Construye en tu cuaderno un mapa conceptual que conecte: FOTOSÍNTESIS, CLOROPLASTO, FOTONES, H<sub>2</sub>O, CO<sub>2</sub> y GLUCOSA.</p>
+                    <button class="btn-start" onclick="markTask(6, this)">Registrar en Progreso</button>
+                </div>
+
+                <div class="pause-active">
+                    <h4>Pausa Activa 10: Reto Matemático</h4>
+                    <p>Si una hectárea de café en Pueblo Rico captura 50kg de CO<sub>2</sub> al día, ¿cuántas toneladas capturará en un año (365 días)? Realiza la operación en tu cuaderno.</p>
+                    <button class="btn-start" onclick="markTask(10, this)">Registrar en Progreso</button>
+                </div>
+            </section>
+
+            <!-- EVALUACIÓN FINAL -->
+            <section id="taller">
+                <h2>Taller Evaluativo Final</h2>
+                
+                <div id="quiz-container">
+                    <!-- Preguntas Múltiples -->
+                </div>
+
+                <h3>Preguntas de Desarrollo (Argumentación)</h3>
+                <p><small>⚠️ El sistema detectará si copias texto o usas IA. Escribe con tus propias palabras sobre tu vereda.</small></p>
+                <div id="open-container">
+                    <!-- Preguntas Abiertas -->
+                </div>
+
+                <button class="btn-start" style="width: 100%; font-size: 1.3rem;" onclick="gradeExam()">Finalizar y Generar Reporte</button>
+            </section>
+
+            <!-- RESULTADOS -->
+            <div id="results-card">
+                <h2 style="color: var(--luz-solar);">¡Resultados Obtenidos!</h2>
+                <p id="res-text"></p>
+                <div id="grade-circle" style="font-size: 4rem; margin: 20px 0;">0.0</div>
+                <div id="feedback-path" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px;"></div>
+                <button class="btn-start" onclick="downloadReport()">Descargar Certificado de Pueblo Rico</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Gestión de Usuario ---
+        let studentData = { nombre: '', apellido: '', score: 0, progress: 0, answers: {} };
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            const nom = document.getElementById('input-firstname').value.trim();
+            const ape = document.getElementById('input-lastname').value.trim();
+            if(!nom || !ape) return alert("Por favor ingresa tus datos para identificarte en la Vereda.");
+            
+            studentData.nombre = nom;
+            studentData.apellido = ape;
+            document.getElementById('user-display').innerText = `${ape} ${nom}`;
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            initApp();
+        });
+
+        // --- Datos Pedagógicos ---
+        const mcQuestions = [
+            { q: "¿En qué parte de la hoja de cítrico ocurre principalmente la fotosíntesis?", a: "Raíz", b: "Cloroplastos", c: "Tallo", r: "b" },
+            { q: "¿Cuál es el gas que las plantas de Pueblo Rico 'limpian' del aire?", a: "Oxígeno", b: "Dióxido de Carbono", c: "Metano", r: "b" },
+            { q: "La fotólisis del agua es el proceso donde la luz:", a: "Calienta el agua", b: "Rompe la molécula de agua", c: "Crea agua nueva", r: "b" },
+            { q: "¿Cuál es el producto final que le da energía al cafeto para crecer?", a: "Sal", b: "Glucosa (Azúcar)", c: "Viento", r: "b" },
+            { q: "¿Qué sucede si cerramos los estomas de una planta de naranja?", a: "No puede entrar el CO2", b: "Crece más rápido", c: "Produce más flores", r: "a" }
+        ];
+
+        const openQuestions = [
+            "¿Cómo explicarías a un turista de Quimbaya la importancia del CO2 para el café?",
+            "¿Por qué decimos que la fotosíntesis es una 'receta mágica'?",
+            "¿Cuál es el papel fundamental de la luz solar en las fincas de Pueblo Rico?",
+            "Si el agua es un insumo, ¿qué le pasa a la planta a nivel celular si no llueve?",
+            "¿Cómo se relaciona la fotosíntesis con el oxígeno que respiramos en la vereda?"
+        ];
+
+        function initApp() {
+            const qc = document.getElementById('quiz-container');
+            mcQuestions.forEach((q, i) => {
+                qc.innerHTML += `
+                <div class="question-card">
+                    <p><strong>${i+1}. ${q.q}</strong></p>
+                    <label><input type="radio" name="mc${i}" value="a"> ${q.a}</label><br>
+                    <label><input type="radio" name="mc${i}" value="b"> ${q.b}</label><br>
+                    <label><input type="radio" name="mc${i}" value="c"> ${q.c}</label>
+                </div>`;
+            });
+
+            const oc = document.getElementById('open-container');
+            openQuestions.forEach((q, i) => {
+                oc.innerHTML += `
+                <div class="question-card">
+                    <p><strong>${i+6}. ${q}</strong></p>
+                    <textarea id="open-${i}" class="anti-fraud" placeholder="Tu respuesta..."></textarea>
+                    <div id="warn-${i}" class="warning-text">⚠️ Cadencia de tecleo sospechosa (IA detectada). Escribe manualmente.</div>
+                </div>`;
+                setupAntiFraud(document.getElementById(`open-${i}`), i);
+            });
+
+            initCanvas();
+        }
+
+        // --- Anti-Fraude ---
+        function setupAntiFraud(el, index) {
+            let lastKeyTime = Date.now();
+            el.addEventListener('paste', e => {
+                e.preventDefault();
+                alert("¡Prohibido pegar! En Quimbaya valoramos tu pensamiento original.");
+            });
+            el.addEventListener('contextmenu', e => e.preventDefault());
+            
+            el.addEventListener('keydown', () => {
+                let now = Date.now();
+                let delta = now - lastKeyTime;
+                if(delta < 15 && el.value.length > 10) {
+                    document.getElementById(`warn-${index}`).style.display = 'block';
+                    el.style.borderColor = 'red';
+                }
+                lastKeyTime = now;
+            });
+        }
+
+        // --- Gamificación ---
+        function markTask(id, btn) {
+            if(btn.disabled) return;
+            btn.disabled = true;
+            btn.innerText = "✅ ¡Tarea Lograda!";
+            studentData.progress += 10;
+            studentData.score += 0.2;
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('progress-bar').style.width = Math.min(100, studentData.progress) + "%";
+            document.getElementById('score-display').innerText = `🌱 ${Math.min(5, studentData.score).toFixed(1)}`;
+        }
+
+        // --- Animación Canvas ---
+        function initCanvas() {
+            const canvas = document.getElementById('bio-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            let particles = [];
+            let photons = [];
+            let mouse = { x: canvas.width/2, y: canvas.height/2 };
+
+            canvas.addEventListener('mousemove', e => {
+                const rect = canvas.getBoundingClientRect();
+                mouse.x = e.clientX - rect.left;
+                mouse.y = e.clientY - rect.top;
+            });
+
+            class Photon {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = -20;
+                    this.speed = 2 + Math.random() * 3;
+                }
+                update() {
+                    this.y += this.speed;
+                    if(this.y > canvas.height) this.y = -20;
+                    // Colisión con mouse
+                    let dx = this.x - mouse.x;
+                    let dy = this.y - mouse.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist < 30) {
+                        this.y = -50;
+                        createReaction(this.x, this.y);
+                    }
+                }
+                draw() {
+                    ctx.fillStyle = 'var(--luz-solar)';
+                    ctx.beginPath(); ctx.arc(this.x, this.y, 4, 0, Math.PI*2); ctx.fill();
+                }
+            }
+
+            function createReaction(x, y) {
+                for(let i=0; i<5; i++) {
+                    particles.push({
+                        x, y, 
+                        vx: (Math.random()-0.5)*5, 
+                        vy: (Math.random()-0.5)*5, 
+                        life: 1,
+                        color: Math.random() > 0.5 ? '#81d4fa' : '#ffffff' // H o O2
+                    });
+                }
+            }
+
+            for(let i=0; i<20; i++) photons.push(new Photon());
+
+            function animate() {
+                ctx.fillStyle = 'rgba(27, 35, 17, 0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Dibujar cloroplasto (mouse)
+                ctx.strokeStyle = 'var(--verde-claro)';
+                ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 30, 0, Math.PI*2); ctx.stroke();
+                ctx.fillStyle = 'rgba(76, 175, 80, 0.2)';
+                ctx.fill();
+
+                photons.forEach(p => { p.update(); p.draw(); });
+                particles.forEach((p, i) => {
+                    p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.life;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+                    if(p.life <= 0) particles.splice(i, 1);
+                });
+                ctx.globalAlpha = 1;
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // --- Evaluación Final ---
+        function gradeExam() {
+            let grade = 0;
+            
+            // Selección múltiple (30%)
+            mcQuestions.forEach((q, i) => {
+                const sel = document.querySelector(`input[name="mc${i}"]:checked`);
+                if(sel && sel.value === q.r) grade += 0.3;
+            });
+
+            // Abiertas (50%) - Basado en longitud y detección de fraude
+            openQuestions.forEach((_, i) => {
+                const text = document.getElementById(`open-${i}`).value.trim();
+                const warns = document.getElementById(`warn-${i}`).style.display === 'block';
+                if(text.length > 30 && !warns) grade += 0.5;
+            });
+
+            // Progreso y Pausas (20%)
+            grade += (studentData.progress / 100) * 1.0;
+
+            const finalGrade = Math.min(5, grade).toFixed(1);
+            showResults(finalGrade);
+        }
+
+        function showResults(grade) {
+            document.getElementById('taller').style.display = 'none';
+            document.getElementById('results-card').style.display = 'block';
+            document.getElementById('grade-circle').innerText = grade;
+            
+            let path = "";
+            if(grade < 3) path = "🔴 Ruta de Fortalecimiento: Necesitas repasar los insumos básicos. Revisa la sección 'La Cocina de la Finca' y fíjate en qué hace cada ingrediente.";
+            else if(grade < 4.5) path = "🟡 Ruta Quindiana: ¡Muy bien! Entiendes la receta. Profundiza en la fase lumínica y el papel de los cloroplastos.";
+            else path = "🟢 Ruta de Excelencia: ¡Eres un maestro de la vereda! Dominas la fotosíntesis y su relación con nuestro territorio.";
+            
+            document.getElementById('feedback-path').innerText = path;
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function downloadReport() {
+            const data = `REPORTE DE APRENDIZAJE - PUEBLO RICO\n` +
+                         `Estudiante: ${studentData.apellido} ${studentData.nombre}\n` +
+                         `Nota Final: ${document.getElementById('grade-circle').innerText}\n` +
+                         `Ruta Sugerida: ${document.getElementById('feedback-path').innerText}\n\n` +
+                         `--- Fin del Reporte ---`;
+            const blob = new Blob([data], {type: 'text/plain'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Certificado_${studentData.apellido}.txt`;
+            link.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Sol, El Gran Motor de la Vida</title>
+    <style>
+        /* ================= VARIABLES Y RESET ================= */
+        :root {
+            --sun-primary: #FFB300;
+            --sun-glow: #FFE082;
+            --sun-dark: #FF6F00;
+            --space-dark: #121A2F;
+            --space-light: #1E2A47;
+            --leaf-green: #43A047;
+            --leaf-dark: #1B5E20;
+            --text-main: #333333;
+            --text-light: #F5F5F5;
+            --bg-page: #FAFAFA;
+            --card-bg: #FFFFFF;
+            --border-rad: 12px;
+            --shadow-soft: 0 8px 24px rgba(0,0,0,0.08);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ================= NAVEGACIÓN Y PROGRESO ================= */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--space-dark);
+            color: var(--text-light);
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border-bottom: 3px solid var(--sun-primary);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-weight: 600;
+        }
+
+        .gamification-badge {
+            background: linear-gradient(135deg, var(--sun-primary), var(--sun-dark));
+            color: white;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            box-shadow: 0 0 10px rgba(255, 179, 0, 0.5);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--sun-primary);
+            width: 0%;
+            transition: width 0.6s ease;
+            box-shadow: 0 0 8px var(--sun-primary);
+        }
+
+        /* ================= PANTALLA DE LOGIN ================= */
+        #login-screen {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--space-light), var(--space-dark));
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 2000;
+        }
+
+        .login-box {
+            background: var(--card-bg);
+            padding: 50px 40px;
+            border-radius: var(--border-rad);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .login-box::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 150px;
+            height: 150px;
+            background: var(--sun-primary);
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .login-box h1 {
+            color: var(--space-dark);
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-box p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+            position: relative;
+            z-index: 1;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--space-light);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            font-size: 1.05em;
+            transition: var(--transition);
+            background: #FAFAFA;
+        }
+
+        .input-group input:focus {
+            border-color: var(--sun-primary);
+            outline: none;
+            background: #FFF;
+            box-shadow: 0 0 0 4px rgba(255, 179, 0, 0.15);
+        }
+
+        .btn-main {
+            background: linear-gradient(to right, var(--sun-primary), var(--sun-dark));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-main:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 111, 0, 0.4);
+        }
+
+        .error-msg {
+            color: #D32F2F;
+            font-size: 0.85em;
+            margin-top: 6px;
+            display: none;
+            font-weight: 600;
+        }
+
+        /* ================= CONTENIDO PRINCIPAL ================= */
+        #main-content {
+            display: none;
+            padding-top: 90px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-bottom: 120px;
+        }
+
+        section {
+            background: var(--card-bg);
+            margin: 40px 15px;
+            padding: 50px;
+            border-radius: var(--border-rad);
+            box-shadow: var(--shadow-soft);
+        }
+
+        h2 {
+            color: var(--space-dark);
+            border-bottom: 4px solid var(--sun-primary);
+            padding-bottom: 12px;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            display: inline-block;
+        }
+
+        h3 {
+            color: var(--leaf-dark);
+            margin: 35px 0 15px 0;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p {
+            margin-bottom: 22px;
+            text-align: justify;
+            font-size: 1.15em;
+            color: #444;
+        }
+
+        .highlight {
+            background: rgba(255, 179, 0, 0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            color: var(--sun-dark);
+            border-bottom: 2px solid var(--sun-primary);
+        }
+
+        /* ================= PAUSAS ACTIVAS ================= */
+        .active-pause {
+            background: #FFFDE7;
+            border-left: 6px solid var(--sun-primary);
+            padding: 25px;
+            margin: 35px 0;
+            border-radius: 0 var(--border-rad) var(--border-rad) 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        .active-pause h4 {
+            color: var(--sun-dark);
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .active-pause h4::before {
+            content: "📝";
+            font-size: 1.4em;
+        }
+
+        .btn-pause {
+            align-self: flex-start;
+            background: var(--space-light);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+
+        .btn-pause:hover:not(:disabled) {
+            background: var(--space-dark);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-pause:disabled {
+            background: var(--leaf-green);
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.9;
+        }
+
+        /* ================= PREGUNTAS ================= */
+        .question-card {
+            border: 2px solid #EEEEEE;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            background: #FAFAFA;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #E0E0E0;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: var(--transition);
+            font-size: 1.05em;
+            color: var(--text-main);
+        }
+
+        .option-btn:hover {
+            border-color: var(--sun-primary);
+            background: rgba(255, 179, 0, 0.05);
+        }
+
+        .feedback-box {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 8px;
+            display: none;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+        .feedback-box.success { background: #E8F5E9; color: var(--leaf-dark); border-left: 5px solid var(--leaf-green); }
+        .feedback-box.error { background: #FFEBEE; color: #C62828; border-left: 5px solid #E53935; }
+
+        /* ================= SVG ART ================= */
+        .svg-container {
+            width: 100%;
+            max-width: 700px;
+            margin: 40px auto;
+            display: block;
+            border-radius: 12px;
+            box-shadow: var(--shadow-soft);
+            background: #FFFFFF;
+            overflow: hidden;
+            border: 1px solid #E0E0E0;
+        }
+
+        /* ================= CANVAS ANIMATION ================= */
+        .canvas-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--space-dark);
+            padding: 30px 20px;
+            border-radius: 15px;
+            margin: 50px 0;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .canvas-wrapper h3 {
+            color: var(--sun-primary);
+            margin-top: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .canvas-wrapper p {
+            color: #B0BEC5;
+            text-align: center;
+            font-size: 1em;
+            max-width: 800px;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            background: #0B101E;
+            border-radius: 12px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 0 20px rgba(67, 160, 71, 0.2);
+            cursor: crosshair;
+            max-width: 100%;
+            height: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* ================= TALLER Y EVALUACIÓN ================= */
+        .textarea-group {
+            margin-bottom: 30px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 18px;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            font-size: 1.05em;
+            resize: vertical;
+            transition: var(--transition);
+            background: #FAFAFA;
+        }
+
+        textarea:focus {
+            border-color: var(--sun-primary);
+            outline: none;
+            background: #FFF;
+        }
+
+        .word-counter {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            margin-top: 8px;
+            font-weight: 700;
+        }
+        
+        .wc-error { color: #D32F2F; }
+        .wc-success { color: var(--leaf-green); }
+
+        #resultados-section {
+            display: none;
+            background: linear-gradient(135deg, #FFFDE7, #FFF3E0);
+            text-align: center;
+            border: 3px solid var(--sun-primary);
+        }
+
+        .element-display {
+            font-size: 5em;
+            font-weight: 900;
+            color: var(--sun-dark);
+            text-shadow: 2px 2px 0px #FFF, 4px 4px 10px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+
+        /* ================= RESPONSIVE ================= */
+        @media (max-width: 768px) {
+            .options-grid { grid-template-columns: 1fr; }
+            section { padding: 30px 20px; margin: 20px 10px; }
+            h2 { font-size: 1.8em; }
+            header .nav-content { flex-direction: column; gap: 10px; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= PANTALLA DE LOGIN ================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>☀️ Misión Solar</h1>
+            <p>Descubre el motor que impulsa la vida en la Tierra y en tu interior.</p>
+            
+            <div class="input-group">
+                <label for="input-apellidos">Apellidos</label>
+                <input type="text" id="input-apellidos" placeholder="Ej: García Pérez" autocomplete="off">
+                <div id="err-apellidos" class="error-msg">Por favor ingresa tus apellidos.</div>
+            </div>
+            
+            <div class="input-group">
+                <label for="input-nombres">Nombres</label>
+                <input type="text" id="input-nombres" placeholder="Ej: Juan David" autocomplete="off">
+                <div id="err-nombres" class="error-msg">Por favor ingresa tus nombres.</div>
+            </div>
+            
+            <!-- Botón tipo button sin form -->
+            <button type="button" id="btn-ingresar" class="btn-main">Conectar al Sistema</button>
+        </div>
+    </div>
+
+    <!-- ================= BARRA SUPERIOR FIJA ================= -->
+    <header id="main-header" style="display: none;">
+        <div class="nav-content">
+            <div class="user-info">
+                <span>👤 <span id="display-fullname">Estudiante</span></span>
+                <span class="gamification-badge" id="badge-element">
+                    🪐 Elemento: Hidrógeno (H)
+                </span>
+            </div>
+            <div>Grado 7° - Ciencias Naturales</div>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" id="main-progress"></div>
+        </div>
+    </header>
+
+    <!-- ================= CONTENIDO PRINCIPAL ================= -->
+    <div id="main-content">
+
+        <!-- SECCIÓN 1: INICIO & PRE-SABERES -->
+        <section id="inicio">
+            <h2>🎯 Objetivo de Aprendizaje</h2>
+            <p>Al finalizar este recorrido, serás capaz de <strong>identificar al Sol como la fuente principal e indispensable de energía para los ecosistemas</strong>, comprenderás la transformación de esa energía a través de la fotosíntesis y las cadenas tróficas, y lograrás conectar este principio biológico con el valor del <strong>calor humano, la alegría y la empatía</strong> como nuestra "energía solar interna".</p>
+            
+            <h3>🧠 Activa tu Mente (Pre-saberes)</h3>
+            
+            <div class="question-card" id="pre-q1">
+                <p><strong>1. Cuando te comes una manzana, tu cuerpo obtiene energía para correr y pensar. ¿De dónde provino originalmente, en su forma más pura, esa energía que ahora está en la manzana?</strong></p>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="checkPreSaber(1, false, this)">A) Del agua subterránea que bebió el árbol.</button>
+                    <button class="option-btn" onclick="checkPreSaber(1, false, this)">B) De los nutrientes minerales de la tierra.</button>
+                    <button class="option-btn" onclick="checkPreSaber(1, true, this)">C) De la luz del Sol capturada por las hojas del manzano.</button>
+                    <button class="option-btn" onclick="checkPreSaber(1, false, this)">D) Del oxígeno que absorbió la fruta al crecer.</button>
+                </div>
+                <div class="feedback-box" id="fb-pre1"></div>
+            </div>
+
+            <div class="question-card" id="pre-q2">
+                <p><strong>2. Imagina que encierras una planta sana en un armario completamente oscuro, pero la sigues regando todos los días. ¿Qué le sucederá a las pocas semanas?</strong></p>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="checkPreSaber(2, false, this)">A) Crecerá más rápido buscando salir del armario.</button>
+                    <button class="option-btn" onclick="checkPreSaber(2, true, this)">B) Perderá su color verde, se debilitará y morirá por falta de energía.</button>
+                    <button class="option-btn" onclick="checkPreSaber(2, false, this)">C) Se adaptará a la oscuridad y cambiará el color de sus hojas a negro.</button>
+                    <button class="option-btn" onclick="checkPreSaber(2, false, this)">D) Sobrevivirá sin problemas porque tiene agua constante.</button>
+                </div>
+                <div class="feedback-box" id="fb-pre2"></div>
+            </div>
+
+            <div class="question-card" id="pre-q3">
+                <p><strong>3. Desde el punto de vista emocional, ¿cómo sueles sentirte después de varios días grises, fríos y lluviosos, comparado con despertar en un día brillante y soleado?</strong></p>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="checkPreSaber(3, true, this)">A) El día soleado me da más energía, motivación y mejor estado de ánimo.</button>
+                    <button class="option-btn" onclick="checkPreSaber(3, false, this)">B) El clima no afecta en absoluto cómo me siento internamente.</button>
+                    <button class="option-btn" onclick="checkPreSaber(3, false, this)">C) Me siento exactamente con la misma vitalidad en ambos escenarios.</button>
+                    <button class="option-btn" onclick="checkPreSaber(3, false, this)">D) Los días grises me obligan a ser más activo físicamente.</button>
+                </div>
+                <div class="feedback-box" id="fb-pre3"></div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: CUERPO INDUCTIVO -->
+        <section id="inductivo">
+            <h2>🌍 La Observación del Entorno: Buscando la Luz</h2>
+            
+            <p>Desde el principio de los tiempos, la humanidad comprendió de manera instintiva que allá arriba, en el cielo, residía el jefe absoluto de la vida en la Tierra. Civilizaciones antiguas como los egipcios adoraban a <span class="highlight">Ra</span>, los incas veneraban a <span class="highlight">Inti</span> y los griegos le cantaban a <span class="highlight">Apolo</span>. No estaban equivocados en su devoción; sabían que si el Sol desaparecía, el frío eterno y la muerte cubrirían el planeta. Hoy, la ciencia nos ha quitado los mitos, pero nos ha regalado una verdad aún más poética y fascinante: el Sol no es solo una estrella brillante, es <span class="highlight">El Gran Motor de la Vida</span>, el reactor gigantesco que pone en marcha cada engranaje biológico y climático de nuestra "finca" llamada Tierra.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 1: Preparando la Caminata</h4>
+                <p>Abre tu cuaderno físico. Título: "El Gran Motor". Antes de seguir leyendo, cierra los ojos e imagina el mapa de tu colegio. Dibuja un pequeño croquis (mapa simple) indicando un lugar que siempre recibe mucho sol (ej. la cancha) y un rincón que siempre está en la sombra (ej. detrás de las escaleras).</p>
+                <button class="btn-pause" onclick="marcarPausa(1, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Para entender este poder, no necesitamos telescopios sofisticados, basta con hacer una simple caminata de observación por tu escuela o tu barrio. Imagina que caminamos hacia el patio principal, ese lugar donde la luz solar impacta de lleno desde la mañana hasta la tarde. Si observas las plantas que crecen allí, notarás características inconfundibles: sus hojas son de un verde oscuro y vibrante, sus tallos son gruesos y robustos, y es muy probable que estén llenas de flores y frutos. Estas plantas son como fábricas trabajando a su máxima capacidad, recibiendo el suministro inagotable de "combustible" lumínico.</p>
+
+            <p>Ahora, caminemos hacia ese rincón oscuro, quizás detrás del polideportivo o bajo la sombra densa de unas escaleras, donde el sol apenas se filtra unos minutos al día. Si encuentras alguna planta intentando sobrevivir allí, el contraste será dramático. Notarás que sus tallos son alargados y frágiles, casi transparentes, y sus hojas tienen un color verde pálido o amarillento. En biología, este fenómeno se conoce como <span class="highlight">Etiolación</span>. La planta gasta la poca energía que le queda estirándose desesperadamente, buscando alcanzar un rayo de sol. Es un grito silencioso por la vida, porque sin luz, el motor interno de la planta se apaga.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 2: Contraste Visual</h4>
+                <p>En tu cuaderno, debajo del mapa, divide la página en dos. En el lado izquierdo dibuja y colorea una "Planta de pleno Sol" (robusta, verde oscuro). En el lado derecho, dibuja una "Planta de sombra extrema" (estirada, pálida, débil).</p>
+                <button class="btn-pause" onclick="marcarPausa(2, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Esta observación nos revela una ley inquebrantable: todo lo vivo busca la luz. Y no solo las plantas. El Sol calienta los océanos, provocando la evaporación que forma las nubes, impulsando el ciclo del agua que nos da la lluvia. El Sol calienta el aire de manera desigual, generando los vientos que mueven las semillas y cambian el clima. El Sol es el motor que empuja las corrientes marinas. Cada gota de lluvia que cae y cada brisa que sientes en tu rostro, están siendo empujadas por la energía de nuestra estrella.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 3: Recuerdo Soleado</h4>
+                <p>Escribe en tu cuaderno un párrafo de 4 líneas contando un recuerdo feliz que tengas de un día de mucho sol (un paseo, un partido de fútbol, una tarde en el río). ¿Cómo se sentía el calor en tu piel?</p>
+                <button class="btn-pause" onclick="marcarPausa(3, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Pero existe una capa más profunda en esta enseñanza. Así como las plantas se marchitan en la oscuridad física, los seres humanos nos marchitamos en la "oscuridad" emocional. Nosotros no hacemos fotosíntesis con la piel, pero nos nutrimos de otra forma de energía vital: <span class="highlight">el calor humano, la alegría y la empatía</span>. ¿Has notado cómo hay personas que iluminan un lugar cuando entran? Personas que, con una sonrisa, una palabra de aliento o un abrazo, te recargan de energía cuando te sientes triste. Ellas son pequeños "soles" en nuestro ecosistema social.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 4: Mi Sol Interno</h4>
+                <p>Piensa en alguien de tu familia, colegio o amigos que consideres que irradia buena energía, alguien que te haga sentir mejor cuando estás cerca. Escribe su nombre en el cuaderno y anota 2 cualidades "luminosas" que esa persona tiene.</p>
+                <button class="btn-pause" onclick="marcarPausa(4, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Ser "el sol" para alguien más no requiere magia, requiere empatía. Cuando compartes tu alegría, cuando ayudas a un compañero que está estancado en la "sombra" de un problema, le estás transfiriendo tu energía positiva. En séptimo grado, entender de ciencias naturales es importante, pero comprender que somos parte de un sistema donde nuestra actitud afecta a los demás, es fundamental. Todos tenemos la capacidad de ser receptores de luz y, al mismo tiempo, irradiar luz hacia los que nos rodean. Esa es nuestra verdadera "energía solar" interna.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 5: Mi Compromiso Luminoso</h4>
+                <p>Escribe una frase grande y decórala en tu cuaderno que diga: "Hoy decido ser energía y luz para..." y complétala con el nombre de alguien a quien quieras ayudar o alegrarle el día hoy.</p>
+                <button class="btn-pause" onclick="marcarPausa(5, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: PREGUNTA TIPO ICFES (INDAGAR) -->
+        <section id="icfes">
+            <h2>🕵️ Pregunta Tipo Prueba de Estado (Indagar)</h2>
+            <p>Analiza el siguiente esquema del flujo de energía generado con vectores matemáticos. Presta atención al porcentaje de energía que fluye de un nivel a otro (Regla del 10%) y responde.</p>
+            
+            <!-- ARTE SVG: Pirámide de Energía -->
+            <svg class="svg-container" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="sunGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#FFF59D"/>
+                        <stop offset="50%" stop-color="#FFB300"/>
+                        <stop offset="100%" stop-color="#E65100"/>
+                    </linearGradient>
+                    <linearGradient id="prodGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#66BB6A"/>
+                        <stop offset="100%" stop-color="#2E7D32"/>
+                    </linearGradient>
+                    <linearGradient id="primGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#42A5F5"/>
+                        <stop offset="100%" stop-color="#1565C0"/>
+                    </linearGradient>
+                    <linearGradient id="secGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#EF5350"/>
+                        <stop offset="100%" stop-color="#C62828"/>
+                    </linearGradient>
+                    <marker id="arrowHead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#FF9800"/>
+                    </marker>
+                    <marker id="heatArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#9E9E9E"/>
+                    </marker>
+                </defs>
+
+                <!-- Sol emitiendo energía -->
+                <circle cx="100" cy="100" r="60" fill="url(#sunGrad)"/>
+                <path d="M170,100 L750,100" stroke="#FFB300" stroke-width="4" stroke-dasharray="10,5" marker-end="url(#arrowHead)"/>
+                <text x="250" y="90" font-size="16" font-weight="bold" fill="#F57F17">1,000,000 J (Energía Solar Entrante)</text>
+                
+                <!-- Rayos del Sol -->
+                <g stroke="#FFB300" stroke-width="3">
+                    <line x1="100" y1="20" x2="100" y2="5"/>
+                    <line x1="100" y1="180" x2="100" y2="195"/>
+                    <line x1="20" y1="100" x2="5" y2="100"/>
+                    <line x1="43" y1="43" x2="32" y2="32"/>
+                    <line x1="157" y1="157" x2="168" y2="168"/>
+                    <line x1="43" y1="157" x2="32" y2="168"/>
+                </g>
+
+                <!-- Nivel 1: Productores -->
+                <rect x="250" y="380" width="300" height="80" rx="5" fill="url(#prodGrad)"/>
+                <text x="400" y="415" font-size="18" font-weight="bold" fill="white" text-anchor="middle">Productores (Plantas)</text>
+                <text x="400" y="440" font-size="16" fill="#C8E6C9" text-anchor="middle">10,000 J (1%)</text>
+                
+                <!-- Nivel 2: Consumidores Primarios -->
+                <rect x="300" y="270" width="200" height="80" rx="5" fill="url(#primGrad)"/>
+                <text x="400" y="305" font-size="18" font-weight="bold" fill="white" text-anchor="middle">C. Primarios (Herbívoros)</text>
+                <text x="400" y="330" font-size="16" fill="#BBDEFB" text-anchor="middle">1,000 J (10%)</text>
+
+                <!-- Nivel 3: Consumidores Secundarios -->
+                <rect x="350" y="160" width="100" height="80" rx="5" fill="url(#secGrad)"/>
+                <text x="400" y="195" font-size="16" font-weight="bold" fill="white" text-anchor="middle">C. Secundarios</text>
+                <text x="400" y="220" font-size="14" fill="#FFCDD2" text-anchor="middle">100 J (10%)</text>
+
+                <!-- Flechas de Flujo -->
+                <path d="M400,380 L400,360" stroke="#FF9800" stroke-width="6" marker-end="url(#arrowHead)"/>
+                <path d="M400,270 L400,250" stroke="#FF9800" stroke-width="6" marker-end="url(#arrowHead)"/>
+                <path d="M145,145 L280,380" stroke="#FFB300" stroke-width="4" stroke-dasharray="8,4" marker-end="url(#arrowHead)"/>
+
+                <!-- Pérdida de Calor (Entropía) -->
+                <path d="M550,420 Q650,420 650,350" fill="none" stroke="#9E9E9E" stroke-width="3" stroke-dasharray="5,5" marker-end="url(#heatArrow)"/>
+                <path d="M500,310 Q650,310 650,250" fill="none" stroke="#9E9E9E" stroke-width="3" stroke-dasharray="5,5" marker-end="url(#heatArrow)"/>
+                <path d="M450,200 Q650,200 650,150" fill="none" stroke="#9E9E9E" stroke-width="3" stroke-dasharray="5,5" marker-end="url(#heatArrow)"/>
+                <text x="660" y="250" font-size="14" font-weight="bold" fill="#757575" transform="rotate(-90 660,250)">PÉRDIDA DE ENERGÍA (CALOR)</text>
+            </svg>
+
+            <div class="question-card" style="margin-top: 30px;">
+                <p><strong>Observando la pirámide energética, la luz del Sol (1,000,000 Joules) es capturada por las plantas, pero solo logran almacenar 10,000 J. Luego, un conejo (herbívoro) se come las plantas y solo guarda 1,000 J. Finalmente, un zorro se come al conejo y solo obtiene 100 J. Basándote en esto, ¿por qué los grandes depredadores (como zorros o leones) necesitan cazar y comer grandes cantidades de presas o abarcar inmensos territorios para sobrevivir?</strong></p>
+                <div class="options-grid" style="grid-template-columns: 1fr;">
+                    <button class="option-btn" onclick="checkIcfes(false, 'Incorrecto. Los herbívoros son cruciales. Son el puente que transfiere la energía de las plantas hacia los carnívoros.', this)">
+                        A) Porque los herbívoros son animales que no absorben correctamente la energía del sol, haciendo que la cadena alimenticia falle en su base.
+                    </button>
+                    <button class="option-btn" id="btn-icfes-correct" onclick="checkIcfes(true, '¡Análisis perfecto! Esta es la Regla del 10%. En cada paso, el 90% de la energía se pierde (mayormente como calor por el metabolismo del organismo). Al llegar a la punta, queda tan poca energía que el depredador debe comer mucho más volumen para compensar.', this)">
+                        B) Porque en cada nivel de la cadena trófica se pierde el 90% de la energía (como calor); al llegar a la cima, queda tan poca energía disponible que deben consumir muchos más organismos para sostenerse.
+                    </button>
+                    <button class="option-btn" onclick="checkIcfes(false, 'Incorrecto. Los consumidores secundarios no pueden realizar la fotosíntesis. Son dependientes absolutos de la energía que ya fue procesada por los niveles inferiores.', this)">
+                        C) Porque los consumidores secundarios tienen la capacidad de tomar la energía directamente del sol, pero prefieren cazar porque es más fácil para su metabolismo.
+                    </button>
+                    <button class="option-btn" onclick="checkIcfes(false, 'Incorrecto. La energía térmica que emiten los animales no se transfiere al siguiente nivel; se disipa en la atmósfera y se pierde para el ecosistema.', this)">
+                        D) Porque la energía térmica (calor) que se pierde en los niveles inferiores es recuperada por los depredadores al momento de atrapar a su presa.
+                    </button>
+                </div>
+                <div class="feedback-box" id="fb-icfes"></div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: CUERPO DEDUCTIVO -->
+        <section id="deductivo">
+            <h2>🔬 La Ciencia del Enfoque: Termodinámica y Vida</h2>
+
+            <p>Ya hemos observado los efectos del Sol de manera inductiva, pero ahora vamos a ponernos la bata de científicos y entenderemos, de manera deductiva, las leyes físicas y químicas que operan detrás de todo esto. Todo comienza a 150 millones de kilómetros de aquí, en el núcleo de nuestra estrella. Allí, la presión y la temperatura son tan extremamente altas (15 millones de grados Celsius) que ocurre un proceso llamado <span class="highlight">Fusión Nuclear</span>. Los átomos de hidrógeno (H) chocan violentamente y se fusionan para crear helio (He). En ese violento abrazo atómico, una pequeña fracción de masa se convierte en pura energía, siguiendo la famosa ecuación de Einstein: <em>E = mc<sup>2</sup></em>.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 6: Fusión en el Cuaderno</h4>
+                <p>Dibuja dos pequeños círculos azules etiquetados con la letra "H" (Hidrógeno) chocando a gran velocidad para formar un círculo rojo más grande etiquetado "He" (Helio). Dibuja rayos amarillos saliendo del choque y escribe "Energía".</p>
+                <button class="btn-pause" onclick="marcarPausa(6, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Esa energía viaja en forma de "paquetes" de luz llamados fotones. Al salir del Sol, estos fotones atraviesan el vacío frío del espacio a la asombrosa velocidad de 300,000 kilómetros por segundo, tardando aproximadamente 8 minutos y 20 segundos en llegar a la Tierra. Imagina esto: la luz que está calentando tu brazo en este momento es un mensaje antiguo, energía generada hace millones de años en el interior del Sol, que acaba de terminar un viaje relámpago a través del sistema solar para tocar tu piel.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 7: Un Viaje a la Velocidad de la Luz</h4>
+                <p>Piensa y escribe: Si pudieras viajar a la velocidad de la luz (y tardarías 8 minutos en llegar al Sol), ¿qué harías durante esos 8 minutos de viaje espacial? Responde en una línea.</p>
+                <button class="btn-pause" onclick="marcarPausa(7, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Pero la luz del sol sola no puede alimentar a un animal. Tú no puedes salir al patio, abrir la boca mirando al cielo y almorzar luz solar. Necesitamos un traductor, una máquina que convierta la energía de la física en energía química. Esa máquina se llama <span class="highlight">Cloroplasto</span>, y se encuentra dentro de las células de las plantas. El proceso se llama <span class="highlight">Fotosíntesis</span>. La planta absorbe el Dióxido de Carbono (CO<sub>2</sub>) del aire que nosotros exhalamos, y el Agua (H<sub>2</sub>O) de la tierra. Cuando el fotón de luz solar golpea la hoja, actúa como un martillo que rompe las moléculas de agua y CO<sub>2</sub> para reensamblarlas en algo totalmente nuevo: Glucosa (C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>), que es azúcar/comida, y Oxígeno (O<sub>2</sub>) que es liberado para que respiremos.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 8: La Fórmula Mágica</h4>
+                <p>Copia con mucho cuidado esta ecuación en tu cuaderno. Es la receta matemática de la vida en la Tierra:<br>
+                <strong>6 CO<sub>2</sub> + 6 H<sub>2</sub>O + (Luz Solar)  &rarr;  C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> (Glucosa) + 6 O<sub>2</sub></strong></p>
+                <button class="btn-pause" onclick="marcarPausa(8, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <p>Aquí es donde entra a jugar la Termodinámica, la rama de la física que estudia la energía. La <strong>Primera Ley de la Termodinámica</strong> dice que "la energía no se crea ni se destruye, solo se transforma". La luz del Sol no desaparece al chocar con la hoja; se esconde en los enlaces químicos del azúcar (glucosa). Luego, la <strong>Segunda Ley</strong> nos advierte que en cada transformación, parte de esa energía se pierde como calor (entropía). Por eso la pirámide de la pregunta anterior se hace cada vez más pequeña. Nosotros comemos plantas (o animales que comieron plantas) y nuestras células hacen el proceso inverso: rompen la glucosa con oxígeno para liberar la energía solar atrapada allí y convertirla en calor y movimiento para nuestro cuerpo (ATP).</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 9: El Mapa de mi Desayuno</h4>
+                <p>Piensa en algo que desayunaste hoy (ej. un huevo, una arepa, fruta). Dibuja en flechas cómo la energía llegó desde el Sol hasta tu estómago. Ej: Sol -> Maíz -> Arepa -> Yo.</p>
+                <button class="btn-pause" onclick="marcarPausa(9, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+            <!-- ANIMACIÓN CANVAS INTERACTIVA -->
+            <div class="canvas-wrapper">
+                <h3>🧪 Simulación: La Fábrica de Luz (Fotosíntesis a Nivel Celular)</h3>
+                <p>Haz clic y arrastra el ratón sobre el lienzo para generar "Fotones" (Energía Solar). Observa cómo impactan en los cloroplastos (círculos verdes). El impacto fusiona el Agua (azul) y el CO2 (gris) que flotan, convirtiéndolos en energía biológica: Glucosa (hexágonos naranjas).</p>
+                <canvas id="photoCanvas" width="800" height="400"></canvas>
+            </div>
+
+            <p>Al entender la precisión matemática y física de la fotosíntesis, volvemos a nuestro punto humano. Tú funcionas quemando la energía solar almacenada en tus alimentos. Cada vez que sonríes, ayudas a alguien, o abrazas, estás usando energía que literalmente provino del Sol. Ser amable cuesta energía biológica real. Por lo tanto, cuando decides gastar tu "ATP" (tu energía interna) en irradiar empatía y buen trato hacia tus compañeros, estás replicando el acto más noble del universo: estás tomando tu energía y dándola desinteresadamente para calentar y hacer crecer la vida de los demás, tal como lo hace El Gran Motor de la Vida desde el centro del sistema solar.</p>
+
+            <div class="active-pause">
+                <h4>Pausa Activa 10: Termodinámica de la Empatía</h4>
+                <p>Conclusión final en el cuaderno. Basado en la lectura, responde: Si la energía no se destruye, ¿en qué se transforma la energía de un buen desayuno cuando la utilizas para consolar a un amigo triste?</p>
+                <button class="btn-pause" onclick="marcarPausa(10, this)">Ya lo hice en mi cuaderno</button>
+            </div>
+
+        </section>
+
+        <!-- SECCIÓN 5: EVALUACIÓN / TALLER -->
+        <section id="evaluacion">
+            <h2>📝 Taller Final: Demuestra tu Energía</h2>
+            <p>Es hora de verificar cuánto combustible has asimilado. Las primeras 5 preguntas son de selección múltiple y te darán tu puntaje. Las últimas 5 son preguntas abiertas y requieren una redacción sumamente estricta.</p>
+
+            <h3>Parte I: Selección Múltiple (Autocalificable)</h3>
+            
+            <div class="question-card">
+                <p><strong>1. ¿Qué proceso físico ocurre en el centro del Sol que le permite liberar cantidades masivas de energía?</strong></p>
+                <select id="eval-q1" style="width:100%; padding:12px; margin-top:10px; border-radius:6px; font-size:1em;">
+                    <option value="">Selecciona una opción...</option>
+                    <option value="A">A) Combustión de oxígeno puro.</option>
+                    <option value="B">B) Fusión nuclear de átomos de hidrógeno.</option> <!-- Correcta -->
+                    <option value="C">C) Evaporación de gases densos.</option>
+                    <option value="D">D) Fotosíntesis cósmica.</option>
+                </select>
+            </div>
+
+            <div class="question-card">
+                <p><strong>2. Según la lectura, si observamos una planta que crece en un lugar con escasa luz (sombra extrema), lo más probable es que:</strong></p>
+                <select id="eval-q2" style="width:100%; padding:12px; margin-top:10px; border-radius:6px; font-size:1em;">
+                    <option value="">Selecciona una opción...</option>
+                    <option value="A">A) Presente "etiolación", mostrándose pálida y con tallos alargados buscando luz.</option> <!-- Correcta -->
+                    <option value="B">B) Desarrolle hojas gigantes y de color verde muy oscuro para defenderse.</option>
+                    <option value="C">C) Empiece a cazar insectos para compensar la falta de sol.</option>
+                    <option value="D">D) Cierre sus hojas de forma permanente.</option>
+                </select>
+            </div>
+
+            <div class="question-card">
+                <p><strong>3. ¿Cuáles son los ingredientes principales que la planta necesita tomar de su entorno (factores abióticos) para realizar la fotosíntesis?</strong></p>
+                <select id="eval-q3" style="width:100%; padding:12px; margin-top:10px; border-radius:6px; font-size:1em;">
+                    <option value="">Selecciona una opción...</option>
+                    <option value="A">A) Oxígeno, Glucosa y Calor térmico.</option>
+                    <option value="B">B) Helio, Oxígeno y Tierra fértil.</option>
+                    <option value="C">C) Dióxido de Carbono (CO2), Agua (H2O) y Energía Lumínica.</option> <!-- Correcta -->
+                    <option value="D">D) Dióxido de Carbono (CO2) y únicamente sales minerales.</option>
+                </select>
+            </div>
+
+            <div class="question-card">
+                <p><strong>4. Según la Primera Ley de la Termodinámica, ¿qué sucede con la energía de la luz solar cuando impacta una hoja?</strong></p>
+                <select id="eval-q4" style="width:100%; padding:12px; margin-top:10px; border-radius:6px; font-size:1em;">
+                    <option value="">Selecciona una opción...</option>
+                    <option value="A">A) Se transforma y se almacena en forma de energía química (Glucosa).</option> <!-- Correcta -->
+                    <option value="B">B) Se destruye completamente al tocar la materia verde.</option>
+                    <option value="C">C) Se rebota al espacio, por eso vemos las plantas verdes.</option>
+                    <option value="D">D) Se convierte en agua dentro de la vacuola vegetal.</option>
+                </select>
+            </div>
+
+            <div class="question-card">
+                <p><strong>5. La lección hace una analogía entre el Sol y el comportamiento humano. ¿Cuál es el mensaje central de esta comparación?</strong></p>
+                <select id="eval-q5" style="width:100%; padding:12px; margin-top:10px; border-radius:6px; font-size:1em;">
+                    <option value="">Selecciona una opción...</option>
+                    <option value="A">A) Que las personas alegres no necesitan comer plantas.</option>
+                    <option value="B">B) Que debemos broncearnos más seguido para ser felices.</option>
+                    <option value="C">C) Que al igual que el Sol da vida, nuestra empatía y buena actitud ("calor humano") pueden ayudar a mejorar la vida y el ánimo de los demás.</option> <!-- Correcta -->
+                    <option value="D">D) Que la energía humana solo se puede medir usando termómetros y no con las emociones.</option>
+                </select>
+            </div>
+
+            <hr style="margin: 40px 0; border: 1px solid #E0E0E0;">
+
+            <h3>Parte II: Preguntas Abiertas (Validación Matemática)</h3>
+            <p class="highlight" style="display:inline-block;">⚠️ ADVERTENCIA DEL SISTEMA: Tu respuesta debe tener <strong>EXACTAMENTE entre 10 y 15 palabras</strong>. El sistema contará cada palabra por espacios. Si te pasas o te faltan, no podrás enviar el formulario.</p>
+
+            <div class="textarea-group" style="margin-top: 20px;">
+                <p><strong>6. ¿Por qué llamamos al Sol "El Gran Motor de la Vida"?</strong></p>
+                <textarea id="oq1" oninput="validateWordCount('oq1', 'wc1')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div class="word-counter">
+                    <span>Palabras contadas: <span id="wc1">0</span></span>
+                    <span id="msg-oq1"></span>
+                </div>
+            </div>
+
+            <div class="textarea-group">
+                <p><strong>7. ¿Qué le pasa a una planta en la sombra extrema (etiolación)?</strong></p>
+                <textarea id="oq2" oninput="validateWordCount('oq2', 'wc2')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div class="word-counter">
+                    <span>Palabras contadas: <span id="wc2">0</span></span>
+                    <span id="msg-oq2"></span>
+                </div>
+            </div>
+
+            <div class="textarea-group">
+                <p><strong>8. Explica con tus palabras qué hace el cloroplasto con la luz solar.</strong></p>
+                <textarea id="oq3" oninput="validateWordCount('oq3', 'wc3')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div class="word-counter">
+                    <span>Palabras contadas: <span id="wc3">0</span></span>
+                    <span id="msg-oq3"></span>
+                </div>
+            </div>
+
+            <div class="textarea-group">
+                <p><strong>9. ¿Por qué se pierde energía térmica (calor) en la cadena alimenticia?</strong></p>
+                <textarea id="oq4" oninput="validateWordCount('oq4', 'wc4')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div class="word-counter">
+                    <span>Palabras contadas: <span id="wc4">0</span></span>
+                    <span id="msg-oq4"></span>
+                </div>
+            </div>
+
+            <div class="textarea-group">
+                <p><strong>10. ¿Cómo puedes ser tú un "sol" para tus compañeros de clase?</strong></p>
+                <textarea id="oq5" oninput="validateWordCount('oq5', 'wc5')" placeholder="Escribe tu respuesta aquí..."></textarea>
+                <div class="word-counter">
+                    <span>Palabras contadas: <span id="wc5">0</span></span>
+                    <span id="msg-oq5"></span>
+                </div>
+            </div>
+
+            <button type="button" id="btn-finalizar" class="btn-main" style="margin-top:20px; font-size: 1.2em; padding: 20px;" onclick="evaluarTaller()">Validar Misión y Generar Reporte</button>
+            <div id="eval-error-msg" class="error-msg" style="text-align:center; font-size:1.15em; margin-top:15px;"></div>
+        </section>
+
+        <!-- SECCIÓN 6: RESULTADOS Y RETROALIMENTACIÓN -->
+        <section id="resultados-section">
+            <h2 style="border-bottom-color: var(--leaf-green); color: var(--leaf-dark);">🏆 Análisis Completado</h2>
+            <p>El sistema ha procesado tus respuestas y evaluado tu nivel energético.</p>
+            
+            <h3 style="color: var(--space-dark); font-size: 2em; margin-bottom: 5px;">Calificación: <span id="nota-final" style="color: var(--sun-dark);"></span> / 5.0</h3>
+            
+            <p style="font-size: 1.1em;">Nivel Químico Alcanzado en el Núcleo Estelar:</p>
+            <div class="element-display" id="elemento-ganado"></div>
+            <p><strong id="elemento-desc" style="font-size: 1.2em;"></strong></p>
+
+            <div style="background: white; padding: 25px; border-radius: 10px; margin: 30px 0; text-align: left; border-left: 6px solid #42A5F5; box-shadow: var(--shadow-soft);">
+                <h4 style="color: #1565C0; margin-bottom: 12px; font-size: 1.2em;">🧠 Enrutamiento Pedagógico Inteligente</h4>
+                <p id="feedback-personalizado" style="font-weight: 500; font-size: 1.05em;"></p>
+                <hr style="margin: 15px 0; border: 0.5px solid #E3F2FD;">
+                <p style="font-weight: bold; color: #D32F2F;">Instrucción: Escribe la ruta indicada arriba en tu cuaderno para que tu profesor la revise.</p>
+            </div>
+
+            <button type="button" class="btn-main" style="background: linear-gradient(to right, #43A047, #1B5E20);" onclick="descargarResultados()">
+                💾 Descargar Evidencia en Texto (.txt)
+            </button>
+        </section>
+
+    </div>
+
+    <!-- ================= JAVASCRIPT CORE ================= -->
+    <script>
+        // --- 1. GESTIÓN DE ESTADO LOCAL ---
+        let sessionData = {
+            apellidos: "",
+            nombres: "",
+            pausas: 0,
+            nota: 0,
+            simbolo: "",
+            evalListo: false
+        };
+
+        const pausasTotales = 10;
+        // Claves: 1: Fusión(B), 2: Etiolación(A), 3: Fotosíntesis(C), 4: 1ra Ley(A), 5: Empatía(C)
+        const respuestasCorrectas = ["B", "A", "C", "A", "C"];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const cache = localStorage.getItem("ovaMotorVida");
+            if (cache) {
+                sessionData = JSON.parse(cache);
+                document.getElementById("input-apellidos").value = sessionData.apellidos;
+                document.getElementById("input-nombres").value = sessionData.nombres;
+            }
+            arrancarSimulacionFisica();
+        });
+
+        // --- 2. SISTEMA DE INGRESO EVENT-DRIVEN (Sin Form) ---
+        document.getElementById("btn-ingresar").addEventListener("click", () => {
+            const ape = document.getElementById("input-apellidos").value.trim().toUpperCase();
+            const nom = document.getElementById("input-nombres").value.trim().toUpperCase();
+            let valido = true;
+
+            if (ape.length < 2) {
+                document.getElementById("err-apellidos").style.display = "block";
+                valido = false;
+            } else {
+                document.getElementById("err-apellidos").style.display = "none";
+            }
+
+            if (nom.length < 2) {
+                document.getElementById("err-nombres").style.display = "block";
+                valido = false;
+            } else {
+                document.getElementById("err-nombres").style.display = "none";
+            }
+
+            if (valido) {
+                sessionData.apellidos = ape;
+                sessionData.nombres = nom;
+                guardarSesion();
+                
+                // Animación de salida y entrada
+                document.getElementById("login-screen").style.opacity = "0";
+                setTimeout(() => {
+                    document.getElementById("login-screen").style.display = "none";
+                    document.getElementById("main-header").style.display = "block";
+                    document.getElementById("main-content").style.display = "block";
+                    document.getElementById("display-fullname").innerText = `${ape} ${nom}`;
+                    actualizarProgreso();
+                }, 400);
+            }
+        });
+
+        function guardarSesion() {
+            localStorage.setItem("ovaMotorVida", JSON.stringify(sessionData));
+        }
+
+        // --- 3. LÓGICA DE PAUSAS Y GAMIFICACIÓN ---
+        function checkPreSaber(id, isCorrect, btn) {
+            const fb = document.getElementById(`fb-pre${id}`);
+            fb.style.display = "block";
+            
+            const hermanos = btn.parentElement.children;
+            for(let b of hermanos) {
+                b.style.pointerEvents = "none";
+                b.style.opacity = "0.5";
+            }
+            btn.style.opacity = "1";
+            btn.style.transform = "scale(1.02)";
+
+            if(isCorrect) {
+                fb.className = "feedback-box success";
+                fb.innerHTML = "¡Acierto! Tienes una excelente intuición científica.";
+                btn.style.borderColor = "var(--leaf-green)";
+                btn.style.borderWidth = "3px";
+            } else {
+                fb.className = "feedback-box error";
+                fb.innerHTML = "Es una hipótesis interesante, pero la ciencia nos mostrará la respuesta real más adelante.";
+                btn.style.borderColor = "#E53935";
+            }
+        }
+
+        function checkIcfes(isCorrect, mensaje, btn) {
+            const fb = document.getElementById("fb-icfes");
+            fb.style.display = "block";
+            fb.innerHTML = mensaje;
+            
+            const hermanos = btn.parentElement.children;
+            for(let b of hermanos) {
+                b.style.pointerEvents = "none";
+                b.style.opacity = "0.6";
+            }
+            btn.style.opacity = "1";
+            
+            if(isCorrect) {
+                fb.className = "feedback-box success";
+                btn.style.borderColor = "var(--leaf-green)";
+                btn.style.borderWidth = "3px";
+                btn.style.background = "#E8F5E9";
+            } else {
+                fb.className = "feedback-box error";
+                btn.style.borderColor = "#E53935";
+                btn.style.background = "#FFEBEE";
+                // Mostrar correcta
+                const btnCorrecto = document.getElementById("btn-icfes-correct");
+                btnCorrecto.style.borderColor = "var(--leaf-green)";
+                btnCorrecto.style.opacity = "1";
+            }
+        }
+
+        function marcarPausa(num, btn) {
+            btn.disabled = true;
+            btn.innerText = "✓ Registrado";
+            sessionData.pausas++;
+            actualizarProgreso();
+            guardarSesion();
+        }
+
+        function actualizarProgreso() {
+            const pct = (sessionData.pausas / pausasTotales) * 100;
+            document.getElementById("main-progress").style.width = `${pct}%`;
+        }
+
+        // --- 4. VALIDACIÓN DE RESTRICCIONES (REGEX / COUNTER) ---
+        function validateWordCount(idTextArea, idContador) {
+            const texto = document.getElementById(idTextArea).value.trim();
+            // Filtrar espacios vacíos causados por saltos de línea múltiples
+            const palabras = texto === "" ? [] : texto.split(/\s+/).filter(word => word.length > 0);
+            const cantidad = palabras.length;
+            
+            const txtContador = document.getElementById(idContador);
+            const msgAlerta = document.getElementById(`msg-${idTextArea}`);
+            
+            txtContador.innerText = cantidad;
+
+            if (cantidad < 10) {
+                msgAlerta.innerText = "Error: Faltan palabras (Mínimo 10)";
+                msgAlerta.className = "wc-error";
+                return false;
+            } else if (cantidad > 15) {
+                msgAlerta.innerText = "Error: Exceso de palabras (Máximo 15)";
+                msgAlerta.className = "wc-error";
+                return false;
+            } else {
+                msgAlerta.innerText = "¡Validación exitosa!";
+                msgAlerta.className = "wc-success";
+                return true;
+            }
+        }
+
+        // --- 5. MOTOR DE EVALUACIÓN Y RUTAS ---
+        function evaluarTaller() {
+            // Validar restricción estricta abierta
+            let bloqueadas = false;
+            for(let i=1; i<=5; i++) {
+                if(!validateWordCount(`oq${i}`, `wc${i}`)) {
+                    bloqueadas = true;
+                }
+            }
+
+            if(bloqueadas) {
+                document.getElementById("eval-error-msg").innerText = "⛔ ACCESO DENEGADO: Debes ajustar el texto de las preguntas abiertas. TODAS deben tener rigurosamente entre 10 y 15 palabras.";
+                return;
+            }
+
+            // Calificar múltiple
+            let puntaje = 0;
+            let fallosObservacion = 0; // Preguntas 2, 5 (Inductivo/Empatía)
+            let fallosFisica = 0;      // Preguntas 1, 3, 4 (Deductivo/Leyes)
+
+            for(let i=1; i<=5; i++) {
+                const drop = document.getElementById(`eval-q${i}`);
+                if(drop.value === "") {
+                    document.getElementById("eval-error-msg").innerText = "⛔ Faltan preguntas de selección múltiple por contestar.";
+                    return;
+                }
+                
+                if(drop.value === respuestasCorrectas[i-1]) {
+                    puntaje++;
+                } else {
+                    if(i === 2 || i === 5) fallosObservacion++;
+                    if(i === 1 || i === 3 || i === 4) fallosFisica++;
+                }
+            }
+
+            document.getElementById("eval-error-msg").innerText = "";
+            sessionData.nota = puntaje;
+
+            // Escala de Tabla Periódica
+            let prop = {};
+            if(puntaje <= 1) prop = {s: "H", n: "Hidrógeno", d: "Aún eres gas disperso. Necesitas presión para generar fusión y brillar."};
+            else if(puntaje === 2) prop = {s: "He", n: "Helio", d: "Tu motor ha comenzado a fusionar ideas. Eres ligero pero brillante."};
+            else if(puntaje === 3) prop = {s: "C", n: "Carbono", d: "El pilar de la biología. Estás estructurando muy bien tu conocimiento."};
+            else if(puntaje === 4) prop = {s: "O", n: "Oxígeno", d: "Respiras ciencia pura. Tienes una comprensión vital del ecosistema."};
+            else if(puntaje === 5) prop = {s: "P", n: "Fósforo", d: "¡Reacción máxima! Eres pura energía ATP brillante y explosiva."};
+
+            sessionData.simbolo = prop.s;
+
+            // Inteligencia de Retroalimentación
+            let ruta = "Felicidades. Tu asimilación de la energía y el ecosistema es óptima. Eres un sol irradiando buen conocimiento.";
+            if(puntaje < 5) {
+                if(fallosObservacion > fallosFisica) {
+                    ruta = "▶️ RUTA DE REFUERZO: Fallaste en la conexión inductiva-social. Vuelve a leer la Sección 2. Debes comprender mejor cómo el fenómeno físico de la luz (y su ausencia, la etiolación) se parece a cómo el afecto humano nutre nuestra salud emocional.";
+                } else if(fallosFisica > fallosObservacion) {
+                    ruta = "▶️ RUTA DE REFUERZO: Fallaste en el núcleo deductivo. Vuelve a la Sección 4. Repasa urgente la fórmula de la fotosíntesis y repasa el concepto de Entropía (pérdida de calor) en la Termodinámica.";
+                } else {
+                    ruta = "▶️ RUTA DE REFUERZO: Comprensión fragmentada. Dibuja en tu cuaderno un esquema gigante que empiece en el Sol, pase por una planta, luego por un animal, y escribe en cada paso cuánta energía se pierde.";
+                }
+            }
+
+            // Renderizado Visual
+            document.getElementById("nota-final").innerText = puntaje.toFixed(1);
+            document.getElementById("elemento-ganado").innerText = prop.s;
+            document.getElementById("elemento-desc").innerText = `${prop.n}: ${prop.d}`;
+            document.getElementById("badge-element").innerText = `🪐 Elemento: ${prop.n} (${prop.s})`;
+            document.getElementById("feedback-personalizado").innerText = ruta;
+            
+            document.getElementById("resultados-section").style.display = "block";
+            document.getElementById("resultados-section").scrollIntoView({behavior: "smooth"});
+            
+            const btn = document.getElementById("btn-finalizar");
+            btn.disabled = true;
+            btn.style.background = "#9E9E9E";
+            btn.innerText = "Misión Evaluada";
+            
+            sessionData.evalListo = true;
+            guardarSesion();
+        }
+
+        // --- 6. EXPORTACIÓN TXT (SIN LIBRERÍAS) ---
+        function descargarResultados() {
+            let doc = `=======================================\n`;
+            doc += `   REPORTE: EL GRAN MOTOR DE LA VIDA\n`;
+            doc += `=======================================\n\n`;
+            doc += `Cadete/Estudiante: ${sessionData.apellidos} ${sessionData.nombres}\n`;
+            doc += `Nota de Asimilación: ${sessionData.nota} / 5.0\n`;
+            doc += `Nivel Químico Estelar: ${sessionData.simbolo}\n`;
+            doc += `Actividades Físicas Completadas: ${sessionData.pausas} / 10\n\n`;
+            
+            doc += `--- RESPUESTAS REDACTADAS (Validadas) ---\n`;
+            for(let i=1; i<=5; i++) {
+                doc += `P${i+5}: ${document.getElementById(`oq${i}`).value.trim()}\n`;
+            }
+            
+            doc += `\n--- ENRUTAMIENTO PEDAGÓGICO ---\n`;
+            doc += document.getElementById("feedback-personalizado").innerText + "\n\n";
+            doc += `Timestamp del Sistema: ${new Date().toLocaleString()}\n`;
+
+            const dataBlob = new Blob([doc], { type: "text/plain;charset=utf-8" });
+            const objUrl = URL.createObjectURL(dataBlob);
+            const anchor = document.createElement("a");
+            anchor.href = objUrl;
+            anchor.download = `Reporte_${sessionData.apellidos.replace(/\s+/g, "_")}_Termodinamica.txt`;
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+            URL.revokeObjectURL(objUrl);
+        }
+
+        // --- 7. ANIMACIÓN INTERACTIVA HTML5 CANVAS (MOTOR FÍSICO BÁSICO) ---
+        function arrancarSimulacionFisica() {
+            const cvs = document.getElementById("photoCanvas");
+            const ctx = cvs.getContext("2d");
+            const w = cvs.width;
+            const h = cvs.height;
+
+            let isMouseDown = false;
+            let mouseX = 0;
+            let mouseY = 0;
+
+            cvs.addEventListener('mousedown', (e) => {
+                isMouseDown = true;
+                actualizarMousePos(e);
+            });
+            cvs.addEventListener('mouseup', () => isMouseDown = false);
+            cvs.addEventListener('mousemove', actualizarMousePos);
+            cvs.addEventListener('mouseleave', () => isMouseDown = false);
+
+            function actualizarMousePos(e) {
+                const rect = cvs.getBoundingClientRect();
+                mouseX = (e.clientX - rect.left) * (w / rect.width);
+                mouseY = (e.clientY - rect.top) * (h / rect.height);
+            }
+
+            // Entidades Físicas
+            class Fotón {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.vy = 4 + Math.random() * 3;
+                    this.vx = (Math.random() - 0.5) * 1;
+                    this.life = 200;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.life--;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 3, 0, Math.PI*2);
+                    ctx.fillStyle = "#FFF59D";
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = "#FFB300";
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    
+                    // Estela
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(this.x - this.vx*3, this.y - this.vy*3);
+                    ctx.strokeStyle = "rgba(255, 179, 0, 0.5)";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+
+            class Cloroplasto {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.r = 35;
+                    this.energia = 0; // Se carga al impactar fotones
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+                    // Brilla dependiendo de la energía
+                    let green = 160 + (this.energia * 2);
+                    if(green > 255) green = 255;
+                    ctx.fillStyle = `rgb(46, ${green}, 50)`;
+                    ctx.shadowBlur = this.energia > 10 ? 15 : 0;
+                    ctx.shadowColor = "#66BB6A";
+                    ctx.fill();
+                    
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = "#1B5E20";
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+
+                    // Textura interna
+                    ctx.beginPath();
+                    for(let i=-20; i<=20; i+=10) {
+                        ctx.moveTo(this.x - 20, this.y + i);
+                        ctx.lineTo(this.x + 20, this.y + i);
+                    }
+                    ctx.strokeStyle = "rgba(255,255,255,0.2)";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+
+            class Molecula {
+                constructor(tipo) {
+                    this.tipo = tipo; // 'co2', 'h2o', 'glucosa'
+                    this.resetPos();
+                }
+                resetPos() {
+                    this.x = Math.random() * w;
+                    this.y = h - Math.random() * 150; // Flotan abajo
+                    this.vx = (Math.random() - 0.5) * 0.8;
+                    this.vy = (Math.random() - 0.5) * 0.8;
+                    this.life = 500;
+                    this.target = null; // Si van al cloroplasto
+                }
+                update() {
+                    if (this.target) {
+                        const dx = this.target.x - this.x;
+                        const dy = this.target.y - this.y;
+                        const ang = Math.atan2(dy, dx);
+                        this.vx = Math.cos(ang) * 2;
+                        this.vy = Math.sin(ang) * 2;
+                    } else {
+                        // Flote aleatorio
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        
+                        // Rebote bordes abajo
+                        if(this.x < 0 || this.x > w) this.vx *= -1;
+                        if(this.y > h || this.y < h - 200) this.vy *= -1;
+                    }
+
+                    if(this.tipo === 'glucosa') {
+                        this.life--;
+                        if(this.life <= 0) this.resetPos(); // Se "consume"
+                    }
+                }
+                draw() {
+                    ctx.beginPath();
+                    if(this.tipo === 'co2') {
+                        ctx.arc(this.x, this.y, 6, 0, Math.PI*2);
+                        ctx.fillStyle = "#9E9E9E";
+                    } else if(this.tipo === 'h2o') {
+                        ctx.arc(this.x, this.y, 5, 0, Math.PI*2);
+                        ctx.fillStyle = "#29B6F6";
+                    } else if(this.tipo === 'glucosa') {
+                        // Hexágono
+                        ctx.moveTo(this.x + 8*Math.cos(0), this.y + 8*Math.sin(0));
+                        for(let i=1; i<=6; i++) {
+                            ctx.lineTo(this.x + 8*Math.cos(i*Math.PI/3), this.y + 8*Math.sin(i*Math.PI/3));
+                        }
+                        ctx.fillStyle = "#FF9800";
+                    }
+                    ctx.fill();
+                }
+            }
+
+            const fotones = [];
+            const moleculas = [];
+            const cloroplastos = [
+                new Cloroplasto(w/4, h/2),
+                new Cloroplasto(w/2, h/2),
+                new Cloroplasto(3*w/4, h/2)
+            ];
+
+            // Poblar ambiente con CO2 y H2O
+            for(let i=0; i<30; i++) {
+                moleculas.push(new Molecula(i % 2 === 0 ? 'co2' : 'h2o'));
+            }
+
+            function gameLoop() {
+                ctx.clearRect(0, 0, w, h);
+
+                // Dibujar estructura de la hoja (fondo verde suave abajo)
+                const grad = ctx.createLinearGradient(0, h/2, 0, h);
+                grad.addColorStop(0, "rgba(67, 160, 71, 0.1)");
+                grad.addColorStop(1, "rgba(27, 94, 32, 0.3)");
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, h/2, w, h/2);
+
+                // Generar fotones si hay click (Tormenta Solar)
+                if(isMouseDown) {
+                    for(let i=0; i<3; i++) {
+                        fotones.push(new Fotón(mouseX + (Math.random()-0.5)*40, mouseY - 50));
+                    }
+                }
+
+                // Render Cloroplastos y decaer energía
+                cloroplastos.forEach(c => {
+                    c.draw();
+                    if(c.energia > 0) c.energia -= 0.5;
+                });
+
+                // Update & Render Moléculas
+                moleculas.forEach(m => {
+                    m.update();
+                    m.draw();
+                    
+                    // Si un cloroplasto tiene mucha energía, atrae moléculas crudas
+                    if(m.tipo !== 'glucosa' && !m.target) {
+                        for(let c of cloroplastos) {
+                            if(c.energia > 20) {
+                                const dist = Math.hypot(m.x - c.x, m.y - c.y);
+                                if(dist < 100) {
+                                    m.target = c;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Colisión con cloroplasto (Fotosíntesis)
+                    if(m.target) {
+                        const dist = Math.hypot(m.x - m.target.x, m.y - m.target.y);
+                        if(dist < m.target.r) {
+                            m.tipo = 'glucosa';
+                            m.target.energia -= 5; // Consume energía
+                            m.target = null;
+                            m.vy = 2; // Cae pesado
+                            m.vx = (Math.random() - 0.5) * 3;
+                            m.life = 200;
+                        }
+                    }
+                });
+
+                // Update & Render Fotones y Colisiones
+                for(let i = fotones.length - 1; i >= 0; i--) {
+                    let f = fotones[i];
+                    f.update();
+                    f.draw();
+
+                    // Check colisión con cloroplastos
+                    let hit = false;
+                    for(let c of cloroplastos) {
+                        const dist = Math.hypot(f.x - c.x, f.y - c.y);
+                        if(dist < c.r) {
+                            c.energia += 5; // Excita el cloroplasto
+                            if(c.energia > 50) c.energia = 50; // Cap
+                            hit = true;
+                            
+                            // Sparks
+                            ctx.beginPath();
+                            ctx.arc(f.x, f.y, 8, 0, Math.PI*2);
+                            ctx.fillStyle = "white";
+                            ctx.fill();
+                            break;
+                        }
+                    }
+
+                    if(hit || f.life <= 0 || f.y > h) {
+                        fotones.splice(i, 1);
+                    }
+                }
+
+                requestAnimationFrame(gameLoop);
+            }
+
+            // Lluvia solar leve de fondo automática
+            setInterval(() => {
+                if(Math.random() > 0.5) {
+                    fotones.push(new Fotón(Math.random()*w, 0));
+                }
+            }, 100);
+
+            gameLoop();
+        }
+
+    </script>
+</body>
+</html>

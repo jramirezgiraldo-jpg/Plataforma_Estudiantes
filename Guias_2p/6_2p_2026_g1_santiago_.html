@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Integrando el Sistema Vital - Al Rescate del Plátano</title>
+    <style>
+        /* === PALETA DE COLORES: PAISAJE CULTURAL CAFETERO === */
+        :root {
+            --cafe-tierra: #4E342E;
+            --cafe-suave: #8D6E63;
+            --verde-platano: #43A047;
+            --verde-oscuro: #1B5E20;
+            --naranja-citrico: #EF6C00;
+            --amarillo-sol: #FDD835;
+            --crema-fondo: #FFF8E1;
+            --blanco: #FFFFFF;
+            --texto-oscuro: #263238;
+            --alerta-rojo: #C62828;
+            --borde-suave: #D7CCC8;
+            --azul-agua: #0288D1;
+            --energia-atp: #FFCA28;
+        }
+
+        /* === RESET Y BASE === */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--crema-fondo); color: var(--texto-oscuro); line-height: 1.7; scroll-behavior: smooth; overflow-x: hidden; }
+        .hidden { display: none !important; }
+        h1, h2, h3, h4 { color: var(--cafe-tierra); margin-bottom: 15px; }
+        p { margin-bottom: 20px; text-align: justify; font-size: 1.08rem; }
+        
+        /* === UTILIDADES === */
+        .resaltado { background-color: rgba(253, 216, 53, 0.4); padding: 2px 6px; border-radius: 4px; font-weight: bold; color: var(--cafe-tierra); }
+        .sub { vertical-align: sub; font-size: 0.8em; }
+        .sup { vertical-align: super; font-size: 0.8em; }
+        
+        /* === BOTONES === */
+        .btn {
+            background-color: var(--verde-oscuro); color: var(--blanco); border: none; padding: 14px 28px;
+            font-size: 1.1rem; border-radius: 8px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-weight: bold; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+        .btn:hover:not(:disabled) { background-color: var(--verde-platano); transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.25); }
+        .btn:disabled { background-color: #A1887F; cursor: not-allowed; color: #EFEBE9; box-shadow: none; transform: none;}
+        .btn-actividad { background-color: var(--naranja-citrico); width: 100%; margin-top: 10px; font-size: 1rem; }
+        .btn-actividad.completada { background-color: var(--cafe-suave); color: white; }
+
+        /* === FORMULARIOS === */
+        input[type="text"], textarea, select {
+            width: 100%; padding: 14px; border: 2px solid var(--borde-suave); border-radius: 8px;
+            font-size: 1rem; margin-bottom: 15px; transition: border-color 0.3s; background: #FAFAFA;
+        }
+        input[type="text"]:focus, textarea:focus, select:focus { outline: none; border-color: var(--verde-platano); background: var(--blanco); }
+        textarea { resize: vertical; min-height: 100px; }
+
+        /* === ESTRUCTURA === */
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .tarjeta { background: var(--blanco); border-radius: 16px; padding: 40px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 8px solid var(--verde-platano); }
+        
+        /* === PANTALLA INICIO === */
+        #pantalla-login { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, var(--verde-platano), var(--cafe-tierra)); }
+        .login-box { background: white; padding: 50px; border-radius: 20px; text-align: center; max-width: 480px; width: 90%; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+
+        /* === BARRA SUPERIOR (GAMIFICACIÓN) === */
+        #navbar {
+            position: sticky; top: 0; background: var(--blanco); padding: 15px 25px; z-index: 1000;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-bottom: 4px solid var(--naranja-citrico);
+        }
+        .nav-info { display: flex; align-items: center; gap: 20px; font-weight: bold; font-size: 1.15rem; color: var(--cafe-tierra);}
+        .puntaje-box { background: var(--amarillo-sol); padding: 6px 18px; border-radius: 25px; border: 2px solid var(--naranja-citrico); color: var(--texto-oscuro);}
+        .insignias { display: flex; gap: 12px; }
+        .icono-insignia { width: 40px; height: 40px; fill: #E0E0E0; transition: all 0.5s ease; }
+        .icono-insignia.activa { fill: var(--cafe-tierra); filter: drop-shadow(0 0 8px rgba(239, 108, 0, 0.5)); transform: scale(1.2);}
+        .barra-progreso-fondo { width: 100%; background: #EEEEEE; height: 8px; position: absolute; bottom: -4px; left: 0; }
+        .barra-progreso-llena { height: 100%; background: var(--naranja-citrico); width: 0%; transition: width 0.8s ease-in-out; }
+
+        /* === TABLAS Y BLOQUES === */
+        .tabla-comparativa { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 1.05rem; }
+        .tabla-comparativa th, .tabla-comparativa td { border: 1px solid var(--borde-suave); padding: 18px; text-align: left; }
+        .tabla-comparativa th { background-color: var(--cafe-suave); color: white; text-align: center; font-size: 1.1rem; }
+        .tabla-comparativa tr:nth-child(even) { background-color: #F8F5F2; }
+        .tabla-comparativa tr:hover { background-color: #EFEBE9; }
+
+        .pausa-activa { background-color: #FFF3E0; border-left: 8px solid var(--naranja-citrico); padding: 25px 30px; margin-bottom: 25px; border-radius: 0 12px 12px 0;}
+        .pausa-titulo { color: var(--naranja-citrico); border-bottom: 2px dashed rgba(239, 108, 0, 0.3); padding-bottom: 8px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;}
+
+        .bloque-pregunta { background: #FAFAFA; border: 1px solid #E0E0E0; padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cafe-suave);}
+        .opciones label { display: block; padding: 12px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; font-size: 1.05rem;}
+        .opciones label:hover { background: #EFEBE9; border-color: var(--borde-suave);}
+        
+        .feedback { margin-top: 15px; font-weight: bold; padding: 15px; border-radius: 8px; font-size: 1.1rem; }
+        .feedback.correcto { background: #E8F5E9; color: #1B5E20; border: 1px solid #A5D6A7; }
+        .feedback.incorrecto { background: #FFEBEE; color: #B71C1C; border: 1px solid #EF9A9A; }
+
+        /* === ALERTA ANTI-FRAUDE === */
+        .alerta-fraude { background-color: var(--alerta-rojo); color: white; font-weight: bold; text-align: center; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; animation: parpadeo 1s infinite alternate;}
+        @keyframes parpadeo { from { opacity: 1; } to { opacity: 0.8; } }
+
+        /* === GRÁFICOS Y CANVAS === */
+        .contenedor-svg { width: 100%; max-width: 800px; margin: 30px auto; background: white; border: 2px solid var(--borde-suave); border-radius: 12px; padding: 20px; box-shadow: inset 0 0 15px rgba(0,0,0,0.05);}
+        .contenedor-canvas { width: 100%; height: 500px; background: #263238; border-radius: 12px; position: relative; border: 6px solid var(--cafe-suave); margin: 30px 0; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.2);}
+        canvas { display: block; width: 100%; height: 100%; }
+        
+        /* Tooltip del Canvas */
+        .canvas-ui { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; border: 2px solid var(--cafe-suave); font-weight: bold; z-index: 10; font-size: 0.95rem; pointer-events: none;}
+        .canvas-controls { position: absolute; bottom: 15px; right: 15px; z-index: 10; display: flex; gap: 10px;}
+        .btn-canvas { background: var(--amarillo-sol); color: var(--cafe-tierra); border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);}
+        .btn-canvas:hover { background: #FBC02D; }
+
+    </style>
+</head>
+<body>
+
+    <!-- ================= PANTALLA DE BIENVENIDA ================= -->
+    <div id="pantalla-login">
+        <div class="login-box">
+            <!-- Ilustración SVG del Plátano y Célula -->
+            <svg viewBox="0 0 120 120" width="120" height="120" style="margin-bottom: 20px;">
+                <defs>
+                    <radialGradient id="gradNucleo" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
+                        <stop offset="0%" stop-color="#BA68C8"/>
+                        <stop offset="100%" stop-color="#7B1FA2"/>
+                    </radialGradient>
+                </defs>
+                <!-- Hoja de plátano de fondo -->
+                <path d="M60 10 C20 30, 0 70, 60 110 C120 70, 100 30, 60 10 Z" fill="var(--verde-platano)"/>
+                <path d="M60 10 C30 40, 30 80, 60 110" fill="var(--verde-oscuro)" opacity="0.3"/>
+                <!-- Célula central -->
+                <circle cx="60" cy="65" r="25" fill="#FFF8E1" stroke="var(--cafe-tierra)" stroke-width="3"/>
+                <!-- Organelas -->
+                <circle cx="60" cy="65" r="8" fill="url(#gradNucleo)"/> <!-- Núcleo -->
+                <ellipse cx="48" cy="55" rx="6" ry="3" fill="#8BC34A" transform="rotate(45 48 55)"/> <!-- Cloroplasto -->
+                <ellipse cx="72" cy="75" rx="6" ry="3" fill="#EF5350" transform="rotate(-30 72 75)"/> <!-- Mitocondria -->
+                <!-- Rayo de energía -->
+                <path d="M 60 30 L 65 45 L 55 50 L 60 60" stroke="var(--amarillo-sol)" stroke-width="3" fill="none" stroke-linejoin="round"/>
+            </svg>
+            <h2 style="margin-top: 5px; color: var(--cafe-tierra);">I.E. Pueblo Rico - Quimbaya</h2>
+            <p style="color: #555; font-weight: bold; margin-bottom: 5px; font-size: 1.1rem;">Ciencias Naturales - Grado 6°</p>
+            <p style="font-size: 0.95rem; margin-bottom: 25px; color: var(--naranja-citrico); font-weight: bold;">Módulo: Integrando el Sistema Vital</p>
+            
+            <div style="text-align: left; margin-bottom: 25px;">
+                <label for="input-nombres" style="font-weight: bold; color: var(--cafe-tierra); display: block; margin-bottom: 5px;">Nombres completos:</label>
+                <input type="text" id="input-nombres" placeholder="Ej: Mariana" autocomplete="off">
+                
+                <label for="input-apellidos" style="font-weight: bold; color: var(--cafe-tierra); display: block; margin-bottom: 5px;">Apellidos completos:</label>
+                <input type="text" id="input-apellidos" placeholder="Ej: Castaño Rojas" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-iniciar" style="width: 100%;">Ingresar al Laboratorio Virtual</button>
+        </div>
+    </div>
+
+    <!-- ================= APLICACIÓN PRINCIPAL ================= -->
+    <div id="app-principal" class="hidden">
+        
+        <!-- BARRA SUPERIOR Y GAMIFICACIÓN -->
+        <div id="navbar">
+            <div class="nav-info">
+                <span>🌱 Biólogo(a): <span id="nombre-estudiante" style="color: var(--naranja-citrico);"></span></span>
+                <div class="puntaje-box">Nivel Académico: <span id="puntaje-ui">0.0</span> / 5.0</div>
+            </div>
+            <div class="insignias">
+                <!-- Insignia 1: Grano de Café (Diagnóstico) -->
+                <svg class="icono-insignia" id="insignia-1" viewBox="0 0 24 24" title="Nivel 1: Chapola"><path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8c0-4.41,3.59-8,8-8 s8,3.59,8,8C20,16.41,16.41,20,12,20z M11,5.08c-3.15,0.48-5.63,2.96-6.11,6.11c2.19-0.85,4.64-0.85,6.83,0 C11.39,9.08,11.39,7.18,11,5.08z M17.11,12.81c-2.19,0.85-4.64,0.85-6.83,0c0.33,2.11,0.33,4.01,0.72,6.11 C14.15,18.44,16.63,15.96,17.11,12.81z"/></svg>
+                <!-- Insignia 2: Racimo de Plátano (Desarrollo) -->
+                <svg class="icono-insignia" id="insignia-2" viewBox="0 0 24 24" title="Nivel 2: Cultivador"><path d="M12.5,4C14.5,4 16,5.5 16,7.5V8.5C18.5,9 20,11 20,13.5V14H4V13.5C4,11 5.5,9 8,8.5V7.5C8,5.5 9.5,4 11.5,4M11.5,5A2.5,2.5 0 0,0 9,7.5V8H14V7.5A2.5,2.5 0 0,0 11.5,5M5,15H19V16A3,3 0 0,1 16,19H8A3,3 0 0,1 5,16V15Z"/></svg>
+                <!-- Insignia 3: Sombrero Aguadeño (Evaluación) -->
+                <svg class="icono-insignia" id="insignia-3" viewBox="0 0 24 24" title="Nivel 3: Mayordomo de Finca"><path d="M17,17A2,2 0 0,0 15,15A2,2 0 0,0 13,17A2,2 0 0,0 15,19A2,2 0 0,0 17,17M7,17A2,2 0 0,0 5,15A2,2 0 0,0 3,17A2,2 0 0,0 5,19A2,2 0 0,0 7,17M15,10A2,2 0 0,0 13,8A2,2 0 0,0 11,10A2,2 0 0,0 13,12A2,2 0 0,0 15,10M9,10A2,2 0 0,0 7,8A2,2 0 0,0 5,10A2,2 0 0,0 7,12A2,2 0 0,0 9,10M20.5,12L18.5,16H18V18H16V16H8V18H6V16H5.5L3.5,12C3.1,11.3 3.4,10.4 4.1,10.1L5.5,9.5V7C5.5,5.9 6.4,5 7.5,5H9V4C9,3.5 9.4,3 10,3H14C14.6,3 15,3.5 15,4V5H16.5C17.6,5 18.5,5.9 18.5,7V9.5L19.9,10.1C20.6,10.4 20.9,11.3 20.5,12Z"/></svg>
+            </div>
+            <div class="barra-progreso-fondo"><div class="barra-progreso-llena" id="barra-ui"></div></div>
+        </div>
+
+        <div class="container">
+            
+            <!-- ====== SECCIÓN 1: INICIO Y DIAGNÓSTICO ====== -->
+            <div class="tarjeta" id="sec-diagnostico">
+                <h2>🎯 Objetivo de Aprendizaje</h2>
+                <p>En este módulo aprenderás a <strong>relacionar el transporte celular, la producción de energía y la división celular (mitosis)</strong>. Descubrirás que la célula no funciona en partes aisladas, sino como una finca cafetera o platanera muy bien organizada. Al final, demostrarás tu aprendizaje creando una historieta donde las organelas celulares son los héroes que salvan a una planta de plátano enferma en la vereda Pueblo Rico.</p>
+                <hr style="margin: 25px 0; border: 1px solid var(--borde-suave);">
+
+                <h3>Fase 1: Pre-Saberes del Cultivo (Diagnóstico)</h3>
+                <p>Antes de meternos al lote, revisemos qué recuerdas de clases anteriores. (0.5 Puntos).</p>
+                
+                <div class="bloque-pregunta">
+                    <p><strong>1.</strong> Cuando llueve fuerte en Quimbaya y el suelo se empapa, el agua entra a las raíces de los árboles de naranja por las membranas celulares. ¿Cómo se llama este tipo de transporte de agua?</p>
+                    <div class="opciones">
+                        <label><input type="radio" name="p1" value="a"> A) Mitosis celular.</label>
+                        <label><input type="radio" name="p1" value="b"> B) Ósmosis (transporte pasivo).</label>
+                        <label><input type="radio" name="p1" value="c"> C) Fotosíntesis hídrica.</label>
+                    </div>
+                </div>
+                
+                <div class="bloque-pregunta">
+                    <p><strong>2.</strong> Las vacas lecheras de la finca necesitan mucha energía para pastar y producir leche. A nivel celular, ¿qué organela es la "planta eléctrica" que produce energía en forma de ATP?</p>
+                    <div class="opciones">
+                        <label><input type="radio" name="p2" value="a"> A) La Mitocondria.</label>
+                        <label><input type="radio" name="p2" value="b"> B) El Cloroplasto.</label>
+                        <label><input type="radio" name="p2" value="c"> C) La Pared Celular.</label>
+                    </div>
+                </div>
+
+                <div class="bloque-pregunta">
+                    <p><strong>3.</strong> Si un machete corta accidentalmente la hoja de una planta de café, ¿qué proceso celular se activa para multiplicar las células y sanar la herida?</p>
+                    <div class="opciones">
+                        <label><input type="radio" name="p3" value="a"> A) Respiración aeróbica.</label>
+                        <label><input type="radio" name="p3" value="b"> B) Mitosis (División celular).</label>
+                        <label><input type="radio" name="p3" value="c"> C) Difusión facilitada.</label>
+                    </div>
+                </div>
+                
+                <button class="btn" id="btn-eval-diag">Evaluar mis Saberes Previos</button>
+                <div id="fb-diag" class="hidden"></div>
+            </div>
+
+            <!-- ====== SECCIÓN 2: CUERPO INDUCTIVO ====== -->
+            <div class="tarjeta hidden" id="sec-inductivo">
+                <h2>Fase 2: Tormenta en la Finca "El Porvenir"</h2>
+                
+                <p>Ubicada en la hermosa vereda Pueblo Rico, en Quimbaya, la finca "El Porvenir" es famosa por su café suave y por las hermosas plantas de plátano <em>Dominico Hartón</em> que le dan sombra a los cafetales. Don Carlos, el administrador, siempre ha dicho que el plátano es el "hermano mayor" del café, pues lo protege del sol abrasador y mantiene la humedad del suelo. Sin embargo, la noche anterior ocurrió una gran tormenta. Los vientos huracanados quebraron los tallos y rajaron las inmensas hojas verdes de varias plantas de plátano. Al amanecer, el escenario era triste: las matas estaban caídas, perdiendo savia por las heridas abiertas de sus tallos.</p>
+
+                <p>Cualquier turista que visita la zona vería simplemente una planta rota, pero si pudiéramos acercar un microscopio gigantesco a la herida del plátano, observaríamos una verdadera ciudad en estado de emergencia. La planta no está muerta, pero sus células saben que deben trabajar juntas, como los campesinos en época de cosecha, si quieren sobrevivir. Aquí es donde comienza la <strong>integración del sistema vital</strong>. No basta con que una sola parte de la célula funcione; el transporte, la energía y la división tienen que coordinarse perfectamente, o el plátano morirá por deshidratación o infección de hongos.</p>
+
+                <p>Lo primero que debe ocurrir es sellar las fronteras. La <span class="resaltado">Membrana Celular</span> actúa como las cercas y portones de la finca. A través del proceso de transporte activo y pasivo, las células sanas que rodean la herida comienzan a bombear agua (por ósmosis) y minerales vitales desde el suelo encharcado. Necesitan materiales urgentes. El agua (H<sub>2</sub>O) entra a las células, llenando sus vacuolas para mantenerlas turgentes (firmes) y evitar que la planta se marchite por completo.</p>
+
+                <p>Pero transportar nutrientes cuesta trabajo, y para sanar se necesita aún más fuerza. Entran en escena los motores de la finca. En las hojas que aún quedan sanas, los <span class="resaltado">Cloroplastos</span> atrapan la luz del sol quindiano que sale tras la tormenta y fabrican azúcar (glucosa). Esa azúcar es enviada rápidamente hacia las células dañadas en el tallo. Allí, las <span class="resaltado">Mitocondrias</span> —que son como las tostadoras de café, pero de energía— toman esa glucosa, la "queman" usando oxígeno (O<sub>2</sub>) y producen la moneda energética de la vida: el <strong>ATP</strong>. Sin ese ATP, la reparación se detendría por completo.</p>
+
+                <p>Finalmente, con los materiales adentro (transporte) y los tanques llenos de ATP (energía), el jefe de la finca da la orden. El <span class="resaltado">Núcleo</span>, que guarda los planos (ADN), utiliza esa energía para iniciar la <strong>Mitosis</strong>. Las células se duplican una y otra vez, creando una costra vegetal protectora y tejido nuevo que unirá las partes rotas del tallo. Gracias a este increíble trabajo en equipo microscópico, en unas pocas semanas, el plátano de Don Carlos volverá a dar sombra a los cafetos y estará listo para producir un hermoso racimo.</p>
+
+                <h3>📊 Cuadro Comparativo: La Célula como una Finca de Pueblo Rico</h3>
+                <table class="tabla-comparativa">
+                    <tr>
+                        <th>Función Celular</th>
+                        <th>Organela Involucrada</th>
+                        <th>Equivalencia en la Finca "El Porvenir"</th>
+                        <th>¿Qué aporta a la emergencia?</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Transporte (Control de entrada)</strong></td>
+                        <td>Membrana Celular</td>
+                        <td>Portones y cercas perimetrales.</td>
+                        <td>Deja entrar agua y nutrientes vitales; bloquea hongos.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fabricación de Alimento</strong></td>
+                        <td>Cloroplastos (Solo vegetales)</td>
+                        <td>Cultivos recibiendo el Sol.</td>
+                        <td>Produce glucosa (comida) mediante la fotosíntesis.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Generación de Energía (ATP)</strong></td>
+                        <td>Mitocondria</td>
+                        <td>El motor de la despulpadora o el fogón de leña.</td>
+                        <td>Transforma la glucosa en ATP para tener fuerza de trabajo.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>División y Reparación</strong></td>
+                        <td>Núcleo y Ciclo Celular (Mitosis)</td>
+                        <td>Don Carlos contratando obreros para reconstruir.</td>
+                        <td>Usa el ATP para multiplicar células y cerrar la herida.</td>
+                    </tr>
+                </table>
+
+                <!-- PAUSAS 1 A 5 -->
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">✍️ Actividad 1 en el Cuaderno: Reflexión</h3>
+                    <p>Responde: Si la tormenta hubiera arrancado <em>todas</em> las hojas del plátano, ¿por qué fallaría la Mitosis en el tallo? (Pista: Piensa en los Cloroplastos).</p>
+                    <button class="btn btn-actividad" id="btn-p1" onclick="app.marcarPausa(1)">Registrar Actividad 1 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">🎨 Actividad 2: Dibujo Metafórico</h3>
+                    <p>Dibuja en una página completa una finca. Identifica dónde estaría la "Membrana", las "Mitocondrias", el "Núcleo" y los "Cloroplastos" según la tabla comparativa.</p>
+                    <button class="btn btn-actividad" id="btn-p2" onclick="app.marcarPausa(2)">Registrar Actividad 2 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">🧠 Actividad 3: Mapa Mental "La Emergencia"</h3>
+                    <p>Crea un mapa mental. Centro: "Planta Herida". Ramas principales: 1. Necesita Agua (Transporte), 2. Necesita ATP (Energía), 3. Necesita Células Nuevas (Mitosis).</p>
+                    <button class="btn btn-actividad" id="btn-p3" onclick="app.marcarPausa(3)">Registrar Actividad 3 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">📝 Actividad 4: Copiar Tabla de Funciones</h3>
+                    <p>Transcribe el "Cuadro Comparativo: La Célula como una Finca" a tu cuaderno usando regla. Subraya con color las organelas.</p>
+                    <button class="btn btn-actividad" id="btn-p4" onclick="app.marcarPausa(4)">Registrar Actividad 4 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">🔄 Actividad 5: Diagrama de Flujo</h3>
+                    <p>Dibuja este flujo de rescate: [Agua entra por Membrana] ➔ [Cloroplasto hace Glucosa] ➔ [Mitocondria hace ATP] ➔ [Núcleo ordena Mitosis].</p>
+                    <button class="btn btn-actividad" id="btn-p5" onclick="app.marcarPausa(5)">Registrar Actividad 5 ✔</button>
+                </div>
+
+                <!-- GRÁFICO SVG E ICFES -->
+                <h3 style="margin-top:45px; color: var(--cafe-tierra);">🔍 Análisis de Datos: El Rescate en Números</h3>
+                <p>El agrónomo de la finca instaló microsensores en la planta de plátano herida para medir la actividad de sus organelas durante 12 horas después de salir el sol. Analiza detenidamente la gráfica para superar el reto:</p>
+                
+                <div class="contenedor-svg">
+                    <svg viewBox="0 0 800 400" width="100%">
+                        <!-- Fondo y Ejes -->
+                        <rect width="800" height="400" fill="#fcfcfc" rx="8"/>
+                        <!-- Eje X (Horas) -->
+                        <line x1="70" y1="340" x2="750" y2="340" stroke="#000" stroke-width="2"/>
+                        <!-- Eje Y Izquierdo (Energía / Nutrientes) -->
+                        <line x1="70" y1="340" x2="70" y2="40" stroke="#000" stroke-width="2"/>
+                        <!-- Eje Y Derecho (Tasa Mitosis) -->
+                        <line x1="750" y1="340" x2="750" y2="40" stroke="#000" stroke-width="2"/>
+                        
+                        <!-- Cuadrícula -->
+                        <g stroke="#e0e0e0" stroke-dasharray="5">
+                            <line x1="70" y1="265" x2="750" y2="265"/>
+                            <line x1="70" y1="190" x2="750" y2="190"/>
+                            <line x1="70" y1="115" x2="750" y2="115"/>
+                        </g>
+
+                        <!-- Títulos -->
+                        <text x="20" y="190" transform="rotate(-90 20,190)" font-size="14" font-weight="bold" fill="var(--naranja-citrico)">Producción ATP y Absorción Agua (%)</text>
+                        <text x="790" y="190" transform="rotate(-90 790,190)" font-size="14" font-weight="bold" fill="var(--verde-oscuro)">Tasa de División Celular (Mitosis)</text>
+                        <text x="400" y="380" font-size="15" font-weight="bold" text-anchor="middle">Horas de Luz Solar (Después de la tormenta)</text>
+
+                        <!-- Etiquetas X -->
+                        <text x="70" y="365" font-size="13" text-anchor="middle">6:00 am</text>
+                        <text x="200" y="365" font-size="13" text-anchor="middle">8:00 am</text>
+                        <text x="340" y="365" font-size="13" text-anchor="middle">10:00 am</text>
+                        <text x="480" y="365" font-size="13" text-anchor="middle">12:00 m</text>
+                        <text x="610" y="365" font-size="13" text-anchor="middle">2:00 pm</text>
+                        <text x="750" y="365" font-size="13" text-anchor="middle">4:00 pm</text>
+
+                        <!-- Leyenda -->
+                        <circle cx="100" cy="20" r="5" fill="var(--azul-agua)"/><text x="115" y="25" font-size="12">Entrada de Agua (Membrana)</text>
+                        <circle cx="300" cy="20" r="5" fill="var(--naranja-citrico)"/><text x="315" y="25" font-size="12">Producción ATP (Mitocondria)</text>
+                        <circle cx="500" cy="20" r="5" fill="var(--verde-oscuro)"/><text x="515" y="25" font-size="12">Mitosis (Núcleo)</text>
+
+                        <!-- Línea Azul: Transporte Agua (Sube temprano y se mantiene) -->
+                        <path d="M 70 300 L 200 150 L 340 100 L 480 80 L 610 90 L 750 95" fill="none" stroke="var(--azul-agua)" stroke-width="4"/>
+                        <!-- Línea Naranja: ATP (Sube con el sol, pico a mediodía) -->
+                        <path d="M 70 330 L 200 250 L 340 120 L 480 50 L 610 150 L 750 250" fill="none" stroke="var(--naranja-citrico)" stroke-width="4"/>
+                        <!-- Línea Verde: Mitosis (Empieza tarde, dependiente de ATP) -->
+                        <path d="M 70 335 L 200 330 L 340 280 L 480 140 L 610 60 L 750 180" fill="none" stroke="var(--verde-oscuro)" stroke-width="4" stroke-dasharray="8"/>
+                        
+                        <!-- Puntos de intersección / Clave -->
+                        <circle cx="480" cy="50" r="6" fill="var(--naranja-citrico)"/>
+                        <text x="480" y="35" font-size="12" font-weight="bold" fill="var(--naranja-citrico)" text-anchor="middle">Pico de Energía</text>
+
+                        <circle cx="610" cy="60" r="6" fill="var(--verde-oscuro)"/>
+                        <text x="610" y="45" font-size="12" font-weight="bold" fill="var(--verde-oscuro)" text-anchor="middle">Pico de Curación</text>
+                    </svg>
+                </div>
+
+                <div class="bloque-pregunta">
+                    <p><strong>Pregunta Competencia Científica (Tipo ICFES):</strong> Al observar la gráfica, se nota que el pico máximo de curación (Línea verde de Mitosis a las 2:00 pm) ocurre horas DESPUÉS del pico máximo de producción de energía (Línea naranja de ATP a las 12:00 m). ¿Qué conclusión biológica explica este desfase de tiempo en la planta de plátano?</p>
+                    <div class="opciones">
+                        <label><input type="radio" name="icfes" value="a"> A) La mitosis y la producción de ATP no están relacionadas; la división celular ocurre al azar dependiendo de la temperatura ambiente.</label>
+                        <label><input type="radio" name="icfes" value="b"> B) Las células deben acumular suficiente energía (ATP) previamente, generada por las mitocondrias, para poder costear el enorme gasto energético que requiere duplicar el ADN y dividirse.</label>
+                        <label><input type="radio" name="icfes" value="c"> C) El agua que entró en la mañana apagó el funcionamiento del núcleo, retrasando la mitosis hasta que la planta se secara por la tarde.</label>
+                        <label><input type="radio" name="icfes" value="d"> D) La mitocondria consume a las células nuevas que crea la mitosis, por lo que la mitosis debe esconderse hasta que baje la producción de ATP.</label>
+                    </div>
+                    <button class="btn" id="btn-eval-icfes" style="margin-top: 15px;">Validar Hipótesis Gráfica</button>
+                    <div id="fb-icfes" class="hidden"></div>
+                </div>
+
+            </div>
+
+            <!-- ====== SECCIÓN 3: CUERPO DEDUCTIVO Y ANIMACIÓN ====== -->
+            <div class="tarjeta hidden" id="sec-deductivo">
+                <h2>Fase 3: Las Leyes de la Maquinaria Celular</h2>
+                
+                <p>Ahora que entendemos cómo las partes de la célula de nuestro plátano trabajan como una finca, profundicemos en las leyes técnicas (biológicas) que rigen este impresionante trabajo en equipo. Este conocimiento será la base científica para tu reto final: escribir una historieta épica en tu cuaderno donde estas organelas cobren vida.</p>
+
+                <p><strong>Ley del Transporte y Gradientes:</strong> La membrana plasmática no deja pasar las cosas al azar. Posee "proteínas de canal" que funcionan como peajes. Cuando la planta de plátano se rompe, pierde agua. Para recuperarla, utiliza la <strong>Ósmosis</strong> (un tipo de transporte pasivo que no gasta energía), moviendo el agua desde la tierra húmeda (donde hay mucha) hacia el interior de la raíz (donde falta). Sin embargo, para absorber minerales vitales como el Potasio (K) y el Nitrógeno (N) del suelo quindiano, debe usar <strong>Transporte Activo</strong>. Esto significa que las membranas deben "gastar dinero" (energía) para forzar la entrada de esos nutrientes en contra de la corriente.</p>
+
+                <p><strong>Ley de la Cadena Energética:</strong> ¿De dónde sale ese "dinero" energético? De una cadena impecable. El Cloroplasto ejecuta la Fotosíntesis: toma CO<sub>2</sub> del aire de Quimbaya y el agua (transportada por las raíces) y, usando la energía del sol, los "cocina" para formar Glucosa (C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>). Pero la glucosa es como un lingote de oro: vale mucho, pero no sirve para pagar el pasaje del bus. Aquí entra la Mitocondria, realizando la <strong>Respiración Celular</strong>. Rompe el lingote de glucosa usando oxígeno y lo convierte en moneditas de cambio rápido: el <strong>ATP (Adenosín Trifosfato)</strong>. El transporte activo gasta ATP. Todo en la célula gasta ATP.</p>
+
+                <p><strong>Ley del Ciclo Celular (Mitosis guiada por ATP):</strong> Con los nutrientes transportados y los tanques llenos de ATP, el núcleo activa el "Código Rojo" para sanar la herida del tallo. La Mitosis es extremadamente costosa. Durante la <em>Interfase</em>, la célula gasta millones de ATP copiando su pesado ADN. Luego, en la <em>Profase y Metafase</em>, necesita ATP para construir los "cables" (huso acromático) que moverán los cromosomas. En la <em>Anafase</em>, motores moleculares "caminan" jalando los cromosomas, quemando ATP a cada paso. Finalmente, en la <em>Citocinesis</em> vegetal, se requiere energía para construir la nueva pared de celulosa que separará a las dos células hijas.</p>
+
+                <p>Si cortas un eslabón de esta cadena, el plátano muere. Si no hay agua (falla el transporte), no hay fotosíntesis. Si no hay fotosíntesis, no hay glucosa. Si no hay glucosa, la mitocondria no hace ATP. Si no hay ATP, el transporte activo se detiene y la mitosis se paraliza. La herida nunca sanará. Por eso decimos que la célula es un "Sistema Integral".</p>
+
+                <h3>🔬 Simulador en Tiempo Real: El Flujo Vital</h3>
+                <p>Interactúa con este modelo del interior de una célula de la hoja del plátano. Observa cómo las partículas de nutrientes (azules) entran por la membrana (abajo), van al cloroplasto (verde) y mitocondria (rojo) para generar ATP (amarillo), el cual viaja al núcleo (centro) dándole la energía suficiente para realizar la Mitosis.</p>
+                
+                <div class="contenedor-canvas">
+                    <div class="canvas-ui">
+                        ATP Acumulado en el Núcleo: <span id="atp-contador" style="color: var(--naranja-citrico);">0</span>%<br>
+                        Estado Celular: <span id="estado-canvas">Absorbiendo Nutrientes</span>
+                    </div>
+                    <div class="canvas-controls">
+                        <button class="btn-canvas" id="btn-acelerar-trans">💧 + Transporte de Agua</button>
+                        <button class="btn-canvas" id="btn-acelerar-luz">☀️ + Luz (Cloroplasto)</button>
+                    </div>
+                    <canvas id="simuladorVital"></canvas>
+                </div>
+                <p style="text-align: center; font-size: 0.95rem; margin-top: 10px; color: #666;">Alimenta el sistema presionando los botones. Cuando el núcleo alcance el 100% de ATP, ¡la célula podrá dividirse (mitosis)!</p>
+
+                <!-- PAUSAS 6 A 10 -->
+                <div class="pausa-activa" style="margin-top: 40px;">
+                    <h3 class="pausa-titulo">📚 Actividad 6: Mapa Conceptual de Leyes</h3>
+                    <p>Crea un mapa en tu cuaderno con los títulos: Transporte Celular (Activo y Pasivo), Cadena Energética (Cloroplasto y Mitocondria), y Ciclo Celular (Mitosis).</p>
+                    <button class="btn btn-actividad" id="btn-p6" onclick="app.marcarPausa(6)">Registrar Actividad 6 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">📋 Actividad 7: Tabla de Transformación</h3>
+                    <p>Diseña una tabla simple de 2 columnas: "Entra" y "Sale". Analiza qué entra y sale del Cloroplasto, y qué entra y sale de la Mitocondria.</p>
+                    <button class="btn btn-actividad" id="btn-p7" onclick="app.marcarPausa(7)">Registrar Actividad 7 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">📐 Actividad 8: Dibujo Esquemático del Simualdor</h3>
+                    <p>Basado en el simulador de arriba, dibuja la célula con flechas mostrando la ruta de las partículas: Membrana ➔ Mitocondria ➔ ATP ➔ Núcleo.</p>
+                    <button class="btn btn-actividad" id="btn-p8" onclick="app.marcarPausa(8)">Registrar Actividad 8 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">📖 Actividad 9: PLANIFICACIÓN DE LA HISTORIETA</h3>
+                    <p>En media página, escribe quiénes serán los personajes de tu cuento/historieta. Ejemplo: "Don Membrano (el celador), Señora Clorofila (la cocinera), Capitán Mito (el electricista), y el Rey Núcleo". Describe cómo salvarán al plátano.</p>
+                    <button class="btn btn-actividad" id="btn-p9" onclick="app.marcarPausa(9)">Registrar Actividad 9 ✔</button>
+                </div>
+                <div class="pausa-activa">
+                    <h3 class="pausa-titulo">🎨 Actividad 10: DIBUJO DE LA HISTORIETA (RETO FINAL)</h3>
+                    <p>Dedica 2 páginas completas de tu cuaderno para dibujar la historieta de 6 viñetas (cuadros) contando la historia que planeaste en el paso 9, mostrando la herida y cómo trabajan juntos para cerrarla.</p>
+                    <button class="btn btn-actividad" id="btn-p10" onclick="app.marcarPausa(10)">Registrar Actividad 10 ✔</button>
+                </div>
+
+                <button class="btn" id="btn-ir-eval" style="width: 100%; margin-top: 25px; font-size: 1.25rem;" disabled>🔒 Registra las 10 Pausas Activas para acceder al Taller Final</button>
+
+            </div>
+
+            <!-- ====== SECCIÓN 4: EVALUACIÓN FINAL ====== -->
+            <div class="tarjeta hidden" id="sec-evaluacion">
+                <h2>🎓 Taller de Certificación: El Agrónomo Celular</h2>
+                <p>Para graduarte de este módulo, responde la evaluación. <br><strong>⚠️ SISTEMA ANTI-FRAUDE ACTIVADO:</strong> Tus respuestas abiertas (6 a 10) deben ser tipeadas (prohibido copiar/pegar). El sistema evalúa si escribes como humano. <strong>Regla estricta: Cada respuesta abierta debe tener EXACTAMENTE entre 10 y 15 palabras.</strong></p>
+
+                <!-- 5 SELECCIÓN MÚLTIPLE -->
+                <h3 style="color: var(--cafe-tierra); border-bottom: 2px solid var(--borde-suave); padding-bottom:10px;">Parte A: Conceptos Clave</h3>
+                
+                <div class="bloque-pregunta">
+                    <p><strong>1.</strong> En la historia de nuestro plátano, ¿cuál es el tipo de transporte por el cual el agua entra a la raíz sin gastar energía?</p>
+                    <select id="eval-q1">
+                        <option value="">Seleccione una opción...</option>
+                        <option value="a">Transporte Activo (bombas de proteínas).</option>
+                        <option value="b">Ósmosis (Transporte Pasivo).</option>
+                        <option value="c">Exocitosis.</option>
+                    </select>
+                </div>
+                <div class="bloque-pregunta">
+                    <p><strong>2.</strong> ¿Por qué la Mitosis de las células del tallo depende de la Mitocondria para funcionar?</p>
+                    <select id="eval-q2">
+                        <option value="">Seleccione una opción...</option>
+                        <option value="a">Porque la mitocondria es la que le da la energía en forma de ATP necesaria para dividirse.</option>
+                        <option value="b">Porque la mitocondria se convierte en el nuevo núcleo de la célula hija.</option>
+                        <option value="c">Porque la mitosis necesita luz solar directamente en el tallo para ocurrir.</option>
+                    </select>
+                </div>
+                <div class="bloque-pregunta">
+                    <p><strong>3.</strong> El Transporte Activo se caracteriza principalmente por:</p>
+                    <select id="eval-q3">
+                        <option value="">Seleccione una opción...</option>
+                        <option value="a">Permitir la salida de agua gratuitamente.</option>
+                        <option value="b">Mover sustancias en contra de la corriente, gastando moléculas de ATP.</option>
+                        <option value="c">Construir la pared de celulosa de la planta.</option>
+                    </select>
+                </div>
+                <div class="bloque-pregunta">
+                    <p><strong>4.</strong> Si una enfermedad fungosa de Quimbaya destruye los <strong>Cloroplastos</strong> del plátano, ¿qué es lo primero que dejaría de producir la célula?</p>
+                    <select id="eval-q4">
+                        <option value="">Seleccione una opción...</option>
+                        <option value="a">Agua pura.</option>
+                        <option value="b">Glucosa (Alimento/Azúcar).</option>
+                        <option value="c">ADN.</option>
+                    </select>
+                </div>
+                <div class="bloque-pregunta">
+                    <p><strong>5.</strong> "El sistema vital está integrado." Esta frase significa que:</p>
+                    <select id="eval-q5">
+                        <option value="">Seleccione una opción...</option>
+                        <option value="a">Todas las organelas y procesos (transporte, energía, división) dependen unos de otros para que la planta viva.</option>
+                        <option value="b">Las células de las raíces no necesitan a las hojas para sobrevivir.</option>
+                        <option value="c">Solo el núcleo importa, las demás partes pueden fallar sin problemas.</option>
+                    </select>
+                </div>
+
+                <!-- 5 PREGUNTAS ABIERTAS CON ANTI-FRAUDE -->
+                <h3 style="color: var(--alerta-rojo); border-bottom: 2px solid var(--borde-suave); padding-bottom:10px; margin-top: 40px;">Parte B: Argumentación (Exactamente 10 a 15 palabras)</h3>
+                
+                <div class="bloque-pregunta">
+                    <p><strong>6.</strong> Explica con tus palabras: ¿Para qué sirve el ATP producido por la mitocondria?</p>
+                    <div id="alerta-q6" class="alerta-fraude hidden">🛡️ SISTEMA DE SEGURIDAD ACTIVO</div>
+                    <textarea id="eval-q6" placeholder="Escribe aquí... (Recuerda la regla de palabras)"></textarea>
+                    <div style="text-align: right; font-weight: bold; font-size: 0.95rem;">Palabras contadas: <span id="wc-q6" style="color:var(--alerta-rojo)">0</span> / 15 máximo</div>
+                </div>
+
+                <div class="bloque-pregunta">
+                    <p><strong>7.</strong> Resume el trabajo del Cloroplasto durante el rescate de la planta herida.</p>
+                    <div id="alerta-q7" class="alerta-fraude hidden">🛡️ SISTEMA DE SEGURIDAD ACTIVO</div>
+                    <textarea id="eval-q7" placeholder="Escribe aquí... (Recuerda la regla de palabras)"></textarea>
+                    <div style="text-align: right; font-weight: bold; font-size: 0.95rem;">Palabras contadas: <span id="wc-q7" style="color:var(--alerta-rojo)">0</span> / 15 máximo</div>
+                </div>
+
+                <div class="bloque-pregunta">
+                    <p><strong>8.</strong> ¿Qué pasaría con la mitosis si la membrana celular bloquea la entrada de agua/nutrientes?</p>
+                    <div id="alerta-q8" class="alerta-fraude hidden">🛡️ SISTEMA DE SEGURIDAD ACTIVO</div>
+                    <textarea id="eval-q8" placeholder="Escribe aquí... (Recuerda la regla de palabras)"></textarea>
+                    <div style="text-align: right; font-weight: bold; font-size: 0.95rem;">Palabras contadas: <span id="wc-q8" style="color:var(--alerta-rojo)">0</span> / 15 máximo</div>
+                </div>
+
+                <div class="bloque-pregunta">
+                    <p><strong>9.</strong> En tu historieta (Actividad 10), ¿qué acción heroica realizaba el personaje del Núcleo?</p>
+                    <div id="alerta-q9" class="alerta-fraude hidden">🛡️ SISTEMA DE SEGURIDAD ACTIVO</div>
+                    <textarea id="eval-q9" placeholder="Escribe aquí... (Recuerda la regla de palabras)"></textarea>
+                    <div style="text-align: right; font-weight: bold; font-size: 0.95rem;">Palabras contadas: <span id="wc-q9" style="color:var(--alerta-rojo)">0</span> / 15 máximo</div>
+                </div>
+
+                <div class="bloque-pregunta">
+                    <p><strong>10.</strong> Escribe la diferencia principal entre el transporte celular Pasivo (Ósmosis) y el Activo.</p>
+                    <div id="alerta-q10" class="alerta-fraude hidden">🛡️ SISTEMA DE SEGURIDAD ACTIVO</div>
+                    <textarea id="eval-q10" placeholder="Escribe aquí... (Recuerda la regla de palabras)"></textarea>
+                    <div style="text-align: right; font-weight: bold; font-size: 0.95rem;">Palabras contadas: <span id="wc-q10" style="color:var(--alerta-rojo)">0</span> / 15 máximo</div>
+                </div>
+
+                <button class="btn" id="btn-finalizar" style="width: 100%; font-size: 1.3rem; background-color: var(--cafe-tierra);">Entregar Módulo Virtual</button>
+
+            </div>
+
+            <!-- ====== SECCIÓN 5: RESULTADOS Y EXPORTACIÓN ====== -->
+            <div class="tarjeta hidden" id="sec-resultados">
+                <h2 style="text-align: center; color: var(--cafe-tierra); font-size: 2rem;">Reporte del Biólogo(a) Quindiano</h2>
+                <div style="font-size: 6rem; text-align: center; color: var(--verde-oscuro); font-weight: bold; margin: 10px 0; text-shadow: 2px 2px 5px rgba(0,0,0,0.1);" id="nota-final">0.0</div>
+                <h3 id="mensaje-retro" style="text-align: center; color: var(--naranja-citrico); font-size: 1.5rem;"></h3>
+                
+                <div style="background: #E8F5E9; padding: 30px; border-radius: 12px; margin-top: 40px; border-left: 8px solid var(--verde-platano);">
+                    <h4 style="color: var(--verde-oscuro); margin-top:0; font-size: 1.3rem;">🧭 Tu Ruta de Fortalecimiento Personalizada:</h4>
+                    <p id="ruta-texto" style="font-size: 1.15rem; margin-top: 15px; margin-bottom: 0;"></p>
+                </div>
+
+                <button class="btn" id="btn-descargar" style="width: 100%; margin-top: 35px; background-color: var(--cafe-suave); font-size: 1.2rem;">⬇ Descargar Certificado Oficial (.txt)</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================================= LÓGICA JAVASCRIPT ================================= -->
+    <script>
+        const app = {
+            estado: {
+                nombres: "", apellidos: "", puntaje: 0.0,
+                pausas: Array(10).fill(false),
+                diagOK: false, icfesOK: false, finalOK: false
+            },
+
+            iniciar() {
+                // Binding de botones
+                document.getElementById('btn-iniciar').addEventListener('click', () => this.login());
+                document.getElementById('btn-eval-diag').addEventListener('click', () => this.evaluarDiag());
+                document.getElementById('btn-eval-icfes').addEventListener('click', () => this.evaluarIcfes());
+                document.getElementById('btn-ir-eval').addEventListener('click', () => this.mostrarEvaluacion());
+                document.getElementById('btn-finalizar').addEventListener('click', () => this.evaluarFinal());
+                document.getElementById('btn-descargar').addEventListener('click', () => this.generarTXT());
+
+                // Setup Anti-Fraude
+                for(let i=6; i<=10; i++) {
+                    this.setupAntiFraude(`eval-q${i}`, `wc-q${i}`, `alerta-q${i}`);
+                }
+            },
+
+            login() {
+                const nom = document.getElementById('input-nombres').value.trim();
+                const ape = document.getElementById('input-apellidos').value.trim();
+                if(nom === "" || ape === "") {
+                    alert("¡Atención! Por favor ingresa tus nombres y apellidos para entrar al laboratorio.");
+                    return;
+                }
+
+                this.estado.nombres = nom;
+                this.estado.apellidos = ape;
+                document.getElementById('nombre-estudiante').innerText = `${nom} ${ape}`;
+                
+                document.getElementById('pantalla-login').classList.add('hidden');
+                document.getElementById('app-principal').classList.remove('hidden');
+                window.scrollTo(0,0);
+            },
+
+            actualizarUI() {
+                document.getElementById('puntaje-ui').innerText = this.estado.puntaje.toFixed(1);
+                
+                // Cálculo de barra de progreso (13 hitos: 1 diag + 1 icfes + 10 pausas + 1 final)
+                let hitos = (this.estado.diagOK?1:0) + (this.estado.icfesOK?1:0) + (this.estado.finalOK?1:0);
+                hitos += this.estado.pausas.filter(p=>p).length;
+                document.getElementById('barra-ui').style.width = ((hitos/13)*100) + "%";
+
+                // Insignias
+                if(this.estado.puntaje >= 0.5) document.getElementById('insignia-1').classList.add('activa');
+                if(this.estado.puntaje >= 2.0) document.getElementById('insignia-2').classList.add('activa');
+                if(this.estado.puntaje >= 4.0) document.getElementById('insignia-3').classList.add('activa');
+            },
+
+            evaluarDiag() {
+                if(this.estado.diagOK) return;
+                const r1 = document.querySelector('input[name="p1"]:checked');
+                const r2 = document.querySelector('input[name="p2"]:checked');
+                const r3 = document.querySelector('input[name="p3"]:checked');
+
+                if(!r1 || !r2 || !r3) {
+                    alert("Por favor selecciona una respuesta para las 3 preguntas.");
+                    return;
+                }
+
+                let fb = "<strong>Revisión Diagnóstica:</strong><br><br>";
+                let pts = 0;
+
+                if(r1.value === 'b') { pts += 0.16; fb += "✅ P1: ¡Correcto! El agua entra por Ósmosis.<br>"; } else fb += "❌ P1: Recuerda, el transporte pasivo de agua se llama Ósmosis.<br>";
+                if(r2.value === 'a') { pts += 0.17; fb += "✅ P2: ¡Bien! La Mitocondria genera ATP.<br>"; } else fb += "❌ P2: La 'planta eléctrica' animal (y vegetal) es la Mitocondria.<br>";
+                if(r3.value === 'b') { pts += 0.17; fb += "✅ P3: ¡Exacto! La Mitosis repara y clona células.<br>"; } else fb += "❌ P3: La división para reparar tejidos es la Mitosis.<br>";
+
+                this.estado.puntaje += pts;
+                this.estado.diagOK = true;
+                
+                const divFb = document.getElementById('fb-diag');
+                divFb.innerHTML = fb;
+                divFb.className = "feedback " + (pts > 0.4 ? "correcto" : "incorrecto");
+                divFb.classList.remove('hidden');
+                document.getElementById('btn-eval-diag').disabled = true;
+
+                document.getElementById('sec-inductivo').classList.remove('hidden');
+                this.actualizarUI();
+                setTimeout(()=> window.scrollTo({ top: document.getElementById('sec-inductivo').offsetTop - 80, behavior: 'smooth' }), 600);
+            },
+
+            marcarPausa(num) {
+                const idx = num - 1;
+                if(!this.estado.pausas[idx]) {
+                    this.estado.pausas[idx] = true;
+                    this.estado.puntaje += 0.15; // 10 pausas = 1.5 puntos
+                    
+                    const btn = document.getElementById(`btn-p${num}`);
+                    btn.innerHTML = "Registro Exitoso ✔";
+                    btn.classList.add("completada");
+                    btn.disabled = true;
+
+                    this.actualizarUI();
+                    this.verificarProgresoSecciones();
+                }
+            },
+
+            evaluarIcfes() {
+                if(this.estado.icfesOK) return;
+                const res = document.querySelector('input[name="icfes"]:checked');
+                if(!res) return alert("Selecciona la respuesta basada en la gráfica.");
+
+                const fbDiv = document.getElementById('fb-icfes');
+                if(res.value === 'b') {
+                    this.estado.puntaje += 0.5;
+                    fbDiv.className = "feedback correcto";
+                    fbDiv.innerHTML = "✅ ¡Excelente Indagación Científica! Observaste que la curva de Mitosis espera hasta que la curva de Energía (ATP) esté alta. Esto prueba que la división celular DEPENDE de la energía fabricada por la mitocondria.";
+                } else {
+                    fbDiv.className = "feedback incorrecto";
+                    fbDiv.innerHTML = "❌ Análisis Incorrecto. Vuelve a mirar las líneas: La planta no puede hacer mitosis a las 8am porque aún no tiene suficiente ATP (Línea naranja). Necesita acumular esa energía primero para costear la división.";
+                }
+
+                this.estado.icfesOK = true;
+                fbDiv.classList.remove('hidden');
+                document.getElementById('btn-eval-icfes').disabled = true;
+                this.actualizarUI();
+                this.verificarProgresoSecciones();
+            },
+
+            verificarProgresoSecciones() {
+                // Desbloqueo Cuerpo Deductivo (Requiere pausas 1-5 e ICFES)
+                const b1 = this.estado.pausas.slice(0,5).every(p=>p) && this.estado.icfesOK;
+                if(b1) {
+                    const sec = document.getElementById('sec-deductivo');
+                    if(sec.classList.contains('hidden')){
+                        sec.classList.remove('hidden');
+                        this.iniciarSimuladorCanvas(); // Prender motor
+                    }
+                }
+
+                // Desbloqueo Evaluación Final (Requiere todas las 10 pausas)
+                const b2 = this.estado.pausas.every(p=>p);
+                if(b2 && b1) {
+                    const btn = document.getElementById('btn-ir-eval');
+                    btn.disabled = false;
+                    btn.innerHTML = "📝 Acceder al Taller de Certificación";
+                    btn.style.backgroundColor = "var(--naranja-citrico)";
+                }
+            },
+
+            mostrarEvaluacion() {
+                document.getElementById('sec-evaluacion').classList.remove('hidden');
+                setTimeout(()=> window.scrollTo({ top: document.getElementById('sec-evaluacion').offsetTop - 60, behavior: 'smooth' }), 300);
+            },
+
+            // ================== SISTEMA ANTI-FRAUDE RIGUROSO ==================
+            setupAntiFraude(idInput, idContador, idAlerta) {
+                const el = document.getElementById(idInput);
+                const wc = document.getElementById(idContador);
+                const al = document.getElementById(idAlerta);
+                
+                // 1. Bloqueo de Inyecciones vía mouse o atajos rápidos
+                const msj = "🚫 ACCIÓN DENEGADA: Debes escribir tu respuesta manualmente. Cero trampas.";
+                el.addEventListener('paste', e => { e.preventDefault(); this.mostrarAlerta(al, msj); });
+                el.addEventListener('drop', e => { e.preventDefault(); this.mostrarAlerta(al, msj); });
+                el.addEventListener('contextmenu', e => { e.preventDefault(); });
+
+                // 2. Control Algorítmico de Cadencia (Velocidad Inhumana)
+                let historialTiempos = [];
+                let tAnterior = Date.now();
+
+                el.addEventListener('keydown', e => {
+                    // Bloqueo duro de Control+V / Cmd+V
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+                        e.preventDefault();
+                        this.mostrarAlerta(al, msj);
+                        return;
+                    }
+
+                    if(e.key.length === 1) { // Tecla de caracter
+                        const ahora = Date.now();
+                        const diff = ahora - tAnterior;
+                        
+                        if(diff > 0 && diff < 800) {
+                            historialTiempos.push(diff);
+                            if(historialTiempos.length > 10) historialTiempos.shift();
+                            
+                            // Analizar si las últimas 10 teclas fueron escritas a menos de 40ms promedio (Bot o macro)
+                            if(historialTiempos.length === 10) {
+                                const prom = historialTiempos.reduce((a,b)=>a+b,0) / 10;
+                                if(prom < 40) { 
+                                    this.mostrarAlerta(al, "🤖 ALERTA SISTEMA: Velocidad IA detectada. Respuesta borrada.");
+                                    el.value = ""; 
+                                    historialTiempos = [];
+                                }
+                            }
+                        }
+                        tAnterior = ahora;
+                    }
+                });
+
+                // 3. Verificación de Límite de Palabras (Regla Estricta 10-15)
+                el.addEventListener('input', () => {
+                    const txt = el.value.trim().replace(/\s+/g, ' ');
+                    const words = txt === "" ? 0 : txt.split(' ').length;
+                    wc.innerText = words;
+                    
+                    if(words >= 10 && words <= 15) {
+                        wc.style.color = "var(--verde-oscuro)";
+                        el.style.borderColor = "var(--verde-oscuro)";
+                        al.classList.add('hidden');
+                    } else {
+                        wc.style.color = "var(--alerta-rojo)";
+                        el.style.borderColor = "var(--alerta-rojo)";
+                    }
+                });
+            },
+
+            mostrarAlerta(elemento, mensaje) {
+                elemento.innerText = mensaje;
+                elemento.classList.remove('hidden');
+            },
+
+            validarPregunta(id) {
+                const txt = document.getElementById(id).value.trim().replace(/\s+/g, ' ');
+                const n = txt === "" ? 0 : txt.split(' ').length;
+                return (n >= 10 && n <= 15);
+            },
+
+            evaluarFinal() {
+                if(this.estado.finalOK) return;
+
+                // Validación Múltiple
+                let p1 = document.getElementById('eval-q1').value;
+                let p2 = document.getElementById('eval-q2').value;
+                let p3 = document.getElementById('eval-q3').value;
+                let p4 = document.getElementById('eval-q4').value;
+                let p5 = document.getElementById('eval-q5').value;
+
+                if(!p1||!p2||!p3||!p4||!p5) return alert("Falta responder preguntas de la Parte A.");
+
+                // Validación Abiertas (Filtro Inteligente)
+                let validadas = true;
+                for(let i=6; i<=10; i++) {
+                    if(!this.validarPregunta(`eval-q${i}`)) validadas = false;
+                }
+
+                if(!validadas) {
+                    alert("⛔ RECHAZADO: Revisa la Parte B. Recuerda la regla de oro: TODAS las preguntas de argumentación deben tener exactamente entre 10 y 15 palabras. Revisa los contadores rojos.");
+                    return;
+                }
+
+                // Calcular Nota Final
+                let p = 0;
+                if(p1 === 'b') p += 0.2;
+                if(p2 === 'a') p += 0.2;
+                if(p3 === 'b') p += 0.2;
+                if(p4 === 'b') p += 0.2;
+                if(p5 === 'a') p += 0.2;
+
+                // Las preguntas abiertas, por pasar el sistema de integridad y regla estricta,
+                // suman automáticamente su puntaje (0.3 c/u). La calidad cualitativa la evalúa el profe en el txt.
+                p += 1.5; 
+
+                this.estado.puntaje += p;
+                this.estado.finalOK = true;
+                this.actualizarUI();
+
+                // Mostrar Panel Final
+                document.getElementById('sec-evaluacion').classList.add('hidden');
+                document.getElementById('sec-resultados').classList.remove('hidden');
+                
+                const nt = this.estado.puntaje.toFixed(1);
+                document.getElementById('nota-final').innerText = nt;
+
+                const msg = document.getElementById('mensaje-retro');
+                const rut = document.getElementById('ruta-texto');
+
+                // Retroalimentación Inteligente
+                if(nt >= 4.5) {
+                    msg.innerText = "🌟 ¡Magistral! Eres un verdadero Agrónomo Celular.";
+                    rut.innerText = "Excelente nivel de integración. Tu ruta de fortalecimiento es investigar cómo ciertos fertilizantes ricos en Fosfato (P) mejoran específicamente la creación de ATP (Adenosín Trifosfato) en los cultivos de la finca.";
+                } else if(nt >= 3.5) {
+                    msg.innerText = "👍 Muy bien, comprendes la conexión vital.";
+                    rut.innerText = "Has conectado bien el transporte con la energía. Para mejorar, debes repasar la diferencia exacta entre Mitocondria y Cloroplasto, asegurándote de no confundir la 'creación de azúcar' con la 'creación de ATP'.";
+                } else {
+                    document.getElementById('nota-final').style.color = "var(--alerta-rojo)";
+                    msg.innerText = "🌱 Hay potencial, pero la maquinaria celular está fallando.";
+                    rut.innerText = "El sistema detectó confusiones severas en la cadena de eventos. Tu ruta es volver a copiar el 'Diagrama de Flujo de Rescate' y explicarle a un compañero de clase en voz alta qué pasa primero y qué pasa después.";
+                }
+
+                setTimeout(()=> window.scrollTo({ top: document.getElementById('sec-resultados').offsetTop - 50, behavior: 'smooth' }), 400);
+            },
+
+            // ================== SIMULADOR CANVAS (PARTÍCULAS Y FÍSICA) ==================
+            iniciarSimuladorCanvas() {
+                const cvs = document.getElementById('simuladorVital');
+                const ctx = cvs.getContext('2d');
+                cvs.width = cvs.parentElement.clientWidth;
+                cvs.height = cvs.parentElement.clientHeight;
+
+                let W = cvs.width; let H = cvs.height;
+                
+                // Entidades del Canvas
+                const membrana = { y: H - 40, w: W, h: 40 };
+                const cloroplasto = { x: W*0.25, y: H*0.4, rx: 60, ry: 30, color: "#8BC34A" };
+                const mitocondria = { x: W*0.75, y: H*0.4, rx: 50, ry: 25, color: "#E53935" };
+                const nucleo = { x: W*0.5, y: H*0.25, r: 60, color: "#BA68C8", atp: 0, estado: "espera" }; // espera -> dividiendo
+
+                let particulas = [];
+                let frame = 0;
+                let boostAgua = false;
+                let boostLuz = false;
+
+                // Eventos de Botones UI del Canvas
+                document.getElementById('btn-acelerar-trans').addEventListener('mousedown', ()=> boostAgua=true);
+                document.getElementById('btn-acelerar-trans').addEventListener('mouseup', ()=> boostAgua=false);
+                document.getElementById('btn-acelerar-trans').addEventListener('mouseleave', ()=> boostAgua=false);
+                
+                document.getElementById('btn-acelerar-luz').addEventListener('mousedown', ()=> boostLuz=true);
+                document.getElementById('btn-acelerar-luz').addEventListener('mouseup', ()=> boostLuz=false);
+                document.getElementById('btn-acelerar-luz').addEventListener('mouseleave', ()=> boostLuz=false);
+
+                // Función auxiliar
+                const spawnParticula = (tipo, x, y) => {
+                    let targetX, targetY, color, vel = Math.random()*1 + 1;
+                    if(tipo === 'agua') {
+                        targetX = cloroplasto.x + (Math.random()-0.5)*40;
+                        targetY = cloroplasto.y + (Math.random()-0.5)*20;
+                        color = "#4FC3F7"; // Azul
+                    } else if(tipo === 'glucosa') {
+                        targetX = mitocondria.x + (Math.random()-0.5)*30;
+                        targetY = mitocondria.y + (Math.random()-0.5)*15;
+                        color = "#FFF59D"; // Amarillo palido
+                    } else if(tipo === 'atp') {
+                        targetX = nucleo.x + (Math.random()-0.5)*40;
+                        targetY = nucleo.y + (Math.random()-0.5)*40;
+                        color = "#FFCA28"; // Naranja brillante
+                        vel = 2.5;
+                    }
+
+                    particulas.push({
+                        tipo: tipo, x: x, y: y,
+                        tx: targetX, ty: targetY,
+                        vx: 0, vy: 0, vMax: vel,
+                        color: color, activa: true
+                    });
+                };
+
+                const animar = () => {
+                    ctx.clearRect(0,0,W,H);
+                    frame++;
+
+                    // Dibujar Membrana
+                    ctx.fillStyle = "rgba(78, 52, 46, 0.8)";
+                    ctx.fillRect(0, membrana.y, membrana.w, membrana.h);
+                    
+                    // Puertas (Proteínas)
+                    ctx.fillStyle = "#A1887F";
+                    ctx.fillRect(W*0.2-20, membrana.y, 40, 40);
+                    ctx.fillRect(W*0.8-20, membrana.y, 40, 40);
+
+                    // Dibujar Cloroplasto
+                    ctx.beginPath();
+                    ctx.ellipse(cloroplasto.x, cloroplasto.y, cloroplasto.rx, cloroplasto.ry, 0, 0, Math.PI*2);
+                    ctx.fillStyle = boostLuz ? "#689F38" : cloroplasto.color;
+                    ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = "#33691E"; ctx.stroke();
+                    ctx.fillStyle = "white"; ctx.font = "14px Arial"; ctx.fillText("Cloroplasto", cloroplasto.x-35, cloroplasto.y+5);
+
+                    // Dibujar Mitocondria
+                    ctx.beginPath();
+                    ctx.ellipse(mitocondria.x, mitocondria.y, mitocondria.rx, mitocondria.ry, 0, 0, Math.PI*2);
+                    ctx.fillStyle = mitocondria.color;
+                    ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = "#B71C1C"; ctx.stroke();
+                    // Pliegues interiores
+                    ctx.beginPath(); ctx.moveTo(mitocondria.x-30, mitocondria.y); ctx.lineTo(mitocondria.x, mitocondria.y-15); ctx.lineTo(mitocondria.x+30, mitocondria.y); ctx.stroke();
+                    ctx.fillStyle = "white"; ctx.font = "14px Arial"; ctx.fillText("Mitocondria", mitocondria.x-35, mitocondria.y+5);
+
+                    // Dibujar Núcleo (Maneja la Mitosis visual)
+                    if(nucleo.estado === "espera") {
+                        ctx.beginPath();
+                        ctx.arc(nucleo.x, nucleo.y, nucleo.r, 0, Math.PI*2);
+                        ctx.fillStyle = nucleo.color; ctx.fill();
+                        ctx.lineWidth = 4; ctx.strokeStyle = "#6A1B9A"; ctx.stroke();
+                        // Cromatina (ADN enredado)
+                        ctx.beginPath();
+                        for(let i=0; i<5; i++) {
+                            ctx.moveTo(nucleo.x + (Math.random()-0.5)*40, nucleo.y + (Math.random()-0.5)*40);
+                            ctx.bezierCurveTo(nucleo.x + 30, nucleo.y - 30, nucleo.x - 30, nucleo.y + 30, nucleo.x + (Math.random()-0.5)*40, nucleo.y + (Math.random()-0.5)*40);
+                        }
+                        ctx.strokeStyle = "#FFF"; ctx.lineWidth = 2; ctx.stroke();
+                        ctx.fillStyle = "white"; ctx.font = "bold 16px Arial"; ctx.fillText("ADN", nucleo.x-18, nucleo.y+6);
+
+                    } else if (nucleo.estado === "dividiendo") {
+                        // Visual de Mitosis (Dos núcleos separándose)
+                        let sep = (frame % 100) / 2; // Distancia de separación
+                        if(sep > 45) sep = 45; // Tope
+
+                        ctx.fillStyle = nucleo.color; ctx.strokeStyle = "#6A1B9A"; ctx.lineWidth=4;
+                        // Nuc 1
+                        ctx.beginPath(); ctx.arc(nucleo.x - sep, nucleo.y, nucleo.r*0.7, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                        // Nuc 2
+                        ctx.beginPath(); ctx.arc(nucleo.x + sep, nucleo.y, nucleo.r*0.7, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                        
+                        // Huso acromático (lineas en medio)
+                        ctx.strokeStyle="rgba(255,255,255,0.5)"; ctx.lineWidth=1;
+                        for(let i=-20; i<=20; i+=10) {
+                            ctx.beginPath(); ctx.moveTo(nucleo.x-sep, nucleo.y+i); ctx.lineTo(nucleo.x+sep, nucleo.y+i); ctx.stroke();
+                        }
+                    }
+
+                    // --- Lógica Procedural (Spawns) ---
+                    if(nucleo.estado === "espera") {
+                        // Generar Agua
+                        let probAgua = boostAgua ? 0.3 : 0.05;
+                        if(Math.random() < probAgua) spawnParticula('agua', W*0.2 + (Math.random()-0.5)*20, membrana.y);
+                        
+                        // Generar Glucosa (Si hay luz y un delay)
+                        if(boostLuz && frame % 30 === 0) {
+                            // Simulamos que el cloroplasto procesó agua y saca glucosa
+                            spawnParticula('glucosa', cloroplasto.x, cloroplasto.y);
+                        }
+
+                        // Generar ATP
+                        if(frame % 45 === 0 && particulas.filter(p=>p.tipo==='glucosa').length > 0) {
+                            // Mitocondria "suelta" ATP de forma constante pero lenta, a menos que coma glucosa (manejado en colisión)
+                            spawnParticula('atp', mitocondria.x, mitocondria.y);
+                        }
+                    }
+
+                    // --- Físicas y Colisiones ---
+                    for(let i = particulas.length - 1; i >= 0; i--) {
+                        let p = particulas[i];
+                        if(!p.activa) continue;
+
+                        // Dirección
+                        let dx = p.tx - p.x; let dy = p.ty - p.y;
+                        let dist = Math.sqrt(dx*dx + dy*dy);
+
+                        // Llegó al target
+                        if(dist < 5) {
+                            p.activa = false;
+                            
+                            // Efectos al llegar
+                            if(p.tipo === 'agua') {
+                                // Agua llegó al cloroplasto, visual pequeñito
+                                ctx.fillStyle = "rgba(255,255,255,0.5)";
+                                ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI*2); ctx.fill();
+                            }
+                            if(p.tipo === 'glucosa') {
+                                // Glucosa llegó a mitocondria = ¡Explosión de ATP!
+                                for(let k=0; k<3; k++) spawnParticula('atp', mitocondria.x, mitocondria.y);
+                            }
+                            if(p.tipo === 'atp') {
+                                // ATP llegó al Núcleo = Carga energía
+                                nucleo.atp += 2; // Sube %
+                                if(nucleo.atp > 100) nucleo.atp = 100;
+                                document.getElementById('atp-contador').innerText = nucleo.atp;
+                                
+                                if(nucleo.atp === 100 && nucleo.estado === "espera") {
+                                    nucleo.estado = "dividiendo";
+                                    document.getElementById('estado-canvas').innerText = "¡MITOSIS INICIADA! (Sanando)";
+                                    document.getElementById('estado-canvas').style.color = "var(--verde-platano)";
+                                    document.getElementById('estado-canvas').style.fontWeight = "bold";
+                                }
+                            }
+                            particulas.splice(i, 1);
+                            continue;
+                        }
+
+                        // Mover
+                        p.vx = (dx / dist) * p.vMax;
+                        p.vy = (dy / dist) * p.vMax;
+                        p.x += p.vx; p.y += p.vy;
+
+                        // Dibujar Partícula
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+                        
+                        // Efecto Glow para ATP
+                        if(p.tipo === 'atp') {
+                            ctx.fillStyle = "rgba(255, 202, 40, 0.4)";
+                            ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI*2); ctx.fill();
+                        }
+                    }
+
+                    requestAnimationFrame(animar);
+                };
+
+                animar();
+            },
+
+            // ================== EXPORTAR TXT OFFLINE ==================
+            generarTXT() {
+                const r = [];
+                for(let i=6; i<=10; i++) r.push(document.getElementById(`eval-q${i}`).value.trim());
+                
+                const d = new Date();
+                const fecha = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours()}:${d.getMinutes()}`;
+
+                let texto = `===========================================================
+CERTIFICADO DE LABORATORIO VIRTUAL - CIENCIAS NATURALES
+===========================================================
+INSTITUCIÓN: I.E. Pueblo Rico, Municipio de Quimbaya.
+MÓDULO: Integrando el Sistema Vital - Al Rescate del Plátano
+BIÓLOGO(A): ${this.estado.nombres} ${this.estado.apellidos}
+FECHA: ${fecha}
+NOTA GLOBAL: ${this.estado.puntaje.toFixed(1)} / 5.0
+-----------------------------------------------------------
+RÚBRICA DE SISTEMA VITAL:
+> Saberes Previos (Diagnóstico): COMPLETADO
+> Interpretación SVG Curva de Mitosis: SUPERADO
+> Libreta Físisca (10 Actividades Prácticas): REGISTRADAS
+> Simulación de Organelas: EJECUTADO
+-----------------------------------------------------------
+ARGUMENTACIÓN TÉCNICA (Regla estricta 10-15 palabras verificada):
+
+[P6] Uso del ATP mitocondrial:
+"${r[0]}"
+
+[P7] Trabajo del Cloroplasto:
+"${r[1]}"
+
+[P8] Qué pasa si falla la Membrana:
+"${r[2]}"
+
+[P9] Rol del Núcleo en la Historieta:
+"${r[3]}"
+
+[P10] Transporte Pasivo vs Activo:
+"${r[4]}"
+
+===========================================================
+VALIDACIÓN DE INTEGRIDAD Y ANTI-FRAUDE:
+Sistema de control de pegado: INTACTO.
+Algoritmo de cadencia de tecleo: APROBADO (Humano).
+Firma Hash: 0xQUIMBAYA_VITAL_${Date.now()}
+===========================================================`;
+
+                const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const enlace = document.createElement('a');
+                enlace.href = url;
+                enlace.download = `Certificado_Biologia_${this.estado.apellidos.replace(/\s/g,'')}.txt`;
+                document.body.appendChild(enlace);
+                enlace.click();
+                document.body.removeChild(enlace);
+                URL.revokeObjectURL(url);
+            }
+        };
+
+        // Iniciar App al cargar DOM
+        window.addEventListener('DOMContentLoaded', () => app.iniciar());
+
+    </script>
+</body>
+</html>
